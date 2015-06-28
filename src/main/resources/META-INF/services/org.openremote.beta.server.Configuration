@@ -1,0 +1,3 @@
+org.openremote.beta.server.SystemConfiguration
+org.openremote.beta.server.WebserverConfiguration
+org.openremote.beta.server.flow.FlowServiceConfiguration
