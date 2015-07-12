@@ -1,10 +1,8 @@
 package org.openremote.beta.shared.flow;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.gwt.core.client.js.JsType;
 
-import static org.openremote.beta.shared.flow.Slot.Type.SINK;
-
+@JsType
 public class Node {
 
     public String id;
@@ -70,4 +68,13 @@ public class Node {
         this.properties = properties;
     }
 
+    @Override
+    public String toString() {
+        return "Node{" +
+            "id='" + id + '\'' +
+            ", type='" + type + '\'' +
+            ", label='" + label + '\'' +
+            ", slots=" + slots.length +
+            '}';
+    }
 }

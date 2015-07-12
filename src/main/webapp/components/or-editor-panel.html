@@ -1,0 +1,119 @@
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<!--
+`<or-editor-panel>` is a scrolling panel that can be shown/hidden on demand.
+
+You can enable a show/hide switch with the `switchable` attribute, and set it
+to `left` or `right` position.
+
+You can set the `title` attribute for a label an the panel switch.
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--or-editor-panel-width` | Width of panel | `200px`
+`--or-editor-panel-max-height` | Max height of panel | `50vh`
+`--or-editor-panel-background-color` | Background of panel | `white`
+`--or-editor-panel-switch-background-color` | Background of title/switch | `rgba(255, 255, 255, 0.8)`
+-->
+<dom-module id="or-editor-panel">
+    <style>
+        :host {
+        }
+
+        #switchButton {
+            order: 1;
+        }
+
+        #switchTitle {
+            cursor: pointer;
+            order: 2;
+        }
+
+        #switchPanel {
+            background: var(--or-editor-panel-switch-background-color, rgba(255, 255, 255, 0.8));
+        }
+
+        #panel,
+        #switchPanel {
+            width: var(--or-editor-panel-width, 200px);
+        }
+
+        #panel > * {
+            padding: 0;
+        }
+
+        #panel {
+            position: relative;
+            top: 0;
+            left: 0;
+            margin: 0 0 0.5em 0 !important;
+            width: var(--or-editor-panel-width, 200px);
+            max-height: var(--or-editor-panel-max-height, 50vh);
+            background: var(--or-editor-panel-background-color, white);
+        }
+
+        /* @formatter:off */
+        #panelScrollable {
+            margin: 0;
+            --layout-scroll: {
+                 padding: 0;
+             }
+        }
+        /* @formatter:on */
+    </style>
+    <template>
+        <template is="dom-if" if="[[switchable]]">
+            <div id="switchPanel" class="layout horizontal ">
+                <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
+                <template is="dom-if" if="[[title]]">
+                    <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
+                        <paper-ripple center></paper-ripple>
+                        <span>[[title]]</span>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <paper-dialog id="panel">
+            <paper-dialog-scrollable id="panelScrollable">
+                <content></content>
+            </paper-dialog-scrollable>
+            <content select=".buttons"></content>
+        </paper-dialog>
+    </template>
+    <script>
+        Polymer({
+            is: 'or-editor-panel',
+            properties: {
+                switchable: String,
+                title: String
+            },
+            ready: function () {
+                this.async(function () {
+                    if (this.switchable == "right") {
+                        this.$$("#switchTitle").classList.add("end-justified");
+                        this.$$("#switchButton").style.order = "3";
+                    } else if (!this.switchable) {
+                        this.open();
+                    }
+                    this.$.panel.noCancelOnEscKey = true;
+                    this.$.panel.noCancelOnOutsideClick= true;
+                });
+            },
+            toggle: function () {
+                this.$.panel.toggle();
+            },
+            open: function () {
+                this.$.panel.open();
+            },
+            close: function () {
+                this.$.panel.close();
+            }
+        });
+    </script>
+</dom-module>

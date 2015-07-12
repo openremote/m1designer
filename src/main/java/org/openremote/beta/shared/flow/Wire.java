@@ -1,5 +1,8 @@
 package org.openremote.beta.shared.flow;
 
+import com.google.gwt.core.client.js.JsType;
+
+@JsType
 public class Wire {
 
     public String sourceId;
@@ -21,7 +24,7 @@ public class Wire {
         return sinkId;
     }
 
-    public boolean equals (Slot sourceSlot, Slot sinkSlot) {
+    public boolean equalsSlots(Slot sourceSlot, Slot sinkSlot) {
         return !(sourceSlot == null || sinkSlot == null)
             && equals(sourceSlot.getId(), sinkSlot.getId());
     }

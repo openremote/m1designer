@@ -1,0 +1,118 @@
+<link rel="import" href="or-editor-panel.html">
+
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+<dom-module id="or-editor-flowdesigner">
+
+    <style>
+        :host {
+            position: relative;
+        }
+
+        :host, #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #canvas {
+            z-index: 10;
+        }
+
+        #propertiesPanel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            --or-editor-panel-width: 300px;
+            --or-editor-panel-max-height: 50vh;
+        }
+
+        .propertiesContainer {
+            padding: 0.4em;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+        }
+
+        .nodeLabel {
+            font-weight: bold;
+            font-size: larger;
+            margin: 0.4em 0;
+        }
+
+        .form {
+            margin: 0.4em 0;
+        }
+
+        .formItem {
+            display: flex;
+            flex-direction: row;
+        }
+        .formLabel {
+            font-weight: bold;
+            flex: 0 0 4em;
+        }
+        .formValue {
+            flex: 1;
+        }
+
+    </style>
+
+    <template>
+        <div id="canvas"></div>
+        <or-editor-panel id="propertiesPanel"
+                         switchable="right"
+                         title="Properties"
+                         hidden>
+            <div class="propertiesContainer">
+                <div class="nodeLabel">[[_presenter.selectedNode.label]]</div>
+
+                <div class="form">
+
+                    <div class="formItem">
+                        <div class="formLabel">Type:</div>
+                        <div class="formValue">[[_presenter.selectedNode.type]]</div>
+                    </div>
+
+                    <div class="formItem">
+                        <div class="formLabel">Slots:</div>
+                        <div class="formValue">[[_presenter.selectedNode.slots.length]]</div>
+                    </div>
+
+                </div>
+            </div>
+        </or-editor-panel>
+
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyEditor", function () {
+
+            Polymer({
+                is: 'or-editor-flowdesigner',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: new openremote.flowdesigner.FlowDesignerPresenter()
+                    }
+                },
+                attached: function () {
+                },
+                edit: function (flow) {
+                    this.toggleAttribute("hidden", true, this.$.propertiesPanel);
+                    this.$.propertiesPanel.close();
+
+                    this._presenter.edit(this.$.canvas, flow);
+
+                    this._presenter.onSelectionNodeCallback = function () {
+                        this.notifyPath("_presenter.selectedNode", this._presenter.selectedNode);
+                        this.toggleAttribute("hidden", false, this.$.propertiesPanel);
+                        this.$.propertiesPanel.open();
+                    }.bind(this);
+                }
+            });
+        });
+    </script>
+</dom-module>
+

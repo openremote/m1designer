@@ -42,7 +42,7 @@ dependencies {
     serverDependencies "org.apache.camel:camel-groovy:2.15.2"
 
     clientDependencies "com.google.gwt:gwt-user:2.8.0-SNAPSHOT"
-    clientDependencies "com.ahome-it:lienzo-core:2.0.123-RC1"
+    clientDependencies "com.ahome-it:lienzo-core:2.0.124-RC1"
     clientDependencies "org.fusesource.restygwt:restygwt:2.0.2"
 }
 
@@ -58,7 +58,7 @@ gwt {
     maxHeapSize = "1024M"
 
     modules(
-            "org.openremote.beta.Flow",
+            "org.openremote.beta.Editor"
     )
 
     compiler {

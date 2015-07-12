@@ -1,10 +1,13 @@
 package org.openremote.beta.shared.flow;
 
+import com.google.gwt.core.client.js.JsType;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+@JsType
 public class Flow {
 
     public String id;
@@ -31,6 +34,10 @@ public class Flow {
         this.label = label;
         this.nodes = nodes;
         this.wires = wires;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getLabel() {
@@ -61,7 +68,7 @@ public class Flow {
         return wires;
     }
 
-    public void addWire(Slot sourceSlot, Slot sinkSlot) {
+    public void addWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
         addWire(new Wire(sourceSlot.getId(), sinkSlot.getId()));
     }
 
@@ -112,5 +119,13 @@ public class Flow {
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Flow{" +
+            "id='" + id + '\'' +
+            ", label='" + label + '\'' +
+            '}';
     }
 }

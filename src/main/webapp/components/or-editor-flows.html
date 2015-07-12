@@ -1,0 +1,120 @@
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+<!--
+`<or-editor-flows>` is loads available flows and presents them in a selection list.
+
+Use the `--or-editor-flow-item-selected` CSS mixin to style the selected flow item.
+
+Use the `--or-editor-flow-empty` CSS mixin to style the empty list element.
+
+The events `loading` and `complete` are fired, reflecting the current state.
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--or-editor-busy-indicator-color` | Busy indicator spinner color | `#333`
+`--or-editor-flow-item-background-color` | Background color of flow list item | `white`
+`--or-editor-flow-item-label-color` | Label text color of flow list item | `#333`
+
+-->
+<dom-module id="or-editor-flows">
+
+    <style>
+        .list {
+            padding: 0.4em;
+        }
+
+        .flow {
+            margin: 0 0 0.4em 0;
+            padding: 0.4em;
+            border-radius: 0.4em;
+            background-color: var(--or-editor-flow-item-background-color, white);
+            overflow-x: auto;
+            cursor: pointer;
+        }
+
+        .list #empty {
+            /* @formatter:off */
+            @apply(--or-editor-flow-empty)
+            /* @formatter:on */
+        }
+
+        .flow .label {
+            font-size: smaller;
+            color: var(--or-editor-flow-item-label-color, #333);
+        }
+
+        .flow.iron-selected {
+            font-weight: bold;
+            /* @formatter:off */
+            @apply(--or-editor-flow-item-selected)
+            /* @formatter:on */
+        }
+    </style>
+
+    <template>
+        <div class="list">
+            <template is="dom-if" if="{{_isEmptyArray(flows)}}">
+                <div id="empty">No flows found.</div>
+            </template>
+            <iron-selector id="flowList" on-selected-changed="_flowSelected">
+                <template is="dom-repeat" items="[[flows]]">
+                    <div class="flow">
+                        <div>
+                            <span class="label">[[item.label]]</span>
+                        </div>
+                    </div>
+                </template>
+            </iron-selector>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyEditor", function () {
+            Polymer({
+                is: 'or-editor-flows',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: new openremote.editor.FlowsPresenter()
+                    },
+                    /**
+                     * The available flows.
+                     */
+                    flows: {
+                        type: Array,
+                        notify: true
+                    },
+                    /**
+                     * The currently selected flow.
+                     */
+                    selectedFlow: {
+                        type: Object,
+                        notify: true
+                    }
+                },
+                _isEmptyArray: function(a) {
+                    return a !== undefined && a.length == 0;
+                },
+                /**
+                 * Load all flows.
+                 */
+                load: function () {
+                    this.fire("loading");
+                    this._presenter.loadFlows(function () {
+                        this.fire("complete");
+                        this.flows = this._presenter.flows;
+                        this.notifyPath("flows", this.flows);
+                    }.bind(this));
+                },
+                _flowSelected: function (e) {
+                    this.fire("loading");
+                    this._presenter.loadFlow(e.detail.value, function () {
+                        this.fire("complete");
+                        this.selectedFlow = this._presenter.selectedFlow;
+                    }.bind(this));
+                }
+            });
+        });
+    </script>
+</dom-module>
+

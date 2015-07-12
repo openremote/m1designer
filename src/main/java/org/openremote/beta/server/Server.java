@@ -9,6 +9,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static org.openremote.beta.server.Environment.DEV_MODE;
+
 public class Server {
 
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
@@ -29,6 +31,10 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
+
+        if (Boolean.valueOf(Environment.get(DEV_MODE))) {
+            LOG.info("######################## DEV MODE ########################");
+        }
 
         SimpleRegistry registry = new SimpleRegistry();
         CONTEXT.setRegistry(registry);

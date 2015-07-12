@@ -22,8 +22,6 @@ import org.eclipse.jetty.util.resource.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import static org.openremote.beta.server.Environment.*;
@@ -39,7 +37,7 @@ public class WebserverConfiguration extends DefaultConfiguration {
             @Override
             protected void doResponseHeaders(HttpServletResponse response, Resource resource, String mimeType) {
                 super.doResponseHeaders(response, resource, mimeType);
-                if (resource.getName().contains("nocache")) {
+                if (resource.getName().contains("nocache") || Boolean.valueOf(Environment.get(DEV_MODE))) {
                     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate");
                 } else {
                     response.setHeader(HttpHeaders.CACHE_CONTROL, Environment.get(WEBSERVER_DEFAULT_CACHE_CONTROL));

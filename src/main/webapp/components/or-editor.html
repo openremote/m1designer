@@ -1,0 +1,118 @@
+<script src="util.js"></script>
+<script src="../gwt/Editor/Editor.nocache.js"></script>
+
+<link rel="import" href="or-editor-toast.html">
+<link rel="import" href="or-editor-busy-indicator.html">
+
+<link rel="import" href="or-editor-flows.html">
+<link rel="import" href="or-editor-flowdesigner.html">
+
+<script>
+    // One-time initialization, this MUST be a script in an imported file! The
+    // GWT entry point will poll for this function indefinitely and call it when
+    // imports are loaded. Horrible, and not sure this means ALL imports are loaded.
+    // Must still wait for Polymer to initialize itself first. It's not compatible
+    // with RequireJS either.
+    // TODO Is there no better solution?
+    function onGwtReadyEditor() {
+        waitUntil(function () {
+            return window.Polymer;
+        }, 100, 50, function () {
+            document.dispatchEvent(new CustomEvent("gwtReadyEditor"))
+        });
+    }
+
+    document.addEventListener("gwtReadyEditor", function () {
+        Polymer({
+            is: 'or-editor',
+            attached: function () {
+                this.async(function () {
+                    this.$.flows.load();
+                });
+            },
+            flowsLoading: function () {
+                this.$.toast.show("Loading flows...");
+                this.$.busyIndicator.show();
+            },
+            flowsComplete: function () {
+                this.$.toast.hide();
+                this.$.busyIndicator.hide();
+            },
+            flowSelected: function (e) {
+                this.selectedFlow = e.detail.value;
+                this.$.flowDesigner.edit(this.selectedFlow);
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-editor">
+    <style>
+
+        :host {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #busyIndicator {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+        }
+
+        #container {
+            background: #eee;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #sidebar {
+            background: var(--or-editor-sidebar-background-color, #ccc);
+            max-width: 250px;
+            min-width: 250px;
+            overflow-y: auto;
+        }
+
+        #main {
+            flex-grow: 1;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media all and (max-width: 640px) {
+
+            #container {
+                flex-direction: column;
+            }
+
+            #container > #sidebar {
+                min-width: 100%;
+                max-width: 100%;
+                min-height: 50px;
+                max-height: 200px;
+            }
+        }
+
+    </style>
+    <template>
+        <or-editor-toast id="toast"></or-editor-toast>
+        <or-editor-busy-indicator id="busyIndicator"></or-editor-busy-indicator>
+
+        <div id="container">
+            <div id="sidebar">
+                <or-editor-flows id="flows"
+                                 on-loading="flowsLoading"
+                                 on-complete="flowsComplete"
+                                 on-selected-flow-changed="flowSelected"></or-editor-flows>
+            </div>
+            <div id="main">
+                <or-editor-flowdesigner id="flowDesigner"></or-editor-flowdesigner>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+

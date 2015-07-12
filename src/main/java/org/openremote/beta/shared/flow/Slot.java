@@ -1,7 +1,11 @@
 package org.openremote.beta.shared.flow;
 
+import com.google.gwt.core.client.js.JsType;
+
+@JsType
 public class Slot {
 
+    @JsType
     public enum Type {
         SINK,
         SOURCE
