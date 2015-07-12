@@ -12,6 +12,10 @@ Custom property | Description | Default
 <dom-module id="or-editor-busy-indicator">
 
     <style>
+        :host {
+            z-index: 9999;
+        }
+
         #spinner {
             --paper-spinner-layer-1-color: var(--or-editor-busy-indicator-color, #333);
             --paper-spinner-layer-2-color: var(--or-editor-busy-indicator-secondary-color, #333);

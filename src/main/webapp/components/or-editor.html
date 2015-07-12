@@ -41,6 +41,7 @@
             flowSelected: function (e) {
                 this.selectedFlow = e.detail.value;
                 this.$.flowDesigner.edit(this.selectedFlow);
+                this.$.toast.show("Zoom with mouse wheel, drag the canvas to pan around. Click on a node to see properties.", 10000);
             }
         });
     });

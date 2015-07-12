@@ -12,6 +12,9 @@ Custom property | Description | Default
 <dom-module id="or-editor-toast">
 
     <style>
+        :host {
+            z-index: 9999;
+        }
         #toast {
             background-color: var(--or-editor-toast-background-color, #333);
             color: var(--or-editor-toast-color, white);
