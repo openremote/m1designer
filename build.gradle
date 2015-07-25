@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "de.richsource.gradle.plugins:gwt-gradle-plugin:0.6"
+        classpath "de.richsource.gradle.plugins:gwt-gradle-plugin:${gwtGradlePluginVersion}"
     }
 }
 
@@ -13,7 +13,7 @@ apply plugin: "war"
 apply plugin: "gwt-compiler"
 
 sourceCompatibility = 1.8
-version = '1.0'
+version = projectVersion
 
 repositories {
     jcenter();
@@ -32,18 +32,27 @@ configurations {
 }
 
 dependencies {
-    serverDependencies "org.slf4j:jcl-over-slf4j:1.7.10"
-    serverDependencies "org.slf4j:slf4j-jdk14:1.7.10"
+    serverDependencies "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    serverDependencies "org.slf4j:jul-to-slf4j:${slf4jVersion}"
+    serverDependencies "ch.qos.logback:logback-classic:${logbackVersion}"
 
-    serverDependencies "org.apache.camel:camel-core:2.15.2"
-    serverDependencies "org.apache.camel:camel-jetty:2.15.2"
-    serverDependencies "org.apache.camel:camel-jackson:2.15.2"
-    serverDependencies "org.apache.camel:camel-script:2.15.2"
-    serverDependencies "org.apache.camel:camel-groovy:2.15.2"
+    serverDependencies "org.apache.camel:camel-core:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-jetty:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-jackson:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-script:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-groovy:${camelVersion}"
 
-    clientDependencies "com.google.gwt:gwt-user:2.8.0-SNAPSHOT"
-    clientDependencies "com.ahome-it:lienzo-core:2.0.124-RC1"
-    clientDependencies "org.fusesource.restygwt:restygwt:2.0.2"
+    serverDependencies fileTree("${zwaveProjectDirectory}/build/libs")
+
+    clientDependencies "com.google.gwt:gwt-user:${gwtVersion}"
+    clientDependencies "com.ahome-it:lienzo-core:${lienzoVersion}"
+    clientDependencies "org.fusesource.restygwt:restygwt:${restygwtVersion}"
+    gwt("ru.finam:slf4j-gwt:${slf4jGwtVersion}") {
+        exclude group: "com.google.gwt"
+    }
+
+    testCompile "org.testng:testng:${testngVersion}"
+    testCompile "org.apache.camel:camel-testng:${camelVersion}"
 }
 
 task serverRun(type: JavaExec, dependsOn: "classes") {
@@ -52,7 +61,7 @@ task serverRun(type: JavaExec, dependsOn: "classes") {
 }
 
 gwt {
-    gwtVersion = "2.8.0-SNAPSHOT"
+    gwtVersion = project.properties.gwtVersion
 
     sourceLevel = JavaVersion.VERSION_1_8
     maxHeapSize = "1024M"
@@ -60,6 +69,10 @@ gwt {
     modules(
             "org.openremote.beta.Editor"
     )
+
+    test {
+        hasGwtTests = false
+    }
 
     compiler {
         style = "PRETTY"
@@ -74,6 +87,8 @@ gwt {
         bindAddress = "0.0.0.0"
     }
 }
+
+// TODO Why is this not configurable?
 tasks.withType(de.richsource.gradle.plugins.gwt.AbstractGwtActionTask) {
 
     doFirst {
@@ -86,6 +101,17 @@ tasks.withType(de.richsource.gradle.plugins.gwt.AbstractGwtActionTask) {
 
     // I've had various problems with this cache and GWT snapshot updates, so it's a good idea to make it easily cleanable
     jvmArgs("-Dgwt.persistentunitcachedir=$project.buildDir/gwt/cache")
+}
+
+test {
+    dependsOn testClasses
+    useTestNG() {
+        suites "src/test/AllTests.tng.xml"
+    }
+    // TODO https://github.com/steffenschaefer/gwt-gradle-plugin/issues/89
+    classpath = project.sourceSets.test.runtimeClasspath.filter {
+        !it.absolutePath.contains("ru.finam")
+    }
 }
 
 jar {
@@ -107,7 +133,7 @@ task assembleClient(type: Jar) {
     archiveName = "${rootProject.name}-client.jar"
 }
 
-task build(type: Copy, overwrite:true) {
+task build(type: Copy, overwrite: true) {
     dependsOn("check", "assemble", "jar", "assembleClient")
     into libsDir
     from configurations.serverDependencies.files

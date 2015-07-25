@@ -4,13 +4,9 @@ import com.ait.lienzo.client.core.shape.Layer;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.types.Point2D;
 
-import java.util.logging.Logger;
-
-import static org.openremote.beta.client.flowdesigner.Constants.*;
+import static org.openremote.beta.client.flowdesigner.Constants.WIRE_DELETE_DISTANCE;
 
 public abstract class WiringLayer extends Layer {
-
-    private static final Logger LOG = Logger.getLogger(WiringLayer.class.getName());
 
     class WireRemovalConfirmationHandler {
 

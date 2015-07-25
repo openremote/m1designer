@@ -1,57 +1,57 @@
 package org.openremote.beta.server;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
-import org.openremote.beta.server.util.LoggingUtil;
+import org.apache.camel.spi.Registry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ServiceLoader;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import static org.openremote.beta.server.Environment.DEV_MODE;
+import static org.openremote.beta.server.Environment.DEV_MODE_DEFAULT;
 
 public class Server {
 
-    private static final Logger LOG = Logger.getLogger(Server.class.getName());
-
-    public static final DefaultCamelContext CONTEXT;
+    private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
     static {
         try {
-            LoggingUtil.loadDefaultConfiguration();
             Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
                 System.err.println("In thread '" + t + "', uncaught exception: " + e);
                 e.printStackTrace(System.err);
             });
-            CONTEXT = new DefaultCamelContext();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    final protected Environment environment;
 
-        if (Boolean.valueOf(Environment.get(DEV_MODE))) {
-            LOG.info("######################## DEV MODE ########################");
-        }
+    public Server(CamelContext context) throws Exception {
+        this(new Environment(context), context, ServiceLoader.load(Configuration.class));
+    }
 
-        SimpleRegistry registry = new SimpleRegistry();
-        CONTEXT.setRegistry(registry);
-
-        ServiceLoader<Configuration> configurations = ServiceLoader.load(Configuration.class);
+    public Server(Environment environment, CamelContext context, Iterable<Configuration> configurations) throws Exception {
+        this.environment = environment;
         for (Configuration cfg : configurations) {
             LOG.info("Applying configuration: " + cfg.getClass().getName());
-            cfg.apply(registry);
-            cfg.apply(CONTEXT);
+            cfg.apply(environment, context);
         }
+    }
 
-        CONTEXT.start();
-
-        try {
-            new CountDownLatch(1).await(-1, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-            System.exit(0);
+    public static void main(String[] args) throws Exception {
+        CamelContext context = new DefaultCamelContext() {
+            @Override
+            protected Registry createRegistry() {
+                return new SimpleRegistry();
+            }
+        };
+        Server server = new Server(context);
+        if (Boolean.valueOf(server.environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
+            LOG.info("######################## DEV MODE ########################");
         }
+        context.start();
     }
 }

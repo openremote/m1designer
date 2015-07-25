@@ -10,13 +10,9 @@ import org.openremote.beta.client.shared.Function;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-import java.util.logging.Logger;
-
 @JsExport
 @JsType
 public class FlowDesignerPresenter {
-
-    private static final Logger LOG = Logger.getLogger(FlowDesignerPresenter.class.getName());
 
     public FlowEditor flowEditor;
 

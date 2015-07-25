@@ -10,14 +10,11 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 
-import java.util.logging.Logger;
-
 import static org.openremote.beta.client.flowdesigner.Constants.TOOLTIP_AUTO_HIDE_MILLIS;
 import static org.openremote.beta.client.flowdesigner.Constants.TOOLTIP_BACKGROUND_COLOR;
 
 public abstract class FlowEditor extends Layer {
 
-    private static final Logger LOG = Logger.getLogger(FlowEditor.class.getName());
 
     class NodeShapeImpl extends NodeShape {
 
@@ -159,8 +156,6 @@ public abstract class FlowEditor extends Layer {
         SlotShape sinkShape = getSlotShape(wire.getSinkId());
         if (sourceShape != null && sinkShape != null) {
             wiringLayer.add(new WireShapeImpl(sourceShape, sinkShape));
-        } else {
-            LOG.warning("Unknown source/sink slots, skipping: " + wire);
         }
         batch();
     }

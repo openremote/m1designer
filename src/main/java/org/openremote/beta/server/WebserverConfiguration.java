@@ -8,7 +8,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http.HttpHeaderFilterStrategy;
 import org.apache.camel.component.jetty.JettyHttpComponent;
-import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.http.HttpStatus;
@@ -18,56 +17,74 @@ import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.ByteArrayISO8859Writer;
 import org.eclipse.jetty.util.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.logging.Logger;
 
-import static org.openremote.beta.server.Environment.*;
+import static org.openremote.beta.server.Environment.DEV_MODE;
+import static org.openremote.beta.server.Environment.DEV_MODE_DEFAULT;
 
-public class WebserverConfiguration extends DefaultConfiguration {
+public class WebserverConfiguration implements Configuration {
 
-    private static final Logger LOG = Logger.getLogger(WebserverConfiguration.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(WebserverConfiguration.class);
+
+    public static final String WEBSERVER_ADDRESS = "WEBSERVER_ADDRESS";
+    public static final String WEBSERVER_ADDRESS_DEFAULT = "0.0.0.0";
+    public static final String WEBSERVER_PORT = "WEBSERVER_PORT";
+    public static final String WEBSERVER_PORT_DEFAULT = "8080";
+    public static final String WEBSERVER_DOCUMENT_ROOT = "WEBSERVER_DOCUMENT_ROOT";
+    public static final String WEBSERVER_DOCUMENT_ROOT_DEFAULT = "src/main/webapp";
+    public static final String WEBSERVER_DEFAULT_CACHE_CONTROL = "WEBSERVER_DEFAULT_CACHE_CONTROL";
+    public static final String WEBSERVER_DEFAULT_CACHE_CONTROL_DEFAULT = "max-age=300, must-revalidate";
+    public static final String WEBSERVER_ALLOW_ORIGIN = "WEBSERVER_ALLOW_ORIGIN";
+    public static final String WEBSERVER_ALLOW_ORIGIN_DEFAULT = "*";
 
     @Override
-    public void apply(SimpleRegistry registry) throws Exception {
+    public void apply(Environment environment, CamelContext context) throws Exception {
 
         ResourceHandler staticResourcesHandler = new ResourceHandler() {
             @Override
             protected void doResponseHeaders(HttpServletResponse response, Resource resource, String mimeType) {
                 super.doResponseHeaders(response, resource, mimeType);
-                if (resource.getName().contains("nocache") || Boolean.valueOf(Environment.get(DEV_MODE))) {
+                if (resource.getName().contains("nocache")
+                    || Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
                     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate");
                 } else {
-                    response.setHeader(HttpHeaders.CACHE_CONTROL, Environment.get(WEBSERVER_DEFAULT_CACHE_CONTROL));
+                    response.setHeader(
+                        HttpHeaders.CACHE_CONTROL,
+                        environment.getProperty(WEBSERVER_DEFAULT_CACHE_CONTROL, WEBSERVER_DEFAULT_CACHE_CONTROL_DEFAULT)
+                    );
                 }
             }
         };
 
-        Resource documentRoot = Resource.newResource(Environment.get(WEBSERVER_DOCUMENT_ROOT));
+        Resource documentRoot = Resource.newResource(
+            environment.getProperty(WEBSERVER_DOCUMENT_ROOT, WEBSERVER_DOCUMENT_ROOT_DEFAULT)
+        );
         LOG.info("Static document root: " + documentRoot);
         staticResourcesHandler.setBaseResource(documentRoot);
-        registry.put("staticResourcesHandler", staticResourcesHandler);
+        environment.getRegistry().put("staticResourcesHandler", staticResourcesHandler);
 
-        registry.put("customHeaderFilterStrategy", new CustomHeaderFilterStrategy());
-    }
+        environment.getRegistry().put("customHeaderFilterStrategy", new CustomHeaderFilterStrategy());
 
-    @Override
-    public void apply(CamelContext camelContext) throws Exception {
-
-        camelContext.addRoutes(new RouteBuilder() {
+        context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
                 restConfiguration()
 
                     .component("jetty")
 
-                    .host(Environment.get(WEBSERVER_ADDRESS))
-                    .port(Environment.get(WEBSERVER_PORT))
+                    .host(environment.getProperty(WEBSERVER_ADDRESS, WEBSERVER_ADDRESS_DEFAULT))
+                    .port(environment.getProperty(WEBSERVER_PORT, WEBSERVER_PORT_DEFAULT))
 
                     .enableCORS(true)
-                    .corsHeaderProperty("Access-Control-Allow-Origin", Environment.get(WEBSERVER_ALLOW_ORIGIN))
+                    .corsHeaderProperty(
+                        "Access-Control-Allow-Origin",
+                        environment.getProperty(WEBSERVER_ALLOW_ORIGIN, WEBSERVER_ALLOW_ORIGIN_DEFAULT)
+                    )
 
                     .bindingMode(RestBindingMode.json)
 

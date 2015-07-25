@@ -3,16 +3,12 @@ package org.openremote.beta.client.flowdesigner;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 
-import java.util.logging.Logger;
-
 import static java.lang.Math.min;
 import static org.openremote.beta.client.flowdesigner.Constants.*;
 import static org.openremote.beta.shared.util.Util.getDouble;
 import static org.openremote.beta.shared.util.Util.getMap;
 
 public abstract class NodeShape extends Box {
-
-    private static final Logger LOG = Logger.getLogger(NodeShape.class.getName());
 
     final protected Node node;
     final protected Box title;

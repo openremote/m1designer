@@ -2,7 +2,9 @@ package org.openremote.beta.server.flow;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.openremote.beta.server.DefaultConfiguration;
+import org.apache.camel.impl.SimpleRegistry;
+import org.openremote.beta.server.Configuration;
+import org.openremote.beta.server.Environment;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -10,14 +12,11 @@ import org.openremote.beta.shared.flow.Wire;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
-import static org.openremote.beta.shared.util.Util.*;
+import static org.openremote.beta.shared.util.Util.createMap;
 
-public class FlowServiceConfiguration extends DefaultConfiguration {
-
-    private static final Logger LOG = Logger.getLogger(FlowServiceConfiguration.class.getName());
+public class FlowServiceConfiguration implements Configuration{
 
     // TODO: This is test/sample data
     static Flow[] flows = new Flow[20];
@@ -234,8 +233,8 @@ public class FlowServiceConfiguration extends DefaultConfiguration {
     }
 
     @Override
-    public void apply(CamelContext camelContext) throws Exception {
-        camelContext.addRoutes(new FlowServiceRouteBuilder());
+    public void apply(Environment environment, CamelContext context) throws Exception {
+        context.addRoutes(new FlowServiceRouteBuilder());
     }
 
 }

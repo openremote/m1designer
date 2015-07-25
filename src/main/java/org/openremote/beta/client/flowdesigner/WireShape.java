@@ -10,15 +10,11 @@ import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 
-import java.util.logging.Logger;
-
 import static com.ait.lienzo.client.core.Attribute.X;
 import static com.ait.lienzo.client.core.Attribute.Y;
 import static org.openremote.beta.client.flowdesigner.Constants.*;
 
 public abstract class WireShape extends Group {
-
-    private static final Logger LOG = Logger.getLogger(WireShape.class.getName());
 
     public abstract class Handle extends Box {
 

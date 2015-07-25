@@ -10,13 +10,10 @@ import com.ait.lienzo.client.widget.LienzoPanel;
 import com.google.gwt.event.shared.GwtEvent;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.openremote.beta.client.flowdesigner.Constants.*;
 
 public class FlowEditorViewportMediator extends AbstractMediator {
-
-    private static final Logger LOG = Logger.getLogger(FlowEditorViewportMediator.class.getName());
 
     private Point2D lastPosition = new Point2D();
     private boolean dragging = false;

@@ -13,16 +13,20 @@ Development
 
 * Install JDK 1.8
 
+* Checkout `orc3-zwave` project and follow its build instructions
+
+* Edit `gradle.properties` and set `zwaveProjectDirectory` to path of `orc3-zwave` project
+
 * Run GWT super dev mode code-server: `./gradlew gwtSuperDev`
 
 * Run server: `./gradlew serverRun`
 
 * Open [http://localhost:8080/](http://localhost:8080/) in browser
 
-Build archives
+Build tested archives
 ---
 
-    ./gradlew clean build
+    ./gradlew clean check build
 
 All JARs can be found in `build/libs/`.
 

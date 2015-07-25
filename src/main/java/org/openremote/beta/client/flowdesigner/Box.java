@@ -5,14 +5,10 @@ import com.ait.lienzo.client.core.shape.Rectangle;
 import com.ait.lienzo.client.core.shape.Text;
 import com.ait.lienzo.shared.core.types.IColor;
 
-import java.util.logging.Logger;
-
 /**
  * A box with rounded corners and optional centered text label.
  */
 public class Box extends Group {
-
-    private static final Logger LOG = Logger.getLogger(Box.class.getName());
 
     public static class TextLabel extends Text {
 

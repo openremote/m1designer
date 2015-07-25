@@ -1,10 +1,11 @@
 package org.openremote.beta.client.editor;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EditorEntryPoint implements com.google.gwt.core.client.EntryPoint {
 
-    private static final Logger LOG = Logger.getLogger(EditorEntryPoint.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(EditorEntryPoint.class);
 
     @Override
     public void onModuleLoad() {

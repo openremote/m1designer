@@ -6,9 +6,7 @@ import org.openremote.beta.shared.flow.Slot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
-import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.openremote.beta.client.flowdesigner.Constants.PATCH_PADDING;
@@ -16,7 +14,6 @@ import static org.openremote.beta.client.flowdesigner.Constants.SLOT_PADDING;
 import static org.openremote.beta.shared.flow.Slot.Type.SINK;
 
 public abstract class Slots extends Group {
-    private static final Logger LOG = Logger.getLogger(Slots.class.getName());
 
     final protected Node node;
     final protected List<SlotShape> sinkSlots = new ArrayList<>();

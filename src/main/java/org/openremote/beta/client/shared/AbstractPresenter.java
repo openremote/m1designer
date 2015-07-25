@@ -8,14 +8,15 @@ import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.JsonEncoderDecoder;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class AbstractPresenter {
 
-    private static final Logger LOG = Logger.getLogger(AbstractPresenter.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
 
     protected abstract class ResponseCallback<T> implements JsonCallback {
 
@@ -29,7 +30,7 @@ public class AbstractPresenter {
 
         @Override
         public void onFailure(Method method, Throwable exception) {
-            LOG.severe("Request error: " + exception);
+            LOG.error("Request error: " + exception);
         }
     }
 

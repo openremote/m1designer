@@ -8,13 +8,10 @@ import org.openremote.beta.client.shared.Function;
 import org.openremote.beta.shared.flow.Flow;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 @JsExport
 @JsType
 public class FlowsPresenter extends AbstractPresenter {
-
-    private static final Logger LOG = Logger.getLogger(FlowsPresenter.class.getName());
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
