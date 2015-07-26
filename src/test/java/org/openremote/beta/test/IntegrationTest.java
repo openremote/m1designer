@@ -1,5 +1,6 @@
 package org.openremote.beta.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -84,7 +85,7 @@ public class IntegrationTest extends CamelTestSupport {
         StringBuilder path = new StringBuilder();
         if (pathSegments != null) {
             for (String pathSegment : pathSegments) {
-                path.append("/").append(pathSegment);
+                path.append(pathSegment.startsWith("/") ? "" : "/").append(pathSegment);
             }
         }
         try {
@@ -95,11 +96,12 @@ public class IntegrationTest extends CamelTestSupport {
         }
     }
 
-    protected <T> T readResponse(Exchange requestExchange, Class<T> type) throws Exception {
-        InputStream responseStream = requestExchange.getOut().getBody(InputStream.class);
-        if (responseStream == null)
-            return null;
-        return jsonMapper.readValue(responseStream, type);
+    protected <T> T fromJson(String json, Class<T> type) throws Exception {
+        return jsonMapper.readValue(json, type);
+    }
+
+    protected String toJson(Object o) throws Exception {
+        return jsonMapper.writeValueAsString(o);
     }
 
     private String findEphemeralPort() {

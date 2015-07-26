@@ -20,6 +20,7 @@ public class Property {
     protected String label;
     protected String description;
     protected Type type = Type.STRING;
+    protected boolean required;
     protected String defaultValue;
     protected String defaultValueNote;
     protected String value;
@@ -57,6 +58,18 @@ public class Property {
         this.type = type;
     }
 
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public boolean hasValue() {
+        return value != null;
+    }
+
     public String getValue() {
         return value;
     }
@@ -66,7 +79,7 @@ public class Property {
     }
 
     public Number getNumberValue() {
-        return getValue() != null ? Integer.valueOf(getValue()) : null;
+        return hasValue() ? Integer.valueOf(getValue()) : null;
     }
 
     public void setNumberValue(Number value) {
@@ -74,7 +87,7 @@ public class Property {
     }
 
     public Boolean getBooleanValue() {
-        return getValue() != null ? Boolean.valueOf(getValue()) : null;
+        return hasValue() ? Boolean.valueOf(getValue()) : null;
     }
 
     public void setBooleanValue(Boolean value) {
@@ -102,6 +115,7 @@ public class Property {
         return "Property{" +
             "label='" + label + '\'' +
             ", type=" + type +
+            ", required=" + required +
             ", value='" + value + '\'' +
             '}';
     }

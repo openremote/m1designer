@@ -41,6 +41,7 @@ dependencies {
     serverDependencies "org.apache.camel:camel-jackson:${camelVersion}"
     serverDependencies "org.apache.camel:camel-script:${camelVersion}"
     serverDependencies "org.apache.camel:camel-groovy:${camelVersion}"
+    serverDependencies "org.hibernate:hibernate-validator:${hibernateValidatorVersion}"
 
     serverDependencies fileTree("${zwaveProjectDirectory}/build/libs")
 
