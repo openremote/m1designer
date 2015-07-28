@@ -3,9 +3,7 @@ package org.openremote.beta.shared.inventory;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
@@ -45,6 +43,19 @@ public class InventoryObject {
 
     public Identifier[] getKeys() {
         return keys;
+    }
+
+    public Identifier removeKey(Identifier identifier) {
+        List<Identifier> list = new ArrayList<>(Arrays.asList(keys));
+        boolean removed = list.remove(identifier);
+        keys = list.toArray(new Identifier[keys.length]);
+        return removed ? identifier : null;
+    }
+
+    public void addKey(Identifier identifier) {
+        List<Identifier> list = new ArrayList<>(Arrays.asList(keys));
+        list.add(identifier);
+        keys = list.toArray(new Identifier[keys.length]);
     }
 
     public Map<String, Property> getExtra() {

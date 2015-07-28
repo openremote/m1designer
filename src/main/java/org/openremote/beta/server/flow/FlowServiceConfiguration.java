@@ -2,7 +2,6 @@ package org.openremote.beta.server.flow;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.SimpleRegistry;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.shared.flow.Flow;
@@ -11,188 +10,455 @@ import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 
 import java.util.Map;
-import java.util.UUID;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.shared.util.Util.createMap;
 
-public class FlowServiceConfiguration implements Configuration{
+public class FlowServiceConfiguration implements Configuration {
 
-    // TODO: This is test/sample data
-    static Flow[] flows = new Flow[20];
+    static Flow[] flows = new Flow[3];
 
     static {
-        Slot httpRequestSlot = new Slot(UUID.randomUUID().toString(), Slot.Type.SOURCE);
-        Node httpRequest = new Node(
-            UUID.randomUUID().toString(),
-            "HTTP Listener",
-            "GET /foo",
-            httpRequestSlot
-        );
 
-        Map<String, Object> properties = createMap();
-        properties.put("address", "0.0.0.0");
-        properties.put("port", 1234);
-        properties.put("method", "GET");
-        properties.put("path", "/foo");
-        Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("x", 50);
-        editor.put("y", 50);
-        httpRequest.setProperties(properties);
+        String SENSOR_COLOR = "blue";
+        String ACTUATOR_COLOR = "darkblue";
+        String VIRTUAL_COLOR = "darkturquoise";
+        String PROCESSOR_COLOR = "sandybrown";
+        String UI_WIDGET_COLOR = "violet";
 
-        Slot groovyTemplateInSlot = new Slot(UUID.randomUUID().toString(), Slot.Type.SINK);
-        Slot groovyTemplateOutSlot = new Slot(UUID.randomUUID().toString(), Slot.Type.SOURCE, "out");
-        Slot groovyTemplateOutSlot2 = new Slot(UUID.randomUUID().toString(), Slot.Type.SOURCE, "out2");
-        Slot groovyTemplateOutSlot3 = new Slot(UUID.randomUUID().toString(), Slot.Type.SOURCE, "out3");
-        Node groovyTemplate = new Node(
-            UUID.randomUUID().toString(),
-            "Groovy Processor",
-            "Some template",
-            groovyTemplateInSlot, groovyTemplateOutSlot, groovyTemplateOutSlot2, groovyTemplateOutSlot3
-        );
-        properties = createMap();
-        properties.put("script", "return request.getHeader('foo');");
-        editor = createMap(properties, "editor");
-        editor.put("x", 350);
-        editor.put("y", 100);
-        groovyTemplate.setProperties(properties);
+        {
+        /* ###################################################################################### */
 
-        Slot httpResponseSlot = new Slot(UUID.randomUUID().toString(), Slot.Type.SINK);
-        Node httpResponse = new Node(
-            UUID.randomUUID().toString(),
-            "HTTP Responder",
-            "Return message",
-            httpResponseSlot
-        );
-        properties = createMap();
-        editor = createMap(properties, "editor");
-        editor.put("x", 700);
-        editor.put("y", 200);
-        httpResponse.setProperties(properties);
+            Slot temperatureSensorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node temperatureSensor = new Node(
+                generateGlobalUniqueId(),
+                "ZWave Sensor",
+                "Livingroom Temperature",
+                temperatureSensorSource
+            );
+            Map<String, Object> properties = createMap();
+            Map<String, Object> editor = createMap(properties, "editor");
+            editor.put("x", 50);
+            editor.put("y", 50);
+            editor.put("color", SENSOR_COLOR);
+            temperatureSensor.setProperties(properties);
 
-        Node[] nodes = new Node[3]; // TODO Make this larger than three to generate more performance testing items
-        nodes[0] = httpRequest;
-        nodes[1] = groovyTemplate;
-        nodes[2] = httpResponse;
-        for (int i = 3; i < nodes.length; i++) {
-            nodes[i] = new Node(
-                UUID.randomUUID().toString(),
-                "Foo " + i,
-                "Bar " + i,
-                groovyTemplateInSlot, groovyTemplateOutSlot, groovyTemplateOutSlot2, groovyTemplateOutSlot3
+            Slot setpointSensorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node setpointSensor = new Node(
+                generateGlobalUniqueId(),
+                "ZWave Sensor",
+                "Livingroom Setpoint",
+                setpointSensorSource
             );
             properties = createMap();
             editor = createMap(properties, "editor");
-            editor.put("x", 700 + (i * 10));
-            editor.put("y", 200 + (i * 10));
-            nodes[i].setProperties(properties);
+            editor.put("x", 50);
+            editor.put("y", 150);
+            editor.put("color", SENSOR_COLOR);
+            setpointSensor.setProperties(properties);
+
+            Slot temperatureControlCurrentSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Current");
+            Slot temperatureControlSetpointSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Setpoint");
+            Slot temperatureControlSetpointSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Setpoint");
+            Node temperatureControl = new Node(
+                generateGlobalUniqueId(),
+                "Flow",
+                "Thermostat Control",
+                temperatureControlCurrentSink,
+                temperatureControlSetpointSink,
+                temperatureControlSetpointSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 400);
+            editor.put("y", 100);
+            temperatureControl.setProperties(properties);
+
+            Slot setpointActuatorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node setpointActuator = new Node(
+                generateGlobalUniqueId(),
+                "ZWave Actuator",
+                "Livingroom Setpoint",
+                setpointActuatorSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", ACTUATOR_COLOR);
+            editor.put("x", 800);
+            editor.put("y", 150);
+            setpointActuator.setProperties(properties);
+
+
+            Node[] nodes = new Node[4];
+            nodes[0] = temperatureSensor;
+            nodes[1] = setpointSensor;
+            nodes[2] = temperatureControl;
+            nodes[3] = setpointActuator;
+
+            flows[0] = new Flow(
+                generateGlobalUniqueId(),
+                "Livingroom Environment",
+                nodes,
+                new Wire[]{
+                    new Wire(temperatureSensorSource.getId(), temperatureControlCurrentSink.getId()),
+                    new Wire(setpointSensorSource.getId(), temperatureControlSetpointSink.getId()),
+                    new Wire(temperatureControlSetpointSource.getId(), setpointActuatorSink.getId())
+                }
+            );
+
+        /* ###################################################################################### */
         }
 
-        flows[0] = new Flow(
-            UUID.randomUUID().toString(),
-            "Some HTTP request/response flow",
-            nodes,
-            new Wire[]{
-                new Wire(httpRequestSlot.getId(), groovyTemplateInSlot.getId()),
-                new Wire(groovyTemplateOutSlot.getId(), httpResponseSlot.getId())
-            }
-        );
+        {
+        /* ###################################################################################### */
 
-        nodes = new Node[2];
-        nodes[0] = new Node(UUID.randomUUID().toString(), "ZWaveSensor", "Office Temperature", new Slot(UUID.randomUUID().toString(), Slot.Type.SOURCE));
-        properties = createMap();
-        editor = createMap(properties, "editor");
-        editor.put("x", 100);
-        editor.put("y", 100);
-        nodes[0].setProperties(properties);
-        nodes[1] = new Node(UUID.randomUUID().toString(), "MySQL", "Temperature Timeseries Storage", new Slot(UUID.randomUUID().toString(), Slot.Type.SINK));
-        properties = createMap();
-        editor = createMap(properties, "editor");
-        editor.put("x", 500);
-        editor.put("y", 200);
-        nodes[1].setProperties(properties);
-        flows[1] = new Flow(
-            UUID.randomUUID().toString(),
-            "My Office Temperature Flow",
-            nodes,
-            new Wire[]{
-                new Wire(nodes[0].getSlots()[0].getId(), nodes[1].getSlots()[0].getId()),
-            }
-        );
+            Slot fahrenheitConsumerSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node fahrenheitConsumer = new Node(
+                generateGlobalUniqueId(),
+                "Consumer",
+                "Fahrenheit",
+                fahrenheitConsumerSource
+            );
+            Map<String, Object> properties = createMap();
+            Map<String, Object> editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 10);
+            editor.put("y", 50);
+            fahrenheitConsumer.setProperties(properties);
 
-        flows[2] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data with a veryveryveryveryveryveryveryveryveryveryveryveryvery long label 1"
-        );
-        flows[3] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 2"
-        );
-        flows[4] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 3"
-        );
-        flows[5] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 4"
-        );
-        flows[6] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 5"
-        );
-        flows[7] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 6"
-        );
-        flows[8] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 7"
-        );
-        flows[9] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 8"
-        );
-        flows[10] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 9"
-        );
-        flows[11] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 10"
-        );
-        flows[12] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 11"
-        );
-        flows[13] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 12"
-        );
-        flows[14] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 13"
-        );
-        flows[15] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 14"
-        );
-        flows[16] = new Flow(
-            UUID.randomUUID().toString(),
-            "Random test data 15"
-        );
-        flows[17] = new Flow(
-            UUID.randomUUID().toString(),
-            "16"
-        );
-        flows[18] = new Flow(
-            UUID.randomUUID().toString(),
-            "17"
-        );
-        flows[19] = new Flow(
-            UUID.randomUUID().toString(),
-            "18"
-        );
+            Slot fahrenheitProcessorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Slot fahrenheitProcessorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node fahrenheitProcessor = new Node(
+                generateGlobalUniqueId(),
+                "Function",
+                "Fahrenheit to Celcius",
+                fahrenheitProcessorSink, fahrenheitProcessorSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 400);
+            editor.put("y", 80);
+            fahrenheitProcessor.setProperties(properties);
 
+            Slot temperatureDatabaseSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node temperatureDatabase = new Node(
+                generateGlobalUniqueId(),
+                "Timeseries Storage",
+                "Temperature Database",
+                temperatureDatabaseSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 350);
+            editor.put("y", 200);
+            temperatureDatabase.setProperties(properties);
+
+            Slot rawVirtualActuatorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node rawVirtualActuator = new Node(
+                generateGlobalUniqueId(),
+                "Producer",
+                "Celcius",
+                rawVirtualActuatorSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 750);
+            editor.put("y", 50);
+            rawVirtualActuator.setProperties(properties);
+
+            Slot changeProcessorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Slot changeProcessorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node changeProcessor = new Node(
+                generateGlobalUniqueId(),
+                "Change",
+                "Append Celcius Symbol",
+                changeProcessorSink, changeProcessorSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 650);
+            editor.put("y", 200);
+            changeProcessor.setProperties(properties);
+
+            Slot stringActuatorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node stringActuator = new Node(
+                generateGlobalUniqueId(),
+                "Producer",
+                "Label",
+                stringActuatorSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 1000);
+            editor.put("y", 250);
+            stringActuator.setProperties(properties);
+
+            Node[] nodes = new Node[6];
+            nodes[0] = fahrenheitConsumer;
+            nodes[1] = fahrenheitProcessor;
+            nodes[2] = temperatureDatabase;
+            nodes[3] = rawVirtualActuator;
+            nodes[4] = changeProcessor;
+            nodes[5] = stringActuator;
+
+            flows[1] = new Flow(
+                generateGlobalUniqueId(),
+                "Temperature Processor",
+                nodes,
+                new Wire[]{
+                    new Wire(fahrenheitConsumerSource.getId(), fahrenheitProcessorSink.getId()),
+                    new Wire(fahrenheitConsumerSource.getId(), temperatureDatabaseSink.getId()),
+                    new Wire(fahrenheitProcessorSource.getId(), rawVirtualActuatorSink.getId()),
+                    new Wire(fahrenheitProcessorSource.getId(), changeProcessorSink.getId()),
+                    new Wire(changeProcessorSource.getId(), stringActuatorSink.getId())
+                }
+            );
+
+        /* ###################################################################################### */
+        }
+        {
+        /* ###################################################################################### */
+
+            Slot temperatureConsumerSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node temperatureConsumer = new Node(
+                generateGlobalUniqueId(),
+                "Consumer",
+                "Current",
+                temperatureConsumerSource
+            );
+            Map<String, Object> properties = createMap();
+            Map<String, Object> editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 20);
+            editor.put("y", 20);
+            temperatureConsumer.setProperties(properties);
+
+            Slot setpointConsumerSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node setpointConsumer = new Node(
+                generateGlobalUniqueId(),
+                "Consumer",
+                "Setpoint",
+                setpointConsumerSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 20);
+            editor.put("y", 200);
+            setpointConsumer.setProperties(properties);
+
+            Slot temperatureProcessorFahrenheitInput = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Fahrenheit");
+            Slot temperatureProcessorCelciusOutput = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Celcius");
+            Slot temperatureProcessorLabelOutput = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Label");
+            Node temperatureProcessor = new Node(
+                generateGlobalUniqueId(),
+                "Flow",
+                "Temperature Processor",
+                temperatureProcessorFahrenheitInput,
+                temperatureProcessorCelciusOutput,
+                temperatureProcessorLabelOutput
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 300);
+            editor.put("y", 20);
+            temperatureProcessor.setProperties(properties);
+
+            Slot setpointProcessorFahrenheitInput = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Fahrenheit");
+            Slot setpointProcessorCelciusOutput = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Celcius");
+            Slot setpointProcessorLabelOutput = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Label");
+            Node setpointProcessor = new Node(
+                generateGlobalUniqueId(),
+                "Flow",
+                "Temperature Processor",
+                setpointProcessorFahrenheitInput,
+                setpointProcessorCelciusOutput,
+                setpointProcessorLabelOutput
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 300);
+            editor.put("y", 150);
+            setpointProcessor.setProperties(properties);
+
+            Slot temperatureLabelSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node temperatureLabel = new Node(
+                generateGlobalUniqueId(),
+                "TextLabel",
+                "Temperature Label",
+                temperatureLabelSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", UI_WIDGET_COLOR);
+            editor.put("x", 750);
+            editor.put("y", 50);
+            temperatureLabel.setProperties(properties);
+
+            Slot temperatureSetpointLabelSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node temperatureSetpointLabel = new Node(
+                generateGlobalUniqueId(),
+                "TextLabel",
+                "Temperature Setpoint Label",
+                temperatureSetpointLabelSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", UI_WIDGET_COLOR);
+            editor.put("x", 750);
+            editor.put("y", 150);
+            temperatureSetpointLabel.setProperties(properties);
+
+            Slot temperaturePlusSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node temperaturePlusButton = new Node(
+                generateGlobalUniqueId(),
+                "PushButton",
+                "Increase Temperature Button",
+                temperaturePlusSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", UI_WIDGET_COLOR);
+            editor.put("x", 50);
+            editor.put("y", 400);
+            temperaturePlusButton.setProperties(properties);
+
+            Slot temperatureMinusSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node temperatureMinusButton = new Node(
+                generateGlobalUniqueId(),
+                "PushButton",
+                "Decrease Temperature Button",
+                temperatureMinusSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", UI_WIDGET_COLOR);
+            editor.put("x", 50);
+            editor.put("y", 500);
+            temperatureMinusButton.setProperties(properties);
+
+            Slot setpointPlusFilterValueSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Value");
+            Slot setpointPlusTriggerSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Trigger");
+            Slot setpointPlusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Value");
+            Node setpointPlusFilter = new Node(
+                generateGlobalUniqueId(),
+                "Filter",
+                "Forward on trigger",
+                setpointPlusFilterValueSink, setpointPlusTriggerSink, setpointPlusFilterSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 450);
+            editor.put("y", 300);
+            setpointPlusFilter.setProperties(properties);
+
+            Slot setpointMinusFilterValueSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Value");
+            Slot setpointMinusFilterTriggerSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Trigger");
+            Slot setpointMinusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Value");
+            Node setpointMinusFilter = new Node(
+                generateGlobalUniqueId(),
+                "Filter",
+                "Forward on trigger",
+                setpointMinusFilterValueSink, setpointMinusFilterTriggerSink, setpointMinusFilterSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 450);
+            editor.put("y", 450);
+            setpointMinusFilter.setProperties(properties);
+
+            Slot incrementFunctionSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Slot incrementFunctionSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node incrementFunction = new Node(
+                generateGlobalUniqueId(),
+                "Function",
+                "Increment by 1",
+                incrementFunctionSink, incrementFunctionSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 750);
+            editor.put("y", 300);
+            incrementFunction.setProperties(properties);
+
+            Slot decrementFunctionSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Slot decrementFunctionSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
+            Node decrementFunction = new Node(
+                generateGlobalUniqueId(),
+                "Function",
+                "Decrement by 1",
+                decrementFunctionSink, decrementFunctionSource
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", PROCESSOR_COLOR);
+            editor.put("x", 750);
+            editor.put("y", 450);
+            decrementFunction.setProperties(properties);
+
+            Slot setpointProducerSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
+            Node setpointProducer = new Node(
+                generateGlobalUniqueId(),
+                "Producer",
+                "Setpoint",
+                setpointProducerSink
+            );
+            properties = createMap();
+            editor = createMap(properties, "editor");
+            editor.put("color", VIRTUAL_COLOR);
+            editor.put("x", 1050);
+            editor.put("y", 375);
+            setpointProducer.setProperties(properties);
+
+            Node[] nodes = new Node[13];
+            nodes[0] = temperatureLabel;
+            nodes[1] = temperatureSetpointLabel;
+            nodes[2] = temperaturePlusButton;
+            nodes[3] = temperatureMinusButton;
+            nodes[4] = setpointPlusFilter;
+            nodes[5] = setpointMinusFilter;
+            nodes[6] = temperatureConsumer;
+            nodes[7] = setpointConsumer;
+            nodes[8] = incrementFunction;
+            nodes[9] = decrementFunction;
+            nodes[10] = setpointProducer;
+            nodes[11] = temperatureProcessor;
+            nodes[12] = setpointProcessor;
+
+            flows[2] = new Flow(
+                generateGlobalUniqueId(),
+                "Thermostat Control",
+                nodes,
+                new Wire[]{
+                    new Wire(temperatureConsumerSource.getId(), temperatureProcessorFahrenheitInput.getId()),
+                    new Wire(temperatureProcessorLabelOutput.getId(), temperatureLabelSink.getId()),
+                    new Wire(setpointConsumerSource.getId(), setpointProcessorFahrenheitInput.getId()),
+                    new Wire(setpointProcessorLabelOutput.getId(), temperatureSetpointLabelSink.getId()),
+                    new Wire(setpointConsumerSource.getId(), setpointPlusFilterValueSink.getId()),
+                    new Wire(setpointConsumerSource.getId(), setpointMinusFilterValueSink.getId()),
+                    new Wire(temperaturePlusSource.getId(), setpointPlusTriggerSink.getId()),
+                    new Wire(temperatureMinusSource.getId(), setpointMinusFilterTriggerSink.getId()),
+                    new Wire(setpointPlusFilterSource.getId(), incrementFunctionSink.getId()),
+                    new Wire(setpointMinusFilterSource.getId(), decrementFunctionSink.getId()),
+                    new Wire(incrementFunctionSource.getId(), setpointProducerSink.getId()),
+                    new Wire(decrementFunctionSource.getId(), setpointProducerSink.getId())
+                }
+            );
+
+        /* ###################################################################################### */
+        }
     }
 
     class FlowServiceRouteBuilder extends RouteBuilder {

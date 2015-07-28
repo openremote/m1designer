@@ -1,12 +1,15 @@
 package org.openremote.beta.server.inventory.discovery;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.Builder;
 import org.apache.camel.builder.RouteBuilder;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
+import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.inventory.Adapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +21,13 @@ public class DiscoveryServiceConfiguration implements Configuration {
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryServiceConfiguration.class);
 
     class DiscoveryServiceRouteBuilder extends RouteBuilder {
+
         @Override
         public void configure() throws Exception {
+
+            onException(JsonProcessingException.class)
+                .process(new JsonUtil.JsonProcessingExceptionHandler())
+                .handled(true);
 
             rest("/discovery/adapter")
                 .get()
@@ -64,15 +72,9 @@ public class DiscoveryServiceConfiguration implements Configuration {
                 .endRest()
 
                 .post("/adapter")
-                .type(Adapter.class)
                 .consumes("application/json")
+                .type(Adapter.class)
                 .route().id("POST adapter into discovery inbox")
-                .onException(JsonProcessingException.class)
-                .to("log:org.openremote.beta.json?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false")
-                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400))
-                .setBody(constant(null))
-                .handled(true)
-                .end()
                 .process(exchange -> {
                     Adapter adapter = exchange.getIn().getBody(Adapter.class);
                     if (adapter == null) {
