@@ -53,7 +53,10 @@ dependencies {
     }
 
     testCompile "org.testng:testng:${testngVersion}"
-    testCompile "org.apache.camel:camel-testng:${camelVersion}"
+    testCompile ("org.apache.camel:camel-testng:${camelVersion}") {
+        exclude group:"org.apache.camel", module: "camel-spring"
+        exclude group:"org.apache.camel", module: "camel-test-spring"
+    }
 }
 
 task serverRun(type: JavaExec, dependsOn: "classes") {

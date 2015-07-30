@@ -49,7 +49,7 @@ public class AdapterDiscoveryService implements StaticService {
         return adapters;
     }
 
-    public Adapter getAdapter(String id) {
+    public Adapter getAdapter(@Header("id") String id) {
         for (Adapter adapter : getAdapters()) {
             if (adapter.getIdentifier().getId().equals(id))
                 return adapter;

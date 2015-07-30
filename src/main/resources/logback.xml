@@ -12,6 +12,7 @@
 
     <logger name="org.openremote.beta" level="INFO"/>
     <logger name="org.openremote.beta.server" level="INFO"/>
+    <logger name="org.openremote.beta.server.route" level="DEBUG"/>
     <logger name="org.openremote.beta.json" level="WARN"/>
     <logger name="org.openremote.beta.test" level="DEBUG"/>
 
@@ -22,6 +23,7 @@
     <logger name="org.apache.camel.component.jetty" level="WARN"/>
     <logger name="org.apache.camel.component.jackson" level="WARN"/>
     <logger name="org.apache.camel.component.http" level="DEBUG"/>
+    <logger name="org.apache.camel.component.mock" level="TRACE"/>
     <logger name="org.apache.camel.testng" level="WARN"/>
 
     <logger name="org.eclipse.jetty.server" level="WARN"/>

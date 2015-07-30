@@ -1,9 +1,10 @@
 package org.openremote.beta.server.flow;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
+import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
+import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -110,119 +111,7 @@ public class FlowServiceConfiguration implements Configuration {
 
         /* ###################################################################################### */
         }
-
-        {
-        /* ###################################################################################### */
-
-            Slot fahrenheitConsumerSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-            Node fahrenheitConsumer = new Node(
-                generateGlobalUniqueId(),
-                "Consumer",
-                "Fahrenheit",
-                fahrenheitConsumerSource
-            );
-            Map<String, Object> properties = createMap();
-            Map<String, Object> editor = createMap(properties, "editor");
-            editor.put("color", VIRTUAL_COLOR);
-            editor.put("x", 10);
-            editor.put("y", 50);
-            fahrenheitConsumer.setProperties(properties);
-
-            Slot fahrenheitProcessorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-            Slot fahrenheitProcessorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-            Node fahrenheitProcessor = new Node(
-                generateGlobalUniqueId(),
-                "Function",
-                "Fahrenheit to Celcius",
-                fahrenheitProcessorSink, fahrenheitProcessorSource
-            );
-            properties = createMap();
-            editor = createMap(properties, "editor");
-            editor.put("color", PROCESSOR_COLOR);
-            editor.put("x", 400);
-            editor.put("y", 80);
-            fahrenheitProcessor.setProperties(properties);
-
-            Slot temperatureDatabaseSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-            Node temperatureDatabase = new Node(
-                generateGlobalUniqueId(),
-                "Timeseries Storage",
-                "Temperature Database",
-                temperatureDatabaseSink
-            );
-            properties = createMap();
-            editor = createMap(properties, "editor");
-            editor.put("color", PROCESSOR_COLOR);
-            editor.put("x", 350);
-            editor.put("y", 200);
-            temperatureDatabase.setProperties(properties);
-
-            Slot rawVirtualActuatorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-            Node rawVirtualActuator = new Node(
-                generateGlobalUniqueId(),
-                "Producer",
-                "Celcius",
-                rawVirtualActuatorSink
-            );
-            properties = createMap();
-            editor = createMap(properties, "editor");
-            editor.put("color", VIRTUAL_COLOR);
-            editor.put("x", 750);
-            editor.put("y", 50);
-            rawVirtualActuator.setProperties(properties);
-
-            Slot changeProcessorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-            Slot changeProcessorSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-            Node changeProcessor = new Node(
-                generateGlobalUniqueId(),
-                "Change",
-                "Append Celcius Symbol",
-                changeProcessorSink, changeProcessorSource
-            );
-            properties = createMap();
-            editor = createMap(properties, "editor");
-            editor.put("color", PROCESSOR_COLOR);
-            editor.put("x", 650);
-            editor.put("y", 200);
-            changeProcessor.setProperties(properties);
-
-            Slot stringActuatorSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-            Node stringActuator = new Node(
-                generateGlobalUniqueId(),
-                "Producer",
-                "Label",
-                stringActuatorSink
-            );
-            properties = createMap();
-            editor = createMap(properties, "editor");
-            editor.put("color", VIRTUAL_COLOR);
-            editor.put("x", 1000);
-            editor.put("y", 250);
-            stringActuator.setProperties(properties);
-
-            Node[] nodes = new Node[6];
-            nodes[0] = fahrenheitConsumer;
-            nodes[1] = fahrenheitProcessor;
-            nodes[2] = temperatureDatabase;
-            nodes[3] = rawVirtualActuator;
-            nodes[4] = changeProcessor;
-            nodes[5] = stringActuator;
-
-            flows[1] = new Flow(
-                generateGlobalUniqueId(),
-                "Temperature Processor",
-                nodes,
-                new Wire[]{
-                    new Wire(fahrenheitConsumerSource.getId(), fahrenheitProcessorSink.getId()),
-                    new Wire(fahrenheitConsumerSource.getId(), temperatureDatabaseSink.getId()),
-                    new Wire(fahrenheitProcessorSource.getId(), rawVirtualActuatorSink.getId()),
-                    new Wire(fahrenheitProcessorSource.getId(), changeProcessorSink.getId()),
-                    new Wire(changeProcessorSource.getId(), stringActuatorSink.getId())
-                }
-            );
-
-        /* ###################################################################################### */
-        }
+        flows[1] = SampleTemperatureProcessor.FLOW;
         {
         /* ###################################################################################### */
 
@@ -346,14 +235,14 @@ public class FlowServiceConfiguration implements Configuration {
             editor.put("y", 500);
             temperatureMinusButton.setProperties(properties);
 
-            Slot setpointPlusFilterValueSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Value");
+            Slot setpointPlusFilterSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
             Slot setpointPlusTriggerSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Trigger");
-            Slot setpointPlusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Value");
+            Slot setpointPlusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
             Node setpointPlusFilter = new Node(
                 generateGlobalUniqueId(),
                 "Filter",
                 "Forward on trigger",
-                setpointPlusFilterValueSink, setpointPlusTriggerSink, setpointPlusFilterSource
+                setpointPlusFilterSink, setpointPlusTriggerSink, setpointPlusFilterSource
             );
             properties = createMap();
             editor = createMap(properties, "editor");
@@ -362,14 +251,14 @@ public class FlowServiceConfiguration implements Configuration {
             editor.put("y", 300);
             setpointPlusFilter.setProperties(properties);
 
-            Slot setpointMinusFilterValueSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Value");
+            Slot setpointMinusFilterSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
             Slot setpointMinusFilterTriggerSink = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, "Trigger");
-            Slot setpointMinusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE, "Value");
+            Slot setpointMinusFilterSource = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
             Node setpointMinusFilter = new Node(
                 generateGlobalUniqueId(),
                 "Filter",
                 "Forward on trigger",
-                setpointMinusFilterValueSink, setpointMinusFilterTriggerSink, setpointMinusFilterSource
+                setpointMinusFilterSink, setpointMinusFilterTriggerSink, setpointMinusFilterSource
             );
             properties = createMap();
             editor = createMap(properties, "editor");
@@ -446,8 +335,8 @@ public class FlowServiceConfiguration implements Configuration {
                     new Wire(temperatureProcessorLabelOutput.getId(), temperatureLabelSink.getId()),
                     new Wire(setpointConsumerSource.getId(), setpointProcessorFahrenheitInput.getId()),
                     new Wire(setpointProcessorLabelOutput.getId(), temperatureSetpointLabelSink.getId()),
-                    new Wire(setpointConsumerSource.getId(), setpointPlusFilterValueSink.getId()),
-                    new Wire(setpointConsumerSource.getId(), setpointMinusFilterValueSink.getId()),
+                    new Wire(setpointConsumerSource.getId(), setpointPlusFilterSink.getId()),
+                    new Wire(setpointConsumerSource.getId(), setpointMinusFilterSink.getId()),
                     new Wire(temperaturePlusSource.getId(), setpointPlusTriggerSink.getId()),
                     new Wire(temperatureMinusSource.getId(), setpointMinusFilterTriggerSink.getId()),
                     new Wire(setpointPlusFilterSource.getId(), incrementFunctionSink.getId()),
@@ -461,7 +350,7 @@ public class FlowServiceConfiguration implements Configuration {
         }
     }
 
-    class FlowServiceRouteBuilder extends RouteBuilder {
+    class FlowServiceRouteBuilder extends RestRouteBuilder {
         @Override
         public void configure() throws Exception {
 

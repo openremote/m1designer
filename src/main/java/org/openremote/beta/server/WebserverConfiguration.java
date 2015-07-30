@@ -1,10 +1,13 @@
 package org.openremote.beta.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http.HttpHeaderFilterStrategy;
 import org.apache.camel.component.jetty.JettyHttpComponent;
@@ -24,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.openremote.beta.server.Environment.DEV_MODE;
 import static org.openremote.beta.server.Environment.DEV_MODE_DEFAULT;
 
@@ -91,14 +95,30 @@ public class WebserverConfiguration implements Configuration {
                     .endpointProperty("headerFilterStrategy", "customHeaderFilterStrategy")
                     .endpointProperty("handlers", "staticResourcesHandler");
 
-
                 JettyHttpComponent jettyComponent = (JettyHttpComponent) getContext().getComponent("jetty");
                 jettyComponent.setErrorHandler(new CustomErrorHandler());
+                // TODO https://issues.apache.org/jira/browse/CAMEL-9034
 
+                from("direct:restStatusNotFound")
+                    .id("REST Not Found Error Handler")
+                    .choice().when(body().isNull()).setHeader(HTTP_RESPONSE_CODE, constant(404));
             }
         });
     }
 
+    public static abstract class RestRouteBuilder extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+
+            onException(JsonProcessingException.class)
+                .process(new JsonProcessingExceptionHandler())
+                .handled(true);
+        }
+    }
+
+    /**
+     * This handles errors from the Jetty static resource handler, e.g. 404 if a static resource doesn't exist.
+     */
     public static class CustomErrorHandler extends ErrorHandler {
         // Override Jetty's awful error page with sourceHandle JSON entity
         @Override
@@ -123,6 +143,22 @@ public class WebserverConfiguration implements Configuration {
             writer.destroy();
         }
     }
+
+    /**
+     * This handles JSON unmarshalling errors when we receive JSON and can't convert it to POJO.
+     */
+    public static class JsonProcessingExceptionHandler implements Processor {
+        @Override
+        public void process(Exchange exchange) throws Exception {
+            Throwable cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+            exchange.getOut().setBody(cause.getMessage());
+            exchange.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+            exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+            exchange.getContext().createProducerTemplate()
+                .send("log:org.openremote.beta.json?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+        }
+    }
+
 
     public static class CustomHeaderFilterStrategy extends HttpHeaderFilterStrategy {
         @Override

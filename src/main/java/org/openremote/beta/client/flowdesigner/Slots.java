@@ -34,6 +34,10 @@ public abstract class Slots extends Group {
         sourceSlots.clear();
 
         for (Slot slot : slots) {
+
+            if (!slot.isVisible())
+                continue;
+
             SlotShape slotShape = new SlotShape(slot);
             if (slot.getType() == SINK) {
                 sinkSlots.add(slotShape);

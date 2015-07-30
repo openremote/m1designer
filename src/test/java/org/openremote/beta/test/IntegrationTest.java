@@ -8,6 +8,7 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
 import org.openremote.beta.server.*;
+import org.openremote.beta.server.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public class IntegrationTest extends CamelTestSupport {
     }
 
     protected ObjectMapper createJsonMapper() {
-        return new ObjectMapper();
+        return JsonUtil.JSON;
     }
 
     protected Environment environment() {

@@ -2,6 +2,9 @@ package org.openremote.beta.shared.flow;
 
 import com.google.gwt.core.client.js.JsType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @JsType
 public class Node {
 
@@ -68,12 +71,37 @@ public class Node {
         this.properties = properties;
     }
 
+    public boolean hasProperties() {
+        return getProperties() != null;
+    }
+
+    public Slot findSlot(String slotId) {
+        return findSlotByType(slotId, null);
+    }
+
+    public Slot findSlotByType(String slotId, Slot.Type type) {
+        for (Slot slot : getSlots()) {
+            if (slot.getId().equals(slotId) && (type == null || slot.getType() == type))
+                return slot;
+        }
+        return null;
+    }
+
+    public Slot[] findSlots(Slot.Type type) {
+        List<Slot> list = new ArrayList<>();
+        for (Slot slot : getSlots()) {
+            if (slot.getType().equals(type))
+                list.add(slot);
+        }
+        return list.toArray(new Slot[list.size()]);
+    }
+
     @Override
     public String toString() {
         return "Node{" +
-            "id='" + id + '\'' +
+            "'" + label + '\'' +
+            ", id='" + id + '\'' +
             ", type='" + type + '\'' +
-            ", label='" + label + '\'' +
             ", slots=" + slots.length +
             '}';
     }

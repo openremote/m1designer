@@ -2,10 +2,7 @@ package org.openremote.beta.shared.flow;
 
 import com.google.gwt.core.client.js.JsType;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 @JsType
 public class Flow {
@@ -93,10 +90,9 @@ public class Flow {
 
     public Slot findSlot(String slotId) {
         for (Node node : getNodes()) {
-            for (Slot slot : node.getSlots()) {
-                if (slot.getId().equals(slotId))
-                    return slot;
-            }
+            Slot slot = node.findSlot(slotId);
+            if (slot != null)
+                return slot;
         }
         return null;
     }
@@ -109,6 +105,23 @@ public class Flow {
                 return true;
         }
         return false;
+    }
+
+    public Wire[] findWiresForSource(String slotId) {
+        List<Wire> list = new ArrayList<>();
+        for (Wire wire : getWires()) {
+            if (wire.getSourceId().equals(slotId))
+                list.add(wire);
+        }
+        return list.toArray(new Wire[list.size()]);
+    }
+
+    public Node findNode(String nodeId) {
+        for (Node node : getNodes()) {
+            if (node.getId().equals(nodeId))
+                return node;
+        }
+        return null;
     }
 
     public Node findOwnerNode(String slotId) {
@@ -124,8 +137,8 @@ public class Flow {
     @Override
     public String toString() {
         return "Flow{" +
-            "id='" + id + '\'' +
-            ", label='" + label + '\'' +
+            "'" + label + '\'' +
+            ", id='" + id + '\'' +
             '}';
     }
 }

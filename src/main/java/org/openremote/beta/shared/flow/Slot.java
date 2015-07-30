@@ -14,6 +14,7 @@ public class Slot {
     public String id;
     public Type type;
     public String label;
+    public boolean visible = true;
 
     public Slot() {
     }
@@ -27,6 +28,12 @@ public class Slot {
         this.id = id;
         this.type = type;
         this.label = label;
+    }
+
+    public Slot(String id, Type type, boolean visible) {
+        this.id = id;
+        this.type = type;
+        this.visible = visible;
     }
 
     public String getId() {
@@ -45,12 +52,20 @@ public class Slot {
         this.label = label;
     }
 
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
     @Override
     public String toString() {
         return "Slot{" +
-            "id='" + id + '\'' +
+            "'" + label + '\'' +
+            ", id='" + id + '\'' +
             ", type=" + type +
-            ", label='" + label + '\'' +
             '}';
     }
 }
