@@ -8,7 +8,6 @@ import org.openremote.beta.shared.model.Identifier;
 
 import java.util.Map;
 
-import static org.openremote.beta.server.testdata.SampleColors.*;
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.shared.util.Util.createMap;
 
@@ -22,7 +21,6 @@ public class SampleThermostatControl {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 20);
         editor.put("y", 20);
         TEMPERATURE_CONSUMER.setProperties(properties);
@@ -36,7 +34,6 @@ public class SampleThermostatControl {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 20);
         editor.put("y", 200);
         SETPOINT_CONSUMER.setProperties(properties);
@@ -47,12 +44,11 @@ public class SampleThermostatControl {
     public static Slot TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot("Fahrenheit", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot("Celcius", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE = new Slot("Label", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node("Temperature Processor", new Identifier(generateGlobalUniqueId(), "Flow"), TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK, TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE, TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE);
+    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node("Temperature Processor", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK, TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE, TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 300);
         editor.put("y", 20);
         TEMPERATURE_PROCESSOR_FLOW.setProperties(properties);
@@ -63,12 +59,11 @@ public class SampleThermostatControl {
     public static Slot SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot("Fahrenheit", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot SETPROINT_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot("Celcius", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE = new Slot("Label", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node SETPOINT_PROCESSOR_FLOW = new Node("Temperature Processor", new Identifier(generateGlobalUniqueId(), "Flow"), SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK, SETPROINT_PROCESSOR_FLOW_CELCIUS_SOURCE, SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE);
+    public static Node SETPOINT_PROCESSOR_FLOW = new Node("Temperature Processor", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK, SETPROINT_PROCESSOR_FLOW_CELCIUS_SOURCE, SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 300);
         editor.put("y", 150);
         SETPOINT_PROCESSOR_FLOW.setProperties(properties);
@@ -77,12 +72,11 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot TEMPERATURE_LABEL_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node TEMPERATURE_LABEL = new Node("Temperature Label", new Identifier(generateGlobalUniqueId(), "TextLabel"), TEMPERATURE_LABEL_SINK);
+    public static Node TEMPERATURE_LABEL = new Node("Temperature Text Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_WIDGET), TEMPERATURE_LABEL_SINK);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", UI_WIDGET_COLOR);
         editor.put("x", 750);
         editor.put("y", 50);
         TEMPERATURE_LABEL.setProperties(properties);
@@ -91,12 +85,11 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot TEMPERATURE_SETPOINT_LABEL_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node TEMPERATURE_SETPOINT_LABEL = new Node("Temperature Setpoint Label", new Identifier(generateGlobalUniqueId(), "TextLabel"), TEMPERATURE_SETPOINT_LABEL_SINK);
+    public static Node TEMPERATURE_SETPOINT_LABEL = new Node("Setpoint Text Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_WIDGET), TEMPERATURE_SETPOINT_LABEL_SINK);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", UI_WIDGET_COLOR);
         editor.put("x", 750);
         editor.put("y", 150);
         TEMPERATURE_SETPOINT_LABEL.setProperties(properties);
@@ -105,12 +98,11 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot SETPOINT_PLUS_BUTTON_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), "PushButton"), SETPOINT_PLUS_BUTTON_SOURCE);
+    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), Node.TYPE_WIDGET), SETPOINT_PLUS_BUTTON_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", UI_WIDGET_COLOR);
         editor.put("x", 50);
         editor.put("y", 400);
         SETPOINT_PLUS_BUTTON.setProperties(properties);
@@ -119,12 +111,11 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot SETPOINT_MINUS_BUTTON_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), "PushButton"), SETPOINT_MINUS_BUTTON_SOURCE);
+    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), Node.TYPE_WIDGET), SETPOINT_MINUS_BUTTON_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", UI_WIDGET_COLOR);
         editor.put("x", 50);
         editor.put("y", 500);
         SETPOINT_MINUS_BUTTON.setProperties(properties);
@@ -135,12 +126,11 @@ public class SampleThermostatControl {
     public static Slot SETPOINT_PLUS_FILTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot SETPOINT_PLUS_FILTER_TRIGGER_SINK = new Slot("Trigger", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot SETPOINT_PLUS_FILTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node SETPOINT_PLUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), "Filter"), SETPOINT_PLUS_FILTER_SINK, SETPOINT_PLUS_FILTER_TRIGGER_SINK, SETPOINT_PLUS_FILTER_SOURCE);
+    public static Node SETPOINT_PLUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), Node.TYPE_FILTER), SETPOINT_PLUS_FILTER_SINK, SETPOINT_PLUS_FILTER_TRIGGER_SINK, SETPOINT_PLUS_FILTER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 450);
         editor.put("y", 300);
         SETPOINT_PLUS_FILTER.setProperties(properties);
@@ -151,12 +141,11 @@ public class SampleThermostatControl {
     public static Slot SETPOINT_MINUS_FILTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot SETPOINT_MINUS_FILTER_TRIGGER_SINK = new Slot("Trigger", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot SETPOINT_MINUS_FILTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node SETPOINT_MINUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), "Filter"), SETPOINT_MINUS_FILTER_SINK, SETPOINT_MINUS_FILTER_TRIGGER_SINK, SETPOINT_MINUS_FILTER_SOURCE);
+    public static Node SETPOINT_MINUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), Node.TYPE_FILTER), SETPOINT_MINUS_FILTER_SINK, SETPOINT_MINUS_FILTER_TRIGGER_SINK, SETPOINT_MINUS_FILTER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 450);
         editor.put("y", 450);
         SETPOINT_MINUS_FILTER.setProperties(properties);
@@ -171,7 +160,6 @@ public class SampleThermostatControl {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 750);
         editor.put("y", 300);
         SETPOINT_INCREMENT_FUNCTION.setProperties(properties);
@@ -186,7 +174,6 @@ public class SampleThermostatControl {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 750);
         editor.put("y", 450);
         SETPOINT_DECREMENT_FUNCTION.setProperties(properties);
@@ -200,7 +187,6 @@ public class SampleThermostatControl {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 1050);
         editor.put("y", 375);
         SETPOINT_PRODUCER.setProperties(properties);

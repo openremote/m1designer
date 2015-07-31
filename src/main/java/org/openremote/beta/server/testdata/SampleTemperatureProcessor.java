@@ -8,8 +8,6 @@ import org.openremote.beta.shared.model.Identifier;
 
 import java.util.Map;
 
-import static org.openremote.beta.server.testdata.SampleColors.PROCESSOR_COLOR;
-import static org.openremote.beta.server.testdata.SampleColors.VIRTUAL_COLOR;
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.shared.util.Util.createMap;
 
@@ -24,7 +22,6 @@ public class SampleTemperatureProcessor {
     static {
         Map<String, Object> properties = createMap();
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 10);
         editor.put("y", 50);
         FAHRENHEIT_CONSUMER.setProperties(properties);
@@ -40,7 +37,6 @@ public class SampleTemperatureProcessor {
         Map<String, Object> properties = createMap();
         properties.put("javascript", "output['value'] = ((input - 32)*5)/9");
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 400);
         editor.put("y", 80);
         FAHRENHEIT_CONVERTER.setProperties(properties);
@@ -55,7 +51,6 @@ public class SampleTemperatureProcessor {
         Map<String, Object> properties = createMap();
         properties.put("postEndpoint", "mock:temperatureDatabase");
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 350);
         editor.put("y", 200);
         TEMPERATURE_DATABASE.setProperties(properties);
@@ -70,7 +65,6 @@ public class SampleTemperatureProcessor {
         Map<String, Object> properties = createMap();
         properties.put("postEndpoint", "mock:producerCelcius");
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 750);
         editor.put("y", 50);
         CELCIUS_PRODUCER.setProperties(properties);
@@ -86,7 +80,6 @@ public class SampleTemperatureProcessor {
         Map<String, Object> properties = createMap();
         properties.put("append", " C");
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", PROCESSOR_COLOR);
         editor.put("x", 650);
         editor.put("y", 200);
         CELCIUS_APPENDER.setProperties(properties);
@@ -101,7 +94,6 @@ public class SampleTemperatureProcessor {
         Map<String, Object> properties = createMap();
         properties.put("postEndpoint", "mock:producerLabel");
         Map<String, Object> editor = createMap(properties, "editor");
-        editor.put("color", VIRTUAL_COLOR);
         editor.put("x", 1000);
         editor.put("y", 250);
         LABEL_PRODUCER.setProperties(properties);
