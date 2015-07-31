@@ -55,6 +55,6 @@ public class Identifier {
 
     @Override
     public String toString() {
-        return type + '#' + id;
+        return type + ':' + id;
     }
 }

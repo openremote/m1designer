@@ -16,7 +16,7 @@ public class SampleTemperatureProcessor {
     /* ###################################################################################### */
 
     public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
+    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot("Fahrenheit", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
     public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER), FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
 
     static {
@@ -59,7 +59,8 @@ public class SampleTemperatureProcessor {
     /* ###################################################################################### */
 
     public static Slot CELCIUS_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), CELCIUS_PRODUCER_SINK);
+    public static Slot CELCIUS_PRODUCER_SOURCE = new Slot("Celcius", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
+    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), CELCIUS_PRODUCER_SINK, CELCIUS_PRODUCER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -88,7 +89,8 @@ public class SampleTemperatureProcessor {
     /* ###################################################################################### */
 
     public static Slot LABEL_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), LABEL_PRODUCER_SINK);
+    public static Slot LABEL_PRODUCER_SOURCE = new Slot("Label", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
+    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), LABEL_PRODUCER_SINK, LABEL_PRODUCER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();

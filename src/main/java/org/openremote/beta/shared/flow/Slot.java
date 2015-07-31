@@ -18,6 +18,7 @@ public class Slot extends FlowObject {
     public static final String TYPE_SOURCE = "urn:org-openremote:flow:slot:source";
 
     public boolean visible = true;
+    public Identifier peerIdentifier;
 
     public Slot() {
     }
@@ -39,6 +40,15 @@ public class Slot extends FlowObject {
         this.visible = visible;
     }
 
+    public Slot(String label, Identifier identifier, Identifier peerIdentifier) {
+        this(label, identifier);
+        this.peerIdentifier = peerIdentifier;
+    }
+
+    public Slot(String id, Slot peer) {
+        this(peer.getLabel(), new Identifier(id, peer.getIdentifier().getType()), peer.getIdentifier());
+    }
+
     public boolean isVisible() {
         return visible;
     }
@@ -47,10 +57,19 @@ public class Slot extends FlowObject {
         this.visible = visible;
     }
 
+    public Identifier getPeerIdentifier() {
+        return peerIdentifier;
+    }
+
+    public void setPeerIdentifier(Identifier peerIdentifier) {
+        this.peerIdentifier = peerIdentifier;
+    }
+
     @Override
     public String toString() {
         return "Slot{" +
             "visible=" + visible +
+            ", peerIdentifier=" + peerIdentifier +
             "} " + super.toString();
     }
 }

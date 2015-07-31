@@ -1,6 +1,8 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
@@ -13,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.RouteManagementUtil.*;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
@@ -34,20 +38,34 @@ public abstract class NodeRouteManager extends RouteBuilder {
         }
     }
 
+    public Flow getFlow() {
+        return flow;
+    }
+
+    public Node getNode() {
+        return node;
+    }
+
+    public String getDestinationSinkId(Exchange exchange) {
+        return exchange.getIn().getHeader(DESTINATION_SINK_ID, String.class);
+    }
+
     @Override
     public void configure() throws Exception {
         LOG.debug("Configure routes: " + node);
 
         RouteDefinition routeDefinition = from("direct:" + node.getIdentifier().getId())
-            .routeId(flow.getIdentifier().toString() + "###" + node.getIdentifier().toString())
-            .autoStartup(false);
+            .routeId(getRouteId(flow, node))
+            .routeDescription(getRouteDescription(flow, node))
+            .autoStartup(false)
+            .log(LoggingLevel.DEBUG, LOG, "Node processing: " + getRouteDescription(flow, node));
 
         // Optional sending exchange to an endpoint before node processing
         if (node.hasProperties()) {
             String preEndpoint = getString(getMap(node.getProperties()), "preEndpoint");
             if (preEndpoint != null) {
                 routeDefinition.to(preEndpoint)
-                    .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###preEndpoint");
+                    .id(getProcessorId(flow, node, "preEndpoint"));
             }
         }
 
@@ -59,13 +77,13 @@ public abstract class NodeRouteManager extends RouteBuilder {
             String postEndpoint = getString(getMap(node.getProperties()), "postEndpoint");
             if (postEndpoint != null) {
                 routeDefinition.to(postEndpoint)
-                    .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###postEndpoint");
+                    .id(getProcessorId(flow, node, "postEndpoint"));
             }
         }
 
         // Send the exchange through the wires to the next node(s)
         routeDefinition.bean(method(new WiringRouter(flow, node)))
-            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###toWires");
+            .id(getProcessorId(flow, node, "toWires"));
     }
 
     protected abstract void configure(RouteDefinition routeDefinition) throws Exception;

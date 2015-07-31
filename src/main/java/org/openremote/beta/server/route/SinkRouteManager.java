@@ -1,6 +1,7 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
@@ -9,6 +10,9 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.RouteManagementUtil.*;
 
 public class SinkRouteManager extends RouteBuilder {
 
@@ -31,12 +35,17 @@ public class SinkRouteManager extends RouteBuilder {
         LOG.debug("Configure routes: " + sink);
 
         from("direct:" + sink.getIdentifier().getId())
-            .routeId(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier())
+            .routeId(getRouteId(flow, node, sink))
+            .routeDescription(getRouteDescription(flow, node, sink))
             .autoStartup(false)
-            .setHeader(FlowRouteManager.DESTINATION_SINK_ID, constant(sink.getIdentifier().getId()))
-            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier() + "###setDestinationSink")
+
+            .log(LoggingLevel.DEBUG, LOG, "Sink processing: " + getRouteDescription(flow, node, sink))
+
+            .setHeader(DESTINATION_SINK_ID, constant(sink.getIdentifier().getId()))
+            .id(getProcessorId(flow, node, sink, "setDestinationSink"))
+
             .to("direct:" + node.getIdentifier().getId())
-            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier() + "###toNode");
+            .id(getProcessorId(flow, node, sink, "toNode"));
     }
 
     @Override

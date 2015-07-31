@@ -1,7 +1,11 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
+import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +47,42 @@ public class RouteManagementUtil {
 
     public static void updateRoute(CamelContext context, RouteDefinition routeDefinition, boolean startRoute) {
         new RouteUpdater(context, routeDefinition, startRoute).start();
+    }
+
+    public static String getRouteId(Flow flow) {
+        return flow.getIdentifier().toString();
+    }
+
+    public static String getRouteId(Flow flow, Node node) {
+        return getRouteId(flow) + ";" + node.getIdentifier();
+    }
+
+    public static String getRouteId(Flow flow, Node node, Slot slot) {
+        return getRouteId(flow, node) + ";" + slot.getIdentifier();
+    }
+
+    public static String getProcessorId(Flow flow, String processorLabel) {
+        return processorLabel + ";" + flow.getIdentifier();
+    }
+
+    public static String getProcessorId(Flow flow, Node node, String processorLabel) {
+        return processorLabel + ";" + flow.getIdentifier() + ";" + node.getIdentifier();
+    }
+
+    public static String getProcessorId(Flow flow, Node node, Slot slot, String processorLabel) {
+        return processorLabel + ";" + flow.getIdentifier() + ";" + node.getIdentifier() + ";" + slot.getIdentifier();
+    }
+
+    public static String getRouteDescription(Flow flow) {
+        return flow.toString();
+    }
+
+    public static String getRouteDescription(Flow flow, Node node) {
+        return getRouteDescription(flow)  + ";" + node;
+    }
+
+    public static String getRouteDescription(Flow flow, Node node, Slot slot) {
+        return getRouteDescription(flow, node)  + ";" + slot;
     }
 
 }

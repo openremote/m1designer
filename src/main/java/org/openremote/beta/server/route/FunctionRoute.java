@@ -11,11 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
+import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorId;
 import static org.openremote.beta.shared.util.Util.*;
 
-public class FunctionNodeRouteManager extends NodeRouteManager {
+public class FunctionRoute extends NodeRouteManager {
 
-    public FunctionNodeRouteManager(CamelContext context, Flow flow, Node node) {
+    public FunctionRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
     }
 
@@ -33,18 +34,18 @@ public class FunctionNodeRouteManager extends NodeRouteManager {
                         arguments.put("output", new HashMap<String, Object>());
                         exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
                     })
-                    .id(flow.toString() + "###" + node.toString() + "###prepareJavascript")
+                    .id(getProcessorId(flow, node, "prepareJavascript"))
                     .transform(javaScript(javascriptlet))
-                    .id(flow.toString() + "###" + node.toString() + "###executeJavascript")
+                    .id(getProcessorId(flow, node, "executeJavascript"))
                     .process(exchange -> {
                         Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);
                         Map<String, Object> output = (Map<String, Object>) arguments.get("output");
                         // TODO Output type conversion dynamically
                         exchange.getIn().setBody(output.get("value"), Integer.class);
                     })
-                    .id(flow.toString() + "###" + node.toString() + "###resultJavascript")
+                    .id(getProcessorId(flow, node, "resultJavascript"))
                     .removeHeader(ScriptBuilder.ARGUMENTS)
-                    .id(flow.toString() + "###" + node.toString() + "###cleanupJavascript");
+                    .id(getProcessorId(flow, node, "cleanupJavascript"));
             }
 
         }

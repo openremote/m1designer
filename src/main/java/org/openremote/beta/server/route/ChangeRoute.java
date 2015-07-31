@@ -5,12 +5,13 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
+import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorId;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
-public class ChangeNodeRouteManager extends NodeRouteManager {
+public class ChangeRoute extends NodeRouteManager {
 
-    public ChangeNodeRouteManager(CamelContext context, Flow flow, Node node) {
+    public ChangeRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
     }
 
@@ -29,6 +30,7 @@ public class ChangeNodeRouteManager extends NodeRouteManager {
                     }
                 }
             })
-            .id(flow.toString() + "###" + node.toString() + "###process");
+            .id(getProcessorId(flow, node, "processChange"));
+        ;
     }
 }

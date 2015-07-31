@@ -50,8 +50,11 @@ public class TemperatureProcessorTest extends IntegrationTest {
         MockEndpoint mockProducerCelcius = context().getEndpoint("mock:producerCelcius", MockEndpoint.class);
         MockEndpoint mockProducerLabel = context().getEndpoint("mock:producerLabel", MockEndpoint.class);
 
+        mockTemperatureDatabase.expectedMessageCount(1);
         mockTemperatureDatabase.expectedBodiesReceived(75);
+        mockProducerCelcius.expectedMessageCount(1);
         mockProducerCelcius.expectedBodiesReceived("23");
+        mockProducerLabel.expectedMessageCount(1);
         mockProducerLabel.expectedBodiesReceived("23 C");
 
         Map<String, Object> headers = new HashMap<>();
@@ -59,6 +62,8 @@ public class TemperatureProcessorTest extends IntegrationTest {
         producerTemplate.sendBodyAndHeaders(
             "direct:" + SampleTemperatureProcessor.FLOW.getIdentifier().getId(), 75, headers
         );
+
+        LOG.info("##########################################################################");
 
         mockTemperatureDatabase.assertIsSatisfied();
         mockProducerCelcius.assertIsSatisfied();

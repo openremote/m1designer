@@ -1,6 +1,7 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
@@ -11,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.openremote.beta.server.route.RouteManagementUtil.*;
 
 
 public class FlowRouteManager extends RouteBuilder {
@@ -29,27 +32,46 @@ public class FlowRouteManager extends RouteBuilder {
 
         for (Node node : flow.getNodes()) {
             LOG.debug("Creating builder for: " + node);
-            NodeRouteManager nodeRouteManager;
+            NodeRouteManager nodeRouteManager = null;
             switch (node.getIdentifier().getType()) {
                 case Node.TYPE_CONSUMER:
-                    nodeRouteManager = new ConsumerNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new ConsumerRoute(context, flow, node);
                     break;
                 case Node.TYPE_PRODUCER:
-                    nodeRouteManager = new ProducerNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new ProducerRoute(context, flow, node);
+                    break;
+                case Node.TYPE_SENSOR:
+                    nodeRouteManager = new SensorRoute(context, flow, node);
+                    break;
+                case Node.TYPE_ACTUATOR:
+                    nodeRouteManager = new ActuatorRoute(context, flow, node);
+                    break;
+                case Node.TYPE_WIDGET:
+                    nodeRouteManager = new WidgetRoute(context, flow, node);
                     break;
                 case Node.TYPE_FUNCTION:
-                    nodeRouteManager = new FunctionNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new FunctionRoute(context, flow, node);
+                    break;
+                case Node.TYPE_FILTER:
+                    nodeRouteManager = new FilterRoute(context, flow, node);
                     break;
                 case Node.TYPE_CHANGE:
-                    nodeRouteManager = new ChangeNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new ChangeRoute(context, flow, node);
                     break;
                 case Node.TYPE_STORAGE:
-                    nodeRouteManager = new StorageNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new StorageRoute(context, flow, node);
+                    break;
+                case Node.TYPE_SUBFLOW:
+                    nodeRouteManager = new SubflowNodeRouteManager(context, flow, node);
                     break;
                 default:
-                    throw new UnsupportedOperationException("Can't build route for type of node: " + node);
+                    // TODO
+                    LOG.info("### SKIPPING UNSUPPORTED NODE TYPE: " + node);
+                    //throw new UnsupportedOperationException("Can't build route for type of node: " + node);
+                    break;
             }
-            nodeRouteManagers.add(nodeRouteManager);
+            if (nodeRouteManager != null)
+                nodeRouteManagers.add(nodeRouteManager);
         }
     }
 
@@ -58,10 +80,12 @@ public class FlowRouteManager extends RouteBuilder {
         LOG.debug("Configure routes: " + flow);
 
         from("direct:" + flow.getIdentifier().getId())
-            .routeId(flow.getIdentifier().toString())
+            .routeId(getRouteId(flow))
+            .routeDescription(getRouteDescription(flow))
             .autoStartup(false)
+            .log(LoggingLevel.DEBUG, LOG, "Flow processing: " + getRouteDescription(flow))
             .recipientList(simple("direct:${header." + DESTINATION_SINK_ID + "}"))
-            .id(flow.getIdentifier() + "###toSink");
+            .id(getProcessorId(flow, "toSink"));
     }
 
     public void addRoutesToCamelContext() throws Exception {
