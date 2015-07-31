@@ -144,6 +144,14 @@ public class Node extends FlowObject {
         return list.toArray(new Slot[list.size()]);
     }
 
+    public Slot findSlotByPosition(int position, String type) {
+        if (position > getSlots().length-1)
+            return null;
+        if (getSlots()[position].getIdentifier().getType().equals(type))
+            return getSlots()[position];
+        return null;
+    }
+
     @Override
     public String toString() {
         return "Node{" +

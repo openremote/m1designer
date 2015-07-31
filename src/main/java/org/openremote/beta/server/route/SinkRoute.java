@@ -14,15 +14,15 @@ import org.slf4j.LoggerFactory;
 import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
 import static org.openremote.beta.server.route.RouteManagementUtil.*;
 
-public class SinkRouteManager extends RouteBuilder {
+public class SinkRoute extends RouteBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SinkRouteManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SinkRoute.class);
 
     protected final Flow flow;
     protected final Node node;
     protected final Slot sink;
 
-    public SinkRouteManager(CamelContext context, Flow flow, Node node, Slot sink) {
+    public SinkRoute(CamelContext context, Flow flow, Node node, Slot sink) {
         super(context);
         this.flow = flow;
         this.node = node;

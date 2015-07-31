@@ -26,7 +26,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
 
     protected final Flow flow;
     protected final Node node;
-    protected List<SinkRouteManager> sinkRouteManagers = new ArrayList<>();
+    protected List<SinkRoute> sinkRouteManagers = new ArrayList<>();
 
     public NodeRouteManager(CamelContext context, Flow flow, Node node) {
         super(context);
@@ -34,7 +34,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
         this.node = node;
         LOG.debug("Creating builder for: " + node);
         for (Slot slot : node.findSlots(Slot.TYPE_SINK)) {
-            sinkRouteManagers.add(new SinkRouteManager(getContext(), flow, node, slot));
+            sinkRouteManagers.add(new SinkRoute(getContext(), flow, node, slot));
         }
     }
 
@@ -48,6 +48,11 @@ public abstract class NodeRouteManager extends RouteBuilder {
 
     public String getDestinationSinkId(Exchange exchange) {
         return exchange.getIn().getHeader(DESTINATION_SINK_ID, String.class);
+    }
+
+    public String getNodeSinkId(int position) {
+        Slot sink = node.findSlotByPosition(position, Slot.TYPE_SINK);
+        return sink != null ? sink.getIdentifier().getId() : null;
     }
 
     @Override
@@ -92,7 +97,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
     public void addRoutesToCamelContext(CamelContext context) throws Exception {
         LOG.debug("Adding routes: " + flow);
         super.addRoutesToCamelContext(context);
-        for (SinkRouteManager sinkRouteManager : sinkRouteManagers) {
+        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
             sinkRouteManager.addRoutesToCamelContext(sinkRouteManager.getContext());
         }
     }
@@ -103,7 +108,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().startRoute(routeDefinition.getId());
         }
-        for (SinkRouteManager sinkRouteManager : sinkRouteManagers) {
+        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
             sinkRouteManager.startRoutes();
         }
     }
@@ -114,7 +119,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().removeRouteDefinition(routeDefinition);
         }
-        for (SinkRouteManager sinkRouteManager : sinkRouteManagers) {
+        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
             sinkRouteManager.removeRoutesFromCamelContext();
         }
     }

@@ -1,9 +1,9 @@
 package org.openremote.beta.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
@@ -103,6 +103,19 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected String toJson(Object o) throws Exception {
         return jsonMapper.writeValueAsString(o);
+    }
+
+    protected void logExchangeHistory(Exchange exchange) {
+        List<MessageHistory> list = exchange.getProperty(Exchange.MESSAGE_HISTORY, List.class);
+        LOG.info("################################ HISTORY OF: " + exchange);
+        for (MessageHistory messageHistory : list) {
+            if (messageHistory.getNode().getId().startsWith("log"))
+                continue;
+            LOG.info("------------------------------------------------------------------------------------------------");
+            LOG.info("### ROUTE               : " + messageHistory.getRouteId());
+            LOG.info("### ROUTE DESCRIPTION   : " + context().getRoute(messageHistory.getRouteId()).getDescription());
+            LOG.info("### PROCESSOR ID        : " + messageHistory.getNode().getId());
+        }
     }
 
     private String findEphemeralPort() {

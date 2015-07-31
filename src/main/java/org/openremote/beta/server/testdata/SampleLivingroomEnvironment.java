@@ -41,9 +41,9 @@ public class SampleLivingroomEnvironment {
 
     /* ###################################################################################### */
 
-    public static Slot THERMOSTAT_CONTROL_FLOW_CURRENT_SINK = new Slot("Current", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot THERMOSTAT_CONTROL_FLOW_SETPOINT_SINK = new Slot("Setpoint", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot THERMOSTAT_CONTROL_SETPOINT_SOURCE = new Slot("Setpoint", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
+    public static Slot THERMOSTAT_CONTROL_FLOW_CURRENT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK);
+    public static Slot THERMOSTAT_CONTROL_FLOW_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK);
+    public static Slot THERMOSTAT_CONTROL_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE);
     public static Node THERMOSTAT_CONTROL_FLOW = new Node("Thermostat Control", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), THERMOSTAT_CONTROL_FLOW_CURRENT_SINK, THERMOSTAT_CONTROL_FLOW_SETPOINT_SINK, THERMOSTAT_CONTROL_SETPOINT_SOURCE);
 
     static {

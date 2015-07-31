@@ -62,16 +62,12 @@ public class FlowRouteManager extends RouteBuilder {
                     nodeRouteManager = new StorageRoute(context, flow, node);
                     break;
                 case Node.TYPE_SUBFLOW:
-                    nodeRouteManager = new SubflowNodeRouteManager(context, flow, node);
+                    nodeRouteManager = new SubflowRoute(context, flow, node);
                     break;
                 default:
-                    // TODO
-                    LOG.info("### SKIPPING UNSUPPORTED NODE TYPE: " + node);
-                    //throw new UnsupportedOperationException("Can't build route for type of node: " + node);
-                    break;
+                    throw new UnsupportedOperationException("Can't build route for type of node: " + node);
             }
-            if (nodeRouteManager != null)
-                nodeRouteManagers.add(nodeRouteManager);
+            nodeRouteManagers.add(nodeRouteManager);
         }
     }
 
