@@ -5,11 +5,11 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.model.Property;
 
 import java.util.Map;
 
-import static org.openremote.beta.server.testdata.SampleColors.*;
+import static org.openremote.beta.server.testdata.SampleColors.PROCESSOR_COLOR;
+import static org.openremote.beta.server.testdata.SampleColors.VIRTUAL_COLOR;
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.shared.util.Util.createMap;
 
