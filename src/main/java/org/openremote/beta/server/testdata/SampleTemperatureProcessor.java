@@ -4,6 +4,8 @@ import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.model.Property;
 
 import java.util.Map;
 
@@ -15,9 +17,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK, false);
-    public static Node FAHRENHEIT_CONSUMER = new Node(generateGlobalUniqueId(), "Consumer", "Fahrenheit", FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
+    public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
+    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
+    public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER), FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -30,9 +32,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot FAHRENHEIT_CONVERTER_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-    public static Slot FAHRENHEIT_CONVERTER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-    public static Node FAHRENHEIT_CONVERTER = new Node(generateGlobalUniqueId(), "Function", "Fahrenheit to Celcius", FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
+    public static Slot FAHRENHEIT_CONVERTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
+    public static Slot FAHRENHEIT_CONVERTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
+    public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_FUNCTION), FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -46,8 +48,8 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot TEMPERATURE_DATABASE_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-    public static Node TEMPERATURE_DATABASE = new Node(generateGlobalUniqueId(), "Storage", "Temperature Database", TEMPERATURE_DATABASE_SINK);
+    public static Slot TEMPERATURE_DATABASE_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
+    public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", new Identifier(generateGlobalUniqueId(), Node.TYPE_STORAGE), TEMPERATURE_DATABASE_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -61,8 +63,8 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot CELCIUS_PRODUCER_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-    public static Node CELCIUS_PRODUCER = new Node(generateGlobalUniqueId(), "Producer", "Celcius", CELCIUS_PRODUCER_SINK);
+    public static Slot CELCIUS_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
+    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), CELCIUS_PRODUCER_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -76,9 +78,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot CELCIUS_APPENDER_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-    public static Slot CELCIUS_APPENDER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.Type.SOURCE);
-    public static Node CELCIUS_APPENDER = new Node(generateGlobalUniqueId(), "Change", "Append Celcius Symbol", CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
+    public static Slot CELCIUS_APPENDER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
+    public static Slot CELCIUS_APPENDER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
+    public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), Node.TYPE_CHANGE), CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -92,8 +94,8 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot LABEL_PRODUCER_SINK = new Slot(generateGlobalUniqueId(), Slot.Type.SINK);
-    public static Node LABEL_PRODUCER = new Node(generateGlobalUniqueId(), "Producer", "Label", LABEL_PRODUCER_SINK);
+    public static Slot LABEL_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
+    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), LABEL_PRODUCER_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -118,13 +120,16 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Flow FLOW = new Flow(generateGlobalUniqueId(), "Temperature Processor", FLOW_NODES,
+    public static Flow FLOW = new Flow(
+        "Temperature Processor",
+        new Identifier(generateGlobalUniqueId(), Flow.TYPE),
+        FLOW_NODES,
         new Wire[]{
-            new Wire(FAHRENHEIT_CONSUMER_SOURCE.getId(), FAHRENHEIT_CONVERTER_SINK.getId()),
-            new Wire(FAHRENHEIT_CONSUMER_SOURCE.getId(), TEMPERATURE_DATABASE_SINK.getId()),
-            new Wire(FAHRENHEIT_CONVERTER_SOURCE.getId(), CELCIUS_PRODUCER_SINK.getId()),
-            new Wire(FAHRENHEIT_CONVERTER_SOURCE.getId(), CELCIUS_APPENDER_SINK.getId()),
-            new Wire(CELCIUS_APPENDER_SOURCE.getId(), LABEL_PRODUCER_SINK.getId())
+            new Wire(FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONVERTER_SINK),
+            new Wire(FAHRENHEIT_CONSUMER_SOURCE, TEMPERATURE_DATABASE_SINK),
+            new Wire(FAHRENHEIT_CONVERTER_SOURCE, CELCIUS_PRODUCER_SINK),
+            new Wire(FAHRENHEIT_CONVERTER_SOURCE, CELCIUS_APPENDER_SINK),
+            new Wire(CELCIUS_APPENDER_SOURCE, LABEL_PRODUCER_SINK)
         }
     );
 }

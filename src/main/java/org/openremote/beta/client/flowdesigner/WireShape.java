@@ -163,7 +163,7 @@ public abstract class WireShape extends Group {
 
             @Override
             protected boolean isAttachable(SlotShape slotShape) {
-                return slotShape.getSlot().getType() == Slot.Type.SOURCE
+                return slotShape.getSlot().isOfType(Slot.TYPE_SOURCE)
                     && WireShape.this.isAttachable(
                     slotShape.getParent().getNode(),
                     slotShape.getSlot(),
@@ -198,7 +198,7 @@ public abstract class WireShape extends Group {
 
             @Override
             protected boolean isAttachable(SlotShape slotShape) {
-                return slotShape.getSlot().getType() == Slot.Type.SINK
+                return slotShape.getSlot().isOfType(Slot.TYPE_SINK)
                     && WireShape.this.isAttachable(
                     getSourceHandle().getAttachedNode(),
                     getSourceHandle().getAttachedSlot(),

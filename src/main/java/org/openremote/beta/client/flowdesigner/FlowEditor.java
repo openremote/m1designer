@@ -58,7 +58,7 @@ public abstract class FlowEditor extends Layer {
             }
 
             // Can't attach a wire between slots of the same node
-            if (sourceNode.getId().equals(sinkNode.getId()))
+            if (sourceNode.getIdentifier().equals(sinkNode.getIdentifier()))
                 return false;
 
             return true;
@@ -86,10 +86,10 @@ public abstract class FlowEditor extends Layer {
             for (Slot slot : slots) {
                 if (slot == null)
                     continue;
-                SlotShape slotShape = getSlotShape(slot.getId());
+                SlotShape slotShape = getSlotShape(slot.getIdentifier().getId());
                 if (slotShape == null)
                     return;
-                slotShape.setAttached(flow.hasWires(slot.getId()));
+                slotShape.setAttached(flow.hasWires(slot.getIdentifier().getId()));
             }
             batch();
         }

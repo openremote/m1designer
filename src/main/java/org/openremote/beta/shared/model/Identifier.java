@@ -1,20 +1,18 @@
-package org.openremote.beta.shared.inventory;
+package org.openremote.beta.shared.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.openremote.beta.server.util.IdentifierUtil;
+import com.google.gwt.core.client.js.JsType;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
+@JsType
 @JsonSerialize(include= NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class Identifier {
 
-    public static Identifier randomOfType(String type) {
-        return new Identifier(IdentifierUtil.generateGlobalUniqueId(), type);
-    }
 
     protected String id;
     protected String type; // URI

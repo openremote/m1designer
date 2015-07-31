@@ -41,12 +41,12 @@ public class NodeProcessor {
         }
 
         // Send a new exchange copy to all destination sinks (through any wires connected to any source slots)
-        Slot[] sourceSlots = node.findSlots(Slot.Type.SOURCE);
+        Slot[] sourceSlots = node.findSlots(Slot.TYPE_SOURCE);
         for (Slot sourceSlot : sourceSlots) {
             LOG.info("### NODE PROCESSOR USING SOURCE SLOT: " + sourceSlot);
 
             // Find destination wires
-            Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
+            Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getIdentifier().getId());
 
             LOG.info("### NODE PROCESSOR DESTINATION WIRES: " + Arrays.toString(sourceWires));
 
@@ -55,7 +55,7 @@ public class NodeProcessor {
                 Exchange copy = copyExchange(exchange);
                 Node destinationNode = flow.findOwnerNode(sourceWire.getSinkId());
                 LOG.info("### NODE PROCESSOR SENDING NEW EXCHANGE TO: " + destinationNode + " ON " + flow.findSlot(sourceWire.getSinkId()));
-                send(copy, destinationNode.getId(), sourceWire.getSinkId());
+                send(copy, destinationNode.getIdentifier().getId(), sourceWire.getSinkId());
             }
         }
     }

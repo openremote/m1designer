@@ -1,5 +1,7 @@
 package org.openremote.beta.shared.inventory;
 
+import org.openremote.beta.shared.model.Identifier;
+
 public class Sensor extends InventoryObject {
 
     protected Sensor() {

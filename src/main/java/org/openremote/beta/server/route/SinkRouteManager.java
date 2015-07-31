@@ -30,13 +30,13 @@ public class SinkRouteManager extends RouteBuilder {
     public void configure() throws Exception {
         LOG.debug("Configure routes: " + sink);
 
-        from("direct:" + sink.getId())
-            .routeId(flow.toString() + "###" + node.toString() + "###" + sink.toString())
+        from("direct:" + sink.getIdentifier().getId())
+            .routeId(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier())
             .autoStartup(false)
-            .setHeader(FlowRouteManager.DESTINATION_SINK_ID, constant(sink.getId()))
-            .id(flow.toString() + "###" + node.toString() + "###" + sink.toString() + "###setDestinationSink")
-            .to("direct:" + node.getId())
-            .id(flow.toString() + "###" + node.toString() + "###" + sink.toString() + "###toNode");
+            .setHeader(FlowRouteManager.DESTINATION_SINK_ID, constant(sink.getIdentifier().getId()))
+            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier() + "###setDestinationSink")
+            .to("direct:" + node.getIdentifier().getId())
+            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###" + sink.getIdentifier() + "###toNode");
     }
 
     @Override

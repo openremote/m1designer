@@ -1,48 +1,42 @@
 package org.openremote.beta.shared.flow;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.shared.model.Identifier;
 
 import java.util.*;
 
-@JsType
-public class Flow {
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
-    public String id;
-    public String label;
+@JsType
+@JsonSerialize(include= NON_NULL)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+public class Flow extends FlowObject {
+
+    public static final String TYPE = "urn:org-openremote:flow";
+
     public Node[] nodes = new Node[0];
     public Wire[] wires = new Wire[0];
 
     public Flow() {
     }
 
-    public Flow(String id, String label) {
-        this.id = id;
-        this.label = label;
+    public Flow(String label, Identifier identifier) {
+        super(label, identifier);
     }
 
-    public Flow(String id, String label, Node... nodes) {
-        this.id = id;
-        this.label = label;
+    public Flow(String label, Identifier identifier, Node... nodes) {
+        super(label, identifier);
         this.nodes = nodes;
     }
 
-    public Flow(String id, String label, Node[] nodes, Wire[] wires) {
-        this.id = id;
-        this.label = label;
+    public Flow(String label, Identifier identifier, Node[] nodes, Wire[] wires) {
+        super(label, identifier);
         this.nodes = nodes;
         this.wires = wires;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
     }
 
     public Node[] getNodes() {
@@ -66,7 +60,7 @@ public class Flow {
     }
 
     public void addWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
-        addWire(new Wire(sourceSlot.getId(), sinkSlot.getId()));
+        addWire(new Wire(sourceSlot.getIdentifier().getId(), sinkSlot.getIdentifier().getId()));
     }
 
     public void addWire(Wire wire) {
@@ -80,8 +74,8 @@ public class Flow {
         Iterator<Wire> it = collection.iterator();
         while (it.hasNext()) {
             Wire wire = it.next();
-            if (wire.getSourceId().equals(sourceSlot.getId())
-                && wire.getSinkId().equals(sinkSlot.getId())) {
+            if (wire.getSourceId().equals(sourceSlot.getIdentifier().getId())
+                && wire.getSinkId().equals(sinkSlot.getIdentifier().getId())) {
                 it.remove();
             }
         }
@@ -118,7 +112,7 @@ public class Flow {
 
     public Node findNode(String nodeId) {
         for (Node node : getNodes()) {
-            if (node.getId().equals(nodeId))
+            if (node.getIdentifier().getId().equals(nodeId))
                 return node;
         }
         return null;
@@ -126,10 +120,9 @@ public class Flow {
 
     public Node findOwnerNode(String slotId) {
         for (Node node : getNodes()) {
-            for (Slot slot : node.getSlots()) {
-                if (slot.getId().equals(slotId))
-                    return node;
-            }
+            Slot slot = node.findSlot(slotId);
+            if (slot != null)
+                return node;
         }
         return null;
     }
@@ -137,8 +130,8 @@ public class Flow {
     @Override
     public String toString() {
         return "Flow{" +
-            "'" + label + '\'' +
-            ", id='" + id + '\'' +
-            '}';
+            "nodes=" + nodes.length +
+            ", wires=" + wires.length +
+            "} " + super.toString();
     }
 }

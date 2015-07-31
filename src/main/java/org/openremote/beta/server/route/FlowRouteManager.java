@@ -30,20 +30,20 @@ public class FlowRouteManager extends RouteBuilder {
         for (Node node : flow.getNodes()) {
             LOG.debug("Creating builder for: " + node);
             NodeRouteManager nodeRouteManager;
-            switch (node.getType()) {
-                case "Consumer":
+            switch (node.getIdentifier().getType()) {
+                case Node.TYPE_CONSUMER:
                     nodeRouteManager = new ConsumerNodeRouteManager(context, flow, node);
                     break;
-                case "Producer":
+                case Node.TYPE_PRODUCER:
                     nodeRouteManager = new ProducerNodeRouteManager(context, flow, node);
                     break;
-                case "Function":
+                case Node.TYPE_FUNCTION:
                     nodeRouteManager = new FunctionNodeRouteManager(context, flow, node);
                     break;
-                case "Change":
+                case Node.TYPE_CHANGE:
                     nodeRouteManager = new ChangeNodeRouteManager(context, flow, node);
                     break;
-                case "Storage":
+                case Node.TYPE_STORAGE:
                     nodeRouteManager = new StorageNodeRouteManager(context, flow, node);
                     break;
                 default:
@@ -57,11 +57,11 @@ public class FlowRouteManager extends RouteBuilder {
     public void configure() throws Exception {
         LOG.debug("Configure routes: " + flow);
 
-        from("direct:" + flow.getId())
-            .routeId(flow.toString())
+        from("direct:" + flow.getIdentifier().getId())
+            .routeId(flow.getIdentifier().toString())
             .autoStartup(false)
             .recipientList(simple("direct:${header." + DESTINATION_SINK_ID + "}"))
-            .id(flow.toString() + "###toSink");
+            .id(flow.getIdentifier() + "###toSink");
     }
 
     public void addRoutesToCamelContext() throws Exception {

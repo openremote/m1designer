@@ -28,7 +28,7 @@ public class FlowsPresenter extends AbstractPresenter {
     }
 
     public void loadFlow(int index, Function success) {
-        resource("flow", flows[index].getId()).get().send(
+        resource("flow", flows[index].getIdentifier().getId()).get().send(
             new ObjectResponseCallback<Flow>(FLOW_CODEC, success) {
                 @Override
                 protected void onResponse(Flow data) {

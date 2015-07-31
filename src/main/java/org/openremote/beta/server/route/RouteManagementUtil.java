@@ -1,4 +1,4 @@
-package org.openremote.beta.server.util;
+package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;

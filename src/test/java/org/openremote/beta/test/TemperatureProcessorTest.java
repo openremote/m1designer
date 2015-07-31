@@ -13,8 +13,6 @@ import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.openremote.beta.server.processor.FlowProcessor.DESTINATION_SINK_ID;
-
 public class TemperatureProcessorTest extends IntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemperatureProcessorTest.class);
@@ -57,9 +55,9 @@ public class TemperatureProcessorTest extends IntegrationTest {
         mockProducerLabel.expectedBodiesReceived("23 C");
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put(DESTINATION_SINK_ID, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
+        headers.put(FlowRouteManager.DESTINATION_SINK_ID, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getIdentifier().getId());
         producerTemplate.sendBodyAndHeaders(
-            "direct:" + SampleTemperatureProcessor.FLOW.getId(), 75, headers
+            "direct:" + SampleTemperatureProcessor.FLOW.getIdentifier().getId(), 75, headers
         );
 
         mockTemperatureDatabase.assertIsSatisfied();

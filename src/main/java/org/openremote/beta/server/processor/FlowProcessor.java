@@ -22,7 +22,7 @@ public class FlowProcessor {
     public FlowProcessor(ProducerTemplate template, Flow flow) {
         this.template = template;
         this.flow = flow;
-        template.setDefaultEndpointUri("direct:" + flow.getId());
+        template.setDefaultEndpointUri("direct:" + flow.getIdentifier().getId());
     }
 
     @Handler
@@ -33,20 +33,20 @@ public class FlowProcessor {
             throw new IllegalArgumentException("In '" + flow + "' can't find destination node: " + nodeId);
 
         NodeProcessor nodeProcessor;
-        switch (destinationNode.getType()) {
-            case "Consumer":
+        switch (destinationNode.getIdentifier().getType()) {
+            case Node.TYPE_CONSUMER:
                 nodeProcessor = new ConsumerNodeProcessor(template, flow, destinationNode);
                 break;
-            case "Producer":
+            case Node.TYPE_PRODUCER:
                 nodeProcessor = new ProducerNodeProcessor(template, flow, destinationNode);
                 break;
-            case "Function":
+            case Node.TYPE_FUNCTION:
                 nodeProcessor = new FunctionNodeProcessor(template, flow, destinationNode);
                 break;
-            case "Change":
+            case Node.TYPE_CHANGE:
                 nodeProcessor = new ChangeNodeProcessor(template, flow, destinationNode);
                 break;
-            case "Storage":
+            case Node.TYPE_STORAGE:
                 nodeProcessor = new StorageNodeProcessor(template, flow, destinationNode);
                 break;
             default:

@@ -22,10 +22,10 @@ public class WiringRouter {
     @RecipientList
     public List<String> getSinks() {
         List<String> sinks = new ArrayList<>();
-        Slot[] sourceSlots = node.findSlots(Slot.Type.SOURCE);
+        Slot[] sourceSlots = node.findSlots(Slot.TYPE_SOURCE);
         for (Slot sourceSlot : sourceSlots) {
             // Find destination wires
-            Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
+            Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getIdentifier().getId());
             for (Wire sourceWire : sourceWires) {
                 sinks.add("direct:" + sourceWire.getSinkId());
             }

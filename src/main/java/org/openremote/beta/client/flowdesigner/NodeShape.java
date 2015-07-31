@@ -1,15 +1,11 @@
 package org.openremote.beta.client.flowdesigner;
 
-import com.ait.lienzo.shared.core.types.ColorName;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.util.Util;
 
 import static java.lang.Math.min;
 import static org.openremote.beta.client.flowdesigner.Constants.*;
-import static org.openremote.beta.shared.util.Util.getDouble;
-import static org.openremote.beta.shared.util.Util.getMap;
-import static org.openremote.beta.shared.util.Util.getString;
+import static org.openremote.beta.shared.util.Util.*;
 
 public abstract class NodeShape extends Box {
 
@@ -35,7 +31,7 @@ public abstract class NodeShape extends Box {
             PATCH_TITLE_CORNER_RADIUS,
             PATCH_TITLE_COLOR,
             new TextLabel(
-                node.getType(),
+                Node.getTypeLabel(node.getIdentifier().getType()),
                 FONT_FAMILY,
                 PATCH_TITLE_FONT_SIZE,
                 PATCH_TITLE_TEXT_COLOR

@@ -11,7 +11,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.openremote.beta.client.flowdesigner.Constants.PATCH_PADDING;
 import static org.openremote.beta.client.flowdesigner.Constants.SLOT_PADDING;
-import static org.openremote.beta.shared.flow.Slot.Type.SINK;
 
 public abstract class Slots extends Group {
 
@@ -39,7 +38,7 @@ public abstract class Slots extends Group {
                 continue;
 
             SlotShape slotShape = new SlotShape(slot);
-            if (slot.getType() == SINK) {
+            if (slot.isOfType(Slot.TYPE_SINK)) {
                 sinkSlots.add(slotShape);
             } else {
                 sourceSlots.add(slotShape);
@@ -76,11 +75,11 @@ public abstract class Slots extends Group {
 
     public SlotShape getSlotShape(String slotId) {
         for (SlotShape sinkSlot : sinkSlots) {
-            if (sinkSlot.slot.getId().equals(slotId))
+            if (sinkSlot.slot.getIdentifier().getId().equals(slotId))
                 return sinkSlot;
         }
         for (SlotShape sourceSlot : sourceSlots) {
-            if (sourceSlot.slot.getId().equals(slotId))
+            if (sourceSlot.slot.getIdentifier().getId().equals(slotId))
                 return sourceSlot;
         }
         return null;
@@ -90,7 +89,7 @@ public abstract class Slots extends Group {
         double shapeX = getX() + slotShape.getX();
         double shapeY = getY() + slotShape.getY();
         WireShape wireShape;
-        if (slot.getType() == SINK) {
+        if (slot.isOfType(Slot.TYPE_SINK)) {
             wireShape = createWireShape(shapeX, shapeY, shapeX, shapeY, null, slot);
             wireShape.getSinkHandle().setAttachedSlotShape(slotShape);
             wireShape.getSourceHandle().moveToTop();

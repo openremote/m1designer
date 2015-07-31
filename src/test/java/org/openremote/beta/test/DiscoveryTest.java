@@ -7,7 +7,7 @@ import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.inventory.discovery.AdapterDiscoveryService;
 import org.openremote.beta.server.inventory.discovery.DiscoveryServiceConfiguration;
 import org.openremote.beta.shared.inventory.Adapter;
-import org.openremote.beta.shared.inventory.Property;
+import org.openremote.beta.shared.model.Property;
 import org.openremote.beta.zwave.component.MockZWAdapter;
 import org.openremote.beta.zwave.component.ZWAdapter;
 import org.openremote.beta.zwave.component.ZWComponent;

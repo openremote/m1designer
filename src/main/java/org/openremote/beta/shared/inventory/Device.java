@@ -1,6 +1,7 @@
 package org.openremote.beta.shared.inventory;
 
 import org.apache.camel.EndpointConfiguration;
+import org.openremote.beta.shared.model.Identifier;
 
 public class Device extends InventoryObject {
 

@@ -29,7 +29,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
         this.flow = flow;
         this.node = node;
         LOG.debug("Creating builder for: " + node);
-        for (Slot slot : node.findSlots(Slot.Type.SINK)) {
+        for (Slot slot : node.findSlots(Slot.TYPE_SINK)) {
             sinkRouteManagers.add(new SinkRouteManager(getContext(), flow, node, slot));
         }
     }
@@ -38,8 +38,8 @@ public abstract class NodeRouteManager extends RouteBuilder {
     public void configure() throws Exception {
         LOG.debug("Configure routes: " + node);
 
-        RouteDefinition routeDefinition = from("direct:" + node.getId())
-            .routeId(flow.toString() + "###" + node.toString())
+        RouteDefinition routeDefinition = from("direct:" + node.getIdentifier().getId())
+            .routeId(flow.getIdentifier().toString() + "###" + node.getIdentifier().toString())
             .autoStartup(false);
 
         // Optional sending exchange to an endpoint before node processing
@@ -47,7 +47,7 @@ public abstract class NodeRouteManager extends RouteBuilder {
             String preEndpoint = getString(getMap(node.getProperties()), "preEndpoint");
             if (preEndpoint != null) {
                 routeDefinition.to(preEndpoint)
-                    .id(flow.toString() + "###" + node.toString() + "###preEndpoint");
+                    .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###preEndpoint");
             }
         }
 
@@ -59,13 +59,13 @@ public abstract class NodeRouteManager extends RouteBuilder {
             String postEndpoint = getString(getMap(node.getProperties()), "postEndpoint");
             if (postEndpoint != null) {
                 routeDefinition.to(postEndpoint)
-                    .id(flow.toString() + "###" + node.toString() + "###postEndpoint");
+                    .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###postEndpoint");
             }
         }
 
         // Send the exchange through the wires to the next node(s)
         routeDefinition.bean(method(new WiringRouter(flow, node)))
-            .id(flow.toString() + "###" + node.toString() + "###toWires");
+            .id(flow.getIdentifier() + "###" + node.getIdentifier() + "###toWires");
     }
 
     protected abstract void configure(RouteDefinition routeDefinition) throws Exception;

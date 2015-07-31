@@ -1,55 +1,42 @@
 package org.openremote.beta.shared.flow;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.shared.model.Identifier;
+
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
 @JsType
-public class Slot {
+@JsonSerialize(include= NON_NULL)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+public class Slot extends FlowObject {
 
-    @JsType
-    public enum Type {
-        SINK,
-        SOURCE
-    }
+    public static final String TYPE_SINK = "urn:org-openremote:flow:slot:sink";
+    public static final String TYPE_SOURCE = "urn:org-openremote:flow:slot:source";
 
-    public String id;
-    public Type type;
-    public String label;
     public boolean visible = true;
 
     public Slot() {
     }
 
-    public Slot(String id, Type type) {
-        this.id = id;
-        this.type = type;
+    public Slot(Identifier identifier) {
+        super(null, identifier);
     }
 
-    public Slot(String id, Type type, String label) {
-        this.id = id;
-        this.type = type;
-        this.label = label;
+    public Slot(String label, Identifier identifier) {
+        super(label, identifier);
     }
 
-    public Slot(String id, Type type, boolean visible) {
-        this.id = id;
-        this.type = type;
+    public Slot(Identifier identifier, boolean visible) {
+        this(null, identifier, visible);
+    }
+
+    public Slot(String label, Identifier identifier, boolean visible) {
+        super(label, identifier);
         this.visible = visible;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
     }
 
     public boolean isVisible() {
@@ -63,9 +50,7 @@ public class Slot {
     @Override
     public String toString() {
         return "Slot{" +
-            "'" + label + '\'' +
-            ", id='" + id + '\'' +
-            ", type=" + type +
-            '}';
+            "visible=" + visible +
+            "} " + super.toString();
     }
 }

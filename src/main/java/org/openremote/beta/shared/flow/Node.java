@@ -1,62 +1,64 @@
 package org.openremote.beta.shared.flow;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.shared.model.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@JsType
-public class Node {
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
-    public String id;
-    public String type;
-    public String label;
+@JsType
+@JsonSerialize(include= NON_NULL)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+public class Node extends FlowObject {
+
+    public static final String TYPE_CONSUMER = "urn:org-openremote:flow:node:consumer";
+    public static final String TYPE_PRODUCER = "urn:org-openremote:flow:node:producer";
+    public static final String TYPE_FUNCTION = "urn:org-openremote:flow:node:function";
+    public static final String TYPE_CHANGE = "urn:org-openremote:flow:node:change";
+    public static final String TYPE_STORAGE = "urn:org-openremote:flow:node:storage";
+
+    public static String getTypeLabel(String type) {
+        switch(type) {
+            case TYPE_CONSUMER:
+                return "Consumer";
+            case TYPE_PRODUCER:
+                return "Producer";
+            case TYPE_FUNCTION:
+                return "Function";
+            case TYPE_CHANGE:
+                return "Change";
+            case TYPE_STORAGE:
+                return "Storage";
+            default:
+                return type;
+        }
+    }
+
     public Slot[] slots = new Slot[0];
     public Object properties;
 
     public Node() {
     }
 
-    public Node(String id, String type) {
-        this.id = id;
-        this.type = type;
+    public Node(String label, Identifier identifier) {
+        super(label, identifier);
     }
 
-    public Node(String id, String type, String label) {
-        this.id = id;
-        this.type = type;
-        this.label = label;
-    }
-
-    public Node(String id, String type, String label, Slot... slots) {
-        this.id = id;
-        this.type = type;
-        this.label = label;
+    public Node(String label, Identifier identifier, Slot... slots) {
+        super(label, identifier);
         this.slots = slots;
     }
 
-    public Node(String id, String type, String label, Slot[] slots, Object properties) {
-        this.id = id;
-        this.type = type;
-        this.label = label;
+    public Node(String label, Identifier identifier, Slot[] slots, Object properties) {
+        super(label, identifier);
         this.slots = slots;
         this.properties = properties;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
     }
 
     public Slot[] getSlots() {
@@ -76,21 +78,17 @@ public class Node {
     }
 
     public Slot findSlot(String slotId) {
-        return findSlotByType(slotId, null);
-    }
-
-    public Slot findSlotByType(String slotId, Slot.Type type) {
         for (Slot slot : getSlots()) {
-            if (slot.getId().equals(slotId) && (type == null || slot.getType() == type))
+            if (slot.getIdentifier().getId().equals(slotId))
                 return slot;
         }
         return null;
     }
 
-    public Slot[] findSlots(Slot.Type type) {
+    public Slot[] findSlots(String type) {
         List<Slot> list = new ArrayList<>();
         for (Slot slot : getSlots()) {
-            if (slot.getType().equals(type))
+            if (slot.isOfType(type))
                 list.add(slot);
         }
         return list.toArray(new Slot[list.size()]);
@@ -99,10 +97,8 @@ public class Node {
     @Override
     public String toString() {
         return "Node{" +
-            "'" + label + '\'' +
-            ", id='" + id + '\'' +
-            ", type='" + type + '\'' +
+            "properties=" + properties +
             ", slots=" + slots.length +
-            '}';
+            "} " + super.toString();
     }
 }
