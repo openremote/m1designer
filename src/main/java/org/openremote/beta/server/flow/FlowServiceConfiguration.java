@@ -4,7 +4,7 @@ import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
-import org.openremote.beta.server.testdata.SampleLivingroomEnvironment;
+import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.shared.flow.Flow;
@@ -14,7 +14,7 @@ import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 public class FlowServiceConfiguration implements Configuration {
 
     static Flow[] SAMPLE_FLOWS = new Flow[]{
-        SampleLivingroomEnvironment.FLOW,
+        SampleEnvironmentWidget.FLOW,
         SampleTemperatureProcessor.FLOW,
         SampleThermostatControl.FLOW
     };

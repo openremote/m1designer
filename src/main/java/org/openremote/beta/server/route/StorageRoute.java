@@ -5,7 +5,7 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-public class StorageRoute extends NodeRouteManager {
+public class StorageRoute extends NodeRoute {
 
     public StorageRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

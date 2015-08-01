@@ -5,7 +5,7 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-public class ActuatorRoute extends NodeRouteManager {
+public class ActuatorRoute extends NodeRoute {
 
     public ActuatorRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

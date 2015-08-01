@@ -6,7 +6,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
-import org.openremote.beta.server.route.FlowRouteManager;
+import org.openremote.beta.server.route.FlowRoute;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.FlowRoute.DESTINATION_SINK_ID;
 
 public class ThermostatControlTest extends IntegrationTest {
 
@@ -25,24 +25,24 @@ public class ThermostatControlTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    FlowRouteManager temperatureProcessorManager;
-    FlowRouteManager thermostatControlManager;
+    FlowRoute temperatureProcessorRoute;
+    FlowRoute thermostatControlRoute;
 
     @Override
     protected RouteBuilder[] createRouteBuilders() throws Exception {
-        temperatureProcessorManager = new FlowRouteManager(context(), SampleTemperatureProcessor.FLOW);
-        thermostatControlManager = new FlowRouteManager(context(), SampleThermostatControl.FLOW);
+        temperatureProcessorRoute = new FlowRoute(context(), SampleTemperatureProcessor.FLOW);
+        thermostatControlRoute = new FlowRoute(context(), SampleThermostatControl.FLOW);
         return new RouteBuilder[] {
-            temperatureProcessorManager,
-            thermostatControlManager
+            temperatureProcessorRoute,
+            thermostatControlRoute
         };
     }
 
     @Test
     public void readTemperature() throws Exception {
 
-        temperatureProcessorManager.startRoutes();
-        thermostatControlManager.startRoutes();
+        temperatureProcessorRoute.startRoutes();
+        thermostatControlRoute.startRoutes();
 
         MockEndpoint mockLabelTemperature = context().getEndpoint("mock:labelTemperature", MockEndpoint.class);
         MockEndpoint mockLabelSetpoint = context().getEndpoint("mock:labelSetpoint", MockEndpoint.class);
@@ -77,8 +77,8 @@ public class ThermostatControlTest extends IntegrationTest {
     @Test
     public void setTemperature() throws Exception {
 
-        temperatureProcessorManager.startRoutes();
-        thermostatControlManager.startRoutes();
+        temperatureProcessorRoute.startRoutes();
+        thermostatControlRoute.startRoutes();
 
         MockEndpoint mockLabelTemperature = context().getEndpoint("mock:labelTemperature", MockEndpoint.class);
         MockEndpoint mockLabelSetpoint = context().getEndpoint("mock:labelSetpoint", MockEndpoint.class);
@@ -105,8 +105,6 @@ public class ThermostatControlTest extends IntegrationTest {
         exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(70);
         producerTemplate.send("direct:" + SampleThermostatControl.FLOW.getIdentifier().getId(), exchange);
-
-        logExchangeHistory(exchange);
 
         headers.clear();
         headers.put(DESTINATION_SINK_ID, SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK.getIdentifier().getId());

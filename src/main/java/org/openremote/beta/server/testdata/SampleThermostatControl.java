@@ -19,7 +19,7 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot TEMPERATURE_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Slot TEMPERATURE_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
+    public static Slot TEMPERATURE_CONSUMER_SINK = new Slot("Temperature", new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
     public static Node TEMPERATURE_CONSUMER = new Node("Temperature", new Identifier(generateGlobalUniqueId(), TYPE_CONSUMER), TEMPERATURE_CONSUMER_SINK, TEMPERATURE_CONSUMER_SOURCE);
 
     static {
@@ -33,7 +33,7 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot SETPOINT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Slot SETPOINT_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
+    public static Slot SETPOINT_CONSUMER_SINK = new Slot("Setpoint", new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
     public static Node SETPOINT_CONSUMER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), TYPE_CONSUMER), SETPOINT_CONSUMER_SINK, SETPOINT_CONSUMER_SOURCE);
 
     static {
@@ -195,7 +195,7 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot SETPOINT_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_PRODUCER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE), false);
+    public static Slot SETPOINT_PRODUCER_SOURCE = new Slot("Setpoint", new Identifier(generateGlobalUniqueId(), TYPE_SOURCE), false);
     public static Node SETPOINT_PRODUCER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), TYPE_PRODUCER), SETPOINT_PRODUCER_SOURCE, SETPOINT_PRODUCER_SINK);
 
     static {

@@ -5,7 +5,7 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-public class ProducerRoute extends NodeRouteManager {
+public class ProducerRoute extends NodeRoute {
 
     public ProducerRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

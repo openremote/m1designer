@@ -5,7 +5,7 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-public class WidgetRoute extends NodeRouteManager {
+public class WidgetRoute extends NodeRoute {
 
     public WidgetRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

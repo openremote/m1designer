@@ -14,27 +14,30 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
-import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.FlowRoute.DESTINATION_SINK_ID;
 import static org.openremote.beta.server.route.RouteManagementUtil.*;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
-public abstract class NodeRouteManager extends RouteBuilder {
+public abstract class NodeRoute extends RouteBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NodeRouteManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeRoute.class);
+
+    public static final String NODE_INSTANCE_ID = "NODE_INSTANCE_ID";
 
     protected final Flow flow;
     protected final Node node;
-    protected List<SinkRoute> sinkRouteManagers = new ArrayList<>();
+    protected List<SinkRoute> sinkRoutes = new ArrayList<>();
 
-    public NodeRouteManager(CamelContext context, Flow flow, Node node) {
+    public NodeRoute(CamelContext context, Flow flow, Node node) {
         super(context);
         this.flow = flow;
         this.node = node;
         LOG.debug("Creating builder for: " + node);
         for (Slot slot : node.findSlots(Slot.TYPE_SINK)) {
-            sinkRouteManagers.add(new SinkRoute(getContext(), flow, node, slot));
+            sinkRoutes.add(new SinkRoute(getContext(), flow, node, slot));
         }
     }
 
@@ -48,6 +51,10 @@ public abstract class NodeRouteManager extends RouteBuilder {
 
     public String getDestinationSinkId(Exchange exchange) {
         return exchange.getIn().getHeader(DESTINATION_SINK_ID, String.class);
+    }
+
+    public String getInstanceId(Exchange exchange) {
+        return exchange.getIn().getHeader(NODE_INSTANCE_ID, String.class);
     }
 
     public String getNodeSinkId(int position) {
@@ -64,6 +71,23 @@ public abstract class NodeRouteManager extends RouteBuilder {
             .routeDescription(getRouteDescription(flow, node))
             .autoStartup(false)
             .log(LoggingLevel.DEBUG, LOG, "Node processing: " + getRouteDescription(flow, node));
+
+        routeDefinition
+            .process(exchange -> {
+                // For stateful nodes, we need to know which instance this message is for. This can either
+                // be the node instance if we are not called within a subflow. Or it is the bottom of the
+                // subflow call stack, the "outermost" subflow if they are nested.
+                Stack<String> correlationStack = exchange.getIn().getHeader(SubflowRoute.SUBFLOW_CORRELATION_STACK, Stack.class);
+                if (correlationStack != null && correlationStack.size() > 0) {
+                    // Use the bottom of the stack, the "outermost" subflow is our instance
+                    String correlationId = correlationStack.get(0);
+                    LOG.debug("Message received for instance at bottom of correlation stack: " + correlationId);
+                    exchange.getIn().setHeader(NODE_INSTANCE_ID, correlationId);
+                } else {
+                    log.debug("Message received for this node instance: " + getNode());
+                    exchange.getIn().setHeader(NODE_INSTANCE_ID, getNode().getIdentifier().getId());
+                }
+            }).id(getProcessorId(flow, node, "setInstanceId"));
 
         // Optional sending exchange to an endpoint before node processing
         if (node.hasProperties()) {
@@ -86,6 +110,12 @@ public abstract class NodeRouteManager extends RouteBuilder {
             }
         }
 
+        routeDefinition.removeHeader(DESTINATION_SINK_ID)
+            .id(getProcessorId(flow, node, "removeDestinationSink"));
+
+        routeDefinition.removeHeader(NODE_INSTANCE_ID)
+            .id(getProcessorId(flow, node, "removeInstanceId"));
+
         // Send the exchange through the wires to the next node(s)
         routeDefinition.bean(method(new WiringRouter(flow, node)))
             .id(getProcessorId(flow, node, "toWires"));
@@ -97,8 +127,8 @@ public abstract class NodeRouteManager extends RouteBuilder {
     public void addRoutesToCamelContext(CamelContext context) throws Exception {
         LOG.debug("Adding routes: " + flow);
         super.addRoutesToCamelContext(context);
-        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
-            sinkRouteManager.addRoutesToCamelContext(sinkRouteManager.getContext());
+        for (SinkRoute sinkRoute : sinkRoutes) {
+            sinkRoute.addRoutesToCamelContext(sinkRoute.getContext());
         }
     }
 
@@ -108,8 +138,8 @@ public abstract class NodeRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().startRoute(routeDefinition.getId());
         }
-        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
-            sinkRouteManager.startRoutes();
+        for (SinkRoute sinkRoute : sinkRoutes) {
+            sinkRoute.startRoutes();
         }
     }
 
@@ -119,8 +149,8 @@ public abstract class NodeRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().removeRouteDefinition(routeDefinition);
         }
-        for (SinkRoute sinkRouteManager : sinkRouteManagers) {
-            sinkRouteManager.removeRoutesFromCamelContext();
+        for (SinkRoute sinkRoute : sinkRoutes) {
+            sinkRoute.removeRoutesFromCamelContext();
         }
     }
 }

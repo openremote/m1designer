@@ -10,14 +10,13 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Stack;
 
-import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.FlowRoute.DESTINATION_SINK_ID;
 import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorId;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
-public class FilterRoute extends NodeRouteManager {
+public class FilterRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterRoute.class);
 
@@ -39,15 +38,9 @@ public class FilterRoute extends NodeRouteManager {
             .process(exchange -> {
                 LOG.debug("Filter received data on: " + node);
                 synchronized (instanceValues) {
-                    Stack<String> correlationStack = exchange.getIn().getHeader(SubflowRoute.SUBFLOW_CORRELATION_STACK, Stack.class);
-                    if (correlationStack != null && correlationStack.size() > 0) {
-                        String correlationId = correlationStack.peek();
-                        LOG.debug("Filter storing data for subflow correlation: " + correlationId);
-                        instanceValues.put(correlationId, exchange.getIn().getBody());
-                    } else {
-                        log.debug("Filter storing data for this node: " + node);
-                        instanceValues.put(node.getIdentifier().getId(), exchange.getIn().getBody());
-                    }
+                    String instanceId = getInstanceId(exchange);
+                    LOG.debug("Filter stores data for instance: " + instanceId);
+                    instanceValues.put(instanceId, exchange.getIn().getBody());
                 }
             })
             .id(getProcessorId(flow, node, "storeInstanceValue"))
@@ -70,22 +63,13 @@ public class FilterRoute extends NodeRouteManager {
             .process(exchange -> {
                 log.debug("Filter received trigger on: " + node);
                 synchronized (instanceValues) {
-
-                    Stack<String> correlationStack = exchange.getIn().getHeader(SubflowRoute.SUBFLOW_CORRELATION_STACK, Stack.class);
-                    if (correlationStack != null && correlationStack.size() > 0) {
-                        String correlationId = correlationStack.peek();
-                        LOG.debug("Filter checking data for subflow correlation: " + correlationId);
-                        if (instanceValues.containsKey(correlationId)) {
-                            LOG.debug("Filter received trigger and has data for correlation: " + correlationId);
-                            exchange.getIn().setBody(instanceValues.get(correlationId));
-                            exchange.getIn().setHeader(FILTER_PASS, true);
-                        } else {
-                            LOG.debug("Filter received trigger but has no data for correlation: " + correlationId);
-                        }
-                    } else if (instanceValues.containsKey(node.getIdentifier().getId())) {
-                        log.debug("Filter received trigger and has data for this node: " + node);
-                        exchange.getIn().setBody(instanceValues.get(node.getIdentifier().getId()));
+                    String instanceId = getInstanceId(exchange);
+                    if (instanceValues.containsKey(instanceId)) {
+                        log.debug("Filter has data for instance: " + instanceId);
+                        exchange.getIn().setBody(instanceValues.get(instanceId));
                         exchange.getIn().setHeader(FILTER_PASS, true);
+                    } else {
+                        LOG.debug("Filter received trigger but has no data for instance: " + instanceId);
                     }
                 }
             })

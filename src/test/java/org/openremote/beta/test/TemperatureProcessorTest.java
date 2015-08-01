@@ -4,7 +4,7 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.openremote.beta.server.route.FlowRouteManager;
+import org.openremote.beta.server.route.FlowRoute;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +20,12 @@ public class TemperatureProcessorTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    FlowRouteManager flowRouteManager;
+    FlowRoute flowRoute;
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        flowRouteManager = new FlowRouteManager(context(), SampleTemperatureProcessor.FLOW);
-        return flowRouteManager;
+        flowRoute = new FlowRoute(context(), SampleTemperatureProcessor.FLOW);
+        return flowRoute;
     }
 
     @Test
@@ -33,16 +33,16 @@ public class TemperatureProcessorTest extends IntegrationTest {
 
         LOG.info("##########################################################################");
 
-        flowRouteManager.startRoutes();
+        flowRoute.startRoutes();
 
         LOG.info("##########################################################################");
 
-        flowRouteManager.removeRoutesFromCamelContext();
+        flowRoute.removeRoutesFromCamelContext();
 
         LOG.info("##########################################################################");
 
-        flowRouteManager.addRoutesToCamelContext();
-        flowRouteManager.startRoutes();
+        flowRoute.addRoutesToCamelContext();
+        flowRoute.startRoutes();
 
         LOG.info("##########################################################################");
 
@@ -58,7 +58,7 @@ public class TemperatureProcessorTest extends IntegrationTest {
         mockProducerLabel.expectedBodiesReceived("23 C");
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put(FlowRouteManager.DESTINATION_SINK_ID, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getIdentifier().getId());
+        headers.put(FlowRoute.DESTINATION_SINK_ID, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getIdentifier().getId());
         producerTemplate.sendBodyAndHeaders(
             "direct:" + SampleTemperatureProcessor.FLOW.getIdentifier().getId(), 75, headers
         );

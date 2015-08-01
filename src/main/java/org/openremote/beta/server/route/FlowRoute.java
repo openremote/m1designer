@@ -16,58 +16,58 @@ import java.util.List;
 import static org.openremote.beta.server.route.RouteManagementUtil.*;
 
 
-public class FlowRouteManager extends RouteBuilder {
+public class FlowRoute extends RouteBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FlowRouteManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FlowRoute.class);
 
     public static final String DESTINATION_SINK_ID = "DESTINATION_SINK_ID";
 
     protected final Flow flow;
-    protected List<NodeRouteManager> nodeRouteManagers = new ArrayList<>();
+    protected List<NodeRoute> nodeRoutes = new ArrayList<>();
 
-    public FlowRouteManager(CamelContext context, Flow flow) {
+    public FlowRoute(CamelContext context, Flow flow) {
         super(context);
         this.flow = flow;
         LOG.debug("Creating builder for: " + flow);
 
+        // TODO We need a node type system
         for (Node node : flow.getNodes()) {
-            LOG.debug("Creating builder for: " + node);
-            NodeRouteManager nodeRouteManager = null;
+            NodeRoute nodeRoute;
             switch (node.getIdentifier().getType()) {
                 case Node.TYPE_CONSUMER:
-                    nodeRouteManager = new ConsumerRoute(context, flow, node);
+                    nodeRoute = new ConsumerRoute(context, flow, node);
                     break;
                 case Node.TYPE_PRODUCER:
-                    nodeRouteManager = new ProducerRoute(context, flow, node);
+                    nodeRoute = new ProducerRoute(context, flow, node);
                     break;
                 case Node.TYPE_SENSOR:
-                    nodeRouteManager = new SensorRoute(context, flow, node);
+                    nodeRoute = new SensorRoute(context, flow, node);
                     break;
                 case Node.TYPE_ACTUATOR:
-                    nodeRouteManager = new ActuatorRoute(context, flow, node);
+                    nodeRoute = new ActuatorRoute(context, flow, node);
                     break;
                 case Node.TYPE_WIDGET:
-                    nodeRouteManager = new WidgetRoute(context, flow, node);
+                    nodeRoute = new WidgetRoute(context, flow, node);
                     break;
                 case Node.TYPE_FUNCTION:
-                    nodeRouteManager = new FunctionRoute(context, flow, node);
+                    nodeRoute = new FunctionRoute(context, flow, node);
                     break;
                 case Node.TYPE_FILTER:
-                    nodeRouteManager = new FilterRoute(context, flow, node);
+                    nodeRoute = new FilterRoute(context, flow, node);
                     break;
                 case Node.TYPE_CHANGE:
-                    nodeRouteManager = new ChangeRoute(context, flow, node);
+                    nodeRoute = new ChangeRoute(context, flow, node);
                     break;
                 case Node.TYPE_STORAGE:
-                    nodeRouteManager = new StorageRoute(context, flow, node);
+                    nodeRoute = new StorageRoute(context, flow, node);
                     break;
                 case Node.TYPE_SUBFLOW:
-                    nodeRouteManager = new SubflowRoute(context, flow, node);
+                    nodeRoute = new SubflowRoute(context, flow, node);
                     break;
                 default:
                     throw new UnsupportedOperationException("Can't build route for type of node: " + node);
             }
-            nodeRouteManagers.add(nodeRouteManager);
+            nodeRoutes.add(nodeRoute);
         }
     }
 
@@ -92,8 +92,8 @@ public class FlowRouteManager extends RouteBuilder {
     public void addRoutesToCamelContext(CamelContext context) throws Exception {
         LOG.debug("Adding routes: " + flow);
         super.addRoutesToCamelContext(context);
-        for (NodeRouteManager nodeRouteManager : nodeRouteManagers) {
-            nodeRouteManager.addRoutesToCamelContext(nodeRouteManager.getContext());
+        for (NodeRoute nodeRoute : nodeRoutes) {
+            nodeRoute.addRoutesToCamelContext(nodeRoute.getContext());
         }
     }
 
@@ -103,8 +103,8 @@ public class FlowRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().startRoute(routeDefinition.getId());
         }
-        for (NodeRouteManager nodeRouteManager : nodeRouteManagers) {
-            nodeRouteManager.startRoutes();
+        for (NodeRoute nodeRoute : nodeRoutes) {
+            nodeRoute.startRoutes();
         }
     }
 
@@ -114,8 +114,8 @@ public class FlowRouteManager extends RouteBuilder {
         for (RouteDefinition routeDefinition : routesDefinition.getRoutes()) {
             getContext().removeRouteDefinition(routeDefinition);
         }
-        for (NodeRouteManager nodeRouteManager : nodeRouteManagers) {
-            nodeRouteManager.removeRoutesFromCamelContext();
+        for (NodeRoute nodeRoute : nodeRoutes) {
+            nodeRoute.removeRoutesFromCamelContext();
         }
     }
 }

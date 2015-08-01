@@ -14,7 +14,7 @@ import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
 import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorId;
 import static org.openremote.beta.shared.util.Util.*;
 
-public class FunctionRoute extends NodeRouteManager {
+public class FunctionRoute extends NodeRoute {
 
     public FunctionRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
@@ -30,7 +30,11 @@ public class FunctionRoute extends NodeRouteManager {
                     .process(exchange -> {
                         Map<String, Object> arguments = new HashMap<>();
                         // TODO Input type conversion through properties
-                        arguments.put("input", JsonUtil.JSON.readValue(exchange.getIn().getBody(String.class), Object.class));
+                        if (exchange.getIn().getBody() != null) {
+                            arguments.put("input", JsonUtil.JSON.readValue(exchange.getIn().getBody(String.class), Object.class));
+                        } else {
+                            arguments.put("input", null);
+                        }
                         arguments.put("output", new HashMap<String, Object>());
                         exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
                     })

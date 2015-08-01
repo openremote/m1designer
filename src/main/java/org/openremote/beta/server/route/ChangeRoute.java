@@ -9,7 +9,7 @@ import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorI
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
-public class ChangeRoute extends NodeRouteManager {
+public class ChangeRoute extends NodeRoute {
 
     public ChangeRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

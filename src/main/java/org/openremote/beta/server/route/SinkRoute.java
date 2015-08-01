@@ -11,7 +11,7 @@ import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.openremote.beta.server.route.FlowRouteManager.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.FlowRoute.DESTINATION_SINK_ID;
 import static org.openremote.beta.server.route.RouteManagementUtil.*;
 
 public class SinkRoute extends RouteBuilder {
