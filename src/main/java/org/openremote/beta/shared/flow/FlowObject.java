@@ -59,7 +59,7 @@ public class FlowObject {
 
     @Override
     public String toString() {
-        return "FlowObject{" +
+        return getClass().getSimpleName() + "{" +
             "label='" + label + '\'' +
             ", id=" + identifier +
             '}';

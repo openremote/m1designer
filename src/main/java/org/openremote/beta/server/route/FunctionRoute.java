@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
-import static org.openremote.beta.server.route.RouteManagementUtil.getProcessorId;
-import static org.openremote.beta.shared.util.Util.*;
 
 public class FunctionRoute extends NodeRoute {
 
@@ -21,37 +19,33 @@ public class FunctionRoute extends NodeRoute {
     }
 
     @Override
-    protected void configure(RouteDefinition routeDefinition) throws Exception {
-        if (node.hasProperties()) {
-
-            String javascriptlet = getString(getMap(node.getProperties()), "javascript");
-            if (javascriptlet != null && javascriptlet.length() > 0) {
-                routeDefinition
-                    .process(exchange -> {
-                        Map<String, Object> arguments = new HashMap<>();
-                        // TODO Input type conversion through properties
-                        if (exchange.getIn().getBody() != null) {
-                            arguments.put("input", JsonUtil.JSON.readValue(exchange.getIn().getBody(String.class), Object.class));
-                        } else {
-                            arguments.put("input", null);
-                        }
-                        arguments.put("output", new HashMap<String, Object>());
-                        exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
-                    })
-                    .id(getProcessorId(flow, node, "prepareJavascript"))
-                    .transform(javaScript(javascriptlet))
-                    .id(getProcessorId(flow, node, "executeJavascript"))
-                    .process(exchange -> {
-                        Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);
-                        Map<String, Object> output = (Map<String, Object>) arguments.get("output");
-                        // TODO Output type conversion dynamically
-                        exchange.getIn().setBody(output.get("value"), Integer.class);
-                    })
-                    .id(getProcessorId(flow, node, "resultJavascript"))
-                    .removeHeader(ScriptBuilder.ARGUMENTS)
-                    .id(getProcessorId(flow, node, "cleanupJavascript"));
-            }
-
+    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+        String javascriptlet = getPropertyValue("javascript");
+        if (javascriptlet != null && javascriptlet.length() > 0) {
+            routeDefinition
+                .process(exchange -> {
+                    Map<String, Object> arguments = new HashMap<>();
+                    // TODO Input type conversion through properties
+                    if (exchange.getIn().getBody() != null) {
+                        arguments.put("input", JsonUtil.JSON.readValue(exchange.getIn().getBody(String.class), Object.class));
+                    } else {
+                        arguments.put("input", null);
+                    }
+                    arguments.put("output", new HashMap<String, Object>());
+                    exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
+                })
+                .id(getProcessorId(flow, node, "prepareJavascript"))
+                .transform(javaScript(javascriptlet))
+                .id(getProcessorId(flow, node, "executeJavascript"))
+                .process(exchange -> {
+                    Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);
+                    Map<String, Object> output = (Map<String, Object>) arguments.get("output");
+                    // TODO Output type conversion dynamically
+                    exchange.getIn().setBody(output.get("value"), Integer.class);
+                })
+                .id(getProcessorId(flow, node, "resultJavascript"))
+                .removeHeader(ScriptBuilder.ARGUMENTS)
+                .id(getProcessorId(flow, node, "cleanupJavascript"));
         }
     }
 }

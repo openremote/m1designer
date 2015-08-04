@@ -12,7 +12,7 @@ public class SensorRoute extends NodeRoute {
     }
 
     @Override
-    protected void configure(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
 }

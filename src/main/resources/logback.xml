@@ -12,6 +12,8 @@
 
     <logger name="org.openremote.beta" level="INFO"/>
     <logger name="org.openremote.beta.server" level="INFO"/>
+    <logger name="org.openremote.beta.server.event" level="DEBUG"/>
+    <logger name="org.openremote.beta.server.flow" level="DEBUG"/>
     <logger name="org.openremote.beta.server.route" level="DEBUG"/>
     <logger name="org.openremote.beta.json" level="WARN"/>
     <logger name="org.openremote.beta.test" level="DEBUG"/>

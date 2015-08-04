@@ -67,9 +67,11 @@ public class Slot extends FlowObject {
 
     @Override
     public String toString() {
-        return "Slot{" +
-            "visible=" + visible +
+        return getClass().getSimpleName() + "{" +
+            "label='" + label + '\'' +
+            ", id=" + identifier +
+            ", visible=" + visible +
             ", peerIdentifier=" + peerIdentifier +
-            "} " + super.toString();
+            '}';
     }
 }

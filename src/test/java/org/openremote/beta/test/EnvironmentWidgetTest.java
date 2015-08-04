@@ -3,12 +3,12 @@ package org.openremote.beta.test;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
-import org.openremote.beta.server.route.FlowRoute;
-import org.openremote.beta.server.route.NodeRoute;
-import org.openremote.beta.server.route.SubflowRoute;
+import org.openremote.beta.server.route.FlowRoutes;
+import org.openremote.beta.server.route.RouteConstants;
+import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.route.procedure.FlowStartProcedure;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import static org.apache.camel.builder.PredicateBuilder.and;
-import static org.openremote.beta.server.route.FlowRoute.DESTINATION_SINK_ID;
+import static org.openremote.beta.server.route.RouteConstants.SUBFLOW_CORRELATION_STACK;
 
 public class EnvironmentWidgetTest extends IntegrationTest {
 
@@ -30,35 +30,19 @@ public class EnvironmentWidgetTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    FlowRoute environmentPanelRoute;
-    FlowRoute temperatureProcessorRoute;
-    FlowRoute thermostatControlRoute;
-
-    @Override
-    protected RouteBuilder[] createRouteBuilders() throws Exception {
-        environmentPanelRoute = new FlowRoute(context(), SampleEnvironmentWidget.FLOW);
-        temperatureProcessorRoute = new FlowRoute(context(), SampleTemperatureProcessor.FLOW);
-        thermostatControlRoute = new FlowRoute(context(), SampleThermostatControl.FLOW);
-        return new RouteBuilder[] {
-            environmentPanelRoute,
-            temperatureProcessorRoute,
-            thermostatControlRoute
-        };
-    }
-
     @Test
     public void readTemperature() throws Exception {
 
-        environmentPanelRoute.startRoutes();
-        temperatureProcessorRoute.startRoutes();
-        thermostatControlRoute.startRoutes();
+        RouteManagementService routeManagementService = context().hasService(RouteManagementService.class);
+        routeManagementService.startFlowRoutes(context(), SampleEnvironmentWidget.FLOW);
+        routeManagementService.startFlowRoutes(context(), SampleTemperatureProcessor.FLOW);
+        routeManagementService.startFlowRoutes(context(), SampleThermostatControl.FLOW);
 
         MockEndpoint mockLivingroomSetpointActuator = context().getEndpoint("mock:livingroomSetpointActuator", MockEndpoint.class);
         MockEndpoint mockBedroomSetpointActuator = context().getEndpoint("mock:bedroomSetpointActuator", MockEndpoint.class);
         MockEndpoint mockLabelTemperature = context().getEndpoint("mock:labelTemperature", MockEndpoint.class);
         MockEndpoint mockLabelSetpoint = context().getEndpoint("mock:labelSetpoint", MockEndpoint.class);
 
-        Map<String, Object> headers = new HashMap<>();
 
         /* ###################################################################################### */
 
@@ -68,11 +52,11 @@ public class EnvironmentWidgetTest extends IntegrationTest {
         mockLabelTemperature.expectedMessageCount(2);
         mockLabelTemperature.expectedMessagesMatches(
             and(
-                header(NodeRoute.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId()),
+                header(RouteConstants.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId()),
                 bodyAs(String.class).isEqualTo("23 C")
             ),
             and(
-                header(NodeRoute.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getIdentifier().getId()),
+                header(RouteConstants.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getIdentifier().getId()),
                 bodyAs(String.class).isEqualTo("18 C")
             )
         );
@@ -80,42 +64,30 @@ public class EnvironmentWidgetTest extends IntegrationTest {
         mockLabelSetpoint.expectedMessageCount(2);
         mockLabelSetpoint.expectedMessagesMatches(
             and(
-                header(NodeRoute.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId()),
+                header(RouteConstants.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId()),
                 bodyAs(String.class).isEqualTo("21 C")
             ),
             and(
-                header(NodeRoute.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getIdentifier().getId()),
+                header(RouteConstants.NODE_INSTANCE_ID).isEqualTo(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getIdentifier().getId()),
                 bodyAs(String.class).isEqualTo("16 C")
             )
         );
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SINK.getIdentifier().getId());
         Exchange exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(75);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR.getIdentifier().getId(), exchange);
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR_SINK.getIdentifier().getId());
         exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(70);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR.getIdentifier().getId(), exchange);
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.BEDROOM_TEMPERATURE_SENSOR_SINK.getIdentifier().getId());
         exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(65);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.BEDROOM_TEMPERATURE_SENSOR.getIdentifier().getId(), exchange);
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.BEDROOM_SETPOINT_SENSOR_SINK.getIdentifier().getId());
         exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(62);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.BEDROOM_SETPOINT_SENSOR.getIdentifier().getId(), exchange);
 
         mockLivingroomSetpointActuator.assertIsSatisfied();
         mockBedroomSetpointActuator.assertIsSatisfied();
@@ -128,9 +100,10 @@ public class EnvironmentWidgetTest extends IntegrationTest {
     @Test
     public void setTemperature() throws Exception {
 
-        environmentPanelRoute.startRoutes();
-        temperatureProcessorRoute.startRoutes();
-        thermostatControlRoute.startRoutes();
+        RouteManagementService routeManagementService = context().hasService(RouteManagementService.class);
+        routeManagementService.startFlowRoutes(context(), SampleEnvironmentWidget.FLOW);
+        routeManagementService.startFlowRoutes(context(), SampleTemperatureProcessor.FLOW);
+        routeManagementService.startFlowRoutes(context(), SampleThermostatControl.FLOW);
 
         MockEndpoint mockLivingroomSetpointActuator = context().getEndpoint("mock:livingroomSetpointActuator", MockEndpoint.class);
         MockEndpoint mockBedroomSetpointActuator = context().getEndpoint("mock:bedroomSetpointActuator", MockEndpoint.class);
@@ -143,11 +116,11 @@ public class EnvironmentWidgetTest extends IntegrationTest {
 
         mockLabelSetpoint.expectedMessageCount(2);
         mockLabelSetpoint.whenAnyExchangeReceived(result -> {
-                if (result.getIn().getHeader(NodeRoute.NODE_INSTANCE_ID, String.class)
+                if (result.getIn().getHeader(RouteConstants.NODE_INSTANCE_ID, String.class)
                     .equals(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getIdentifier().getId()))
                     assertEquals(result.getIn().getBody(String.class), "18 C");
 
-                if (result.getIn().getHeader(NodeRoute.NODE_INSTANCE_ID, String.class)
+                if (result.getIn().getHeader(RouteConstants.NODE_INSTANCE_ID, String.class)
                     .equals(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId()))
                     assertEquals(result.getIn().getBody(String.class), "21 C");
             }
@@ -158,39 +131,31 @@ public class EnvironmentWidgetTest extends IntegrationTest {
 
         mockBedroomSetpointActuator.expectedMessageCount(0);
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR_SINK.getIdentifier().getId());
         Exchange exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(70);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR.getIdentifier().getId(), exchange);
 
-        headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleEnvironmentWidget.BEDROOM_SETPOINT_SENSOR_SINK.getIdentifier().getId());
         exchange = new DefaultExchange(context());
-        exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(65);
-        producerTemplate.send("direct:" + SampleEnvironmentWidget.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleEnvironmentWidget.BEDROOM_SETPOINT_SENSOR.getIdentifier().getId(), exchange);
 
         headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK.getIdentifier().getId());
         Stack<String> correlationStack = new Stack<>();
         correlationStack.push(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId());
-        headers.put(SubflowRoute.SUBFLOW_CORRELATION_STACK, correlationStack);
+        headers.put(SUBFLOW_CORRELATION_STACK, correlationStack);
         exchange = new DefaultExchange(context());
         exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(null);
-        producerTemplate.send("direct:" + SampleThermostatControl.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleThermostatControl.SETPOINT_MINUS_BUTTON.getIdentifier().getId(), exchange);
 
         headers.clear();
-        headers.put(DESTINATION_SINK_ID, SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK.getIdentifier().getId());
         correlationStack = new Stack<>();
         correlationStack.push(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId());
-        headers.put(SubflowRoute.SUBFLOW_CORRELATION_STACK, correlationStack);
+        headers.put(SUBFLOW_CORRELATION_STACK, correlationStack);
         exchange = new DefaultExchange(context());
         exchange.getIn().setHeaders(headers);
         exchange.getIn().setBody(null);
-        producerTemplate.send("direct:" + SampleThermostatControl.FLOW.getIdentifier().getId(), exchange);
+        producerTemplate.send("direct:" + SampleThermostatControl.SETPOINT_MINUS_BUTTON.getIdentifier().getId(), exchange);
 
         mockLabelTemperature.assertIsSatisfied();
         mockLabelSetpoint.assertIsSatisfied();

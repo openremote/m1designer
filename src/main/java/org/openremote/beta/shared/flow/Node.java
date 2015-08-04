@@ -151,12 +151,4 @@ public class Node extends FlowObject {
             return getSlots()[position];
         return null;
     }
-
-    @Override
-    public String toString() {
-        return "Node{" +
-            "properties=" + properties +
-            ", slots=" + slots.length +
-            "} " + super.toString();
-    }
 }

@@ -95,7 +95,7 @@ public class DiscoveryTest extends IntegrationTest {
 
         // Check the inbox, it should be empty
         DiscoveredDeviceDTO[] discoveredDevices = fromJson(
-            template.requestBody(createHttpUri("discovery", "inbox"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "inbox"), null, String.class),
             DiscoveredDeviceDTO[].class
         );
         assertEquals(discoveredDevices.length, 0);
@@ -103,13 +103,13 @@ public class DiscoveryTest extends IntegrationTest {
         // Find the available adapters and their configuration metadata
 
         Adapter[] adapters = fromJson(
-            template.requestBody(createHttpUri("discovery", "adapter"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "adapter"), null, String.class),
             Adapter[].class
         );
         assertTrue(adapters.length > 0);
 
         Adapter adapter = fromJson(
-            template.requestBody(createHttpUri("discovery", "adapter", "zwaveMock"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "adapter", "zwaveMock"), null, String.class),
             Adapter.class
         );
 
@@ -133,7 +133,7 @@ public class DiscoveryTest extends IntegrationTest {
         Exchange addAdapterToInboxExchange = createExchangeWithBody(context(), toJson(adapter));
         addAdapterToInboxExchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
         template.send(
-            createHttpUri("discovery", "inbox", "adapter"),
+            createWebClientUri("discovery", "inbox", "adapter"),
             addAdapterToInboxExchange
         );
         String adapterLocation = addAdapterToInboxExchange.getOut().getHeader("Location", String.class);
@@ -144,7 +144,7 @@ public class DiscoveryTest extends IntegrationTest {
         // Trigger refresh of inbox
         discoveredDevices = fromJson(
             template.requestBodyAndHeader(
-                createHttpUri("discovery", "inbox"),
+                createWebClientUri("discovery", "inbox"),
                 null,
                 "refresh", "true",
                 String.class
@@ -158,7 +158,7 @@ public class DiscoveryTest extends IntegrationTest {
         Thread.sleep(1000);
 
         discoveredDevices = fromJson(
-            template.requestBody(createHttpUri("discovery", "inbox"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "inbox"), null, String.class),
             DiscoveredDeviceDTO[].class
         );
         // TODO: We don't have stable IDs yet...
@@ -170,7 +170,7 @@ public class DiscoveryTest extends IntegrationTest {
         // Now remove the adapter from the inbox (disabling discovyer)
 
         Adapter[] inboxAdapters = fromJson(
-            template.requestBody(createHttpUri("discovery", "inbox", "adapter"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "inbox", "adapter"), null, String.class),
             Adapter[].class
         );
         assertEquals(inboxAdapters.length, 1);
@@ -178,13 +178,13 @@ public class DiscoveryTest extends IntegrationTest {
         Exchange removeAdapterFromInboxExchange = createExchangeWithBody(context(), null);
         removeAdapterFromInboxExchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE);
         template.send(
-            createHttpUri(adapterLocation),
+            createWebClientUri(adapterLocation),
             removeAdapterFromInboxExchange
         );
         assertEquals(removeAdapterFromInboxExchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE), 200);
 
         inboxAdapters = fromJson(
-            template.requestBody(createHttpUri("discovery", "inbox", "adapter"), null, String.class),
+            template.requestBody(createWebClientUri("discovery", "inbox", "adapter"), null, String.class),
             Adapter[].class
         );
         assertEquals(inboxAdapters.length, 0);

@@ -36,22 +36,20 @@ public class Server {
     public Server(Environment environment, CamelContext context, Iterable<Configuration> configurations) throws Exception {
         this.environment = environment;
         for (Configuration cfg : configurations) {
-            LOG.info("Applying configuration: " + cfg.getClass().getName());
+            LOG.info("> Applying configuration: " + cfg.getClass().getName());
             cfg.apply(environment, context);
         }
     }
 
     public static void main(String[] args) throws Exception {
-        CamelContext context = new DefaultCamelContext() {
-            @Override
-            protected Registry createRegistry() {
-                return new SimpleRegistry();
-            }
-        };
+        LOG.info("Starting server...");
+        CamelContext context = new ServerCamelContext();
         Server server = new Server(context);
         if (Boolean.valueOf(server.environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
             LOG.info("######################## DEV MODE ########################");
         }
+        LOG.info("Starting CamelContext...");
         context.start();
+        LOG.info("Server ready");
     }
 }

@@ -3,6 +3,7 @@ package org.openremote.beta.shared.flow;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.util.*;
@@ -125,13 +126,5 @@ public class Flow extends FlowObject {
                 return node;
         }
         return null;
-    }
-
-    @Override
-    public String toString() {
-        return "Flow{" +
-            "nodes=" + nodes.length +
-            ", wires=" + wires.length +
-            "} " + super.toString();
     }
 }

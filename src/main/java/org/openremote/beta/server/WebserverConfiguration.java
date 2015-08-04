@@ -74,6 +74,11 @@ public class WebserverConfiguration implements Configuration {
 
         environment.getRegistry().put("customHeaderFilterStrategy", new CustomHeaderFilterStrategy());
 
+        String host = environment.getProperty(WEBSERVER_ADDRESS, WEBSERVER_ADDRESS_DEFAULT);
+        String port = environment.getProperty(WEBSERVER_PORT, WEBSERVER_PORT_DEFAULT);
+
+        LOG.info("Configuring WebServer: " + host + ":" + port);
+
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
@@ -81,8 +86,8 @@ public class WebserverConfiguration implements Configuration {
 
                     .component("jetty")
 
-                    .host(environment.getProperty(WEBSERVER_ADDRESS, WEBSERVER_ADDRESS_DEFAULT))
-                    .port(environment.getProperty(WEBSERVER_PORT, WEBSERVER_PORT_DEFAULT))
+                    .host(host)
+                    .port(port)
 
                     .enableCORS(true)
                     .corsHeaderProperty(

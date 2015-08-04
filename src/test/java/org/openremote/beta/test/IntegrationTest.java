@@ -5,14 +5,18 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.impl.DefaultShutdownStrategy;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
 import org.openremote.beta.server.*;
+import org.openremote.beta.server.event.EventServiceConfiguration;
+import org.openremote.beta.server.event.WebSocketEventServiceConfiguration;
+import org.openremote.beta.server.flow.FlowServiceConfiguration;
+import org.openremote.beta.server.route.RouteManagementServiceConfiguration;
 import org.openremote.beta.server.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -29,7 +33,8 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected Server server;
     protected Environment environment;
-    protected String ephemeralPort;
+    protected String webServerEphemeralPort;
+    protected String webSocketEphemeralPort;
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
@@ -37,10 +42,14 @@ public class IntegrationTest extends CamelTestSupport {
 
         CamelContext context = new DefaultCamelContext(new SimpleRegistry());
 
+        context.setTracing(isTracingEnabled());
+
         Properties properties = new Properties();
         List<Configuration> configurations = new ArrayList<>();
 
-        ephemeralPort = findEphemeralPort();
+        webServerEphemeralPort = findEphemeralPort();
+        webSocketEphemeralPort = findEphemeralPort();
+
         configure(properties, configurations, context);
 
         environment = new Environment(context, false, properties);
@@ -58,8 +67,26 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new SystemConfiguration());
 
         properties.put(WebserverConfiguration.WEBSERVER_ADDRESS, getServerHost());
-        properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
+        properties.put(WebserverConfiguration.WEBSERVER_PORT, getWebServerPort());
         configurations.add(new WebserverConfiguration());
+
+        configurations.add(new RouteManagementServiceConfiguration());
+        configurations.add(new FlowServiceConfiguration());
+        configurations.add(new EventServiceConfiguration());
+
+        properties.put(WebSocketEventServiceConfiguration.WEBSOCKET_ADDRESS, getServerHost());
+        properties.put(WebSocketEventServiceConfiguration.WEBSOCKET_PORT, getWebSocketPort());
+        configurations.add(new WebSocketEventServiceConfiguration());
+
+    }
+
+    @Override
+    protected int getShutdownTimeout() {
+        return 2;
+    }
+
+    protected boolean isTracingEnabled() {
+        return false;
     }
 
     protected ObjectMapper createJsonMapper() {
@@ -70,19 +97,27 @@ public class IntegrationTest extends CamelTestSupport {
         return environment;
     }
 
-    protected String getServerScheme() {
+    protected String getWebServerScheme() {
         return "http";
+    }
+
+    protected String getWebSocketScheme() {
+        return "ahc-ws";
     }
 
     protected String getServerHost() {
         return "127.0.0.1";
     }
 
-    protected String getServerPort() {
-        return ephemeralPort;
+    protected String getWebServerPort() {
+        return webServerEphemeralPort;
     }
 
-    protected String createHttpUri(String... pathSegments) {
+    public String getWebSocketPort() {
+        return webSocketEphemeralPort;
+    }
+
+    protected String createWebClientUri(String... pathSegments) {
         StringBuilder path = new StringBuilder();
         if (pathSegments != null) {
             for (String pathSegment : pathSegments) {
@@ -90,7 +125,22 @@ public class IntegrationTest extends CamelTestSupport {
             }
         }
         try {
-            URI uri = new URI(getServerScheme(), null, getServerHost(), Integer.valueOf(getServerPort()), path.toString(), null, null);
+            URI uri = new URI(getWebServerScheme(), null, getServerHost(), Integer.valueOf(getWebServerPort()), path.toString(), null, null);
+            return uri.toString();
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    protected String createWebSocketUri(String... pathSegments) {
+        StringBuilder path = new StringBuilder();
+        if (pathSegments != null) {
+            for (String pathSegment : pathSegments) {
+                path.append(pathSegment.startsWith("/") ? "" : "/").append(pathSegment);
+            }
+        }
+        try {
+            URI uri = new URI(getWebSocketScheme(), null, getServerHost(), Integer.valueOf(getWebSocketPort()), path.toString(), null, null);
             return uri.toString();
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);

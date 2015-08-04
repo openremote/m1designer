@@ -38,6 +38,8 @@ dependencies {
 
     serverDependencies "org.apache.camel:camel-core:${camelVersion}"
     serverDependencies "org.apache.camel:camel-jetty:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-websocket:${camelVersion}"
+    serverDependencies "org.apache.camel:camel-ahc-ws:${camelVersion}"
     serverDependencies "org.apache.camel:camel-jackson:${camelVersion}"
     serverDependencies "org.apache.camel:camel-script:${camelVersion}"
     serverDependencies "org.apache.camel:camel-groovy:${camelVersion}"

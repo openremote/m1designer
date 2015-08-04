@@ -2,16 +2,12 @@ package org.openremote.beta.test;
 
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.openremote.beta.server.route.FlowRoute;
+import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class TemperatureProcessorTest extends IntegrationTest {
 
@@ -20,29 +16,11 @@ public class TemperatureProcessorTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    FlowRoute flowRoute;
-
-    @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
-        flowRoute = new FlowRoute(context(), SampleTemperatureProcessor.FLOW);
-        return flowRoute;
-    }
-
     @Test
     public void execute() throws Exception {
 
-        LOG.info("##########################################################################");
-
-        flowRoute.startRoutes();
-
-        LOG.info("##########################################################################");
-
-        flowRoute.removeRoutesFromCamelContext();
-
-        LOG.info("##########################################################################");
-
-        flowRoute.addRoutesToCamelContext();
-        flowRoute.startRoutes();
+        context().hasService(RouteManagementService.class)
+            .startFlowRoutes(context(), SampleTemperatureProcessor.FLOW);
 
         LOG.info("##########################################################################");
 
@@ -57,10 +35,8 @@ public class TemperatureProcessorTest extends IntegrationTest {
         mockProducerLabel.expectedMessageCount(1);
         mockProducerLabel.expectedBodiesReceived("23 C");
 
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(FlowRoute.DESTINATION_SINK_ID, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getIdentifier().getId());
-        producerTemplate.sendBodyAndHeaders(
-            "direct:" + SampleTemperatureProcessor.FLOW.getIdentifier().getId(), 75, headers
+        producerTemplate.sendBody(
+            "direct:" + SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getIdentifier().getId(), 75
         );
 
         LOG.info("##########################################################################");
