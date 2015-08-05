@@ -1,8 +1,12 @@
 package org.openremote.beta.server.route;
 
-import org.apache.camel.*;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
+import org.openremote.beta.server.event.EventService;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -10,9 +14,12 @@ import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Stack;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.openremote.beta.server.route.RouteConstants.*;
+import static org.openremote.beta.server.route.RouteConstants.INSTANCE_ID;
+import static org.openremote.beta.server.route.RouteConstants.SINK_SLOT_ID;
+import static org.openremote.beta.server.route.SubflowRoute.copyCorrelationStack;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
@@ -20,24 +27,12 @@ public abstract class NodeRoute extends RouteBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeRoute.class);
 
-    public static String getRouteId(Flow flow, Node node) {
-        return node.getIdentifier() + ";" + flow.getIdentifier();
+    public static String getConsumerUri(Node node) {
+        return getConsumerUri(node.getIdentifier().getId());
     }
 
-    public static String getRouteId(Flow flow, Node node, Slot slot) {
-        return slot.getIdentifier() + ";" + node.getIdentifier() + ";" + flow.getIdentifier();
-    }
-
-    public static String getProcessorId(Flow flow, Node node, String processorLabel) {
-        return processorLabel + ";" + node.getIdentifier() + ";" + flow.getIdentifier();
-    }
-
-    public static String getProcessorId(Flow flow, Node node, Slot slot, String processorLabel) {
-        return processorLabel + ";" + slot.getIdentifier() + ";" + node.getIdentifier() + ";" + flow.getIdentifier();
-    }
-
-    public static String getRouteDescription(Flow flow, Node node) {
-        return node + ";" + flow;
+    public static String getConsumerUri(String nodeId) {
+        return "direct:" + nodeId;
     }
 
     protected final Flow flow;
@@ -59,16 +54,36 @@ public abstract class NodeRoute extends RouteBuilder {
         return node;
     }
 
+    public String getRouteId() {
+        return getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+    }
+
+    public String getRouteId(Slot slot) {
+        return slot.getIdentifier() + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+    }
+
+    public String getProcessorId(String processorLabel) {
+        return processorLabel + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+    }
+
+    public String getProcessorId(Slot slot, String processorLabel) {
+        return processorLabel + ";" + slot.getIdentifier() + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+    }
+
+    public String getRouteDescription() {
+        return getNode() + ";" + getFlow();
+    }
+
     public ProducerTemplate getProducerTemplate() {
         return producerTemplate;
     }
 
-    public String getDestinationSinkId(Exchange exchange) {
-        return exchange.getIn().getHeader(DESTINATION_SINK_ID, String.class);
+    public String getSinkSlotId(Exchange exchange) {
+        return exchange.getIn().getHeader(SINK_SLOT_ID, String.class);
     }
 
     public String getInstanceId(Exchange exchange) {
-        return exchange.getIn().getHeader(NODE_INSTANCE_ID, String.class);
+        return exchange.getIn().getHeader(INSTANCE_ID, String.class);
     }
 
     public String getPropertyValue(String property) {
@@ -79,49 +94,51 @@ public abstract class NodeRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        LOG.debug("Configure routes: " + node);
+        if (!isServerRoutingEnabled()) {
+            LOG.debug("Node is not routing, skipping: " + getNode());
+        }
+        LOG.debug("Configure routes: " + getNode());
 
         RouteDefinition routeDefinition = from("direct:" + node.getIdentifier().getId())
-            .routeId(getRouteId(flow, node))
-            .routeDescription(getRouteDescription(flow, node))
+            .routeId(getRouteId())
+            .routeDescription(getRouteDescription())
             .autoStartup(false)
-            .log(LoggingLevel.DEBUG, LOG, ">>> " + getRouteDescription(flow, node) + " starts processing: ${body}");
+            .log(LoggingLevel.DEBUG, LOG, ">>> " + getRouteDescription() + " starts processing: ${body}");
 
         routeDefinition
             .process(exchange -> {
                 // If we received a message and it doesn't have a destination sink, use this node's first sink slot
-                String destinationSinkId = getDestinationSinkId(exchange);
+                String destinationSinkId = getSinkSlotId(exchange);
                 if (destinationSinkId != null)
                     return;
 
                 Slot[] sinks = getNode().findSlots(Slot.TYPE_SINK);
                 if (sinks.length == 0)
                     return;
-                exchange.getIn().setHeader(DESTINATION_SINK_ID, sinks[0].getIdentifier().getId());
-            }).id(getProcessorId(flow, node, "setDestinationSink"));
+                exchange.getIn().setHeader(SINK_SLOT_ID, sinks[0].getIdentifier().getId());
+            }).id(getProcessorId("setDestinationSink"));
 
         routeDefinition
             .process(exchange -> {
                 // For stateful nodes, we need to know which instance this message is for. This can either
-                // be the node instance if we are not called within a subflow. Or it is the bottom of the
-                // subflow call stack, the "outermost" subflow if they are nested.
-                Stack<String> correlationStack = exchange.getIn().getHeader(SUBFLOW_CORRELATION_STACK, Stack.class);
-                if (correlationStack != null && correlationStack.size() > 0) {
-                    // Use the bottom of the stack, the "outermost" subflow is our instance
-                    String correlationId = correlationStack.get(0);
-                    LOG.debug("Message received for instance at bottom of correlation stack: " + correlationId);
-                    exchange.getIn().setHeader(NODE_INSTANCE_ID, correlationId);
+                // be the node instance if we are not called within a flow (directly in tests?). Usually it is
+                // the first element of the flow call stack, the "outermost" flow if they are nested.
+                String instanceId = SubflowRoute.peekCorrelationStack(exchange.getIn().getHeaders(), true, false);
+                if (instanceId != null) {
+                    LOG.debug("Message received for instance (root of correlation stack): " + instanceId);
                 } else {
-                    exchange.getIn().setHeader(NODE_INSTANCE_ID, getNode().getIdentifier().getId());
+                    instanceId = getNode().getIdentifier().getId();
+                    LOG.debug("Message received for instance (this): " + instanceId);
                 }
-            }).id(getProcessorId(flow, node, "setInstanceId"));
+                exchange.getIn().setHeader(INSTANCE_ID, instanceId);
+            }).id(getProcessorId("setInstanceId"));
 
         // Optional sending exchange to an endpoint before node processing
         if (node.hasProperties()) {
             String preEndpoint = getPropertyValue("preEndpoint");
             if (preEndpoint != null) {
                 routeDefinition.to(preEndpoint)
-                    .id(getProcessorId(flow, node, "preEndpoint"));
+                    .id(getProcessorId("preEndpoint"));
             }
         }
 
@@ -133,21 +150,47 @@ public abstract class NodeRoute extends RouteBuilder {
             String postEndpoint = getPropertyValue("postEndpoint");
             if (postEndpoint != null) {
                 routeDefinition.to(postEndpoint)
-                    .id(getProcessorId(flow, node, "postEndpoint"));
+                    .id(getProcessorId("postEndpoint"));
             }
         }
 
-        routeDefinition.removeHeader(NODE_INSTANCE_ID)
-            .id(getProcessorId(flow, node, "removeInstanceId"));
+        // Optional sending message event to clients
+        if (isPublishingMessageEvents()) {
+            routeDefinition
+                .process(exchange -> {
+                    LOG.debug("Sending message event to clients: " + getNode());
+                    Slot sink = getNode().findSlot(getSinkSlotId(exchange));
+                    Map<String, Object> headers = new HashMap<>(exchange.getIn().getHeaders());
+                    // Cleanup
+                    headers.remove(RouteConstants.SINK_SLOT_ID);
+                    headers.remove(RouteConstants.INSTANCE_ID);
+                    String body = exchange.getIn().getBody(String.class);
+                    getContext().hasService(EventService.class).sendMessageEvent(
+                        getFlow(), getNode(), sink, body, headers
+                    );
+                })
+                .id(getProcessorId("toClients"));
+        }
 
-        routeDefinition.removeHeader(DESTINATION_SINK_ID)
-            .id(getProcessorId(flow, node, "removeDestinationSink"));
+        routeDefinition.removeHeader(INSTANCE_ID)
+            .id(getProcessorId("removeInstanceId"));
+
+        routeDefinition.removeHeader(SINK_SLOT_ID)
+            .id(getProcessorId("removeDestinationSink"));
 
         routeDefinition
-            .log(LoggingLevel.DEBUG, LOG, "<<< " + getRouteDescription(flow, node) + " done processing: ${body}");
+            .log(LoggingLevel.DEBUG, LOG, "<<< " + getRouteDescription() + " done processing: ${body}");
 
         // Send the exchange through the wires to the next node(s)
         configureDestination(routeDefinition);
+    }
+
+    protected boolean isServerRoutingEnabled() {
+        return true;
+    }
+
+    protected boolean isPublishingMessageEvents() {
+        return false;
     }
 
     protected void configureDestination(RouteDefinition routeDefinition) throws Exception {
@@ -162,9 +205,9 @@ public abstract class NodeRoute extends RouteBuilder {
                     }
                 }
             })
-            .id(getProcessorId(getFlow(), getNode(), "toWires"))
+            .id(getProcessorId("toWires"))
             .stop()
-            .id(getProcessorId(getFlow(), getNode(), "stopNodeRoute"))
+            .id(getProcessorId("stopNodeRoute"))
         ;
     }
 
@@ -182,20 +225,13 @@ public abstract class NodeRoute extends RouteBuilder {
 
         LOG.debug("Sending copy of exchange to node '" + destinationNodeId + "' sink: " + destinationSinkId);
         Exchange exchangeCopy = copyExchange(exchange, popStack);
-        exchangeCopy.getIn().setHeader(DESTINATION_SINK_ID, destinationSinkId);
+        exchangeCopy.getIn().setHeader(SINK_SLOT_ID, destinationSinkId);
         getProducerTemplate().send("direct:" + destinationNodeId, exchangeCopy);
     }
 
     protected Exchange copyExchange(Exchange exchange, boolean popStack) {
         Exchange exchangeCopy = exchange.copy();
-        Stack<String> subflowCorrelationStack = exchange.getIn().getHeader(RouteConstants.SUBFLOW_CORRELATION_STACK, Stack.class);
-        if (subflowCorrelationStack != null) {
-            Stack<String> subflowCorrelationStackCopy = (Stack<String>) subflowCorrelationStack.clone();
-            if (subflowCorrelationStack.size() > 0 && popStack) {
-                subflowCorrelationStackCopy.pop();
-            }
-            exchangeCopy.getIn().setHeader(RouteConstants.SUBFLOW_CORRELATION_STACK, subflowCorrelationStackCopy);
-        }
+        exchangeCopy.getIn().setHeaders(copyCorrelationStack(exchangeCopy.getIn().getHeaders(), popStack));
         return exchangeCopy;
     }
 

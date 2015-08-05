@@ -16,14 +16,14 @@ public class ChangeRoute extends NodeRoute {
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         routeDefinition
             .choice()
-            .id(getProcessorId(flow, node, "selectChange"))
+            .id(getProcessorId("selectChange"))
                 .when(new PropertyIsSet(getNode(), "prepend"))
                     .transform(body().prepend(getPropertyValue("prepend")))
-                    .id(getProcessorId(flow, node, "doPrepend"))
+                    .id(getProcessorId("doPrepend"))
                 .endChoice()
                 .when(new PropertyIsSet(getNode(), "append"))
                     .transform(body().append(getPropertyValue("append")))
-                    .id(getProcessorId(flow, node, "doAppend"))
+                    .id(getProcessorId("doAppend"))
                 .endChoice()
             .end();
     }

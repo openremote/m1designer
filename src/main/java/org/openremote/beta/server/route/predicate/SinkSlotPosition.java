@@ -5,11 +5,11 @@ import org.openremote.beta.server.route.RouteConstants;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 
-public class DestinationSinkPosition extends NodePredicate{
+public class SinkSlotPosition extends NodePredicate{
 
     final protected int position;
 
-    public DestinationSinkPosition(Node node, int position) {
+    public SinkSlotPosition(Node node, int position) {
         super(node);
         this.position = position;
     }
@@ -19,7 +19,7 @@ public class DestinationSinkPosition extends NodePredicate{
         Slot sink = getNode().findSlotByPosition(position, Slot.TYPE_SINK);
         if (sink == null)
             return false;
-        String destinationSinkId = exchange.getIn().getHeader(RouteConstants.DESTINATION_SINK_ID, String.class);
-        return destinationSinkId != null && destinationSinkId.equals(sink.getIdentifier().getId());
+        String sinkSlotId = exchange.getIn().getHeader(RouteConstants.SINK_SLOT_ID, String.class);
+        return sinkSlotId != null && sinkSlotId.equals(sink.getIdentifier().getId());
     }
 }

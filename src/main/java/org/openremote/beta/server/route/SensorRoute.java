@@ -15,4 +15,9 @@ public class SensorRoute extends NodeRoute {
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
+
+    @Override
+    protected boolean isPublishingMessageEvents() {
+        return true;
+    }
 }

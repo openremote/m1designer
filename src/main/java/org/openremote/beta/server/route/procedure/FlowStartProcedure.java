@@ -42,8 +42,8 @@ public class FlowStartProcedure extends FlowProcedure {
                     case Node.TYPE_ACTUATOR:
                         nodeRoute = new ActuatorRoute(context, flow, node);
                         break;
-                    case Node.TYPE_WIDGET:
-                        nodeRoute = new WidgetRoute(context, flow, node);
+                    case Node.TYPE_CLIENT:
+                        nodeRoute = new ClientRoute(context, flow, node);
                         break;
                     case Node.TYPE_FUNCTION:
                         nodeRoute = new FunctionRoute(context, flow, node);

@@ -34,18 +34,18 @@ public class FunctionRoute extends NodeRoute {
                     arguments.put("output", new HashMap<String, Object>());
                     exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
                 })
-                .id(getProcessorId(flow, node, "prepareJavascript"))
+                .id(getProcessorId("prepareJavascript"))
                 .transform(javaScript(javascriptlet))
-                .id(getProcessorId(flow, node, "executeJavascript"))
+                .id(getProcessorId("executeJavascript"))
                 .process(exchange -> {
                     Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);
                     Map<String, Object> output = (Map<String, Object>) arguments.get("output");
                     // TODO Output type conversion dynamically
                     exchange.getIn().setBody(output.get("value"), Integer.class);
                 })
-                .id(getProcessorId(flow, node, "resultJavascript"))
+                .id(getProcessorId("resultJavascript"))
                 .removeHeader(ScriptBuilder.ARGUMENTS)
-                .id(getProcessorId(flow, node, "cleanupJavascript"));
+                .id(getProcessorId("cleanupJavascript"));
         }
     }
 }

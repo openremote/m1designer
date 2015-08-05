@@ -111,12 +111,41 @@ public class Flow extends FlowObject {
         return list.toArray(new Wire[list.size()]);
     }
 
+    public Wire[] findWiresForSink(String slotId) {
+        List<Wire> list = new ArrayList<>();
+        for (Wire wire : getWires()) {
+            if (wire.getSinkId().equals(slotId))
+                list.add(wire);
+        }
+        return list.toArray(new Wire[list.size()]);
+    }
+
     public Node findNode(String nodeId) {
         for (Node node : getNodes()) {
             if (node.getIdentifier().getId().equals(nodeId))
                 return node;
         }
         return null;
+    }
+
+    public boolean isNodeWiredToNodeOfType(Node node, String nodeType) {
+        for (Slot source : node.findSlots(Slot.TYPE_SOURCE)) {
+            Wire[] wires = findWiresForSource(source.getIdentifier().getId());
+            for (Wire wire : wires) {
+                Node otherSide = findOwnerNode(wire.getSinkId());
+                if (!otherSide.getIdentifier().getType().equals(nodeType))
+                    return true;
+            }
+        }
+        for (Slot sink : node.findSlots(Slot.TYPE_SINK)) {
+            Wire[] wires = findWiresForSink(sink.getIdentifier().getId());
+            for (Wire wire : wires) {
+                Node otherSide = findOwnerNode(wire.getSourceId());
+                if (!otherSide.getIdentifier().getType().equals(Node.TYPE_CLIENT))
+                    return true;
+            }
+        }
+        return false;
     }
 
     public Node findOwnerNode(String slotId) {

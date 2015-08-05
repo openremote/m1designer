@@ -1,8 +1,6 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -11,11 +9,72 @@ import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
+
+    private static final String SUBFLOW_CORRELATION_STACK = "SUBFLOW_CORRELATION_STACK";
+
+    public static void pushOntoCorrelationStack(Map<String, Object> headers, String identifier) {
+        // Create or get existing stack from headers
+        @SuppressWarnings("unchecked")
+        Stack<String> subflowCorrelationStack = hasCorrelationStack(headers)
+            ? (Stack<String>) headers.get(SUBFLOW_CORRELATION_STACK)
+            : new Stack<>();
+
+        LOG.debug("Pushing identifier'" + identifier + "' onto correlation stack: " + subflowCorrelationStack);
+        subflowCorrelationStack.push(identifier);
+        LOG.debug("Setting correlation stack header: " + subflowCorrelationStack);
+        headers.put(SUBFLOW_CORRELATION_STACK, subflowCorrelationStack);
+    }
+
+    public static String peekCorrelationStack(Map<String, Object> headers, boolean root, boolean removeHeader) {
+        String instanceId = null;
+        if (hasCorrelationStack(headers)) {
+
+            @SuppressWarnings("unchecked")
+            Stack<String> correlationStack = (Stack<String>) headers.get(SUBFLOW_CORRELATION_STACK);
+
+            if (correlationStack.size() > 0) {
+                if (root) {
+                    instanceId = correlationStack.get(0);
+                    LOG.debug("Got correlation stack root element: " + instanceId);
+                } else {
+                    instanceId = correlationStack.peek();
+                    LOG.debug("Got correlation stack current element: " + instanceId);
+                }
+            }
+
+            if (removeHeader)
+                headers.remove(SUBFLOW_CORRELATION_STACK);
+        }
+        return instanceId;
+    }
+
+    public static Map<String, Object> copyCorrelationStack(Map<String, Object> headers, boolean popStack) {
+        Map<String, Object> headersCopy = new HashMap<>(headers);
+        if (hasCorrelationStack(headers)) {
+
+            @SuppressWarnings("unchecked")
+            Stack<String> correlationStack = (Stack<String>) headers.get(SUBFLOW_CORRELATION_STACK);
+
+            @SuppressWarnings("unchecked") Stack<String> correlationStackCopy = (Stack<String>) correlationStack.clone();
+
+            if (correlationStackCopy.size() > 0 && popStack) {
+                correlationStackCopy.pop();
+            }
+            headersCopy.put(SUBFLOW_CORRELATION_STACK, correlationStackCopy);
+        }
+        return headersCopy;
+    }
+
+    public static boolean hasCorrelationStack(Map<String, Object> headers) {
+        return headers.containsKey(SUBFLOW_CORRELATION_STACK);
+    }
 
     public SubflowRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
@@ -27,17 +86,14 @@ public class SubflowRoute extends NodeRoute {
         routeDefinition
             .process(exchange -> {
                 LOG.debug("Processing exchange for subflow: " + getNode());
-                String destinationSinkId = getDestinationSinkId(exchange);
+                String destinationSinkId = getSinkSlotId(exchange);
                 Slot destinationSink = getNode().findSlot(destinationSinkId);
                 LOG.debug("Found destination sink: " + destinationSink);
                 if (destinationSink.getPeerIdentifier() != null) {
+
                     LOG.debug("Found destination peer sink: " + destinationSink.getPeerIdentifier());
 
-                    Stack<String> subflowCorrelationStack = exchange.getIn().getHeader(RouteConstants.SUBFLOW_CORRELATION_STACK, new Stack<>(), Stack.class);
-                    LOG.debug("Pushing subflow '" + node.getIdentifier().getId() + "' onto correlation stack: " + subflowCorrelationStack);
-                    subflowCorrelationStack.push(node.getIdentifier().getId());
-                    LOG.debug("Setting correlation stack header: " + subflowCorrelationStack);
-                    exchange.getIn().setHeader(RouteConstants.SUBFLOW_CORRELATION_STACK, subflowCorrelationStack);
+                    pushOntoCorrelationStack(exchange.getIn().getHeaders(), getNode().getIdentifier().getId());
 
                     sendExchangeCopy(destinationSink.getPeerIdentifier().getId(), exchange, false);
 
@@ -45,11 +101,11 @@ public class SubflowRoute extends NodeRoute {
                     LOG.debug("No peer for destination sink slot, stopping exchange: " + destinationSink);
                 }
             })
-            .id(getProcessorId(flow, node, "toSubflowPeer"))
+            .id(getProcessorId("toSubflowPeer"))
             .stop()
-            .id(getProcessorId(flow, node, "stopSubflow"));
+            .id(getProcessorId("stopSubflow"));
 
-        LOG.debug("Handling subflow source slots: " + node);
+        LOG.debug("Handling subflow source slots: " + getNode());
 
         for (Slot sourceSlot : getNode().findSlots(Slot.TYPE_SOURCE)) {
 
@@ -61,27 +117,31 @@ public class SubflowRoute extends NodeRoute {
 
             LOG.debug("Consuming from source peer asynchronous queue: " + sourceSlot.getPeerIdentifier().getId());
             from("seda:" + sourceSlot.getPeerIdentifier().getId() + "?multipleConsumers=true")
-                .routeId(getRouteId(flow, node, sourceSlot))
+                .routeId(getRouteId(sourceSlot))
                 .process(exchange -> {
                     LOG.debug("Received message from asynchronous queue: " + sourceSlot.getPeerIdentifier().getId());
 
-                    Stack<String> subflowCorrelationStack = exchange.getIn().getHeader(RouteConstants.SUBFLOW_CORRELATION_STACK, Stack.class);
-                    LOG.debug("Testing subflow '" + node + "' correlation stack: " + subflowCorrelationStack);
-                    if (subflowCorrelationStack == null) {
-                        LOG.warn("No correlation stack in message from asynchronous queue, dropping here: " + node);
+                    if (!hasCorrelationStack(exchange.getIn().getHeaders())){
+                        LOG.warn("No correlation stack in message from asynchronous queue, dropping here: " + getNode());
                         return;
                     }
-                    if (subflowCorrelationStack.peek().equals(node.getIdentifier().getId())) {
-                        LOG.debug("Correlation found for '" + node + "', finding wires of: " + sourceSlot);
-                        Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getIdentifier().getId());
+
+                    String currentInstanceId = peekCorrelationStack(exchange.getIn().getHeaders(), false, false);
+
+                    if (getNode().getIdentifier().getId().equals(currentInstanceId)) {
+
+                        LOG.debug("Correlation found for '" + getNode() + "', finding wires of: " + sourceSlot);
+
+                        Wire[] sourceWires = getFlow().findWiresForSource(sourceSlot.getIdentifier().getId());
                         for (Wire sourceWire : sourceWires) {
                             sendExchangeCopy(sourceWire.getSinkId(), exchange, true);
                         }
+
                     } else {
-                        LOG.debug("No correlation found for '" + node + "' in stack: " + subflowCorrelationStack);
+                        LOG.debug("No correlation found for received message on: " + getNode());
                     }
                 })
-                .id(getProcessorId(flow, node, sourceSlot, "toSubflowWires"));
+                .id(getProcessorId(sourceSlot, "toSubflowWires"));
 
         }
     }

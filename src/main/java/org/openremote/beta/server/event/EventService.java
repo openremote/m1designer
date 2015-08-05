@@ -4,18 +4,40 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.StaticService;
 import org.openremote.beta.server.flow.FlowService;
+import org.openremote.beta.server.route.NodeRoute;
+import org.openremote.beta.server.route.RouteConstants;
 import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static org.openremote.beta.shared.util.Util.getMap;
+import static org.openremote.beta.shared.util.Util.getString;
 
 public class EventService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
 
     public static final String FLOW_EVENTS_QUEUE = "seda://flowEvents?multipleConsumers=true&waitForTaskToComplete=NEVER";
+    public static final String INCOMING_MESSAGE_EVENT_QUEUE = "seda://incomingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
+    public static final String OUTGOING_MESSAGE_EVENT_QUEUE = "seda://outgoingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
+
+    public static boolean isClientAccessEnabled(Node node) {
+        // Should we accept client message events for this node (its sinks) and should
+        // we send client message events when this node is done processing (its sources)
+        return (node.hasProperties() && Boolean.valueOf(getString(getMap(node.getProperties()), "clientAccess")))
+            || node.isOfType(Node.TYPE_CLIENT); // TODO ugly, fix with better node type system
+    }
 
     final protected CamelContext context;
     final protected ProducerTemplate producerTemplate;
@@ -81,6 +103,68 @@ public class EventService implements StaticService {
             }
         } else {
             LOG.debug("Flow not found: " + flowStopEvent);
+        }
+    }
+
+    public void onMessageEvent(MessageEvent messageEvent) {
+        LOG.debug("### On incoming message event: " + messageEvent);
+        Node sinkNode = routeManagementService.getRunningNodeOwnerOfSlot(messageEvent.getSinkSlotId());
+        if (sinkNode== null) {
+            LOG.debug("No running flow/node with sink slot, ignoring: " + messageEvent);
+            return;
+        }
+        // TODO: Should we check flow/node identifiers against message event data?
+
+        if (!isClientAccessEnabled(sinkNode)) {
+            LOG.debug("Client access not enabled, dropping received message event for: " + sinkNode);
+            return;
+        }
+
+        LOG.debug("Processing message event with node: " + sinkNode);
+        Map<String, Object> exchangeHeaders = new HashMap<>(
+            messageEvent.hasHeaders() ? getMap(messageEvent.getHeaders()) : Collections.EMPTY_MAP
+        );
+
+        exchangeHeaders.put(RouteConstants.SINK_SLOT_ID, messageEvent.getSinkSlotId());
+
+        if (messageEvent.getInstanceId() != null) {
+            LOG.debug("Received instance identifier, pushing onto correlation stack: " + messageEvent.getInstanceId());
+            SubflowRoute.pushOntoCorrelationStack(exchangeHeaders, messageEvent.getInstanceId());
+        }
+
+        String body = messageEvent.getBody();
+
+        try {
+            producerTemplate.sendBodyAndHeaders(NodeRoute.getConsumerUri(sinkNode), body, exchangeHeaders);
+        } catch (Exception ex) {
+            LOG.warn("Handling message event failed: " + messageEvent, ex);
+        }
+    }
+
+    public void sendMessageEvent(Flow flow, Node node, Slot sink, String body, Map<String, Object> headers) {
+        LOG.debug("Preparing outgoing message event for: " + node);
+
+        if (!isClientAccessEnabled(node)) {
+            LOG.debug("Client access not enabled, not sending message event to: " + node);
+            return;
+        }
+
+        // We want a predictable order of headers in tests, so use a sorted map
+        Map<String, Object> messageHeaders = new TreeMap<>(headers);
+
+        String instanceId = SubflowRoute.peekCorrelationStack(messageHeaders, true, true);
+
+        MessageEvent messageEvent = new MessageEvent(
+            flow, node, sink, instanceId, body, messageHeaders.size() > 0 ? messageHeaders : null
+        );
+
+        Map<String, Object> exchangeHeaders = new HashMap<>();
+        try {
+            LOG.debug("### Sending outgoing message event: " + messageEvent);
+            producerTemplate.sendBodyAndHeaders(OUTGOING_MESSAGE_EVENT_QUEUE, messageEvent, exchangeHeaders);
+
+        } catch (Exception ex) {
+            LOG.warn("Sending message event failed: " + messageEvent, ex);
         }
     }
 }

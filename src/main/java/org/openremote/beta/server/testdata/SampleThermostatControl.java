@@ -24,6 +24,7 @@ public class SampleThermostatControl {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 20);
         editor.put("y", 20);
@@ -38,6 +39,7 @@ public class SampleThermostatControl {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 20);
         editor.put("y", 200);
@@ -77,7 +79,7 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot TEMPERATURE_LABEL_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Node TEMPERATURE_LABEL = new Node("Temperature Text Label", new Identifier(generateGlobalUniqueId(), TYPE_WIDGET), TEMPERATURE_LABEL_SINK);
+    public static Node TEMPERATURE_LABEL = new Node("Temperature Text Label", new Identifier(generateGlobalUniqueId(), TYPE_CLIENT), TEMPERATURE_LABEL_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -91,7 +93,7 @@ public class SampleThermostatControl {
     /* ###################################################################################### */
 
     public static Slot SETPOINT_LABEL_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Node SETPOINT_LABEL = new Node("Setpoint Text Label", new Identifier(generateGlobalUniqueId(), TYPE_WIDGET), SETPOINT_LABEL_SINK);
+    public static Node SETPOINT_LABEL = new Node("Setpoint Text Label", new Identifier(generateGlobalUniqueId(), TYPE_CLIENT), SETPOINT_LABEL_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -106,7 +108,7 @@ public class SampleThermostatControl {
 
     public static Slot SETPOINT_PLUS_BUTTON_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
     public static Slot SETPOINT_PLUS_BUTTON_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
-    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), TYPE_WIDGET), SETPOINT_PLUS_BUTTON_SOURCE, SETPOINT_PLUS_BUTTON_SINK);
+    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), TYPE_CLIENT), SETPOINT_PLUS_BUTTON_SOURCE, SETPOINT_PLUS_BUTTON_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -120,7 +122,7 @@ public class SampleThermostatControl {
 
     public static Slot SETPOINT_MINUS_BUTTON_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
     public static Slot SETPOINT_MINUS_BUTTON_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
-    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), TYPE_WIDGET), SETPOINT_MINUS_BUTTON_SOURCE, SETPOINT_MINUS_BUTTON_SINK);
+    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), TYPE_CLIENT), SETPOINT_MINUS_BUTTON_SOURCE, SETPOINT_MINUS_BUTTON_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -200,6 +202,7 @@ public class SampleThermostatControl {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerSetpoint");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 1050);

@@ -2,7 +2,7 @@ package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
-import org.openremote.beta.server.route.predicate.DestinationSinkPosition;
+import org.openremote.beta.server.route.predicate.SinkSlotPosition;
 import org.openremote.beta.server.route.predicate.PropertyIsTrue;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -29,8 +29,8 @@ public class FilterRoute extends NodeRoute {
 
         routeDefinition
             .choice()
-            .id(getProcessorId(flow, node, "selectInputSlot"))
-            .when(new DestinationSinkPosition(getNode(), 0))
+            .id(getProcessorId("selectInputSlot"))
+            .when(new SinkSlotPosition(getNode(), 0))
                 .process(exchange -> {
                     LOG.debug("Filter received data on: " + node);
                     synchronized (instanceValues) {
@@ -39,18 +39,18 @@ public class FilterRoute extends NodeRoute {
                         instanceValues.put(instanceId, exchange.getIn().getBody());
                     }
                 })
-                .id(getProcessorId(flow, node, "storeInstanceValue"))
+                .id(getProcessorId("storeInstanceValue"))
                 .setHeader(FILTER_PASS, constant(true))
-                .id(getProcessorId(flow, node, "assumeFilterPass"))
+                .id(getProcessorId("assumeFilterPass"))
                 .choice()
-                    .id(getProcessorId(flow, node, "applyRules"))
+                    .id(getProcessorId("applyRules"))
                         .when(new PropertyIsTrue(getNode(), "onTrigger"))
                             .setHeader(FILTER_PASS, constant(false))
-                            .id(getProcessorId(flow, node, "applyOnTrigger"))
+                            .id(getProcessorId("applyOnTrigger"))
                         // TODO: Other filter rules
                 .end()
             .endChoice()
-            .when(new DestinationSinkPosition(getNode(), 1))
+            .when(new SinkSlotPosition(getNode(), 1))
                 .process(exchange -> {
                     log.debug("Filter received trigger on: " + node);
                     synchronized (instanceValues) {
@@ -64,22 +64,22 @@ public class FilterRoute extends NodeRoute {
                         }
                     }
                 })
-                .id(getProcessorId(flow, node, "receiveTrigger"))
+                .id(getProcessorId("receiveTrigger"))
             .endChoice()
             .end()
             .choice()
-                .id(getProcessorId(flow, node, "checkFilterPass"))
+                .id(getProcessorId("checkFilterPass"))
                 .when(header(FILTER_PASS).isEqualTo(false))
                     .process(exchange -> {
                         exchange.getIn().setBody(null);
                         exchange.getIn().removeHeader(FILTER_PASS);
                     })
-                    .id(getProcessorId(flow, node, "filterClear"))
+                    .id(getProcessorId("filterClear"))
                     .stop()
-                    .id(getProcessorId(flow, node, "filterStop"))
+                    .id(getProcessorId("filterStop"))
                     .endChoice()
                 .end()
             .removeHeader(FILTER_PASS)
-            .id(getProcessorId(flow, node, "filterPass"));
+            .id(getProcessorId("filterPass"));
     }
 }

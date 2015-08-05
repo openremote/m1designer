@@ -21,6 +21,7 @@ public class SampleTemperatureProcessor {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 10);
         editor.put("y", 50);
@@ -64,6 +65,7 @@ public class SampleTemperatureProcessor {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerCelcius");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
@@ -94,6 +96,7 @@ public class SampleTemperatureProcessor {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerLabel");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 1000);

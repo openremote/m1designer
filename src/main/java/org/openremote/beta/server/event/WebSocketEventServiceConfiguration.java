@@ -1,12 +1,14 @@
 package org.openremote.beta.server.event;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.websocket.WebsocketComponent;
 import org.apache.camel.component.websocket.WebsocketConstants;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.shared.event.FlowEvent;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +51,17 @@ public class WebSocketEventServiceConfiguration implements Configuration {
                     .end()
                     .to("websocket://flow?sendToAll=true");
 
+                // Receive events on the websocket and publish them on the local bus
+                from("websocket://message")
+                    .routeId("Receive incoming message events on WebSocket")
+                    .convertBodyTo(MessageEvent.class)
+                    .to(EventService.INCOMING_MESSAGE_EVENT_QUEUE);
+
+                // Receive events on the local bus and publish them on the websocket
+                from(EventService.OUTGOING_MESSAGE_EVENT_QUEUE)
+                    .routeId("Send outgoing message events to WebSocket")
+                    .log(LoggingLevel.DEBUG, LOG, "Sending to all websocket clients: ${body}")
+                    .to("websocket://message?sendToAll=true");
             }
         });
     }

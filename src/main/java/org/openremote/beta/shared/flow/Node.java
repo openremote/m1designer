@@ -28,7 +28,7 @@ public class Node extends FlowObject {
     public static final String TYPE_CHANGE = "urn:org-openremote:flow:node:change";
     public static final String TYPE_STORAGE = "urn:org-openremote:flow:node:storage";
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
-    public static final String TYPE_WIDGET = "urn:org-openremote:flow:node:widget";
+    public static final String TYPE_CLIENT = "urn:org-openremote:flow:node:client";
 
     public static String getTypeLabel(String type) {
         switch (type) {
@@ -50,8 +50,8 @@ public class Node extends FlowObject {
                 return "Storage";
             case TYPE_SUBFLOW:
                 return "Flow";
-            case TYPE_WIDGET:
-                return "Widget";
+            case TYPE_CLIENT:
+                return "Client";
             default:
                 return type;
         }
@@ -61,7 +61,7 @@ public class Node extends FlowObject {
     static String ACTUATOR_COLOR = "darkblue";
     static String VIRTUAL_COLOR = "limegreen";
     static String PROCESSOR_COLOR = "sandybrown";
-    static String UI_WIDGET_COLOR = "deeppink";
+    static String CLIENT_COLOR = "deeppink";
 
     public static String getNodeColor(Node node) {
         switch (node.getIdentifier().getType()) {
@@ -83,8 +83,8 @@ public class Node extends FlowObject {
                 return PROCESSOR_COLOR;
             case TYPE_SUBFLOW:
                 return VIRTUAL_COLOR;
-            case TYPE_WIDGET:
-                return UI_WIDGET_COLOR;
+            case TYPE_CLIENT:
+                return CLIENT_COLOR;
             default:
                 return null;
         }

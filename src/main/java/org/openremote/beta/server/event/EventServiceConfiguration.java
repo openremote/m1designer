@@ -44,6 +44,10 @@ public class EventServiceConfiguration implements Configuration {
                     .stop()
                     .endDoTry()
                 ;
+                from(EventService.INCOMING_MESSAGE_EVENT_QUEUE)
+                    .routeId("Handle incoming message events")
+                    .bean(getContext().hasService(EventService.class), "onMessageEvent")
+                ;
             }
         });
     }

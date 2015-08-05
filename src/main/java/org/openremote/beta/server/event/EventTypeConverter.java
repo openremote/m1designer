@@ -3,6 +3,7 @@ package org.openremote.beta.server.event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Converter;
 import org.openremote.beta.shared.event.FlowEvent;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ public class EventTypeConverter {
 
     @Converter
     public static String writeFlowEvent(FlowEvent event) throws Exception {
-        LOG.debug("Writing FlowEvent JSON: " + event);
+        LOG.debug("Writing JSON: " + event);
         return JSON.writeValueAsString(event);
     }
 
@@ -25,4 +26,15 @@ public class EventTypeConverter {
         return JSON.readValue(string, FlowEvent.class);
     }
 
+    @Converter
+    public static String writeMessageEvent(MessageEvent event) throws Exception {
+        LOG.debug("Writing JSON: " + event);
+        return JSON.writeValueAsString(event);
+    }
+
+    @Converter
+    public static MessageEvent readMessageEvent(String string) throws Exception {
+        LOG.debug("Reading MessageEvent JSON: " + string);
+        return JSON.readValue(string, MessageEvent.class);
+    }
 }

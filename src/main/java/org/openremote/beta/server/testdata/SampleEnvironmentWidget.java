@@ -21,6 +21,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 50);
@@ -35,6 +36,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 150);
@@ -63,6 +65,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:livingroomSetpointActuator");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
@@ -78,6 +81,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 300);
@@ -92,6 +96,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 400);
@@ -120,6 +125,7 @@ public class SampleEnvironmentWidget {
 
     static {
         Map<String, Object> properties = createMap();
+        properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:bedroomSetpointActuator");
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
