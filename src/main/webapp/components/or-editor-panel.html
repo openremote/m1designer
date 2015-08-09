@@ -21,6 +21,7 @@ Custom property | Description | Default
 `--or-editor-panel-background-color` | Background of panel | `white`
 `--or-editor-panel-content-background-color` | Background of content | `white`
 `--or-editor-panel-header-background-color` | Background of header | `rgba(255, 255, 255, 0.8)`
+`--or-editor-panel-header-color` | Text color of header | `black`
 `--or-editor-panel-button-color` | Button color | `--default-primary-color`
 -->
 <dom-module id="or-editor-panel">
@@ -39,7 +40,8 @@ Custom property | Description | Default
 
         #switchableTitlePanel,
         #regularTitlePanel {
-            background: var(--or-editor-panel-header-background-color, rgba(255, 255, 255, 0.8));
+            background-color: var(--or-editor-panel-header-background-color, rgba(255, 255, 255, 0.8));
+            color: var(--or-editor-panel-header-color, black);
         }
 
         #panel,

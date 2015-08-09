@@ -3,8 +3,7 @@ package org.openremote.beta.client.flow.crud;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
-import org.openremote.beta.client.flow.*;
+import org.openremote.beta.client.flow.FlowCodec;
 import org.openremote.beta.client.shared.RequestPresenter;
 import org.openremote.beta.shared.flow.Flow;
 
@@ -16,7 +15,7 @@ public class FlowsPresenter extends RequestPresenter {
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
-    public FlowsPresenter(Element view) {
+    public FlowsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(FlowsLoadEvent.class, event -> {

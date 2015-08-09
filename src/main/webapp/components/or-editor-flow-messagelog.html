@@ -63,14 +63,14 @@
                 <iron-list items="[[_messageLog]]" as="msg">
                     <template>
                         <div>
-                            <div class="message layout horizontal">
-                                <div class="flex-4 layout vertical">
+                            <div class="message layout horizontal center">
+                                <div class="flex-5 layout vertical">
                                     <div class$="{{_getLabelClass(msg.flowId)}}">Flow:&#160;<span class="value">{{_getFlowLabel(msg)}}</span></div>
                                     <div class$="{{_getLabelClass(msg.nodeId)}}">Node:&#160;<span class="value">{{_getNodeLabel(msg)}}</span></div>
                                     <div class$="{{_getSinkLabelClass(msg)}}">Sink:&#160;<span class="value">{{_getSinkLabel(msg)}}</span></div>
                                     <div class$="{{_getLabelClass(msg.instanceId)}}">Instance:&#160;<span class="value">{{msg.instanceId}}</span></div>
                                 </div>
-                                <div class="flex-5 body">{{_getBody(msg.body)}}</div>
+                                <div class="flex-6 body">{{_getBody(msg.body)}}</div>
                             </div>
                         </div>
                     </template>
@@ -84,7 +84,7 @@
 
                 <div class="layout horizontal center">
                     <paper-toggle-button id="messagesForAllFlows"></paper-toggle-button>
-                    <span style="margin: 0 0.5em;">ALL FLOWS</span>
+                    <span style="margin: 0 0.5em;">WATCH ALL FLOWS</span>
                 </div>
 
                 <paper-button id="clearMessageLogButton" on-tap="_clearMessageLog">
@@ -136,6 +136,7 @@
                 },
                 _clearMessageLog: function() {
                     this.set("_messageLog", []);
+                    this.$.panel.setAttribute("title", "Messages (Connected, Received: " + this._messageLog.length + ")")
                 },
                 _getLabelClass: function(value) {
                     return "layout horizontal label " + (value ? "" : "empty");

@@ -34,24 +34,24 @@ public interface FlowDesignerConstants {
     int WIRE_DELETE_DISTANCE = 50;
 
     IColor BACKGROUND_COLOR = WHITE;
-    IColor TOOLTIP_BACKGROUND_COLOR = new Color(242, 242, 242);
-    IColor PATCH_COLOR = new Color(102, 102, 102);
-    IColor PATCH_TITLE_COLOR = new Color(51, 51, 51);
-    IColor PATCH_TITLE_TEXT_COLOR = new Color(192, 214, 46);
+    IColor TOOLTIP_BACKGROUND_COLOR = new Color(240, 240, 240);
+    IColor PATCH_COLOR = new Color(69, 90, 100);
+    IColor PATCH_TITLE_COLOR = new Color(240, 240, 240);
+    IColor PATCH_TITLE_TEXT_COLOR = new Color(0, 98, 36);
     IColor PATCH_LABEL_TEXT_COLOR = WHITE;
 
-    IColor SLOT_SINK_COLOR = new Color(230, 230, 230);
+    IColor SLOT_SINK_COLOR = new Color(240, 240, 240);
     IColor SLOT_SINK_TEXT_COLOR = BLACK;
-    IColor SLOT_SOURCE_COLOR = new Color(230, 230, 230);
+    IColor SLOT_SOURCE_COLOR = new Color(240, 240, 240);
     IColor SLOT_SOURCE_TEXT_COLOR = BLACK;
 
     IColor SLOT_SINK_ATTACHED_COLOR = new Color(192, 214, 46);
     IColor SLOT_SOURCE_ATTACHED_COLOR = new Color(192, 214, 46);
-    IColor WIRE_COLOR = new Color(192, 214, 46);;
-    IColor WIRE_HANDLE_COLOR = new Color(204, 204, 204);;
+    IColor WIRE_COLOR = new Color(192, 214, 46);
+    IColor WIRE_HANDLE_COLOR = new Color(251, 192, 45);
     IColor WIRE_HANDLE_ATTACH_COLOR = BLACK;
     IColor WIRE_HANDLE_ATTACH_TEXT_COLOR = new Color(192, 214, 46);
-    IColor WIRE_HANDLE_ATTACH_VETO_COLOR = ORANGE;
-    IColor WIRE_DELETE_COLOR = INDIANRED;
+    IColor WIRE_HANDLE_ATTACH_VETO_COLOR = new Color(230, 74, 25);
+    IColor WIRE_DELETE_COLOR = new Color(230, 74, 25);
 
 }

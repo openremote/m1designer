@@ -35,8 +35,11 @@ Run production
 
     WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/v3/orc3-editor/build/libs/openremote-beta-editor-client.jar!/' \
     WEBSERVER_PORT=8080 \
+    WEBSOCKET_PORT=9292 \
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.beta.server.Server
+
+If you change the WebSocket port, you must adjust `index.html`. Running all services on one port is currently not supported by the Camel components.
 
 Build image and run Docker container
 ---
@@ -46,4 +49,4 @@ Build image and run Docker container
     docker rmi orc3:latest
     cp Dockerfile build/libs/
     docker build -t orc3:latest build/libs/
-    docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime orc3
+    docker run -d --name=orc3 -p 8006:8080 -p 9292:9292 -v /etc/localtime:/etc/localtime orc3

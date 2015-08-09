@@ -32,21 +32,19 @@ Custom property | Description | Default
         }
 
         .list #empty {
-            /* @formatter:off */
             @apply(--or-editor-flow-empty)
-            /* @formatter:on */
         }
 
         .flow .label {
-            font-size: smaller;
-            color: var(--or-editor-flow-item-label-color, #333);
+            color: var(--or-editor-flow-item-label-color, black);
         }
 
         .flow.iron-selected {
-            font-weight: bold;
-            /* @formatter:off */
-            @apply(--or-editor-flow-item-selected)
-            /* @formatter:on */
+            background-color: var(--or-editor-flow-item-selected-background-color, black);
+        }
+
+        .flow.iron-selected .label {
+            color: var(--or-editor-flow-item-selected-label-color, white);
         }
     </style>
 
@@ -93,11 +91,13 @@ Custom property | Description | Default
                 _flowsLoaded: function (type, event) {
                     this.set("flows", event.getFlows());
 
-                    // TODO remove
+                    // TODO dev only, load a flow to work on
+                    /*
                     var event = new openremote.flow.crud.FlowLoadEvent(
                             this.flows[2].getId()
                     );
                     this.fire(event.getType(), event);
+                    */
 
                 },
                 _requestFailure: function (type, event) {

@@ -2,7 +2,6 @@ package org.openremote.beta.client.editor;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.RequestFailureEvent;
 import org.slf4j.Logger;
@@ -14,7 +13,7 @@ public class EditorPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(EditorPresenter.class);
 
-    public EditorPresenter(Element view) {
+    public EditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(RequestFailureEvent.class, action -> {

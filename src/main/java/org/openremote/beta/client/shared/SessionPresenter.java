@@ -3,11 +3,13 @@ package org.openremote.beta.client.shared;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
-import elemental.dom.Element;
 import elemental.events.CloseEvent;
 import elemental.events.MessageEvent;
+import elemental.html.MetaElement;
 import elemental.html.WebSocket;
 import org.fusesource.restygwt.client.JsonEncoderDecoder;
+import org.openremote.beta.client.editor.ShowFailureMessageEvent;
+import org.openremote.beta.client.editor.ShowInfoMessageEvent;
 import org.openremote.beta.client.shared.SessionClosedErrorEvent.Error;
 import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
@@ -23,7 +25,7 @@ public abstract class SessionPresenter extends RequestPresenter {
     protected int failureCount;
     protected int currentReconnectAttempt = -1;
 
-    public SessionPresenter(Element view) {
+    public SessionPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(SessionConnectEvent.class, event -> {
@@ -86,17 +88,20 @@ public abstract class SessionPresenter extends RequestPresenter {
         });
 
         addEventListener(SessionClosedErrorEvent.class, event -> {
+            dispatchEvent(new ShowInfoMessageEvent("Failed server connection, will try a few more times to reach: " + serviceUrl));
             LOG.debug("Session closed with error, incrementing failure count: " + failureCount);
             failureCount++;
             if (failureCount < maxAttempts) {
                 LOG.debug("Session reconnection attempt '" + serviceUrl + "' with delay milliseconds: " + delayMillis);
-                currentReconnectAttempt = dispatchEvent(
+                currentReconnectAttempt = dispatchEventDelayCancelExisting(
                     new SessionConnectEvent(serviceUrl),
                     delayMillis,
                     currentReconnectAttempt
                 );
             } else {
-                LOG.error("Giving up connecting to service after " + failureCount + " failures: " + serviceUrl);
+                String failureMessage = "Giving up connecting to service after " + failureCount + " failures: " + serviceUrl;
+                dispatchEvent(new ShowFailureMessageEvent(failureMessage));
+                LOG.error(failureMessage);
             }
         });
 
@@ -114,6 +119,25 @@ public abstract class SessionPresenter extends RequestPresenter {
 
     protected <E extends Event> void sendMessage(JsonEncoderDecoder<E> encoderDecoder, E event) {
         sendMessage(encoderDecoder.encode(event).toString());
+    }
+
+    protected String getWebSocketPort() {
+        MetaElement metaEditorWebSocketPort =
+            (MetaElement) Browser.getDocument().querySelector("meta[name=editorWebSocketPort]");
+        if (metaEditorWebSocketPort == null)
+            return "9292";
+        return metaEditorWebSocketPort.getContent();
+    }
+
+    protected String getWebSocketUrl(String... pathElement) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ws://").append(hostname()).append(":").append(getWebSocketPort());
+        if (pathElement != null) {
+            for (String pe : pathElement) {
+                sb.append("/").append(pe);
+            }
+        }
+        return sb.toString();
     }
 
     protected abstract void onMessageReceived(String data);

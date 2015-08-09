@@ -25,6 +25,11 @@ public class FilterRoute extends NodeRoute {
     }
 
     @Override
+    protected boolean isPublishingMessageEvents() {
+        return true;
+    }
+
+    @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
 
         routeDefinition

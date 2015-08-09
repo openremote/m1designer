@@ -35,8 +35,8 @@ public class EventService implements StaticService, FlowDeploymentListener {
     public static final String OUTGOING_MESSAGE_EVENT_QUEUE = "seda://outgoingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
 
     public static boolean isClientAccessEnabled(Node node) {
-        // Should we accept client message events for this node (its sinks) and should
-        // we send client message events when this node is done processing (its sources)
+        // Should we accept client message events for this node's sinks and should
+        // we send client message events when a message has been received?
         return (node.hasProperties() && Boolean.valueOf(getString(getMap(node.getProperties()), "clientAccess")))
             || node.isOfType(Node.TYPE_CLIENT); // TODO ugly, fix with better node type system
     }

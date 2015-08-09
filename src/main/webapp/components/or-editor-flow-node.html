@@ -61,7 +61,9 @@
 
                 <template is="dom-repeat" items="{{_sinks}}">
                     <div class="layout horizontal center">
-                        <div class="sinkIndex">{{index}}</div>
+                        <template is="dom-if" if="{{_isMultipleSinks()}}">
+                            <div class="sinkIndex">{{index}}</div>
+                        </template>
                         <div class="flex sinkInput">
                             <paper-input value="{{item.msgValue}}" label="{{_getSinkLabel(item)}}"></paper-input>
                         </div>
@@ -106,6 +108,9 @@
                 },
                 _nodeClose: function() {
                     this.toggleAttribute("hidden", true, this.$.panel);
+                },
+                _isMultipleSinks: function() {
+                    return this._sinks && this._sinks.length > 1;
                 },
                 _getSinkLabel: function(sink) {
                     return sink.label ? sink.label + " Slot": "Sink Slot";

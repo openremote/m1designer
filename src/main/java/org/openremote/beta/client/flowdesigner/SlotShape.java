@@ -43,6 +43,7 @@ public class SlotShape extends Box {
     }
 
     public void setLabelValue(String value) {
-        setText((originalLabel != null ? originalLabel : "") + " (" + value + ")");
+        setText((originalLabel != null ? originalLabel : "")
+            + ( value != null && value.length() > 0 ? " (" + value + ")" : ""));
     }
 }

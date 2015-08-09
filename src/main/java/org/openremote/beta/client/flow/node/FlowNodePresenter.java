@@ -2,7 +2,6 @@ package org.openremote.beta.client.flow.node;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
 import org.openremote.beta.client.message.MessageSendEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.shared.event.MessageEvent;
@@ -24,7 +23,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     public Flow flow;
     public Node node;
 
-    public FlowNodePresenter(Element view) {
+    public FlowNodePresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(FlowNodeEditEvent.class, event -> {

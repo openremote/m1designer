@@ -3,10 +3,8 @@ package org.openremote.beta.client.flow.control;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
 import org.openremote.beta.client.editor.ShowInfoMessageEvent;
 import org.openremote.beta.client.flow.FlowCodec;
-import org.openremote.beta.client.flow.crud.FlowLoadedEvent;
 import org.openremote.beta.client.shared.*;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
@@ -26,10 +24,10 @@ public class FlowControlPresenter extends SessionPresenter {
 
     public Flow flow;
 
-    public FlowControlPresenter(Element view) {
+    public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        this.serviceUrl = "ws://" + hostname() + ":9292/flow";
+        this.serviceUrl = getWebSocketUrl("flow");
 
         addEventListener(FlowRequestStatusEvent.class, event -> {
             sendMessage(FLOW_EVENT_CODEC, event);
@@ -89,13 +87,13 @@ public class FlowControlPresenter extends SessionPresenter {
     }
 
     public void redeployFlow() {
+        stopFlow();
         sendRequest(
             resource("flow", flow.getId()).put().json(FLOW_CODEC.encode(flow)),
             new NoContentResponseCallback("Save flow") {
                 @Override
                 protected void onResponse() {
                     dispatchEvent(new ShowInfoMessageEvent("Flow '" + flow.getLabel() + "' saved, redeploying..."));
-                    stopFlow();
                     startFlow();
                 }
             }

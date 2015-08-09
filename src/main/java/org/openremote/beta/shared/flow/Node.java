@@ -57,39 +57,6 @@ public class Node extends FlowObject {
         }
     }
 
-    static String SENSOR_COLOR = "blue";
-    static String ACTUATOR_COLOR = "darkblue";
-    static String VIRTUAL_COLOR = "limegreen";
-    static String PROCESSOR_COLOR = "sandybrown";
-    static String CLIENT_COLOR = "deeppink";
-
-    public static String getNodeColor(Node node) {
-        switch (node.getIdentifier().getType()) {
-            case TYPE_CONSUMER:
-                return VIRTUAL_COLOR;
-            case TYPE_PRODUCER:
-                return VIRTUAL_COLOR;
-            case TYPE_SENSOR:
-                return SENSOR_COLOR;
-            case TYPE_ACTUATOR:
-                return ACTUATOR_COLOR;
-            case TYPE_FUNCTION:
-                return PROCESSOR_COLOR;
-            case TYPE_FILTER:
-                return PROCESSOR_COLOR;
-            case TYPE_CHANGE:
-                return PROCESSOR_COLOR;
-            case TYPE_STORAGE:
-                return PROCESSOR_COLOR;
-            case TYPE_SUBFLOW:
-                return VIRTUAL_COLOR;
-            case TYPE_CLIENT:
-                return CLIENT_COLOR;
-            default:
-                return null;
-        }
-    }
-
     public Slot[] slots = new Slot[0];
     public Object properties;
 

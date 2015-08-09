@@ -38,11 +38,29 @@ public class Wire {
 
     public boolean equalsSlots(Slot sourceSlot, Slot sinkSlot) {
         return !(sourceSlot == null || sinkSlot == null)
-            && equals(sourceSlot.getId(), sinkSlot.getId());
+            && equalsSlotIds(sourceSlot.getId(), sinkSlot.getId());
     }
 
-    public boolean equals(String sourceId, String sinkId) {
+    public boolean equalsSlotIds(String sourceId, String sinkId) {
         return getSourceId().equals(sourceId) && getSinkId().equals(sinkId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Wire wire = (Wire) o;
+
+        if (sourceId != null ? !sourceId.equals(wire.sourceId) : wire.sourceId != null) return false;
+        return !(sinkId != null ? !sinkId.equals(wire.sinkId) : wire.sinkId != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = sourceId != null ? sourceId.hashCode() : 0;
+        result = 31 * result + (sinkId != null ? sinkId.hashCode() : 0);
+        return result;
     }
 
     @Override

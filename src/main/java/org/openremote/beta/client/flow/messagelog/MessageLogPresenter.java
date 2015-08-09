@@ -2,7 +2,6 @@ package org.openremote.beta.client.flow.messagelog;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
 import org.openremote.beta.client.message.MessageServerConnectEvent;
 import org.openremote.beta.client.message.MessageSessionPresenter;
 import org.openremote.beta.shared.event.MessageEvent;
@@ -20,7 +19,7 @@ public class MessageLogPresenter extends MessageSessionPresenter {
 
     public Flow flow;
 
-    public MessageLogPresenter(Element view) {
+    public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(FlowMessageLogStartEvent.class, event -> {

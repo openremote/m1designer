@@ -12,7 +12,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
 @JsType
-@JsonSerialize(include= NON_NULL)
+@JsonSerialize(include = NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class Flow extends FlowObject {
 
@@ -37,6 +37,12 @@ public class Flow extends FlowObject {
         super(label, identifier);
         this.nodes = nodes;
         this.wires = wires;
+        if (wires != null) {
+            // Consistency check, important to avoid duplicate wires
+            Set<Wire> wireSet = new HashSet<>(Arrays.asList(wires));
+            if (wireSet.size() != wires.length)
+                throw new IllegalArgumentException("Duplicate wires: " + Arrays.toString(wires));
+        }
     }
 
     public Node[] getNodes() {
@@ -64,13 +70,17 @@ public class Flow extends FlowObject {
     }
 
     public void addWire(Wire wire) {
-        Set<Wire> collection = new HashSet<>(Arrays.asList(getWires()));
-        collection.add(wire);
-        this.wires = collection.toArray(new Wire[collection.size()]);
+        for (Wire existing : getWires()) {
+            if (existing.equals(wire))
+                return;
+        }
+        List<Wire> list = new ArrayList<>(Arrays.asList(getWires()));
+        list.add(wire);
+        this.wires = list.toArray(new Wire[list.size()]);
     }
 
     public void removeWire(Slot sourceSlot, Slot sinkSlot) {
-        Set<Wire> collection = new HashSet<>(Arrays.asList(getWires()));
+        ArrayList<Wire> collection = new ArrayList<>(Arrays.asList(getWires()));
         Iterator<Wire> it = collection.iterator();
         while (it.hasNext()) {
             Wire wire = it.next();

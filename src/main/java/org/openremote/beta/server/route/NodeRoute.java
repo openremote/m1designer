@@ -133,6 +133,24 @@ public abstract class NodeRoute extends RouteBuilder {
                 exchange.getIn().setHeader(INSTANCE_ID, instanceId);
             }).id(getProcessorId("setInstanceId"));
 
+        // Optional sending message event to clients
+        if (isPublishingMessageEvents()) {
+            routeDefinition
+                .process(exchange -> {
+                    LOG.debug("Sending message event to clients: " + getNode());
+                    Slot sink = getNode().findSlot(getSinkSlotId(exchange));
+                    Map<String, Object> headers = new HashMap<>(exchange.getIn().getHeaders());
+                    // Cleanup the copy of the map
+                    headers.remove(RouteConstants.SINK_SLOT_ID);
+                    headers.remove(RouteConstants.INSTANCE_ID);
+                    String body = exchange.getIn().getBody(String.class);
+                    getContext().hasService(EventService.class).sendMessageEvent(
+                        getFlow(), getNode(), sink, body, headers
+                    );
+                })
+                .id(getProcessorId("toClients"));
+        }
+
         // Optional sending exchange to an endpoint before node processing
         if (node.hasProperties()) {
             String preEndpoint = getPropertyValue("preEndpoint");
@@ -154,24 +172,6 @@ public abstract class NodeRoute extends RouteBuilder {
             }
         }
 
-        // Optional sending message event to clients
-        if (isPublishingMessageEvents()) {
-            routeDefinition
-                .process(exchange -> {
-                    LOG.debug("Sending message event to clients: " + getNode());
-                    Slot sink = getNode().findSlot(getSinkSlotId(exchange));
-                    Map<String, Object> headers = new HashMap<>(exchange.getIn().getHeaders());
-                    // Cleanup
-                    headers.remove(RouteConstants.SINK_SLOT_ID);
-                    headers.remove(RouteConstants.INSTANCE_ID);
-                    String body = exchange.getIn().getBody(String.class);
-                    getContext().hasService(EventService.class).sendMessageEvent(
-                        getFlow(), getNode(), sink, body, headers
-                    );
-                })
-                .id(getProcessorId("toClients"));
-        }
-
         routeDefinition.removeHeader(INSTANCE_ID)
             .id(getProcessorId("removeInstanceId"));
 
@@ -189,6 +189,9 @@ public abstract class NodeRoute extends RouteBuilder {
         return true;
     }
 
+    // Generally all nodes which are stateful should probably publish message events.
+    // This can then be selectively enabled in the event service with clientAccess property
+    // on the node, so we don't spam the client event bus.
     protected boolean isPublishingMessageEvents() {
         return false;
     }

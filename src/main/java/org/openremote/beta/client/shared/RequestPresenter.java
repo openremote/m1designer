@@ -1,23 +1,29 @@
 package org.openremote.beta.client.shared;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.js.JsExport;
+import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
-import elemental.dom.Element;
-import org.fusesource.restygwt.client.*;
+import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.JsonEncoderDecoder;
+import org.fusesource.restygwt.client.Method;
+import org.fusesource.restygwt.client.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsExport
+@JsType
 public abstract class RequestPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestPresenter.class);
 
-    public RequestPresenter(Element view) {
+    public RequestPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
     }
 

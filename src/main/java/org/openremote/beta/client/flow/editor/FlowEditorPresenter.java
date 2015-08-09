@@ -26,7 +26,7 @@ public class FlowEditorPresenter extends RequestPresenter {
     public Flow flow;
     public FlowDesigner flowDesigner;
 
-    public FlowEditorPresenter(elemental.dom.Element view) {
+    public FlowEditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(FlowEditEvent.class, event -> {

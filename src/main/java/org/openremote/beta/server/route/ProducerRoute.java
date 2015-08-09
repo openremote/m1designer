@@ -33,7 +33,7 @@ public class ProducerRoute extends NodeRoute {
         // Many (or no) internal (subflow) consumers receive this message asynchronously
         routeDefinition
             .process(exchange -> {
-                LOG.debug("Sending exchange to internal event queue: " + getNode());
+                LOG.debug("Handing off exchange to asynchronous queue: " + getNode());
 
                 ProducerTemplate producerTemplate = getContext().createProducerTemplate();
 
@@ -41,6 +41,7 @@ public class ProducerRoute extends NodeRoute {
 
                 for (Slot sourceSlot : sourceSlots) {
                     Exchange exchangeCopy = copyExchange(exchange, false);
+                    LOG.debug("Sending message to asynchronous queue: " + sourceSlot.getId());
                     producerTemplate.send(
                         "seda:" + sourceSlot.getId() + "?multipleConsumers=true&waitForTaskToComplete=NEVER",
                         exchangeCopy
