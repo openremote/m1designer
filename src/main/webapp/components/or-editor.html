@@ -3,9 +3,10 @@
 
 <link rel="import" href="or-editor-toast.html">
 <link rel="import" href="or-editor-busy-indicator.html">
+<link rel="import" href="or-editor-form.html">
 
 <link rel="import" href="or-editor-flows.html">
-<link rel="import" href="or-editor-flowdesigner.html">
+<link rel="import" href="or-editor-flow-editor.html">
 
 <script>
     // One-time initialization, this MUST be a script in an imported file! The
@@ -18,30 +19,52 @@
         waitUntil(function () {
             return window.Polymer;
         }, 100, 50, function () {
-            document.dispatchEvent(new CustomEvent("gwtReadyEditor"))
+            document.dispatchEvent(new CustomEvent("gwtReadyEditor"));
         });
     }
 
     document.addEventListener("gwtReadyEditor", function () {
         Polymer({
             is: 'or-editor',
-            attached: function () {
-                this.async(function () {
-                    this.$.flows.load();
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function() {
+                        return new openremote.editor.EditorPresenter(this);
+                    }
+                }
+            },
+            listeners: {
+                'show-info-message': '_showInfoMessage',
+                'show-failure-message': '_showFailureMessage',
+                'request-start': '_loadStart',
+                'request-complete': '_loadComplete'
+            },
+            attached: function() {
+                this.async(function() {
+                    var event = new openremote.flow.crud.FlowsLoadEvent();
+                    this.$.flows.fire(event.getType(), event);
                 });
             },
-            flowsLoading: function () {
-                this.$.toast.show("Loading flows...");
+            _showInfoMessage: function(ce, event) {
+                this.$.toast.show(event.getMessage(), 3000);
+                this.$.busyIndicator.hide();
+            },
+            _showFailureMessage: function(ce, event) {
+                this.$.toast.show(event.getMessage());
+                this.$.busyIndicator.hide();
+            },
+            _loadStart: function() {
+                this.$.toast.show("Loading...");
                 this.$.busyIndicator.show();
             },
-            flowsComplete: function () {
+            _loadComplete: function() {
                 this.$.toast.hide();
                 this.$.busyIndicator.hide();
             },
-            flowSelected: function (e) {
-                this.selectedFlow = e.detail.value;
-                this.$.flowDesigner.edit(this.selectedFlow);
-                this.$.toast.show("Zoom with mouse wheel, drag the canvas to pan around. Click on a node to see properties.", 10000);
+            _flowLoaded: function (ce, event) {
+                var flowEditEvent = new openremote.flow.editor.FlowEditEvent(event.getFlow());
+                this.$.flowEditor.fire(flowEditEvent.getType(), flowEditEvent);
             }
         });
     });
@@ -58,8 +81,8 @@
 
         #busyIndicator {
             position: fixed;
-            bottom: 12px;
-            right: 12px;
+            bottom: 10px;
+            left: 50vw;
         }
 
         #container {
@@ -105,12 +128,10 @@
         <div id="container">
             <div id="sidebar">
                 <or-editor-flows id="flows"
-                                 on-loading="flowsLoading"
-                                 on-complete="flowsComplete"
-                                 on-selected-flow-changed="flowSelected"></or-editor-flows>
+                                 on-flow-loaded="_flowLoaded"></or-editor-flows>
             </div>
             <div id="main">
-                <or-editor-flowdesigner id="flowDesigner"></or-editor-flowdesigner>
+                <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>
             </div>
         </div>
     </template>

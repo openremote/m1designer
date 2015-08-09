@@ -7,7 +7,7 @@ import org.openremote.beta.server.route.*;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-import static org.openremote.beta.shared.event.FlowManagementPhase.*;
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
 
 public class FlowStartProcedure extends FlowProcedure {
 
@@ -66,7 +66,7 @@ public class FlowStartProcedure extends FlowProcedure {
                 flowRoutes.getNodeRoutes().add(nodeRoute);
                 addProcessed(node);
             } catch (Exception ex) {
-                throw new FlowProcedureException(ex, INIT, flow, node, getUnprocessedNodes());
+                throw new FlowProcedureException(ex, INITIALIZING_NODES, flow, node, getUnprocessedNodes());
             }
         }
     }
@@ -78,7 +78,7 @@ public class FlowStartProcedure extends FlowProcedure {
                 nodeRoute.addRoutesToCamelContext(context);
                 addProcessed(nodeRoute.getNode());
             } catch (Exception ex) {
-                throw new FlowProcedureException(ex, ADD_TO_CONTEXT, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
+                throw new FlowProcedureException(ex, ADDING_ROUTES, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
             }
         }
     }
@@ -92,7 +92,7 @@ public class FlowStartProcedure extends FlowProcedure {
                     context.startRoute(routeDefinition.getId());
                     addProcessed(nodeRoute.getNode());
                 } catch (Exception ex) {
-                    throw new FlowProcedureException(ex, START, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
+                    throw new FlowProcedureException(ex, STARTING, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
                 }
             }
         }

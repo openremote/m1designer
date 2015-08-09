@@ -1,91 +1,88 @@
 package org.openremote.beta.client.shared;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONValue;
-import org.fusesource.restygwt.client.JsonCallback;
-import org.fusesource.restygwt.client.JsonEncoderDecoder;
-import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
+import elemental.client.Browser;
+import elemental.dom.Element;
+import elemental.dom.TimeoutHandler;
+import elemental.events.CustomEvent;
+import elemental.events.EventRemover;
+import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class AbstractPresenter {
+public abstract class AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
 
-    protected abstract class ResponseCallback<T> implements JsonCallback {
+    final protected Element view;
 
-        public final JsonEncoderDecoder<T> encoderDecoder;
-        public final Function success;
-
-        public ResponseCallback(JsonEncoderDecoder<T> encoderDecoder, Function success) {
-            this.encoderDecoder = encoderDecoder;
-            this.success = success;
-        }
-
-        @Override
-        public void onFailure(Method method, Throwable exception) {
-            LOG.error("Request error: " + exception);
-        }
+    public AbstractPresenter(Element view) {
+        if (view == null)
+            throw new IllegalArgumentException("Can't instantiate presenter without a view element: " + getClass().getName());
+        LOG.debug("Creating presenter for view '" + view.getLocalName() + "': " + getClass().getName());
+        this.view = view;
     }
 
-    protected abstract class ObjectResponseCallback<T> extends ResponseCallback<T> {
-        public ObjectResponseCallback(JsonEncoderDecoder<T> encoderDecoder, Function success) {
-            super(encoderDecoder, success);
-        }
+    public Element getView() {
+        return view;
+    }
 
-        @Override
-        public void onSuccess(Method method, JSONValue response) {
-            JSONObject responseObject = response.isObject();
-            if (responseObject == null) {
-                onFailure(method, new IllegalArgumentException("Response isn't a JSON object: " + response));
-            } else {
-                onResponse(encoderDecoder.decode(response));
-                success.call();
+    public <E extends Event> EventRemover addEventListener(Class<E> eventClass,
+                                                           EventListener<E> listener) {
+        return addEventListener(eventClass, false, false, listener);
+    }
+
+    public <E extends Event> EventRemover addEventListener(Class<E> eventClass,
+                                                           boolean stopPropagation,
+                                                           boolean stopImmediatePropagation,
+                                                           EventListener<E> listener) {
+        String eventType = Event.getType(eventClass);
+        LOG.debug("Adding event listener to view '" + getView().getLocalName() + "': " + eventType);
+        return getView().addEventListener(eventType, evt -> {
+            CustomEvent customEvent = (CustomEvent) evt;
+            if (stopPropagation)
+                customEvent.stopPropagation();
+            if (stopImmediatePropagation)
+                customEvent.stopImmediatePropagation();
+            @SuppressWarnings("unchecked")
+            E event = (E) customEvent.getDetail();
+            listener.on(event);
+        }, false); // Disable the capture phase, optional bubbling is easier to understand
+    }
+
+    public int dispatchEvent(Event event) {
+        return dispatchEvent(event, 0);
+    }
+
+    public int dispatchEvent(Event event, int delayMillis) {
+        return dispatchEvent(event, delayMillis, -1);
+    }
+
+    public int dispatchEvent(Event event, int delayMillis, int timeoutId) {
+        if (timeoutId != -1) {
+            Browser.getWindow().clearTimeout(timeoutId);
+        }
+        TimeoutHandler dispatchHandler = () -> {
+            LOG.debug("Dispatching custom event on view '" + getView().getLocalName() + "': " + event.getType());
+            CustomEvent customEvent = (CustomEvent) view.getOwnerDocument().createEvent("CustomEvent");
+
+            boolean bubbling = true;
+            boolean cancelable = true;
+            if (event instanceof PropagationOptions) {
+                PropagationOptions propagationOptions = (PropagationOptions) event;
+                bubbling = propagationOptions.isBubbling();
+                cancelable = propagationOptions.isCancelable();
             }
-        }
 
-        protected abstract void onResponse(T data);
+            customEvent.initCustomEvent(event.getType(), bubbling, cancelable, event);
+            getView().dispatchEvent(customEvent);
+        };
+        if (delayMillis > 0) {
+            LOG.debug("Scheduling after " + delayMillis + " milliseconds, custom event on view '" + getView().getLocalName() + "': " + event.getType());
+            return Browser.getWindow().setTimeout(dispatchHandler, delayMillis);
+        } else {
+            dispatchHandler.onTimeoutHandler();
+            return -1;
+        }
     }
-
-    protected abstract class ListResponseCallback<T> extends ResponseCallback<T> {
-
-        public ListResponseCallback(JsonEncoderDecoder<T> encoderDecoder, Function success) {
-            super(encoderDecoder, success);
-        }
-
-        @Override
-        public void onSuccess(Method method, JSONValue response) {
-            JSONArray responseArray = response.isArray();
-            if (responseArray == null) {
-                onFailure(method, new IllegalArgumentException("Response isn't a JSON array: " + response));
-            } else {
-                List<T> list = new ArrayList<>();
-                for (int i = 0; i < responseArray.size(); i++) {
-                    T t = encoderDecoder.decode(responseArray.get(i));
-                    list.add(t);
-                }
-                onResponse(list);
-                success.call();
-            }
-        }
-
-        protected abstract void onResponse(List<T> data);
-    }
-
-    protected Resource resource(String base, String... pathElement) {
-        Resource resource = new Resource(GWT.getHostPageBaseURL() + base);
-        if (pathElement != null) {
-            for (String pe : pathElement) {
-                resource = resource.resolve(pe);
-            }
-        }
-        return resource;
-    }
-
 }
+

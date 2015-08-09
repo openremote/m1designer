@@ -20,7 +20,7 @@ public class Wire {
     }
 
     public Wire(Slot source, Slot sink) {
-        this(source.getIdentifier().getId(), sink.getIdentifier().getId());
+        this(source.getId(), sink.getId());
     }
 
     public Wire(String sourceId, String sinkId) {
@@ -38,7 +38,7 @@ public class Wire {
 
     public boolean equalsSlots(Slot sourceSlot, Slot sinkSlot) {
         return !(sourceSlot == null || sinkSlot == null)
-            && equals(sourceSlot.getIdentifier().getId(), sinkSlot.getIdentifier().getId());
+            && equals(sourceSlot.getId(), sinkSlot.getId());
     }
 
     public boolean equals(String sourceId, String sinkId) {

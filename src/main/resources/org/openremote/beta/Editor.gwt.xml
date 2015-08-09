@@ -6,6 +6,7 @@
     <!-- ##################################################################### -->
 
     <inherits name="com.google.gwt.user.User"/>
+    <inherits name="elemental.Elemental"/>
     <inherits name="ru.finam.slf4jgwt.logging.gwt.Logging"/>
 
     <inherits name="org.fusesource.restygwt.RestyGWT"/>
@@ -20,9 +21,7 @@
     <!-- ##################################################################### -->
 
     <source path="shared"/>
-    <source path="client/shared"/>
-    <source path="client/editor"/>
-    <source path="client/flowdesigner"/>
+    <source path="client"/>
 
     <!-- ##################################################################### -->
 

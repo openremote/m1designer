@@ -4,6 +4,7 @@ import com.ait.lienzo.client.core.shape.BezierCurve;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.guides.ToolTip;
 import com.ait.lienzo.client.core.types.BoundingBox;
+import com.ait.lienzo.client.core.types.DashArray;
 import com.ait.lienzo.client.core.types.Point2D;
 import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.lienzo.shared.core.types.DragMode;
@@ -12,7 +13,7 @@ import org.openremote.beta.shared.flow.Slot;
 
 import static com.ait.lienzo.client.core.Attribute.X;
 import static com.ait.lienzo.client.core.Attribute.Y;
-import static org.openremote.beta.client.flowdesigner.Constants.*;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.*;
 
 public abstract class WireShape extends Group {
 
@@ -238,12 +239,13 @@ public abstract class WireShape extends Group {
     }
 
     public void startRemove() {
+        curve.getDashArray();
         curve.setDashArray(WIRE_WIDTH);
         moveToTop();
     }
 
     public void cancelRemove() {
-        curve.setDashArray(0);
+        curve.setDashArray(new DashArray());
         getSourceHandle().cancelRemove();
         getSinkHandle().cancelRemove();
     }

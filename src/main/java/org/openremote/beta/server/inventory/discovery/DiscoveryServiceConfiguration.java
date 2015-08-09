@@ -63,7 +63,7 @@ public class DiscoveryServiceConfiguration implements Configuration {
                     getContext().hasService(InboxService.class).addAdapter(adapter);
                     getContext().hasService(InboxService.class).triggerDiscovery(adapter);
                     exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
-                    exchange.getOut().setHeader("Location", "/discovery/inbox/adapter/" + adapter.getIdentifier().getId());
+                    exchange.getOut().setHeader("Location", "/discovery/inbox/adapter/" + adapter.getId());
                 })
                 .endRest()
 

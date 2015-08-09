@@ -5,7 +5,7 @@ import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 
 import static java.lang.Math.min;
-import static org.openremote.beta.client.flowdesigner.Constants.*;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.*;
 import static org.openremote.beta.shared.util.Util.*;
 
 public abstract class NodeShape extends Box {

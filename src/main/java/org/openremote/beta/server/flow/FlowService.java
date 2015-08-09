@@ -7,20 +7,19 @@ import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.shared.flow.Flow;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class FlowService implements StaticService {
 
-    final static protected List<Flow> flows = new ArrayList<>();
+    final static protected Map<String, Flow> flows = new LinkedHashMap<>();
 
     @Override
     public void start() throws Exception {
         synchronized (flows) {
             // TODO sample data
-            flows.add(SampleEnvironmentWidget.FLOW);
-            flows.add(SampleTemperatureProcessor.FLOW);
-            flows.add(SampleThermostatControl.FLOW);
+            flows.put(SampleEnvironmentWidget.FLOW.getId(), SampleEnvironmentWidget.FLOW);
+            flows.put(SampleTemperatureProcessor.FLOW.getId(), SampleTemperatureProcessor.FLOW);
+            flows.put(SampleThermostatControl.FLOW.getId(), SampleThermostatControl.FLOW);
         }
     }
 
@@ -35,9 +34,9 @@ public class FlowService implements StaticService {
         synchronized (flows) {
             // Shallow copy, we only want the label and id of the flow
             Flow[] flowsInfo = new Flow[flows.size()];
-            for (int i = 0; i < flowsInfo.length; i++) {
-                Flow flow = flows.get(i);
-                flowsInfo[i] = new Flow(flow.getLabel(), flow.getIdentifier());
+            int i = 0;
+            for (Flow flow : flows.values()) {
+                flowsInfo[i++] = new Flow(flow.getLabel(), flow.getIdentifier());
             }
             return flowsInfo;
         }
@@ -45,13 +44,17 @@ public class FlowService implements StaticService {
 
     public Flow getFlow(@Header("id") String id) {
         synchronized (flows) {
-            for (Flow flow : flows) {
-                if (flow.getIdentifier().getId().equals(id)) {
-                    return flow;
-                }
-            }
+            return flows.get(id);
         }
-        return null;
+    }
+
+    public boolean putFlow(Flow flow) {
+        synchronized (flows) {
+            if (!flows.containsKey(flow.getId()))
+                return false;
+            flows.put(flow.getId(), flow);
+            return true;
+        }
     }
 
 }

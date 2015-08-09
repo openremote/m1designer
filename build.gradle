@@ -48,8 +48,10 @@ dependencies {
     serverDependencies fileTree("${zwaveProjectDirectory}/build/libs")
 
     clientDependencies "com.google.gwt:gwt-user:${gwtVersion}"
+    clientDependencies "com.google.gwt:gwt-elemental:${gwtVersion}"
     clientDependencies "com.ahome-it:lienzo-core:${lienzoVersion}"
     clientDependencies "org.fusesource.restygwt:restygwt:${restygwtVersion}"
+
     gwt("ru.finam:slf4j-gwt:${slf4jGwtVersion}") {
         exclude group: "com.google.gwt"
     }

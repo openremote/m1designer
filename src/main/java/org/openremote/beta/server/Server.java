@@ -4,6 +4,11 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spi.Registry;
+import org.openremote.beta.server.event.EventService;
+import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
+import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
+import org.openremote.beta.server.testdata.SampleThermostatControl;
+import org.openremote.beta.shared.event.FlowDeployEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,5 +56,11 @@ public class Server {
         LOG.info("Starting CamelContext...");
         context.start();
         LOG.info("Server ready");
+
+        // TODO sample data
+        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
+        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
+        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+
     }
 }

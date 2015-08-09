@@ -2,49 +2,48 @@ package org.openremote.beta.shared.event;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.gwt.core.client.js.JsExport;
+import com.google.gwt.core.client.js.JsNoExport;
+import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
+@JsExport
+@JsType
 @JsonSerialize(include= NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
-public class MessageEvent {
+public class MessageEvent extends Event {
 
     public String flowId;
     public String nodeId;
     public String sinkSlotId;
     public String instanceId;
-    public Object headers;
+    public Map<String, Object> headers;
     public String body;
 
+    @JsNoExport
     public MessageEvent() {
+        this(null, null, null, null, null, null);
     }
 
+    @JsNoExport
     public MessageEvent(Flow flow, Node node, Slot sinkSlot, String body) {
-        this(flow, node, sinkSlot, null, body, null);
+        this(flow.getId(), node.getId(), sinkSlot.getId(), null, body, null);
     }
 
+    @JsNoExport
     public MessageEvent(Flow flow, Node node, Slot sinkSlot, String instanceId, String body) {
-        this(flow, node, sinkSlot, instanceId, body, null);
+        this(flow.getId(), node.getId(), sinkSlot.getId(), instanceId, body, null);
     }
 
-    public MessageEvent(Flow flow, Node node, Slot sinkSlot, String instanceId, String body, Object headers) {
-        this(flow.getIdentifier().getId(), node.getIdentifier().getId(), sinkSlot.getIdentifier().getId(), instanceId, body, headers);
-    }
-
-    public MessageEvent(String flowId, String nodeId, String sinkSlotId) {
-        this(flowId, nodeId, sinkSlotId, null, null, null);
-    }
-
-    public MessageEvent(String flowId, String nodeId, String sinkSlotId, String instanceId) {
-        this(flowId, nodeId, sinkSlotId, instanceId, null, null);
-    }
-
-    public MessageEvent(String flowId, String nodeId, String sinkSlotId, String instanceId, String body, Object headers) {
+    public MessageEvent(String flowId, String nodeId, String sinkSlotId, String instanceId, String body, Map<String, Object> headers) {
         this.flowId = flowId;
         this.nodeId = nodeId;
         this.sinkSlotId = sinkSlotId;
@@ -85,11 +84,11 @@ public class MessageEvent {
         this.instanceId = instanceId;
     }
 
-    public Object getHeaders() {
+    public Map<String, Object> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(Object headers) {
+    public void setHeaders(Map<String, Object> headers) {
         this.headers = headers;
     }
 

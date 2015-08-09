@@ -7,7 +7,7 @@ import org.apache.camel.component.websocket.WebsocketComponent;
 import org.apache.camel.component.websocket.WebsocketConstants;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
-import org.openremote.beta.shared.event.FlowEvent;
+import org.openremote.beta.shared.event.FlowIdEvent;
 import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 public class WebSocketEventServiceConfiguration implements Configuration {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketEventServiceConfiguration.class);
+
+    public static final String WEBSOCKET_FLOW_EVENTS = "flow";
+    public static final String WEBSOCKET_MESSAGE_EVENTS = "message";
 
     public static final String WEBSOCKET_ADDRESS = "WEBSOCKET_ADDRESS";
     public static final String WEBSOCKET_ADDRESS_DEFAULT = "0.0.0.0";
@@ -37,22 +40,19 @@ public class WebSocketEventServiceConfiguration implements Configuration {
                 websocketComponent.setPort(Integer.valueOf(port));
 
                 // Receive events on the websocket and publish them on the local bus
-                from("websocket://flow")
-                    .routeId("Receive flow events on WebSocket")
-                    .convertBodyTo(FlowEvent.class)
-                    .to(EventService.FLOW_EVENTS_QUEUE);
+                from("websocket://" + WEBSOCKET_FLOW_EVENTS)
+                    .routeId("Receive incoming flow events on WebSocket")
+                    .convertBodyTo(FlowIdEvent.class)
+                    .to(EventService.INCOMING_FLOW_EVENT_QUEUE);
 
                 // Receive events on the local bus and publish them on the websocket
-                from(EventService.FLOW_EVENTS_QUEUE)
-                    .routeId("Send flow evens to WebSocket")
-                    .choice()
-                    .when(header(WebsocketConstants.CONNECTION_KEY).isNotNull()) // Don't echo received websocket messages
-                    .stop()
-                    .end()
-                    .to("websocket://flow?sendToAll=true");
+                from(EventService.OUTGOING_FLOW_EVENT_QUEUE)
+                    .routeId("Send outgoing flow events to WebSocket")
+                    .log(LoggingLevel.DEBUG, LOG, "Sending to all websocket clients: ${body}")
+                    .to("websocket://" + WEBSOCKET_FLOW_EVENTS + "?sendToAll=true");
 
                 // Receive events on the websocket and publish them on the local bus
-                from("websocket://message")
+                from("websocket://" + WEBSOCKET_MESSAGE_EVENTS)
                     .routeId("Receive incoming message events on WebSocket")
                     .convertBodyTo(MessageEvent.class)
                     .to(EventService.INCOMING_MESSAGE_EVENT_QUEUE);
@@ -61,7 +61,7 @@ public class WebSocketEventServiceConfiguration implements Configuration {
                 from(EventService.OUTGOING_MESSAGE_EVENT_QUEUE)
                     .routeId("Send outgoing message events to WebSocket")
                     .log(LoggingLevel.DEBUG, LOG, "Sending to all websocket clients: ${body}")
-                    .to("websocket://message?sendToAll=true");
+                    .to("websocket://" + WEBSOCKET_MESSAGE_EVENTS + "?sendToAll=true");
             }
         });
     }

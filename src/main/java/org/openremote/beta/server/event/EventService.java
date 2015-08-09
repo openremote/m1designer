@@ -7,6 +7,7 @@ import org.openremote.beta.server.flow.FlowService;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.route.RouteConstants;
 import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.route.RouteManagementService.FlowDeploymentListener;
 import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.shared.event.*;
@@ -24,11 +25,12 @@ import java.util.TreeMap;
 import static org.openremote.beta.shared.util.Util.getMap;
 import static org.openremote.beta.shared.util.Util.getString;
 
-public class EventService implements StaticService {
+public class EventService implements StaticService, FlowDeploymentListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
 
-    public static final String FLOW_EVENTS_QUEUE = "seda://flowEvents?multipleConsumers=true&waitForTaskToComplete=NEVER";
+    public static final String INCOMING_FLOW_EVENT_QUEUE = "seda://incomingFlowEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
+    public static final String OUTGOING_FLOW_EVENT_QUEUE = "seda://outgoingFlowEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
     public static final String INCOMING_MESSAGE_EVENT_QUEUE = "seda://incomingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
     public static final String OUTGOING_MESSAGE_EVENT_QUEUE = "seda://outgoingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
 
@@ -49,6 +51,7 @@ public class EventService implements StaticService {
         this.producerTemplate = context.createProducerTemplate();
         this.flowService = flowService;
         this.routeManagementService = routeManagementService;
+        this.routeManagementService.addListener(this);
     }
 
     @Override
@@ -60,16 +63,29 @@ public class EventService implements StaticService {
 
     }
 
-    public void onFlowEvent(FlowStartEvent flowStartEvent) {
-        LOG.debug("On flow event: " + flowStartEvent);
-        Flow flow = flowService.getFlow(flowStartEvent.getFlowId());
+    public void onFlowEvent(FlowRequestStatusEvent flowRequestStatusEvent) {
+        LOG.debug("On flow event: " + flowRequestStatusEvent);
+        Flow flow = flowService.getFlow(flowRequestStatusEvent.getFlowId());
+        if (flow != null) {
+            routeManagementService.notifyPhaseListeners(flow);
+        } else {
+            LOG.debug("Flow not found: " + flowRequestStatusEvent);
+            producerTemplate.sendBody(
+                OUTGOING_FLOW_EVENT_QUEUE,
+                new FlowDeploymentFailureEvent(flowRequestStatusEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
+            );
+        }
+    }
+
+    public void onFlowEvent(FlowDeployEvent flowDeployEvent) {
+        LOG.debug("On flow event: " + flowDeployEvent);
+        Flow flow = flowService.getFlow(flowDeployEvent.getFlowId());
         if (flow != null) {
             try {
                 routeManagementService.startFlowRoutes(context, flow);
-                producerTemplate.sendBody(FLOW_EVENTS_QUEUE, new FlowStartedEvent(flow));
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow start failed: " + flow, ex);
-                producerTemplate.sendBody(FLOW_EVENTS_QUEUE, new FlowManagementFailure(
+                producerTemplate.sendBody(OUTGOING_FLOW_EVENT_QUEUE, new FlowDeploymentFailureEvent(
                     flow,
                     ex.getPhase(),
                     ex.getClass().getCanonicalName(),
@@ -79,7 +95,11 @@ public class EventService implements StaticService {
                 ));
             }
         } else {
-            LOG.debug("Flow not found: " + flowStartEvent);
+            LOG.debug("Flow not found: " + flowDeployEvent);
+            producerTemplate.sendBody(
+                OUTGOING_FLOW_EVENT_QUEUE,
+                new FlowDeploymentFailureEvent(flowDeployEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
+            );
         }
     }
 
@@ -89,10 +109,9 @@ public class EventService implements StaticService {
         if (flow != null) {
             try {
                 routeManagementService.stopFlowRoutes(context, flow);
-                producerTemplate.sendBody(FLOW_EVENTS_QUEUE, new FlowStoppedEvent(flow));
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow stop failed: " + flow, ex);
-                producerTemplate.sendBody(FLOW_EVENTS_QUEUE, new FlowManagementFailure(
+                producerTemplate.sendBody(OUTGOING_FLOW_EVENT_QUEUE, new FlowDeploymentFailureEvent(
                     flow,
                     ex.getPhase(),
                     ex.getClass().getCanonicalName(),
@@ -103,13 +122,25 @@ public class EventService implements StaticService {
             }
         } else {
             LOG.debug("Flow not found: " + flowStopEvent);
+            producerTemplate.sendBody(
+                OUTGOING_FLOW_EVENT_QUEUE,
+                new FlowDeploymentFailureEvent(flowStopEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
+            );
         }
+    }
+
+    @Override
+    public void onFlowDeployment(Flow flow, FlowDeploymentPhase phase) {
+        producerTemplate.sendBody(
+            OUTGOING_FLOW_EVENT_QUEUE,
+            new FlowStatusEvent(flow.getId(), phase)
+        );
     }
 
     public void onMessageEvent(MessageEvent messageEvent) {
         LOG.debug("### On incoming message event: " + messageEvent);
         Node sinkNode = routeManagementService.getRunningNodeOwnerOfSlot(messageEvent.getSinkSlotId());
-        if (sinkNode== null) {
+        if (sinkNode == null) {
             LOG.debug("No running flow/node with sink slot, ignoring: " + messageEvent);
             return;
         }
@@ -124,6 +155,7 @@ public class EventService implements StaticService {
         Map<String, Object> exchangeHeaders = new HashMap<>(
             messageEvent.hasHeaders() ? getMap(messageEvent.getHeaders()) : Collections.EMPTY_MAP
         );
+
 
         exchangeHeaders.put(RouteConstants.SINK_SLOT_ID, messageEvent.getSinkSlotId());
 
@@ -154,9 +186,9 @@ public class EventService implements StaticService {
 
         String instanceId = SubflowRoute.peekCorrelationStack(messageHeaders, true, true);
 
-        MessageEvent messageEvent = new MessageEvent(
-            flow, node, sink, instanceId, body, messageHeaders.size() > 0 ? messageHeaders : null
-        );
+        MessageEvent messageEvent = new MessageEvent(flow, node, sink, instanceId, body);
+        if (messageHeaders.size() > 0)
+            messageEvent.setHeaders(messageHeaders);
 
         Map<String, Object> exchangeHeaders = new HashMap<>();
         try {

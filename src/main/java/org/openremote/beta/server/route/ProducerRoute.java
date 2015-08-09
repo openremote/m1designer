@@ -42,7 +42,7 @@ public class ProducerRoute extends NodeRoute {
                 for (Slot sourceSlot : sourceSlots) {
                     Exchange exchangeCopy = copyExchange(exchange, false);
                     producerTemplate.send(
-                        "seda:" + sourceSlot.getIdentifier().getId() + "?multipleConsumers=true&waitForTaskToComplete=NEVER",
+                        "seda:" + sourceSlot.getId() + "?multipleConsumers=true&waitForTaskToComplete=NEVER",
                         exchangeCopy
                     );
                 }

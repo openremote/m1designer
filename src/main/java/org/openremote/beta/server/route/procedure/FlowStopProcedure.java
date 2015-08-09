@@ -7,8 +7,8 @@ import org.openremote.beta.server.route.FlowRoutes;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
 
-import static org.openremote.beta.shared.event.FlowManagementPhase.REMOVE_FROM_CONTEXT;
-import static org.openremote.beta.shared.event.FlowManagementPhase.STOP;
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.REMOVING_ROUTES;
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.STOPPING;
 
 public class FlowStopProcedure extends FlowProcedure {
 
@@ -28,12 +28,12 @@ public class FlowStopProcedure extends FlowProcedure {
                 try {
                     context.stopRoute(routeDefinition.getId());
                 } catch (Exception ex) {
-                    throw new FlowProcedureException(ex, STOP, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
+                    throw new FlowProcedureException(ex, STOPPING, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
                 }
                 try {
                     context.removeRoute(routeDefinition.getId());
                 } catch (Exception ex) {
-                    throw new FlowProcedureException(ex, REMOVE_FROM_CONTEXT, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
+                    throw new FlowProcedureException(ex, REMOVING_ROUTES, nodeRoute.getFlow(), nodeRoute.getNode(), getUnprocessedNodes());
                 }
             }
             addProcessed(nodeRoute.getNode());

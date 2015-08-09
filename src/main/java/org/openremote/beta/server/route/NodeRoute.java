@@ -28,7 +28,7 @@ public abstract class NodeRoute extends RouteBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(NodeRoute.class);
 
     public static String getConsumerUri(Node node) {
-        return getConsumerUri(node.getIdentifier().getId());
+        return getConsumerUri(node.getId());
     }
 
     public static String getConsumerUri(String nodeId) {
@@ -99,7 +99,7 @@ public abstract class NodeRoute extends RouteBuilder {
         }
         LOG.debug("Configure routes: " + getNode());
 
-        RouteDefinition routeDefinition = from("direct:" + node.getIdentifier().getId())
+        RouteDefinition routeDefinition = from("direct:" + node.getId())
             .routeId(getRouteId())
             .routeDescription(getRouteDescription())
             .autoStartup(false)
@@ -115,7 +115,7 @@ public abstract class NodeRoute extends RouteBuilder {
                 Slot[] sinks = getNode().findSlots(Slot.TYPE_SINK);
                 if (sinks.length == 0)
                     return;
-                exchange.getIn().setHeader(SINK_SLOT_ID, sinks[0].getIdentifier().getId());
+                exchange.getIn().setHeader(SINK_SLOT_ID, sinks[0].getId());
             }).id(getProcessorId("setDestinationSink"));
 
         routeDefinition
@@ -127,7 +127,7 @@ public abstract class NodeRoute extends RouteBuilder {
                 if (instanceId != null) {
                     LOG.debug("Message received for instance (root of correlation stack): " + instanceId);
                 } else {
-                    instanceId = getNode().getIdentifier().getId();
+                    instanceId = getNode().getId();
                     LOG.debug("Message received for instance (this): " + instanceId);
                 }
                 exchange.getIn().setHeader(INSTANCE_ID, instanceId);
@@ -199,7 +199,7 @@ public abstract class NodeRoute extends RouteBuilder {
                 Slot[] sourceSlots = getNode().findSlots(Slot.TYPE_SOURCE);
                 // Find source slots and get the destination node and sink by examining the wires
                 for (Slot sourceSlot : sourceSlots) {
-                    Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getIdentifier().getId());
+                    Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
                     for (Wire sourceWire : sourceWires) {
                         sendExchangeCopy(sourceWire.getSinkId(), exchange, false);
                     }
@@ -221,7 +221,7 @@ public abstract class NodeRoute extends RouteBuilder {
             LOG.debug("Destination node owning sink '" + destinationSinkId + "' not found in running flows, skipping");
             return;
         }
-        String destinationNodeId = destinationNode.getIdentifier().getId();
+        String destinationNodeId = destinationNode.getId();
 
         LOG.debug("Sending copy of exchange to node '" + destinationNodeId + "' sink: " + destinationSinkId);
         Exchange exchangeCopy = copyExchange(exchange, popStack);

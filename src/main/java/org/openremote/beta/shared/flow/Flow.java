@@ -3,7 +3,6 @@ package org.openremote.beta.shared.flow;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.util.*;
@@ -61,7 +60,7 @@ public class Flow extends FlowObject {
     }
 
     public void addWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
-        addWire(new Wire(sourceSlot.getIdentifier().getId(), sinkSlot.getIdentifier().getId()));
+        addWire(new Wire(sourceSlot.getId(), sinkSlot.getId()));
     }
 
     public void addWire(Wire wire) {
@@ -75,8 +74,8 @@ public class Flow extends FlowObject {
         Iterator<Wire> it = collection.iterator();
         while (it.hasNext()) {
             Wire wire = it.next();
-            if (wire.getSourceId().equals(sourceSlot.getIdentifier().getId())
-                && wire.getSinkId().equals(sinkSlot.getIdentifier().getId())) {
+            if (wire.getSourceId().equals(sourceSlot.getId())
+                && wire.getSinkId().equals(sinkSlot.getId())) {
                 it.remove();
             }
         }
@@ -122,7 +121,7 @@ public class Flow extends FlowObject {
 
     public Node findNode(String nodeId) {
         for (Node node : getNodes()) {
-            if (node.getIdentifier().getId().equals(nodeId))
+            if (node.getId().equals(nodeId))
                 return node;
         }
         return null;
@@ -130,7 +129,7 @@ public class Flow extends FlowObject {
 
     public boolean isNodeWiredToNodeOfType(Node node, String nodeType) {
         for (Slot source : node.findSlots(Slot.TYPE_SOURCE)) {
-            Wire[] wires = findWiresForSource(source.getIdentifier().getId());
+            Wire[] wires = findWiresForSource(source.getId());
             for (Wire wire : wires) {
                 Node otherSide = findOwnerNode(wire.getSinkId());
                 if (!otherSide.getIdentifier().getType().equals(nodeType))
@@ -138,7 +137,7 @@ public class Flow extends FlowObject {
             }
         }
         for (Slot sink : node.findSlots(Slot.TYPE_SINK)) {
-            Wire[] wires = findWiresForSink(sink.getIdentifier().getId());
+            Wire[] wires = findWiresForSink(sink.getId());
             for (Wire wire : wires) {
                 Node otherSide = findOwnerNode(wire.getSourceId());
                 if (!otherSide.getIdentifier().getType().equals(Node.TYPE_CLIENT))

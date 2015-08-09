@@ -9,8 +9,8 @@ import java.util.List;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.openremote.beta.client.flowdesigner.Constants.PATCH_PADDING;
-import static org.openremote.beta.client.flowdesigner.Constants.SLOT_PADDING;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.PATCH_PADDING;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.SLOT_PADDING;
 
 public abstract class Slots extends Group {
 
@@ -34,7 +34,7 @@ public abstract class Slots extends Group {
 
         for (Slot slot : slots) {
 
-            if (!slot.isVisible())
+            if (!slot.isConnectable())
                 continue;
 
             SlotShape slotShape = new SlotShape(slot);
@@ -75,11 +75,11 @@ public abstract class Slots extends Group {
 
     public SlotShape getSlotShape(String slotId) {
         for (SlotShape sinkSlot : sinkSlots) {
-            if (sinkSlot.slot.getIdentifier().getId().equals(slotId))
+            if (sinkSlot.slot.getId().equals(slotId))
                 return sinkSlot;
         }
         for (SlotShape sourceSlot : sourceSlots) {
-            if (sourceSlot.slot.getIdentifier().getId().equals(slotId))
+            if (sourceSlot.slot.getId().equals(slotId))
                 return sourceSlot;
         }
         return null;

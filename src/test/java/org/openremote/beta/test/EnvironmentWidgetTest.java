@@ -10,12 +10,15 @@ import org.apache.camel.impl.DefaultExchange;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
-import org.openremote.beta.shared.event.FlowStartEvent;
-import org.openremote.beta.shared.event.FlowStartedEvent;
+import org.openremote.beta.shared.event.FlowDeployEvent;
 import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.DEPLOYED;
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.STARTING;
 
 public class EnvironmentWidgetTest extends IntegrationTest {
 
@@ -58,14 +61,17 @@ public class EnvironmentWidgetTest extends IntegrationTest {
 
         flowEventReceiver.reset();
         flowEventReceiver.expectedBodiesReceivedInAnyOrder(
-            toJson(new FlowStartedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId())),
-            toJson(new FlowStartedEvent(SampleThermostatControl.FLOW.getIdentifier().getId())),
-            toJson(new FlowStartedEvent(SampleEnvironmentWidget.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED)),
+            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), DEPLOYED)),
+            toJson(new FlowStatusEvent(SampleEnvironmentWidget.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleEnvironmentWidget.FLOW.getId(), DEPLOYED))
         );
 
-        producerTemplate.sendBody("direct:sendFlowEvent", new FlowStartEvent(SampleTemperatureProcessor.FLOW));
-        producerTemplate.sendBody("direct:sendFlowEvent", new FlowStartEvent(SampleThermostatControl.FLOW));
-        producerTemplate.sendBody("direct:sendFlowEvent", new FlowStartEvent(SampleEnvironmentWidget.FLOW));
+        producerTemplate.sendBody("direct:sendFlowEvent", new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
+        producerTemplate.sendBody("direct:sendFlowEvent", new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+        producerTemplate.sendBody("direct:sendFlowEvent", new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
 
         flowEventReceiver.assertIsSatisfied();
 
@@ -88,35 +94,35 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.TEMPERATURE_CONSUMER,
                 SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "75"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "75"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "23"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.LABEL_PRODUCER,
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "23 C"
             )),
             toJson(new MessageEvent(
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.TEMPERATURE_LABEL,
                 SampleThermostatControl.TEMPERATURE_LABEL_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "23 C"
             )),
             toJson(new MessageEvent(
@@ -129,35 +135,35 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_CONSUMER,
                 SampleThermostatControl.SETPOINT_CONSUMER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "70"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "70"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "21"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.FLOW,
                 SampleTemperatureProcessor.LABEL_PRODUCER,
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "21 C"
             )),
             toJson(new MessageEvent(
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_LABEL,
                 SampleThermostatControl.SETPOINT_LABEL_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "21 C"
             ))
         );
@@ -199,14 +205,14 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 null
             )),
             toJson(new MessageEvent(
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_PRODUCER,
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "69"
             )),
             toJson(new MessageEvent(
@@ -219,14 +225,14 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 null
             )),
             toJson(new MessageEvent(
                 SampleThermostatControl.FLOW,
                 SampleThermostatControl.SETPOINT_PRODUCER,
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
-                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "69"
             )),
             toJson(new MessageEvent(
@@ -242,7 +248,7 @@ public class EnvironmentWidgetTest extends IntegrationTest {
             SampleThermostatControl.FLOW,
             SampleThermostatControl.SETPOINT_MINUS_BUTTON,
             SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
             null
         ));
         producerTemplate.send("direct:sendMessageEvent", exchange);
@@ -252,7 +258,7 @@ public class EnvironmentWidgetTest extends IntegrationTest {
             SampleThermostatControl.FLOW,
             SampleThermostatControl.SETPOINT_MINUS_BUTTON,
             SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getIdentifier().getId(),
+            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
             null
         ));
         producerTemplate.send("direct:sendMessageEvent", exchange);

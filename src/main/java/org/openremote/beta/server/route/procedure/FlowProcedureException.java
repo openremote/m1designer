@@ -1,17 +1,17 @@
 package org.openremote.beta.server.route.procedure;
 
-import org.openremote.beta.shared.event.FlowManagementPhase;
+import org.openremote.beta.shared.event.FlowDeploymentPhase;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
 public class FlowProcedureException extends Exception {
 
-    final protected FlowManagementPhase phase;
+    final protected FlowDeploymentPhase phase;
     final protected Flow flow;
     final protected Node node;
     final Node[] unprocessedNodes;
 
-    public FlowProcedureException(Throwable cause, FlowManagementPhase phase, Flow flow, Node node, Node[] unprocessedNodes) {
+    public FlowProcedureException(Throwable cause, FlowDeploymentPhase phase, Flow flow, Node node, Node[] unprocessedNodes) {
         super(cause);
         this.phase = phase;
         this.flow = flow;
@@ -19,7 +19,7 @@ public class FlowProcedureException extends Exception {
         this.unprocessedNodes = unprocessedNodes;
     }
 
-    public FlowManagementPhase getPhase() {
+    public FlowDeploymentPhase getPhase() {
         return phase;
     }
 

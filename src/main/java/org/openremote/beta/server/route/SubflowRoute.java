@@ -93,7 +93,7 @@ public class SubflowRoute extends NodeRoute {
 
                     LOG.debug("Found destination peer sink: " + destinationSink.getPeerIdentifier());
 
-                    pushOntoCorrelationStack(exchange.getIn().getHeaders(), getNode().getIdentifier().getId());
+                    pushOntoCorrelationStack(exchange.getIn().getHeaders(), getNode().getId());
 
                     sendExchangeCopy(destinationSink.getPeerIdentifier().getId(), exchange, false);
 
@@ -128,11 +128,11 @@ public class SubflowRoute extends NodeRoute {
 
                     String currentInstanceId = peekCorrelationStack(exchange.getIn().getHeaders(), false, false);
 
-                    if (getNode().getIdentifier().getId().equals(currentInstanceId)) {
+                    if (getNode().getId().equals(currentInstanceId)) {
 
                         LOG.debug("Correlation found for '" + getNode() + "', finding wires of: " + sourceSlot);
 
-                        Wire[] sourceWires = getFlow().findWiresForSource(sourceSlot.getIdentifier().getId());
+                        Wire[] sourceWires = getFlow().findWiresForSource(sourceSlot.getId());
                         for (Wire sourceWire : sourceWires) {
                             sendExchangeCopy(sourceWire.getSinkId(), exchange, true);
                         }

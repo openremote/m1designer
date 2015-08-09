@@ -1,0 +1,149 @@
+package org.openremote.beta.client.shared;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Window;
+import elemental.dom.Element;
+import org.fusesource.restygwt.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class RequestPresenter extends AbstractPresenter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RequestPresenter.class);
+
+    public RequestPresenter(Element view) {
+        super(view);
+    }
+
+    protected abstract class ResponseCallback<T> implements JsonCallback {
+
+        protected final String requestText;
+        protected final JsonEncoderDecoder<T> encoderDecoder;
+        protected boolean dispatchedComplete = false;
+
+        public ResponseCallback(String requestText, JsonEncoderDecoder<T> encoderDecoder) {
+            this.requestText = requestText;
+            this.encoderDecoder = encoderDecoder;
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            if (!dispatchedComplete) {
+                dispatchedComplete = true;
+                dispatchEvent(new RequestCompleteEvent());
+            }
+        }
+
+        @Override
+        public void onFailure(Method method, Throwable exception) {
+            if (!dispatchedComplete) {
+                dispatchedComplete = true;
+                dispatchEvent(new RequestCompleteEvent());
+            }
+            RequestFailure requestFailure = new RequestFailure(
+                requestText,
+                method.getResponse() != null ? method.getResponse().getStatusCode() : -1,
+                method.getResponse() != null ? method.getResponse().getStatusText() : null,
+                exception.getMessage()
+            );
+            onFailure(requestFailure);
+        }
+
+        public void onFailure(RequestFailure requestFailure) {
+            dispatchEvent(new RequestFailureEvent(requestFailure));
+        };
+    }
+
+    protected abstract class ObjectResponseCallback<T> extends ResponseCallback<T> {
+        public ObjectResponseCallback(String requestText, JsonEncoderDecoder<T> encoderDecoder) {
+            super(requestText, encoderDecoder);
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            super.onSuccess(method, response);
+            try {
+                JSONObject responseObject = response.isObject();
+                if (responseObject == null) {
+                    onFailure(method, new IllegalArgumentException("Response isn't a JSON object: " + response));
+                } else {
+                    onResponse(encoderDecoder.decode(response));
+                }
+            } catch (Exception ex) {
+                onFailure(method, ex);
+            }
+        }
+
+        protected abstract void onResponse(T data);
+    }
+
+    protected abstract class ListResponseCallback<T> extends ResponseCallback<T> {
+
+        public ListResponseCallback(String requestText, JsonEncoderDecoder<T> encoderDecoder) {
+            super(requestText, encoderDecoder);
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            super.onSuccess(method, response);
+            JSONArray responseArray = response.isArray();
+            try {
+                if (responseArray == null) {
+                    throw new IllegalArgumentException("Response isn't a JSON array: " + response);
+                } else {
+                    List<T> list = new ArrayList<>();
+                    for (int i = 0; i < responseArray.size(); i++) {
+                        T t = encoderDecoder.decode(responseArray.get(i));
+                        list.add(t);
+                    }
+                    onResponse(list);
+                }
+            } catch (Exception ex) {
+                onFailure(method, ex);
+            }
+        }
+
+        protected abstract void onResponse(List<T> data);
+    }
+
+    protected abstract class NoContentResponseCallback extends ResponseCallback<Void> {
+
+        public NoContentResponseCallback(String requestText) {
+            super(requestText, null);
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            super.onSuccess(method, response);
+            onResponse();
+        }
+
+        protected abstract void onResponse();
+    }
+
+    protected Resource resource(String base, String... pathElement) {
+        Resource resource = new Resource(GWT.getHostPageBaseURL() + base);
+        if (pathElement != null) {
+            for (String pe : pathElement) {
+                resource = resource.resolve(pe);
+            }
+        }
+        return resource;
+    }
+
+    protected String hostname() {
+        return Window.Location.getHostName();
+    }
+
+    protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {
+        dispatchEvent(new RequestStartEvent());
+        method.send(callback);
+    }
+
+}

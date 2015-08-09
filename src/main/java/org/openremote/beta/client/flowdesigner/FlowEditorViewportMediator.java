@@ -11,7 +11,7 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import java.util.List;
 
-import static org.openremote.beta.client.flowdesigner.Constants.*;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.*;
 
 public class FlowEditorViewportMediator extends AbstractMediator {
 

@@ -2,6 +2,7 @@ package org.openremote.beta.shared.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
@@ -13,9 +14,8 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class Identifier {
 
-
-    protected String id;
-    protected String type; // URI
+    public String id;
+    public String type; // URI
 
     protected Identifier() {
     }

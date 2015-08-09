@@ -4,7 +4,7 @@ import com.ait.lienzo.client.core.shape.Layer;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.types.Point2D;
 
-import static org.openremote.beta.client.flowdesigner.Constants.WIRE_DELETE_DISTANCE;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.WIRE_DELETE_DISTANCE;
 
 public abstract class WiringLayer extends Layer {
 

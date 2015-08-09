@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
+
 public class TemperatureProcessorTest extends IntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemperatureProcessorTest.class);
@@ -55,10 +57,11 @@ public class TemperatureProcessorTest extends IntegrationTest {
 
         flowEventReceiver.reset();
         flowEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStartedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
-        FlowStartEvent flowStartEvent = new FlowStartEvent(SampleTemperatureProcessor.FLOW);
-        producerTemplate.sendBody("direct:sendFlowEvent", flowStartEvent);
+        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
+        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
         flowEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
@@ -117,9 +120,10 @@ public class TemperatureProcessorTest extends IntegrationTest {
 
         flowEventReceiver.reset();
         flowEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStoppedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
         );
-        FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW);
+        FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
         producerTemplate.sendBody("direct:sendFlowEvent", flowStopEvent);
         flowEventReceiver.assertIsSatisfied();
     }

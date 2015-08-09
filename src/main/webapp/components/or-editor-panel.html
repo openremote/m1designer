@@ -19,7 +19,9 @@ Custom property | Description | Default
 `--or-editor-panel-width` | Width of panel | `200px`
 `--or-editor-panel-max-height` | Max height of panel | `50vh`
 `--or-editor-panel-background-color` | Background of panel | `white`
-`--or-editor-panel-switch-background-color` | Background of title/switch | `rgba(255, 255, 255, 0.8)`
+`--or-editor-panel-content-background-color` | Background of content | `white`
+`--or-editor-panel-header-background-color` | Background of header | `rgba(255, 255, 255, 0.8)`
+`--or-editor-panel-button-color` | Button color | `--default-primary-color`
 -->
 <dom-module id="or-editor-panel">
     <style>
@@ -35,13 +37,28 @@ Custom property | Description | Default
             order: 2;
         }
 
-        #switchPanel {
-            background: var(--or-editor-panel-switch-background-color, rgba(255, 255, 255, 0.8));
+        #switchableTitlePanel,
+        #regularTitlePanel {
+            background: var(--or-editor-panel-header-background-color, rgba(255, 255, 255, 0.8));
         }
 
         #panel,
-        #switchPanel {
+        #switchableTitlePanel,
+        #regularTitlePanel {
             width: var(--or-editor-panel-width, 200px);
+        }
+
+        #regularTitlePanel {
+            padding: 11px 0;
+        }
+
+        #switchTitle {
+            overflow: hidden;
+        }
+
+        #regularTitle {
+            overflow: hidden;
+            padding: 0 11px;
         }
 
         #panel > * {
@@ -54,22 +71,40 @@ Custom property | Description | Default
             left: 0;
             margin: 0 0 0.5em 0 !important;
             width: var(--or-editor-panel-width, 200px);
-            max-height: var(--or-editor-panel-max-height, 50vh);
             background: var(--or-editor-panel-background-color, white);
+            overflow: hidden;
+            --paper-dialog-button-color: var(--or-editor-panel-button-color, --paper-dialog-button-color)
         }
 
-        /* @formatter:off */
         #panelScrollable {
             margin: 0;
-            --layout-scroll: {
-                 padding: 0;
-             }
+            --paper-dialog-scrollable: {
+                padding: 0;
+                background: var(--or-editor-panel-content-background-color, white);
+                max-height: var(--or-editor-panel-max-height, 50vh);
+            }
         }
-        /* @formatter:on */
+
+        /* TODO Mixins don't work with content distribution? */
+        #panel .buttons /deep/ .toolbar {
+            padding: 0.4em 0;
+        }
+        #panel .buttons /deep/ paper-menu-button {
+            padding: 0;
+        }
+        #panel .buttons /deep/ paper-menu .iron-selected {
+            font-weight: inherit;
+        }
+
+        #panel .buttons /deep/ paper-button .keyboard-focus {
+            font-weight: inherit;
+            text-decoration: underline;
+        }
     </style>
     <template>
+
         <template is="dom-if" if="[[switchable]]">
-            <div id="switchPanel" class="layout horizontal ">
+            <div id="switchableTitlePanel" class="layout horizontal ">
                 <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
                 <template is="dom-if" if="[[title]]">
                     <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
@@ -79,40 +114,71 @@ Custom property | Description | Default
                 </template>
             </div>
         </template>
+        <template is="dom-if" if="[[!switchable]]">
+            <template is="dom-if" if="[[title]]">
+                <div id="regularTitlePanel" class="layout horizontal flex center-justified">
+                    <div id="regularTitle">[[title]]</div>
+                </div>
+            </template>
+        </template>
+
         <paper-dialog id="panel">
+            <div class="buttons">
+                <content select=".toolbar:first-of-type"></content>
+            </div>
             <paper-dialog-scrollable id="panelScrollable">
-                <content></content>
+                <content select=".content"></content>
             </paper-dialog-scrollable>
-            <content select=".buttons"></content>
+            <div class="buttons">
+                <content select=".toolbar:last-of-type"></content>
+            </div>
         </paper-dialog>
+
     </template>
     <script>
         Polymer({
             is: 'or-editor-panel',
             properties: {
-                switchable: String,
-                title: String
+                switchable: {
+                    type: String,
+                    value: ""
+                },
+                title: {
+                    type: String,
+                    value: ""
+                }
             },
-            ready: function () {
+            attached: function () {
                 this.async(function () {
                     if (this.switchable == "right") {
-                        this.$$("#switchTitle").classList.add("end-justified");
+                        if (this.title) {
+                            this.$$("#switchTitle").classList.add("end-justified");
+                        }
                         this.$$("#switchButton").style.order = "3";
-                    } else if (!this.switchable) {
-                        this.open();
                     }
                     this.$.panel.noCancelOnEscKey = true;
-                    this.$.panel.noCancelOnOutsideClick= true;
+                    this.$.panel.noCancelOnOutsideClick = true;
                 });
             },
             toggle: function () {
                 this.$.panel.toggle();
+                this.$.panel.style.zIndex = "initial"; // TODO Fix for iron-dropdown cutoff
             },
             open: function () {
                 this.$.panel.open();
+                this.$.panel.style.zIndex = "initial"; // TODO Fix for iron-dropdown cutoff
             },
             close: function () {
                 this.$.panel.close();
+            },
+            opened: function () {
+                return this.$.panel.opened;
+            },
+            scrollToBottom: function() {
+                this.async(function() {
+                    var scrollable = this.$.panelScrollable.querySelector("#scrollable");
+                    scrollable.scrollTop = scrollable.scrollHeight;
+                });
             }
         });
     </script>

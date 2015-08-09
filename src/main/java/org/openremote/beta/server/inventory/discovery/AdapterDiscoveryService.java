@@ -51,14 +51,14 @@ public class AdapterDiscoveryService implements StaticService {
 
     public Adapter getAdapter(@Header("id") String id) {
         for (Adapter adapter : getAdapters()) {
-            if (adapter.getIdentifier().getId().equals(id))
+            if (adapter.getId().equals(id))
                 return adapter;
         }
         return null;
     }
 
     public void updateDiscoveryRoute(Adapter adapter, boolean startRoute) throws Exception {
-        String routeId = adapter.getIdentifier().getId() + "-discovery";
+        String routeId = adapter.getId() + "-discovery";
         RouteDefinition routeDefinition = createDiscoveryRoute(adapter, routeId);
         RouteManagementUtil.updateRoute(context, routeDefinition, startRoute);
     }
@@ -79,7 +79,7 @@ public class AdapterDiscoveryService implements StaticService {
 
     protected String getDiscoveryUri(Adapter adapter) {
         ComponentConfiguration discoveryConfig =
-            context.getComponent(adapter.getIdentifier().getId()).createComponentConfiguration();
+            context.getComponent(adapter.getId()).createComponentConfiguration();
         discoveryConfig.setBaseUri(adapter.getDiscoveryEndpoint());
         for (Map.Entry<String, Property> entry : adapter.getExtra().entrySet()) {
             if (entry.getValue().hasValue()) {

@@ -52,10 +52,10 @@ Custom property | Description | Default
 
     <template>
         <div class="list">
-            <template is="dom-if" if="{{_isEmptyArray(flows)}}">
+            <template is="dom-if" if="{{!flows.length}}">
                 <div id="empty">No flows found.</div>
             </template>
-            <iron-selector id="flowList" on-selected-changed="_flowSelected">
+            <iron-selector on-selected-changed="_flowSelected">
                 <template is="dom-repeat" items="[[flows]]">
                     <div class="flow">
                         <div>
@@ -74,7 +74,9 @@ Custom property | Description | Default
                 properties: {
                     _presenter: {
                         type: Object,
-                        value: new openremote.editor.FlowsPresenter()
+                        value: function () {
+                            return new openremote.flow.crud.FlowsPresenter(this);
+                        }
                     },
                     /**
                      * The available flows.
@@ -82,35 +84,30 @@ Custom property | Description | Default
                     flows: {
                         type: Array,
                         notify: true
-                    },
-                    /**
-                     * The currently selected flow.
-                     */
-                    selectedFlow: {
-                        type: Object,
-                        notify: true
                     }
                 },
-                _isEmptyArray: function(a) {
-                    return a !== undefined && a.length == 0;
+                listeners: {
+                    'flows-loaded': '_flowsLoaded',
+                    'request-failure': '_requestFailure'
                 },
-                /**
-                 * Load all flows.
-                 */
-                load: function () {
-                    this.fire("loading");
-                    this._presenter.loadFlows(function () {
-                        this.fire("complete");
-                        this.flows = this._presenter.flows;
-                        this.notifyPath("flows", this.flows);
-                    }.bind(this));
+                _flowsLoaded: function (type, event) {
+                    this.set("flows", event.getFlows());
+
+                    // TODO remove
+                    var event = new openremote.flow.crud.FlowLoadEvent(
+                            this.flows[2].getId()
+                    );
+                    this.fire(event.getType(), event);
+
+                },
+                _requestFailure: function (type, event) {
+                    this.set("flows", []);
                 },
                 _flowSelected: function (e) {
-                    this.fire("loading");
-                    this._presenter.loadFlow(e.detail.value, function () {
-                        this.fire("complete");
-                        this.selectedFlow = this._presenter.selectedFlow;
-                    }.bind(this));
+                    var event = new openremote.flow.crud.FlowLoadEvent(
+                            this.flows[e.detail.value].getId()
+                    );
+                    this.fire(event.getType(), event);
                 }
             });
         });

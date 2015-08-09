@@ -10,12 +10,15 @@ import org.apache.camel.impl.DefaultExchange;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.shared.event.FlowStartEvent;
-import org.openremote.beta.shared.event.FlowStartedEvent;
+import org.openremote.beta.shared.event.FlowDeployEvent;
 import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.DEPLOYED;
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.STARTING;
 
 public class ThermostatControlTest extends IntegrationTest {
 
@@ -58,18 +61,20 @@ public class ThermostatControlTest extends IntegrationTest {
 
         flowEventReceiver.reset();
         flowEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStartedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
-        FlowStartEvent flowStartEvent = new FlowStartEvent(SampleTemperatureProcessor.FLOW);
-        producerTemplate.sendBody("direct:sendFlowEvent", flowStartEvent);
+        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
+        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
         flowEventReceiver.assertIsSatisfied();
 
         flowEventReceiver.reset();
         flowEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStartedEvent(SampleThermostatControl.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), DEPLOYED))
         );
-        flowStartEvent = new FlowStartEvent(SampleThermostatControl.FLOW);
-        producerTemplate.sendBody("direct:sendFlowEvent", flowStartEvent);
+        flowDeployEvent = new FlowDeployEvent(SampleThermostatControl.FLOW.getId());
+        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
         flowEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");

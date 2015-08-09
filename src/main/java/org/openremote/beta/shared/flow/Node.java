@@ -129,7 +129,7 @@ public class Node extends FlowObject {
 
     public Slot findSlot(String slotId) {
         for (Slot slot : getSlots()) {
-            if (slot.getIdentifier().getId().equals(slotId))
+            if (slot.getId().equals(slotId))
                 return slot;
         }
         return null;

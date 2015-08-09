@@ -17,7 +17,7 @@ public class Slot extends FlowObject {
     public static final String TYPE_SINK = "urn:org-openremote:flow:slot:sink";
     public static final String TYPE_SOURCE = "urn:org-openremote:flow:slot:source";
 
-    public boolean visible = true;
+    public boolean connectable = true;
     public Identifier peerIdentifier;
 
     public Slot() {
@@ -31,13 +31,13 @@ public class Slot extends FlowObject {
         super(label, identifier);
     }
 
-    public Slot(Identifier identifier, boolean visible) {
-        this(null, identifier, visible);
+    public Slot(Identifier identifier, boolean connectable) {
+        this(null, identifier, connectable);
     }
 
-    public Slot(String label, Identifier identifier, boolean visible) {
+    public Slot(String label, Identifier identifier, boolean connectable) {
         super(label, identifier);
-        this.visible = visible;
+        this.connectable = connectable;
     }
 
     public Slot(String label, Identifier identifier, Identifier peerIdentifier) {
@@ -49,12 +49,12 @@ public class Slot extends FlowObject {
         this(peer.getLabel(), new Identifier(id, peer.getIdentifier().getType()), peer.getIdentifier());
     }
 
-    public boolean isVisible() {
-        return visible;
+    public boolean isConnectable() {
+        return connectable;
     }
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
+    public void setConnectable(boolean connectable) {
+        this.connectable = connectable;
     }
 
     public Identifier getPeerIdentifier() {
@@ -70,7 +70,7 @@ public class Slot extends FlowObject {
         return getClass().getSimpleName() + "{" +
             "label='" + label + '\'' +
             ", id=" + identifier +
-            ", visible=" + visible +
+            ", connectable=" + connectable +
             ", peerIdentifier=" + peerIdentifier +
             '}';
     }

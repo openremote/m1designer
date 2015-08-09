@@ -6,13 +6,14 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
-import org.openremote.beta.shared.event.FlowStartEvent;
-import org.openremote.beta.shared.event.FlowStartedEvent;
+import org.openremote.beta.shared.event.FlowDeployEvent;
+import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.openremote.beta.shared.event.FlowStopEvent;
-import org.openremote.beta.shared.event.FlowStoppedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
+
+import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
 
 public class EventTest extends IntegrationTest {
 
@@ -45,20 +46,20 @@ public class EventTest extends IntegrationTest {
     public void echo() throws Exception {
 
         mockEventReceiver.reset();
-        mockEventReceiver.expectedMessageCount(1);
         mockEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStartedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
-        FlowStartEvent flowStartEvent = new FlowStartEvent(SampleTemperatureProcessor.FLOW);
-        producerTemplate.sendBody(createWebSocketUri("flow"), flowStartEvent);
+        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
+        producerTemplate.sendBody(createWebSocketUri("flow"), flowDeployEvent);
         mockEventReceiver.assertIsSatisfied();
 
         mockEventReceiver.reset();
-        mockEventReceiver.expectedMessageCount(1);
         mockEventReceiver.expectedBodiesReceived(
-            toJson(new FlowStoppedEvent(SampleTemperatureProcessor.FLOW.getIdentifier().getId()))
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
         );
-        FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW);
+        FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
         producerTemplate.sendBody(createWebSocketUri("flow"), flowStopEvent);
         mockEventReceiver.assertIsSatisfied();
     }

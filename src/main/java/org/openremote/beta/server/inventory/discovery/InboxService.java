@@ -37,7 +37,7 @@ public class InboxService implements StaticService {
             Iterator<Adapter> it = adapters.iterator();
             while (it.hasNext()) {
                 Adapter adapter = it.next();
-                if (adapter.getIdentifier().getId().equals(id)) {
+                if (adapter.getId().equals(id)) {
                     adapterDiscoveryService.updateDiscoveryRoute(adapter, false);
                     it.remove();
                 }

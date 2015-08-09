@@ -1,0 +1,75 @@
+<link rel="import" href="or-editor-flow-node.html">
+<link rel="import" href="or-editor-flow-control.html">
+<link rel="import" href="or-editor-flow-messagelog.html">
+
+<dom-module id="or-editor-flow-editor">
+
+    <style>
+        :host {
+            position: relative;
+        }
+
+        :host, #flowDesigner {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #flowDesigner {
+            z-index: 10;
+        }
+    </style>
+
+    <template>
+
+        <div id="flowDesigner"></div>
+
+        <or-editor-flow-control id="flowControl"></or-editor-flow-control>
+
+        <or-editor-flow-messagelog id="flowMessageLog"></or-editor-flow-messagelog>
+
+        <or-editor-flow-node id="flowNode"
+                             on-message-send="_sendMessage"></or-editor-flow-node>
+
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyEditor", function () {
+
+            Polymer({
+                is: 'or-editor-flow-editor',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.flow.editor.FlowEditorPresenter(this);
+                        }
+                    }
+                },
+                listeners: {
+                    'flow-edit': "_flowEdit",
+                    'flow-designer-node-selected': '_flowDesignerNodeSelected'
+                },
+                _flowEdit: function (type, event) {
+                    var flowControlStartEvent = new openremote.flow.control.FlowControlStartEvent(event.getFlow());
+                    this.$.flowControl.fire(flowControlStartEvent.getType(), flowControlStartEvent);
+
+                    var flowMessageLogStartEvent = new openremote.flow.messagelog.FlowMessageLogStartEvent(event.getFlow());
+                    this.$.flowMessageLog.fire(flowMessageLogStartEvent.getType(), flowMessageLogStartEvent);
+
+                    var flowNodeCloseEvent = new openremote.flow.node.FlowNodeCloseEvent(this._presenter.flow);
+                    this.$.flowNode.fire(flowNodeCloseEvent.getType(), flowNodeCloseEvent);
+                },
+                _flowDesignerNodeSelected: function (type, event) {
+                    var flowNodeEditEvent = new openremote.flow.node.FlowNodeEditEvent(this._presenter.flow, event.getNode());
+                    this.$.flowNode.fire(flowNodeEditEvent.getType(), flowNodeEditEvent);
+                },
+                _sendMessage: function(ce, event) {
+                    this.$.flowMessageLog.fire(ce.type, event);
+                }
+            });
+        });
+    </script>
+</dom-module>
+

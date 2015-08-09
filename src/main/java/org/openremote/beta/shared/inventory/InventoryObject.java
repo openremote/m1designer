@@ -43,6 +43,10 @@ public class InventoryObject {
         return identifier;
     }
 
+    public String getId() {
+        return getIdentifier().getId();
+    }
+
     public boolean isOfType(String type) {
         return getIdentifier().getType().equals(type);
     }

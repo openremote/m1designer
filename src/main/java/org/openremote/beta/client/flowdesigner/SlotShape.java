@@ -2,11 +2,12 @@ package org.openremote.beta.client.flowdesigner;
 
 import org.openremote.beta.shared.flow.Slot;
 
-import static org.openremote.beta.client.flowdesigner.Constants.*;
+import static org.openremote.beta.client.flowdesigner.FlowDesignerConstants.*;
 
 public class SlotShape extends Box {
 
     final protected Slot slot;
+    final protected String originalLabel;
 
     public SlotShape(Slot slot) {
         super(
@@ -21,6 +22,7 @@ public class SlotShape extends Box {
             SLOT_PADDING
         );
         this.slot = slot;
+        this.originalLabel = slot.getLabel();
     }
 
     public Slot getSlot() {
@@ -38,5 +40,9 @@ public class SlotShape extends Box {
     @Override
     public Slots getParent() {
         return (Slots)super.getParent();
+    }
+
+    public void setLabelValue(String value) {
+        setText((originalLabel != null ? originalLabel : "") + " (" + value + ")");
     }
 }

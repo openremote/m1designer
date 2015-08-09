@@ -8,6 +8,8 @@ import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.flow.FlowService;
 import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +37,8 @@ public class EventServiceConfiguration implements Configuration {
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from(EventService.FLOW_EVENTS_QUEUE)
-                    .routeId("Handle flow events")
+                from(EventService.INCOMING_FLOW_EVENT_QUEUE)
+                    .routeId("Handle incoming flow events")
                     .doTry()
                     .bean(getContext().hasService(EventService.class), "onFlowEvent")
                     .doCatch(AmbiguousMethodCallException.class) // No overloaded method for given event subtype
@@ -48,6 +50,22 @@ public class EventServiceConfiguration implements Configuration {
                     .routeId("Handle incoming message events")
                     .bean(getContext().hasService(EventService.class), "onMessageEvent")
                 ;
+
+                // TODO Test data
+/*
+                from("timer://pushTestMessages?fixedRate=true&period=3000")
+                    .process(exchange -> {
+                        exchange.getIn().setBody(new MessageEvent(
+                            SampleEnvironmentWidget.FLOW,
+                            SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR,
+                            SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SINK,
+                            Long.toString(new java.util.Date().getTime())
+                        ));
+                    })
+                    .log(LoggingLevel.INFO, LOG, "Sending test message event: ${body}")
+                    .to(EventService.OUTGOING_MESSAGE_EVENT_QUEUE);
+*/
+
             }
         });
     }
