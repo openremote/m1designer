@@ -8,11 +8,12 @@
     <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
     <!-- TODO The GWT loader doesn't work within imported files on Chrome https://code.google.com/p/google-web-toolkit/issues/detail?id=9179 -->
-    <meta name="Editor::gwt:property" content="baseUrl=gwt/Editor/">
-    <meta name="editorWebSocketPort" content="9292">
+    <meta name="Client::gwt:property" content="baseUrl=gwt/Client/">
 
-    <link rel="import" href="components/or-editor.html"/>
-    <link rel="import" href="styles/main-style.html"/>
+    <link rel="import" href="components/editor/or-editor.html"/>
+
+    <link rel="import" href="styles/master-style.html"/>
+    <link rel="import" href="styles/editor-style.html"/>
 
 </head>
 <body>

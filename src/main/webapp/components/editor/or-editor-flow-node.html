@@ -1,0 +1,124 @@
+<link rel="import" href="or-editor-panel.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="or-editor-flow-node">
+
+    <style>
+        :host {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        #panel {
+            --or-editor-panel-width: 320px;
+            --or-editor-panel-max-height: 50vh;
+        }
+
+        .content {
+            padding: 0.4em;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+        }
+
+        .sinkIndex {
+            background: var(--or-editor-flow-sink-background-color, black);
+            color: var(--or-editor-flow-sink-foreground-color, white);
+            margin: 0 0.5em;
+            padding: 0.5em;
+            border-radius: 0.2em;
+        }
+    </style>
+
+    <template>
+        <or-editor-panel id="panel"
+                         switchable="right"
+                         title="Node"
+                         hidden>
+            <div class="content">
+                <!--
+                <div class="form">
+
+                    <div class="formItem">
+                        <div class="formLabel">Type:</div>
+                        <div class="formValue">[[_presenter.node.identifier.type]]</div>
+                    </div>
+
+                </div>
+                -->
+
+                <template is="dom-if" if="{{!_sinks.length}}">
+                    <div id="empty">No directly accessible slots.</div>
+                </template>
+
+                <template is="dom-repeat" items="{{_sinks}}">
+                    <div class="layout horizontal center">
+                        <template is="dom-if" if="{{_isMultipleSinks()}}">
+                            <div class="sinkIndex">{{index}}</div>
+                        </template>
+                        <div class="flex sinkInput">
+                            <paper-input value="{{item.msgValue}}" label="{{_getSinkLabel(item)}}"></paper-input>
+                        </div>
+                        <div>
+                            <paper-button raised on-tap="_sendMessage">
+                                Send
+                            </paper-button>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </or-editor-panel>
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyClient", function () {
+
+            Polymer({
+                is: 'or-editor-flow-node',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.editor.flow.node.FlowNodePresenter(this);
+                        }
+                    },
+                    _sinks: {
+                        type: Array,
+                        value: []
+                    }
+                },
+                listeners: {
+                    'flow-node-open': "_nodeOpen",
+                    'flow-node-close': "_nodeClose"
+                },
+                _nodeOpen: function(ce, event) {
+                    this.notifyPath("_presenter.node", this._presenter.node);
+                    this.set("_sinks", this._presenter.getAccessibleSinks());
+
+                    this.toggleAttribute("hidden", false, this.$.panel);
+                    this.$.panel.setAttribute("title", event.getLabel());
+                    this.$.panel.open();
+                },
+                _nodeClose: function() {
+                    this.toggleAttribute("hidden", true, this.$.panel);
+                },
+                _isMultipleSinks: function() {
+                    return this._sinks && this._sinks.length > 1;
+                },
+                _getSinkLabel: function(sink) {
+                    return sink.label ? sink.label + " Slot": "Sink Slot";
+                },
+                _sendMessage: function(e) {
+                    var slot = e.model.item;
+                    var body = e.model.item.msgValue;
+                    this._presenter.sendMessage(slot, body);
+                }
+            });
+        });
+    </script>
+</dom-module>
+

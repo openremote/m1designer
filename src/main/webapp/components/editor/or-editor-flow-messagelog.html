@@ -1,0 +1,158 @@
+<link rel="import" href="or-editor-panel.html">
+
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="or-editor-flow-messagelog">
+
+    <style>
+        :host {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+        }
+
+        #panel {
+            --or-editor-panel-width: 400px;
+            --or-editor-panel-max-height: 170px;
+        }
+
+        .content {
+            padding: 0.4em;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+        }
+
+        .message {
+            padding: 0.4em;
+            margin: 0.4em 0;
+            font-size: smaller;
+            background-color: var(--or-editor-message-item-background-color, grey);
+            color: var(--or-editor-message-item-text-color, --primary-text-color);
+            border-radius: 0.4em;
+        }
+
+        .message .label {
+        }
+
+        .message .label.empty {
+            display: none;
+        }
+
+        .message .value {
+            font-weight: bold;
+        }
+
+        .message .body {
+            border-left: 1px dashed black;
+            margin-left: 0.5em;
+            padding-left: 0.5em;
+        }
+    </style>
+
+    <template>
+        <or-editor-panel id="panel"
+                         title="Message Log"
+                         switchable="right"
+                         hidden>
+            <div class="content">
+                <iron-list items="[[_messageLog]]" as="msg">
+                    <template>
+                        <div>
+                            <div class="message layout horizontal center">
+                                <div class="flex-5 layout vertical">
+                                    <div class$="{{_getLabelClass(msg.flowId)}}">Flow:&#160;<span class="value">{{_getFlowLabel(msg)}}</span></div>
+                                    <div class$="{{_getLabelClass(msg.nodeId)}}">Node:&#160;<span class="value">{{_getNodeLabel(msg)}}</span></div>
+                                    <div class$="{{_getSinkLabelClass(msg)}}">Sink:&#160;<span class="value">{{_getSinkLabel(msg)}}</span></div>
+                                    <div class$="{{_getLabelClass(msg.instanceId)}}">Instance:&#160;<span class="value">{{msg.instanceId}}</span></div>
+                                </div>
+                                <div class="flex-6 body">{{_getBody(msg.body)}}</div>
+                            </div>
+                        </div>
+                    </template>
+                </iron-list>
+                <template is="dom-if" if="[[!_messageLog.length]]">
+                    No messages.
+                </template>
+            </div>
+
+            <div class="toolbar layout horizontal center">
+
+                <div class="layout horizontal center">
+                    <paper-toggle-button id="messagesForAllFlows"></paper-toggle-button>
+                    <span style="margin: 0 0.5em;">WATCH ALL FLOWS</span>
+                </div>
+
+                <paper-button id="clearMessageLogButton" on-tap="_clearMessageLog">
+                    <iron-icon icon="icons:clear"></iron-icon>
+                    Clear
+                </paper-button>
+            </div>
+
+        </or-editor-panel>
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyClient", function () {
+
+            Polymer({
+                is: 'or-editor-flow-messagelog',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.editor.flow.messagelog.MessageLogPresenter(this);
+                        }
+                    },
+                    _messageLog: {
+                        type: Array,
+                        value: []
+                    }
+                },
+                listeners: {
+                    "flow-message-log-start": "_messageLogStart",
+                    "message-received": "_messageReceived"
+                },
+                _messageLogStart: function() {
+                    this.toggleAttribute("hidden", false, this.$.panel);
+                    this.$.panel.open();
+                },
+                _messageReceived: function(ce, event) {
+                    var messageEvent = event.getMessageEvent();
+                    if (this.$.messagesForAllFlows.checked || this._presenter.isCurrentFlow(messageEvent)) {
+                        this.push("_messageLog", messageEvent);
+                        this.$.panel.scrollToBottom();
+                        this.$.panel.setAttribute("title", "Message Log (Received: " + this._messageLog.length + ")");
+                    }
+                },
+                _clearMessageLog: function() {
+                    this.set("_messageLog", []);
+                    this.$.panel.setAttribute("title", "Message Log (Received: " + this._messageLog.length + ")");
+                },
+                _getLabelClass: function(value) {
+                    return "layout horizontal label " + (value ? "" : "empty");
+                },
+                _getFlowLabel: function(msgEvent) {
+                    return this._presenter.getFlowLabel(msgEvent);
+                },
+                _getNodeLabel: function(msgEvent) {
+                    return this._presenter.getNodeLabel(msgEvent);
+                },
+                _getSinkLabelClass: function(msgEvent) {
+                    return "layout horizontal label " + (msgEvent.sinkSlotId && this._presenter.haveSinkLabel(msgEvent) ? "" : "empty");
+                },
+                _getSinkLabel: function(msgEvent) {
+                    return this._presenter.getSinkLabel(msgEvent);
+                },
+                _getBody: function(body) {
+                    return body ? body : "(EMPTY MESSAGE)"
+                }
+            });
+        });
+    </script>
+</dom-module>
+

@@ -51,7 +51,7 @@ public class Node extends FlowObject {
             case TYPE_SUBFLOW:
                 return "Flow";
             case TYPE_CLIENT:
-                return "Client";
+                return "Console";
             default:
                 return type;
         }

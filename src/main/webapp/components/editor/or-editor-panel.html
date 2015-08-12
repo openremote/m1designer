@@ -1,0 +1,187 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<!--
+`<or-editor-panel>` is a scrolling panel that can be shown/hidden on demand.
+
+You can enable a show/hide switch with the `switchable` attribute, and set it
+to `left` or `right` position.
+
+You can set the `title` attribute for a label an the panel switch.
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--or-editor-panel-width` | Width of panel | `200px`
+`--or-editor-panel-max-height` | Max height of panel | `50vh`
+`--or-editor-panel-background-color` | Background of panel | `white`
+`--or-editor-panel-content-background-color` | Background of content | `white`
+`--or-editor-panel-header-background-color` | Background of header | `rgba(255, 255, 255, 0.8)`
+`--or-editor-panel-header-color` | Text color of header | `black`
+`--or-editor-panel-button-color` | Button color | `--default-primary-color`
+-->
+<dom-module id="or-editor-panel">
+    <style>
+        :host {
+        }
+
+        #switchButton {
+            order: 1;
+        }
+
+        #switchTitle {
+            cursor: pointer;
+            order: 2;
+        }
+
+        #switchableTitlePanel,
+        #regularTitlePanel {
+            background-color: var(--or-editor-panel-header-background-color, rgba(255, 255, 255, 0.8));
+            color: var(--or-editor-panel-header-color, black);
+        }
+
+        #panel,
+        #switchableTitlePanel,
+        #regularTitlePanel {
+            width: var(--or-editor-panel-width, 200px);
+        }
+
+        #regularTitlePanel {
+            padding: 11px 0;
+        }
+
+        #switchTitle {
+            overflow: hidden;
+        }
+
+        #regularTitle {
+            overflow: hidden;
+            padding: 0 11px;
+        }
+
+        #panel > * {
+            padding: 0;
+        }
+
+        #panel {
+            position: relative;
+            top: 0;
+            left: 0;
+            margin: 0 0 0.5em 0 !important;
+            width: var(--or-editor-panel-width, 200px);
+            background: var(--or-editor-panel-background-color, white);
+            overflow: hidden;
+            --paper-dialog-button-color: var(--or-editor-panel-button-color, --paper-dialog-button-color)
+        }
+
+        #panelScrollable {
+            margin: 0;
+            --paper-dialog-scrollable: {
+                padding: 0;
+                background: var(--or-editor-panel-content-background-color, white);
+                max-height: var(--or-editor-panel-max-height, 50vh);
+            }
+        }
+
+        /* TODO Mixins don't work with content distribution? */
+        #panel .buttons /deep/ .toolbar {
+            padding: 0.4em 0;
+        }
+        #panel .buttons /deep/ paper-menu-button {
+            padding: 0;
+        }
+        #panel .buttons /deep/ paper-menu .iron-selected {
+            font-weight: inherit;
+        }
+
+        #panel .buttons /deep/ paper-button .keyboard-focus {
+            font-weight: inherit;
+            text-decoration: underline;
+        }
+    </style>
+    <template>
+
+        <template is="dom-if" if="[[switchable]]">
+            <div id="switchableTitlePanel" class="layout horizontal ">
+                <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
+                <template is="dom-if" if="[[title]]">
+                    <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
+                        <paper-ripple center></paper-ripple>
+                        <span>[[title]]</span>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template is="dom-if" if="[[!switchable]]">
+            <template is="dom-if" if="[[title]]">
+                <div id="regularTitlePanel" class="layout horizontal flex center-justified">
+                    <div id="regularTitle">[[title]]</div>
+                </div>
+            </template>
+        </template>
+
+        <paper-dialog id="panel">
+            <div class="buttons">
+                <content select=".toolbar:first-of-type"></content>
+            </div>
+            <paper-dialog-scrollable id="panelScrollable">
+                <content select=".content"></content>
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                <content select=".toolbar:last-of-type"></content>
+            </div>
+        </paper-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'or-editor-panel',
+            properties: {
+                switchable: {
+                    type: String,
+                    value: ""
+                },
+                title: {
+                    type: String,
+                    value: ""
+                }
+            },
+            attached: function () {
+                this.async(function () {
+                    if (this.switchable == "right") {
+                        if (this.title) {
+                            this.$$("#switchTitle").classList.add("end-justified");
+                        }
+                        this.$$("#switchButton").style.order = "3";
+                    }
+                    this.$.panel.noCancelOnEscKey = true;
+                    this.$.panel.noCancelOnOutsideClick = true;
+                });
+            },
+            toggle: function () {
+                this.$.panel.toggle();
+                this.$.panel.style.zIndex = "initial"; // TODO Fix for iron-dropdown cutoff
+            },
+            open: function () {
+                this.$.panel.open();
+                this.$.panel.style.zIndex = "initial"; // TODO Fix for iron-dropdown cutoff
+            },
+            close: function () {
+                this.$.panel.close();
+            },
+            opened: function () {
+                return this.$.panel.opened;
+            },
+            scrollToBottom: function() {
+                this.async(function() {
+                    var scrollable = this.$.panelScrollable.querySelector("#scrollable");
+                    scrollable.scrollTop = scrollable.scrollHeight;
+                });
+            }
+        });
+    </script>
+</dom-module>

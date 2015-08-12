@@ -33,13 +33,13 @@ All JARs can be found in `build/libs/`.
 Run production
 ---
 
-    WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/v3/orc3-editor/build/libs/openremote-beta-editor-client.jar!/' \
+    WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/v3/orc3-editor/build/libs/openremote-beta-client.jar!/' \
     WEBSERVER_PORT=8080 \
     WEBSOCKET_PORT=9292 \
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.beta.server.Server
 
-If you change the WebSocket port, you must adjust `editor.html`. Running all services on one port is currently not supported by the Camel components.
+If you change the WebSocket port, you must adjust `index.html`. Running all services on one port is currently not supported by the Camel components.
 
 Build image and run Docker container
 ---

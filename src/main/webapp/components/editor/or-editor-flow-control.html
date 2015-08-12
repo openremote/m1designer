@@ -1,0 +1,181 @@
+<link rel="import" href="or-editor-panel.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="or-editor-flow-control">
+
+    <style>
+        :host {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+
+        #panel {
+            --or-editor-panel-width: 300px;
+            --or-editor-panel-max-height: 75px;
+        }
+
+        .content {
+            padding: 0.4em;
+        }
+
+        .flowStatus .deploying,
+        .flowStatus .deployed,
+        .flowStatus .problem {
+            font-weight: bold;
+        }
+
+        .flowStatus .deployed {
+            color: var(--or-editor-text-green-color, green);
+        }
+
+        .flowStatus .deploying {
+            color: var(--or-editor-text-yellow-color, yellow);
+        }
+
+        .flowStatus .warn {
+            color: var(--or-editor-text-red-color, red);
+        }
+    </style>
+
+    <template>
+        <or-editor-panel id="panel"
+                         title="[[_presenter.flow.label]]"
+                         switchable="left"
+                         hidden>
+
+            <div class="content">
+                <div class="form">
+                    <div class="formItem flowStatus">
+                        <div class="formLabel">Status:</div>
+                        <div class="formValue">
+                            <span class$="[[_flowStatusDetail.mark]]">[[_flowStatusDetail.text]]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <paper-button id="redeployButton" on-tap="_redeployFlow">
+                    <iron-icon icon="refresh"></iron-icon>
+                    Redeploy
+                </paper-button>
+                <paper-menu-button no-animations horizontal-align="right" vertical-align="bottom">
+                    <paper-button class="dropdown-trigger">
+                        <iron-icon icon="menu"></iron-icon>
+                        Manage
+                    </paper-button>
+                    <paper-menu class="dropdown-content">
+                        <div>
+                            <paper-button id="startButton" on-tap="_startFlow">
+                                <iron-icon icon="av:play-arrow"></iron-icon>
+                                Start
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button id="stopButton" on-tap="_stopFlow">
+                                <iron-icon icon="av:stop"></iron-icon>
+                                Stop
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button on-tap="_saveFlow">
+                                <iron-icon icon="icons:save"></iron-icon>
+                                Save
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button on-tap="_exportFlow">
+                                <iron-icon icon="communication:call-made"></iron-icon>
+                                Export
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button on-tap="_importFlow">
+                                <iron-icon icon="communication:call-received"></iron-icon>
+                                Import
+                            </paper-button>
+                        </div>
+                    </paper-menu>
+                </paper-menu-button>
+            </div>
+
+        </or-editor-panel>
+
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyClient", function () {
+
+            Polymer({
+                is: 'or-editor-flow-control',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.editor.flow.control.FlowControlPresenter(this);
+                        }
+                    },
+                    _flowStatusDetail: {
+                        type: Object,
+                        value: function () {
+                            return {text: 'CONNECTING TO SERVER'}
+                        },
+                        notify: true
+                    }
+                },
+                listeners: {
+                    'session-opened': "_sessionOpened",
+                    'session-closed-clean': "_sessionClosedClean",
+                    'session-closed-error': "_sessionClosedError",
+                    'flow-status-detail': "_updateFlowStatus"
+                },
+                ready: function () {
+                    this.toggleAttribute("disabled", true, this.$.startButton);
+                },
+                _sessionOpened: function (type, event) {
+                    this.toggleAttribute("hidden", false, this.$.panel);
+                    this.$.panel.open();
+                    this.notifyPath("_presenter.flow", this._presenter.flow);
+                    this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
+                },
+                _sessionClosedClean: function (type, event) {
+                    this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
+                },
+                _sessionClosedError: function (type, event) {
+                    this._updateFlowStatus(null, {mark: "problem", text: "ERROR CONNECTING TO SERVER"});
+                },
+                _updateFlowStatus: function (type, flowStatusDetail) {
+
+                    if (flowStatusDetail.mark == "deployed") {
+                        this.$.panel.setAttribute("title", this._presenter.flow.getLabel() + " (Deployed)");
+                    } else {
+                        this.$.panel.setAttribute("title", this._presenter.flow.getLabel());
+                    }
+
+                    this.set("_flowStatusDetail", flowStatusDetail);
+                    this.toggleAttribute("disabled", !flowStatusDetail.canStart, this.$.startButton);
+                    this.toggleAttribute("disabled", !flowStatusDetail.canStop, this.$.stopButton);
+                },
+                _redeployFlow: function() {
+                    this._presenter.redeployFlow();
+                },
+                _startFlow: function () {
+                    this._presenter.startFlow();
+                },
+                _stopFlow: function () {
+                    this._presenter.stopFlow();
+                }
+            });
+        });
+    </script>
+</dom-module>
+

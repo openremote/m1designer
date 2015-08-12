@@ -5,41 +5,17 @@
 
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-    <style>
-        html {
-            height: 100vh;
-        }
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
-        body {
-            font-family: Helvetica, sans-serif;
-            background-color: #455a64;
-            color: white;
-            height: 100vh;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+    <!-- TODO The GWT loader doesn't work within imported files on Chrome https://code.google.com/p/google-web-toolkit/issues/detail?id=9179 -->
+    <meta name="Client::gwt:property" content="baseUrl=gwt/Client/">
+
+    <link rel="import" href="components/console/or-console.html"/>
+
+    <link rel="import" href="styles/master-style.html"/>
 
 </head>
 <body>
-
-
-<div style="padding: 1em;">
-
-    <h1>OpenRemote Dashboard</h1>
-
-    <p>
-        This will be a customizable panel.
-    </p>
-    <p>
-        Yes, the start screen of the application will be a panel just like any other you can create.
-    </p>
-    <p>
-        Click on the little box on the top right to edit this (and other) panels.
-    </p>
-
-</div>
-
+<or-console></or-console>
 </body>
 </html>

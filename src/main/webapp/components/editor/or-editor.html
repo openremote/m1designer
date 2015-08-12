@@ -1,0 +1,105 @@
+<script src="../util.js"></script>
+<script src="../../gwt/Client/Client.nocache.js"></script>
+
+<link rel="import" href="or-editor-form.html">
+
+<link rel="import" href="or-editor-flows.html">
+<link rel="import" href="or-editor-flow-editor.html">
+
+<script>
+    function onGwtReadyClient() {
+        waitUntil(function () {
+            return window.Polymer;
+        }, 100, 50, function () {
+            document.dispatchEvent(new CustomEvent("gwtReadyClient"));
+        });
+    }
+
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor',
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function() {
+                        return new openremote.editor.EditorPresenter(this);
+                    }
+                }
+            },
+            attached: function() {
+                this.async(function() {
+                    var event = new openremote.editor.flow.crud.FlowsLoadEvent();
+                    this.$.flows.fire(event.getType(), event);
+                });
+            },
+            _flowLoaded: function (ce, event) {
+                var flowEditEvent = new openremote.editor.flow.editor.FlowEditEvent(event.getFlow());
+                this.$.flowEditor.fire(flowEditEvent.getType(), flowEditEvent);
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-editor">
+    <style>
+
+        :host {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #container {
+            background: #eee;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #sidebar {
+            background: var(--or-editor-sidebar-background-color, #ccc);
+            max-width: 250px;
+            min-width: 250px;
+            overflow-y: auto;
+        }
+
+        #main {
+            flex-grow: 1;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media all and (max-width: 640px) {
+
+            #container {
+                flex-direction: column;
+            }
+
+            #container > #sidebar {
+                min-width: 100%;
+                max-width: 100%;
+                min-height: 50px;
+                max-height: 20vh;
+            }
+
+            #container > #main {
+                height: 80vh;
+            }
+        }
+
+    </style>
+    <template>
+        <div id="container">
+            <div id="sidebar">
+                <or-editor-flows id="flows"
+                                 on-flow-loaded="_flowLoaded"></or-editor-flows>
+            </div>
+            <div id="main">
+                <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+

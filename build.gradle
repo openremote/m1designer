@@ -74,9 +74,7 @@ gwt {
     sourceLevel = JavaVersion.VERSION_1_8
     maxHeapSize = "1024M"
 
-    modules(
-            "org.openremote.beta.Editor"
-    )
+    modules("org.openremote.beta.Client")
 
     test {
         hasGwtTests = false

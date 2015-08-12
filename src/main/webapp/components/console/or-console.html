@@ -1,0 +1,57 @@
+<script src="../util.js"></script>
+<script src="../../gwt/Client/Client.nocache.js"></script>
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script>
+    function onGwtReadyClient() {
+        waitUntil(function () {
+            return window.Polymer;
+        }, 100, 50, function () {
+            document.dispatchEvent(new CustomEvent("gwtReadyClient"));
+        });
+    }
+
+    document.addEventListener("gwtReadyClient", function () {
+
+        Polymer({
+            is: 'or-console',
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function() {
+                        return new openremote.console.ConsolePresenter(this);
+                    }
+                }
+            },
+            listeners: {
+                "show-info": "_showInfo"
+            },
+            _showInfo: function(ce, event) {
+                console.log("### GOT: " + event);
+                this.$.foo.textContent = event.getMessage();
+            },
+            _sayHello: function() {
+                this._presenter.sayHello();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-console">
+    <style>
+        #foo {
+            background: blue;
+            color: var(--or-lightgreen, red);
+        }
+
+    </style>
+    <template>
+
+        <div id="foo">Hello World</div>
+        <button on-tap="_sayHello">Say Hello</button>
+
+    </template>
+</dom-module>
+
+

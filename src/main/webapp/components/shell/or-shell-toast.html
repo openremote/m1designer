@@ -1,0 +1,55 @@
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<!--
+`<or-shell-toast>` shows a message in a toast popup.
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--or-shell-toast-background-color` | Toast background color | `#333`
+`--or-shell-toast-color` | Toast text/foreground color | `white`
+
+-->
+<dom-module id="or-shell-toast">
+
+    <style>
+        :host {
+            z-index: 9999;
+        }
+        #toast {
+            background-color: var(--or-shell-toast-background-color, #333);
+            color: var(--or-shell-toast-color, white);
+        }
+    </style>
+
+    <template>
+        <paper-toast id="toast"></paper-toast>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'or-shell-toast',
+            /**
+             * Show the toast, durable if duration is undefined.
+             * @param text
+             * @param duration
+             */
+            show: function (text, duration) {
+                this.$.toast.text = text;
+                if (duration) {
+                    this.$.toast.duration = duration;
+                } else {
+                    // TODO: Can't set a durable toast, faking with long wait time
+                    this.$.toast.duration = 999999999;
+                }
+                this.$.toast.show();
+            },
+            /**
+             * Hide the toast.
+             */
+            hide: function() {
+                this.$.toast.hide();
+            }
+        });
+    </script>
+</dom-module>
+
