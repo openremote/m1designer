@@ -19,9 +19,18 @@
         #flowDesigner {
             z-index: 10;
         }
+
+        #empty {
+            padding: 0.5em;
+        }
+
     </style>
 
     <template>
+
+        <template is="dom-if" if="{{!_presenter.flow}}">
+            <div id="empty">Please select a data flow.</div>
+        </template>
 
         <div id="flowDesigner"></div>
 
@@ -52,6 +61,11 @@
                     'flow-designer-node-selected': '_flowDesignerNodeSelected'
                 },
                 _flowEdit: function (type, event) {
+
+                    this.async(function() {
+                        this.notifyPath("_presenter.flow", this._presenter.flow);
+                    });
+
                     var flowControlStartEvent = new openremote.flow.control.FlowControlStartEvent(event.getFlow());
                     this.$.flowControl.fire(flowControlStartEvent.getType(), flowControlStartEvent);
 
