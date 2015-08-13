@@ -1,4 +1,4 @@
-<link rel="import" href="or-editor-panel.html">
+<link rel="import" href="../shared/or-panel.html">
 
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
@@ -13,8 +13,8 @@
         }
 
         #panel {
-            --or-editor-panel-width: 320px;
-            --or-editor-panel-max-height: 50vh;
+            --or-panel-width: 320px;
+            --or-panel-max-height: 50vh;
         }
 
         .content {
@@ -34,7 +34,7 @@
     </style>
 
     <template>
-        <or-editor-panel id="panel"
+        <or-panel id="panel"
                          switchable="right"
                          title="Node"
                          hidden>
@@ -71,7 +71,7 @@
                 </template>
 
             </div>
-        </or-editor-panel>
+        </or-panel>
     </template>
 
     <script>

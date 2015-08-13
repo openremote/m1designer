@@ -48,10 +48,10 @@
     <style>
 
         :host {
-        }
-
-        #container, #empty {
+            display: block;
+            position: absolute;
             height: 100%;
+            width: 100%;
             background-color: var(--or-console-background-color);
         }
 
@@ -62,19 +62,17 @@
 
     </style>
     <template>
-        <div id="container">
-            <template is="dom-if" if="[[!_haveWidgets]]">
-                <div id="empty">
-                    <h1>OpenRemote Console</h1>
+        <template is="dom-if" if="[[!_haveWidgets]]">
+            <div id="empty">
+                <h1>OpenRemote Console</h1>
 
-                    <p>
-                        Open the editor with the button in the right top corner and add widgets to this panel.
-                    </p>
+                <p>
+                    Open the editor with the button in the right top corner and add widgets to this panel.
+                </p>
 
-                </div>
-            </template>
-            <div id="widgetsContainer"></div>
-        </div>
+            </div>
+        </template>
+        <div id="container"></div>
     </template>
 </dom-module>
 

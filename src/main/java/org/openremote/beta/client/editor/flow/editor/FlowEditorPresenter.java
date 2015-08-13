@@ -6,7 +6,6 @@ import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
-import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
@@ -34,10 +33,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(FlowEditEvent.class, event -> {
             this.flow = event.getFlow();
             startFlowDesigner();
-            dispatchEventOnView(getConsoleView(), new ConsoleRefreshEvent(this.flow));
         });
-
-        addEventRedirectOnView(MessageReceivedEvent.class, getShellView(), getView());
 
         addEventListener(MessageReceivedEvent.class, event -> {
             if (flowDesigner != null && flow != null && flow.getId().equals(event.getMessageEvent().getFlowId())) {

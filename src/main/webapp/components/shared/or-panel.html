@@ -7,7 +7,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
 <!--
-`<or-editor-panel>` is a scrolling panel that can be shown/hidden on demand.
+`<or-panel>` is a scrolling panel that can be shown/hidden on demand.
 
 You can enable a show/hide switch with the `switchable` attribute, and set it
 to `left` or `right` position.
@@ -16,15 +16,15 @@ You can set the `title` attribute for a label an the panel switch.
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--or-editor-panel-width` | Width of panel | `200px`
-`--or-editor-panel-max-height` | Max height of panel | `50vh`
-`--or-editor-panel-background-color` | Background of panel | `white`
-`--or-editor-panel-content-background-color` | Background of content | `white`
-`--or-editor-panel-header-background-color` | Background of header | `rgba(255, 255, 255, 0.8)`
-`--or-editor-panel-header-color` | Text color of header | `black`
-`--or-editor-panel-button-color` | Button color | `--default-primary-color`
+`--or-panel-width` | Width of panel | `200px`
+`--or-panel-max-height` | Max height of panel | `50vh`
+`--or-panel-background-color` | Background of panel | `white`
+`--or-panel-content-background-color` | Background of content | `white`
+`--or-panel-header-background-color` | Background of header | `rgba(255, 255, 255, 0.8)`
+`--or-panel-header-color` | Text color of header | `black`
+`--or-panel-button-color` | Button color | `--default-primary-color`
 -->
-<dom-module id="or-editor-panel">
+<dom-module id="or-panel">
     <style>
         :host {
         }
@@ -40,14 +40,14 @@ Custom property | Description | Default
 
         #switchableTitlePanel,
         #regularTitlePanel {
-            background-color: var(--or-editor-panel-header-background-color, rgba(255, 255, 255, 0.8));
-            color: var(--or-editor-panel-header-color, black);
+            background-color: var(--or-panel-header-background-color, rgba(255, 255, 255, 0.8));
+            color: var(--or-panel-header-color, black);
         }
 
         #panel,
         #switchableTitlePanel,
         #regularTitlePanel {
-            width: var(--or-editor-panel-width, 200px);
+            width: var(--or-panel-width, 200px);
         }
 
         #regularTitlePanel {
@@ -72,18 +72,18 @@ Custom property | Description | Default
             top: 0;
             left: 0;
             margin: 0 0 0.5em 0 !important;
-            width: var(--or-editor-panel-width, 200px);
-            background: var(--or-editor-panel-background-color, white);
+            width: var(--or-panel-width, 200px);
+            background: var(--or-panel-background-color, white);
             overflow: hidden;
-            --paper-dialog-button-color: var(--or-editor-panel-button-color, --paper-dialog-button-color)
+            --paper-dialog-button-color: var(--or-panel-button-color, --paper-dialog-button-color)
         }
 
         #panelScrollable {
             margin: 0;
             --paper-dialog-scrollable: {
                 padding: 0;
-                background: var(--or-editor-panel-content-background-color, white);
-                max-height: var(--or-editor-panel-max-height, 50vh);
+                background: var(--or-panel-content-background-color, white);
+                max-height: var(--or-panel-max-height, 50vh);
             }
         }
 
@@ -139,7 +139,7 @@ Custom property | Description | Default
     </template>
     <script>
         Polymer({
-            is: 'or-editor-panel',
+            is: 'or-panel',
             properties: {
                 switchable: {
                     type: String,

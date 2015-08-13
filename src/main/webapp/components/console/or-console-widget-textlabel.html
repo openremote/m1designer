@@ -2,14 +2,15 @@
 
 <dom-module id="or-console-widget-textlabel">
     <style>
-        #foo {
-            background: black;
-            color: white;
+        #container {
+            background: white;
+            color: black;
+            margin: 2em;
         }
 
     </style>
     <template>
-        <div id="foo">Widget: <span>[[value]]</span></div>
+        <div id="container">Widget: <span>[[value]]</span></div>
     </template>
     <script>
         Polymer({

@@ -1,0 +1,195 @@
+<link rel="import" href="../shared/or-panel.html">
+
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="or-shell-messagelog">
+
+    <style>
+        :host {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+        }
+
+        #panel {
+            --or-panel-width: 500px;
+            --or-panel-max-height: 200px;
+        }
+
+        .content {
+            padding: 0.4em;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+        }
+
+        .message {
+            padding: 0.4em;
+            margin: 0.4em 0;
+            font-size: smaller;
+            background-color: var(--or-messagelog-item-background-color, grey);
+            color: var(--or-messagelog-item-text-color, --primary-text-color);
+            border-radius: 0.4em;
+        }
+
+        .message .label {
+        }
+
+        .message .label.empty {
+            display: none;
+        }
+
+        .message .value {
+            font-weight: bold;
+        }
+
+        .message .body {
+            border-left: 1px dashed black;
+            margin-left: 0.5em;
+            padding-left: 0.5em;
+        }
+    </style>
+
+    <template>
+        <or-panel id="panel"
+                  title="[[_panelTitle]]"
+                  switchable="right"
+                  hidden>
+            <div class="content">
+                <iron-list items="[[_messageLog]]" as="msg">
+                    <template>
+                        <div>
+                            <div class="message layout horizontal center">
+                                <div class="flex-6 layout vertical">
+                                    <div class$="{{_getLabelClass(msg.flowId)}}">
+                                        Flow:&#160;<span class="value">{{_getFlowLabel(msg)}}</span>
+                                    </div>
+                                    <div class$="{{_getLabelClass(msg.nodeId)}}">
+                                        Node:&#160;<span class="value">{{_getNodeLabel(msg)}}</span>
+                                    </div>
+                                    <div class$="{{_getSinkLabelClass(msg)}}">
+                                        Sink:&#160;<span class="value">{{_getSinkLabel(msg)}}</span>
+                                    </div>
+                                    <div class$="{{_getLabelClass(msg.instanceId)}}">
+                                        Instance:&#160;<span class="value">{{msg.instanceId}}</span>
+                                    </div>
+                                </div>
+                                <div class="flex-5 body">{{_getBody(msg.body)}}</div>
+                            </div>
+                        </div>
+                    </template>
+                </iron-list>
+                <template is="dom-if" if="[[!_messageLog.length]]">
+                    No messages.
+                </template>
+            </div>
+
+            <div class="toolbar layout horizontal center">
+
+                <div class="layout horizontal center">
+                    <paper-toggle-button checked id="messagesForAllFlows"></paper-toggle-button>
+                    <span style="margin: 0 0.5em;">WATCH ALL FLOWS</span>
+                </div>
+
+                <paper-button id="clearMessageLogButton" on-tap="_clearMessageLog">
+                    <iron-icon icon="icons:clear"></iron-icon>
+                    Clear
+                </paper-button>
+            </div>
+
+        </or-panel>
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyClient", function () {
+
+            Polymer({
+                is: 'or-shell-messagelog',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.shell.MessageLogPresenter(this);
+                        }
+                    },
+                    _active: {
+                        type: Boolean,
+                        value: false
+                    },
+                    _flow: {
+                        type: Object,
+                        value: {}
+                    },
+                    _messageLog: {
+                        type: Array,
+                        value: []
+                    },
+                    _panelTitle: {
+                        type: String,
+                        value: "Message Log",
+                        computed: "_computePanelTitle(_flow, _messageLog.*)"
+                    }
+                },
+                listeners: {
+                    "message-log-open": "_onMessageLogOpen",
+                    "message-log-close": "_onMessageLogClose",
+                    "message-received": "_onMessageReceived",
+                    "flow-edit": "_onFlowEdit"
+                },
+                _onMessageLogOpen: function () {
+                    this.toggleAttribute("hidden", false, this.$.panel);
+                    this.set("_active", true);
+                },
+                _onMessageLogClose: function () {
+                    this.toggleAttribute("hidden", true, this.$.panel);
+                    this.set("_active", false);
+                    this._clearMessageLog();
+                    this.set("_flow", {});
+                },
+                _onMessageReceived: function (ce, event) {
+                    var messageEvent = event.getMessageEvent();
+                    if (this._active && (this.$.messagesForAllFlows.checked || this._presenter.isCurrentFlow(messageEvent))) {
+                        this.push("_messageLog", messageEvent);
+                        this.$.panel.scrollToBottom();
+                    }
+                },
+                _onFlowEdit: function(ce, event) {
+                    this.set("_flow", event.getFlow());
+                    this.toggleAttribute("checked", false, this.$.messagesForAllFlows);
+                },
+                _clearMessageLog: function () {
+                    this.set("_messageLog", []);
+                },
+                _getLabelClass: function (value) {
+                    return "layout horizontal label " + (value ? "" : "empty");
+                },
+                _getFlowLabel: function (msgEvent) {
+                    return this._presenter.getFlowLabel(msgEvent);
+                },
+                _getNodeLabel: function (msgEvent) {
+                    return this._presenter.getNodeLabel(msgEvent);
+                },
+                _getSinkLabelClass: function (msgEvent) {
+                    return "layout horizontal label " + (msgEvent.sinkSlotId && this._presenter.haveSinkLabel(msgEvent) ? "" : "empty");
+                },
+                _getSinkLabel: function (msgEvent) {
+                    return this._presenter.getSinkLabel(msgEvent);
+                },
+                _getBody: function (body) {
+                    return body ? body : "(EMPTY MESSAGE)"
+                },
+                _computePanelTitle: function(flow, messageLog) {
+                    var title = "Message Log";
+                    title += flow.label ? " (Flow: " + flow.label + ", " : " (";
+                    title += "Received: " + messageLog.base.length + ")";
+                    return title;
+                }
+            });
+        });
+    </script>
+</dom-module>
+

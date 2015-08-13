@@ -1,9 +1,9 @@
-package org.openremote.beta.client.editor.flow.messagelog;
+package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -22,11 +22,9 @@ public class MessageLogPresenter extends AbstractPresenter {
     public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(FlowMessageLogStartEvent.class, event -> {
+        addEventListener(FlowEditEvent.class, true, false, event -> {
             this.flow = event.getFlow();
         });
-
-        addEventRedirectOnView(MessageReceivedEvent.class, getShellView(), getView());
     }
 
     public boolean isCurrentFlow(MessageEvent messageEvent) {

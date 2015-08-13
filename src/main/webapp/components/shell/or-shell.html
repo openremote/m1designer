@@ -3,6 +3,7 @@
 
 <link rel="import" href="or-shell-toast.html">
 <link rel="import" href="or-shell-busy-indicator.html">
+<link rel="import" href="or-shell-messagelog.html">
 
 <script>
     // One-time initialization, this MUST be a script in an imported file! The
@@ -64,7 +65,6 @@
                 'show-failure': '_showFailure',
                 'request-start': '_loadStart',
                 'request-complete': '_loadComplete'
-
             },
             attached: function () {
                 // Set "opposite" of what the user wants as initial state, then toggle
@@ -90,6 +90,9 @@
                 this.$.consoleResizeHandle.style.minWidth = this.consoleResizeHandleWidth + "px";
                 this.$.consoleResizeHandle.style.display = "inherit";
                 this.editorVisible = true;
+
+                var messageLogOpenEvent = new openremote.shell.MessageLogOpenEvent();
+                this.$.messageLog.fire(messageLogOpenEvent.getType(), messageLogOpenEvent);
             },
             _hideEditor: function () {
                 this.$.editor.style.display = "none";
@@ -98,6 +101,9 @@
                 this.$.consoleResizeHandle.style.minWidth = "0";
                 this.$.consoleResizeHandle.style.display = "none";
                 this.editorVisible = false;
+
+                var messageLogCloseEvent = new openremote.shell.MessageLogCloseEvent();
+                this.$.messageLog.fire(messageLogCloseEvent.getType(), messageLogCloseEvent);
             },
             _consoleResizeStart: function (e, detail) {
                 this.$.editor.style.pointerEvents = "none";
@@ -171,7 +177,7 @@
             _loadComplete: function() {
                 this.$.toast.hide();
                 this.$.busyIndicator.hide();
-            },
+            }
         });
 
     });
@@ -193,6 +199,9 @@
             right: 10px;
         }
 
+        #messageLog {
+            z-index: 1;
+        }
 
         #editor {
             flex-grow: 1;
@@ -262,7 +271,10 @@
     <template>
 
         <or-shell-toast id="toast"></or-shell-toast>
+
         <or-shell-busy-indicator id="busyIndicator"></or-shell-busy-indicator>
+
+        <or-shell-messagelog id="messageLog"></or-shell-messagelog>
 
         <iframe id="editor" frameborder="0" src="about:blank"></iframe>
 

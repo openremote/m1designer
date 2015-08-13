@@ -94,7 +94,7 @@ public abstract class SessionPresenter extends RequestPresenter {
             failureCount++;
             if (failureCount < maxAttempts) {
                 LOG.debug("Session reconnection attempt '" + serviceUrl + "' with delay milliseconds: " + delayMillis);
-                currentReconnectAttempt = dispatchEventDelayCancelExisting(
+                currentReconnectAttempt = dispatchEvent(
                     new SessionConnectEvent(serviceUrl),
                     delayMillis,
                     currentReconnectAttempt

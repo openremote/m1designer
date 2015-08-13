@@ -1,4 +1,4 @@
-<link rel="import" href="or-editor-panel.html">
+<link rel="import" href="../shared/or-panel.html">
 
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
@@ -19,8 +19,8 @@
         }
 
         #panel {
-            --or-editor-panel-width: 300px;
-            --or-editor-panel-max-height: 75px;
+            --or-panel-width: 300px;
+            --or-panel-max-height: 75px;
         }
 
         .content {
@@ -47,9 +47,9 @@
     </style>
 
     <template>
-        <or-editor-panel id="panel"
-                         switchable="left"
-                         hidden>
+        <or-panel id="panel"
+                  switchable="left"
+                  hidden>
 
             <div class="content">
                 <div class="form">
@@ -107,7 +107,7 @@
                 </paper-menu-button>
             </div>
 
-        </or-editor-panel>
+        </or-panel>
 
     </template>
 
@@ -164,7 +164,7 @@
                     this.toggleAttribute("disabled", !flowStatusDetail.canStart, this.$.startButton);
                     this.toggleAttribute("disabled", !flowStatusDetail.canStop, this.$.stopButton);
                 },
-                _redeployFlow: function() {
+                _redeployFlow: function () {
                     this._presenter.redeployFlow();
                 },
                 _startFlow: function () {
@@ -173,7 +173,7 @@
                 _stopFlow: function () {
                     this._presenter.stopFlow();
                 },
-                _exportFlow: function() {
+                _exportFlow: function () {
                     console.log(this._presenter.getFlowJson());
                     var event = new openremote.ShowInfoEvent("Export complete, check your JavaScript console.");
                     this.fire(event.getType(), event);

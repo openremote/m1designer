@@ -1,6 +1,5 @@
 <link rel="import" href="or-editor-flow-node.html">
 <link rel="import" href="or-editor-flow-control.html">
-<link rel="import" href="or-editor-flow-messagelog.html">
 
 <dom-module id="or-editor-flow-editor">
 
@@ -35,8 +34,6 @@
         <div id="flowDesigner"></div>
 
         <or-editor-flow-control id="flowControl"></or-editor-flow-control>
-
-        <or-editor-flow-messagelog id="flowMessageLog"></or-editor-flow-messagelog>
 
         <or-editor-flow-node id="flowNode"></or-editor-flow-node>
 
@@ -73,9 +70,6 @@
 
                     var flowControlStartEvent = new openremote.editor.flow.control.FlowControlStartEvent(event.getFlow());
                     this.$.flowControl.fire(flowControlStartEvent.getType(), flowControlStartEvent);
-
-                    var flowMessageLogStartEvent = new openremote.editor.flow.messagelog.FlowMessageLogStartEvent(event.getFlow());
-                    this.$.flowMessageLog.fire(flowMessageLogStartEvent.getType(), flowMessageLogStartEvent);
 
                     var flowNodeCloseEvent = new openremote.editor.flow.node.FlowNodeCloseEvent(this._presenter.flow);
                     this.$.flowNode.fire(flowNodeCloseEvent.getType(), flowNodeCloseEvent);

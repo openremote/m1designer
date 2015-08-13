@@ -25,7 +25,7 @@ public class ConsolePresenter extends AbstractPresenter {
 
             haveWidgets = clientNodes.length > 0;
 
-            Element container = getWidgetsContainer();
+            Element container = getRequiredChildView("#container");
             Element child = null;
             while (((child = container.getFirstElementChild()) != null)) {
                 container.removeChild(child);
@@ -38,10 +38,6 @@ public class ConsolePresenter extends AbstractPresenter {
             }
 
         });
-    }
-
-    public Element getWidgetsContainer() {
-        return getView().querySelector("#widgetsContainer");
     }
 
 }

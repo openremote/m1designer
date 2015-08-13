@@ -1,14 +1,13 @@
 package org.openremote.beta.client.shared;
 
 import com.google.gwt.core.client.js.JsExport;
+import com.google.gwt.core.client.js.JsNoExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
-import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.TimeoutHandler;
 import elemental.events.CustomEvent;
 import elemental.events.EventRemover;
-import elemental.html.IFrameElement;
 import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +32,37 @@ public abstract class AbstractPresenter {
         return view;
     }
 
+    @JsNoExport
     public <E extends Event> EventRemover addEventListener(Class<E> eventClass,
                                                            EventListener<E> listener) {
-        return addEventListenerOnView(getView(), eventClass, listener);
+        return addEventListener(getView(), eventClass, listener);
     }
 
-    public <E extends Event> EventRemover addEventListenerOnView(Element originView,
-                                                                 Class<E> eventClass,
-                                                                 EventListener<E> listener) {
-        return addEventListenerOnViewWithOptions(originView, eventClass, false, false, listener);
+    @JsNoExport
+    public <E extends Event> EventRemover addEventListener(Element originView,
+                                                           Class<E> eventClass,
+                                                           EventListener<E> listener) {
+        return addEventListener(originView, eventClass, false, false, listener);
     }
 
-    public <E extends Event> EventRemover addEventListenerWithOptions(Class<E> eventClass,
-                                                                      boolean stopPropagation,
-                                                                      boolean stopImmediatePropagation,
-                                                                      EventListener<E> listener) {
-        return addEventListenerOnViewWithOptions(getView(), eventClass, stopPropagation, stopImmediatePropagation, listener);
+    @JsNoExport
+    public <E extends Event> EventRemover addEventListener(Class<E> eventClass,
+                                                           boolean stopPropagation,
+                                                           boolean stopImmediatePropagation,
+                                                           EventListener<E> listener) {
+        return addEventListener(getView(), eventClass, stopPropagation, stopImmediatePropagation, listener);
     }
 
-    public <E extends Event> EventRemover addEventListenerOnViewWithOptions(Element originView,
-                                                                            Class<E> eventClass,
-                                                                            boolean stopPropagation,
-                                                                            boolean stopImmediatePropagation,
-                                                                            EventListener<E> listener) {
+    @JsNoExport
+    public <E extends Event> EventRemover addEventListener(Element originView,
+                                                           Class<E> eventClass,
+                                                           boolean stopPropagation,
+                                                           boolean stopImmediatePropagation,
+                                                           EventListener<E> listener) {
         String eventType = Event.getType(eventClass);
         LOG.debug("Adding event listener to view '" + originView.getLocalName() + "': " + eventType);
         return originView.addEventListener(eventType, evt -> {
+            LOG.debug("Received event on view '" + originView.getLocalName() + "': " + evt.getType());
             CustomEvent customEvent = (CustomEvent) evt;
             if (stopPropagation)
                 customEvent.stopPropagation();
@@ -70,32 +74,38 @@ public abstract class AbstractPresenter {
         }, false); // Disable the capture phase, optional bubbling is easier to understand
     }
 
+    @JsNoExport
     public int dispatchEvent(Event event) {
-        return dispatchEventDelay(event, 0);
+        return dispatchEvent(event, 0);
     }
 
-    public int dispatchEventOnView(Element targetView, Event event) {
-        return dispatchEventOnViewDelay(targetView, event, 0);
+    @JsNoExport
+    public int dispatchEvent(Element targetView, Event event) {
+        return dispatchEvent(targetView, event, 0);
     }
 
-    public int dispatchEventDelay(Event event, int delayMillis) {
-        return dispatchEventDelayCancelExisting(event, delayMillis, -1);
+    @JsNoExport
+    public int dispatchEvent(Event event, int delayMillis) {
+        return dispatchEvent(event, delayMillis, -1);
     }
 
-    public int dispatchEventOnViewDelay(Element targetView, Event event, int delayMillis) {
-        return dispatchEventOnViewDelayCancelExisting(targetView, event, delayMillis, -1);
+    @JsNoExport
+    public int dispatchEvent(Element targetView, Event event, int delayMillis) {
+        return dispatchEvent(targetView, event, delayMillis, -1);
     }
 
-    public int dispatchEventDelayCancelExisting(Event event, int delayMillis, int timeoutId) {
-        return dispatchEventOnViewDelayCancelExisting(getView(), event, delayMillis, timeoutId);
+    @JsNoExport
+    public int dispatchEvent(Event event, int delayMillis, int timeoutId) {
+        return dispatchEvent(getView(), event, delayMillis, timeoutId);
     }
 
-    public int dispatchEventOnViewDelayCancelExisting(Element targetView, Event event, int delayMillis, int timeoutId) {
+    @JsNoExport
+    public int dispatchEvent(Element targetView, Event event, int delayMillis, int timeoutId) {
         if (timeoutId != -1) {
             Browser.getWindow().clearTimeout(timeoutId);
         }
         TimeoutHandler dispatchHandler = () -> {
-            LOG.debug("Dispatching custom event on view '" + targetView.getLocalName() + "': " + event.getType());
+            LOG.debug("Dispatching event on view '" + targetView.getLocalName() + "': " + event.getType());
             CustomEvent customEvent = (CustomEvent) targetView.getOwnerDocument().createEvent("CustomEvent");
 
             boolean bubbling = true;
@@ -118,40 +128,21 @@ public abstract class AbstractPresenter {
         }
     }
 
-    protected void addEventRedirect(Class<? extends Event> eventClass, Element targetview) {
-        addEventListener(eventClass, event -> dispatchEventOnView(targetview, event));
+    @JsNoExport
+    protected Element getRequiredChildView(String selector) {
+        Element child = getView().querySelector(selector);
+        if (child == null)
+            throw new RuntimeException("Missing child view '" + selector + "' on: " + getView().getLocalName());
+        return child;
     }
 
-    protected void addEventRedirectOnView(Class<? extends Event> eventClass, Element originView, Element destinationView) {
-        addEventListenerOnView(originView, eventClass, event -> dispatchEventOnView(destinationView, event));
-    }
-
-    protected Document getRootView() {
-        return Browser.getWindow().getTop().getDocument();
-    }
-
-    protected Element getShellView() {
-        return getRootView().querySelector("or-shell");
-    }
-
-    protected Element getEditorView() {
-        IFrameElement frame = (IFrameElement) getRootView().querySelector("or-shell #editor");
-        if (frame == null)
-            throw new IllegalArgumentException("Missing or-shell #editor frame");
-        Element view = frame.getContentDocument().querySelector("or-editor");
-        if (view == null)
-            throw new IllegalArgumentException("Missing or-editor view component in editor frame.");
-        return view;
-    }
-
-    protected Element getConsoleView() {
-        IFrameElement frame = (IFrameElement) getRootView().querySelector("or-shell #console");
-        if (frame == null)
-            throw new IllegalArgumentException("Missing or-shell #console frame");
-        Element view = frame.getContentDocument().querySelector("or-console");
-        if (view == null)
-            throw new IllegalArgumentException("Missing or-console view component in console frame.");
-        return view;
+    @JsNoExport
+    protected void addRedirectToShellView(Class<? extends Event> eventClass) {
+        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("or-shell");
+        if (shellView == null) {
+            throw new RuntimeException("Missing 'or-shell' view in browser top window document");
+        }
+        addEventListener(getView(), eventClass, event -> dispatchEvent(shellView, event));
     }
 
 }
