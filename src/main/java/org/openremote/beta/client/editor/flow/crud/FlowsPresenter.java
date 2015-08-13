@@ -5,7 +5,6 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.shared.request.RequestPresenter;
-import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +29,6 @@ public class FlowsPresenter extends RequestPresenter {
                     @Override
                     protected void onResponse(List<Flow> data) {
                         dispatchEvent(new FlowsLoadedEvent(data.toArray(new Flow[data.size()])));
-
-                        dispatchEventOnView(getConsoleView(), new ShowInfoEvent("Hello Console from Editor!"));
                     }
                 }
             );

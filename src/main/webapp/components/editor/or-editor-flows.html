@@ -92,12 +92,12 @@ Custom property | Description | Default
                     this.set("flows", event.getFlows());
 
                     // TODO dev only, load a flow to work on
-                    /*
-                    var event = new openremote.flow.crud.FlowLoadEvent(
+/*
+                    var event = new openremote.editor.flow.crud.FlowLoadEvent(
                             this.flows[2].getId()
                     );
                     this.fire(event.getType(), event);
-                    */
+*/
 
                 },
                 _requestFailure: function (type, event) {

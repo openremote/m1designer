@@ -3,6 +3,10 @@
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
+
+<link rel="import" href="or-console-widget-textlabel.html"/>
+
+
 <script>
     function onGwtReadyClient() {
         waitUntil(function () {
@@ -19,20 +23,22 @@
             properties: {
                 _presenter: {
                     type: Object,
-                    value: function() {
+                    value: function () {
                         return new openremote.console.ConsolePresenter(this);
                     }
+                },
+                _haveWidgets: {
+                    type: Boolean,
+                    value: false
                 }
             },
             listeners: {
-                "show-info": "_showInfo"
+                "console-refresh": "_onConsoleRefresh"
             },
-            _showInfo: function(ce, event) {
-                console.log("### GOT: " + event);
-                this.$.foo.textContent = event.getMessage();
-            },
-            _sayHello: function() {
-                this._presenter.sayHello();
+            _onConsoleRefresh: function () {
+                this.async(function () {
+                    this.notifyPath("_haveWidgets", this._presenter.haveWidgets);
+                })
             }
         });
     });
@@ -40,17 +46,35 @@
 
 <dom-module id="or-console">
     <style>
-        #foo {
-            background: blue;
-            color: var(--or-lightgreen, red);
+
+        :host {
+        }
+
+        #container, #empty {
+            height: 100%;
+            background-color: var(--or-console-background-color);
+        }
+
+        #empty {
+            color: var(--or-console-empty-color);
+            padding: 1em;
         }
 
     </style>
     <template>
+        <div id="container">
+            <template is="dom-if" if="[[!_haveWidgets]]">
+                <div id="empty">
+                    <h1>OpenRemote Console</h1>
 
-        <div id="foo">Hello World</div>
-        <button on-tap="_sayHello">Say Hello</button>
+                    <p>
+                        Open the editor with the button in the right top corner and add widgets to this panel.
+                    </p>
 
+                </div>
+            </template>
+            <div id="widgetsContainer"></div>
+        </div>
     </template>
 </dom-module>
 

@@ -59,6 +59,12 @@
                     'flow-edit': "_flowEdit",
                     'flow-designer-node-selected': '_flowDesignerNodeSelected'
                 },
+                attached: function() {
+                    // Need to do this async, when the shady children are available
+                    this.async(function() {
+                        this._presenter.prepareFlowDesignerContainer(this.$.flowDesigner);
+                    })
+                },
                 _flowEdit: function (ce, event) {
 
                     this.async(function() {

@@ -6,6 +6,7 @@ import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
@@ -25,6 +26,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     public Flow flow;
     public FlowDesigner flowDesigner;
+    protected LienzoPanel flowDesignerPanel;
 
     public FlowEditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -32,6 +34,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(FlowEditEvent.class, event -> {
             this.flow = event.getFlow();
             startFlowDesigner();
+            dispatchEventOnView(getConsoleView(), new ConsoleRefreshEvent(this.flow));
         });
 
         addEventRedirectOnView(MessageReceivedEvent.class, getShellView(), getView());
@@ -43,40 +46,34 @@ public class FlowEditorPresenter extends RequestPresenter {
         });
     }
 
-    protected void startFlowDesigner() {
+    public void prepareFlowDesignerContainer(Element container) {
+        this.flowDesignerPanel = new LienzoPanel();
+        flowDesignerPanel.setBackgroundColor(FlowDesignerConstants.BACKGROUND_COLOR);
 
-        Element container = getClearContainer();
+        Window.addResizeHandler(event -> flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight()));
+        flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight());
 
-        LienzoPanel designerPanel = new LienzoPanel();
-        designerPanel.setBackgroundColor(FlowDesignerConstants.BACKGROUND_COLOR);
-
-        Window.addResizeHandler(event -> designerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight()));
-        designerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight());
-        designerPanel.getViewport().pushMediator(new FlowEditorViewportMediator());
+        // The viewport is "global", only add listeners once or you leak memory!
+        flowDesignerPanel.getViewport().pushMediator(new FlowEditorViewportMediator());
+        flowDesignerPanel.getViewport().addViewportTransformChangedHandler(event -> {
+            if (flowDesigner != null) {
+                flowDesigner.viewPortChanged();
+            }
+        });
 
         // Needed for event propagation
         HTMLPanel containerPanel = HTMLPanel.wrap((com.google.gwt.dom.client.Element) container);
-        containerPanel.add(designerPanel);
+        containerPanel.add(flowDesignerPanel);
+    }
 
-        this.flowDesigner = new FlowDesigner(flow, designerPanel.getScene()) {
+    protected void startFlowDesigner() {
+        flowDesignerPanel.getScene().removeAll();
+        flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
             @Override
             protected void onSelectionNode(Node node) {
                 dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
             }
         };
-
-        designerPanel.draw();
-    }
-
-    protected Element getClearContainer() {
-        Element container = getView().querySelector("#flowDesigner");
-        if (container == null) {
-            throw new IllegalArgumentException("View must have a child #flowDesigner element: " + getView().getLocalName());
-        }
-        Element existing = container.getFirstElementChild();
-        if (existing != null) {
-            container.removeChild(existing);
-        }
-        return container;
+        flowDesignerPanel.draw();
     }
 }

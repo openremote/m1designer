@@ -1,0 +1,27 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<dom-module id="or-console-widget-textlabel">
+    <style>
+        #foo {
+            background: black;
+            color: white;
+        }
+
+    </style>
+    <template>
+        <div id="foo">Widget: <span>[[value]]</span></div>
+    </template>
+    <script>
+        Polymer({
+            is: "or-console-widget-textlabel",
+            behaviors: [OpenRemoteConsole.Widget],
+            properties: {
+                value: {
+                    type: String
+                }
+            }
+        });
+    </script>
+</dom-module>
+
+

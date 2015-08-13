@@ -120,7 +120,6 @@ public abstract class FlowDesigner extends Layer {
             .setAutoHideTime(TOOLTIP_AUTO_HIDE_MILLIS)
             .setFillColor(TOOLTIP_BACKGROUND_COLOR);
         getViewport().getOverLayer().add(toolTip);
-        getViewport().addViewportTransformChangedHandler(event -> toolTip.hide());
 
         for (Node node : flow.getNodes()) {
             add(node);
@@ -138,6 +137,10 @@ public abstract class FlowDesigner extends Layer {
     public Layer batch() {
         wiringLayer.batch();
         return super.batch();
+    }
+
+    public void viewPortChanged() {
+        toolTip.hide();
     }
 
     public void receiveMessageEvent(MessageEvent event) {

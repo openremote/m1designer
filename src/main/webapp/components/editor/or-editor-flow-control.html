@@ -48,7 +48,6 @@
 
     <template>
         <or-editor-panel id="panel"
-                         title="[[_presenter.flow.label]]"
                          switchable="left"
                          hidden>
 
@@ -173,6 +172,11 @@
                 },
                 _stopFlow: function () {
                     this._presenter.stopFlow();
+                },
+                _exportFlow: function() {
+                    console.log(this._presenter.getFlowJson());
+                    var event = new openremote.ShowInfoEvent("Export complete, check your JavaScript console.");
+                    this.fire(event.getType(), event);
                 }
             });
         });

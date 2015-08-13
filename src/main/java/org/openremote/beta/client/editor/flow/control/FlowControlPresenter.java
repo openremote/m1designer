@@ -108,4 +108,8 @@ public class FlowControlPresenter extends SessionPresenter {
     public void stopFlow() {
         dispatchEvent(new FlowStopEvent(flow.getId()));
     }
+
+    public String getFlowJson() {
+        return FLOW_CODEC.encode(this.flow).toString();
+    }
 }

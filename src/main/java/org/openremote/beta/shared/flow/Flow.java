@@ -49,6 +49,17 @@ public class Flow extends FlowObject {
         return nodes;
     }
 
+    public Node[] findNodes(String type) {
+        List<Node> collection = new ArrayList<>(Arrays.asList(getNodes()));
+        Iterator<Node> it = collection.iterator();
+        while (it.hasNext()) {
+            Node node = it.next();
+            if (!node.getIdentifier().getType().equals(type))
+                it.remove();
+        }
+        return collection.toArray(new Node[collection.size()]);
+    }
+
     public void addNode(Node node) {
         Set<Node> collection = new HashSet<>(Arrays.asList(getNodes()));
         collection.add(node);
