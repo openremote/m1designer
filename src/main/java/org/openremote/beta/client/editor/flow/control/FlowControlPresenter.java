@@ -89,9 +89,14 @@ public class FlowControlPresenter extends SessionPresenter {
 
     public void redeployFlow() {
         stopFlow();
+
+        // TODO cleaner solution
+        Flow flowCopy = FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
+        flowCopy.clearDependencies();
+
         sendRequest(
-            resource("flow", flow.getId()).put().json(FLOW_CODEC.encode(flow)),
-            new NoContentResponseCallback("Save flow") {
+            resource("flow", flow.getId()).put().json(FLOW_CODEC.encode(flowCopy)),
+            new StatusResponseCallback("Save flow", 204) {
                 @Override
                 protected void onResponse() {
                     dispatchEvent(new ShowInfoEvent("Flow '" + flow.getLabel() + "' saved, redeploying..."));

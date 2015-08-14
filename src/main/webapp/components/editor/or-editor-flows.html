@@ -13,7 +13,6 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--or-editor-flow-item-background-color` | Background color of flow list item | `white`
 `--or-editor-flow-item-label-color` | Label text color of flow list item | `#333`
-
 -->
 <dom-module id="or-editor-flows">
 
@@ -91,13 +90,13 @@ Custom property | Description | Default
                 _flowsLoaded: function (type, event) {
                     this.set("flows", event.getFlows());
 
-                    // TODO dev only, load a flow to work on
-/*
-                    var event = new openremote.editor.flow.crud.FlowLoadEvent(
-                            this.flows[2].getId()
-                    );
-                    this.fire(event.getType(), event);
-*/
+                    // TODO Load first flow by default, should be the flow you have seen in console
+                    if (event.getFlows().length > 0) {
+                        var event = new openremote.editor.flow.crud.FlowLoadEvent(
+                                this.flows[0].getId()
+                        );
+                        this.fire(event.getType(), event);
+                    }
 
                 },
                 _requestFailure: function (type, event) {

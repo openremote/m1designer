@@ -1,20 +1,20 @@
 <link rel="import" href="or-console-widget-behaviors.html">
 
-<dom-module id="or-console-widget-textlabel">
+<dom-module id="or-console-widget-pushbutton">
     <style>
         #container {
-            background: lightgreen;
+            background: lightblue;
             color: black;
             margin: 0.2em;
         }
 
     </style>
     <template>
-        <div id="container">TextLabel: <span>[[value]]</span></div>
+        <div id="container">PushButton: <button on-tap="trigger">CLICK</button></div>
     </template>
     <script>
         Polymer({
-            is: "or-console-widget-textlabel",
+            is: "or-console-widget-pushbutton",
             behaviors: [OpenRemoteConsole.Widget]
         });
     </script>

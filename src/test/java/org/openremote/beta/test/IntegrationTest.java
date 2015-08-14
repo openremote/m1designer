@@ -126,7 +126,7 @@ public class IntegrationTest extends CamelTestSupport {
         }
         try {
             URI uri = new URI(getWebServerScheme(), null, getServerHost(), Integer.valueOf(getWebServerPort()), path.toString(), null, null);
-            return uri.toString();
+            return uri.toString() + "?throwExceptionOnFailure=false";
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
         }

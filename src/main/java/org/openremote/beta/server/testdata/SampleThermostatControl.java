@@ -5,10 +5,13 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.widget.Widget;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
+import static org.openremote.beta.server.util.JsonUtil.JSON;
 import static org.openremote.beta.shared.flow.Node.*;
 import static org.openremote.beta.shared.flow.Slot.TYPE_SINK;
 import static org.openremote.beta.shared.flow.Slot.TYPE_SOURCE;
@@ -88,6 +91,7 @@ public class SampleThermostatControl {
         editor.put("x", 750);
         editor.put("y", 50);
         TEMPERATURE_LABEL.setProperties(properties);
+        Widget.configureProperties(TEMPERATURE_LABEL, Widget.TYPE_TEXT_LABEL);
     }
 
     /* ###################################################################################### */
@@ -102,6 +106,7 @@ public class SampleThermostatControl {
         editor.put("x", 750);
         editor.put("y", 150);
         SETPOINT_LABEL.setProperties(properties);
+        Widget.configureProperties(SETPOINT_LABEL, Widget.TYPE_TEXT_LABEL);
     }
 
     /* ###################################################################################### */
@@ -116,6 +121,7 @@ public class SampleThermostatControl {
         editor.put("x", 50);
         editor.put("y", 400);
         SETPOINT_PLUS_BUTTON.setProperties(properties);
+        Widget.configureProperties(SETPOINT_PLUS_BUTTON, Widget.TYPE_PUSH_BUTTON);
     }
 
     /* ###################################################################################### */
@@ -130,6 +136,7 @@ public class SampleThermostatControl {
         editor.put("x", 50);
         editor.put("y", 500);
         SETPOINT_MINUS_BUTTON.setProperties(properties);
+        Widget.configureProperties(SETPOINT_MINUS_BUTTON, Widget.TYPE_PUSH_BUTTON);
     }
 
     /* ###################################################################################### */
@@ -250,4 +257,11 @@ public class SampleThermostatControl {
         }
     );
 
+    public static Flow getCopy() {
+        try {
+            return JSON.readValue(JSON.writeValueAsString(FLOW), Flow.class);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

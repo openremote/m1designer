@@ -20,6 +20,7 @@ public class Flow extends FlowObject {
 
     public Node[] nodes = new Node[0];
     public Wire[] wires = new Wire[0];
+    public Flow[] dependencies = new Flow[0];
 
     public Flow() {
     }
@@ -70,6 +71,56 @@ public class Flow extends FlowObject {
         Set<Node> collection = new HashSet<>(Arrays.asList(getNodes()));
         collection.remove(node);
         this.nodes = collection.toArray(new Node[collection.size()]);
+    }
+
+    public Flow[] getDependencies() {
+        return dependencies;
+    }
+
+    public void addDependency(Flow flow) {
+        Set<Flow> collection = new HashSet<>(Arrays.asList(getDependencies()));
+        collection.add(flow);
+        this.dependencies = collection.toArray(new Flow[collection.size()]);
+    }
+
+    public void clearDependencies() {
+        this.dependencies = new Flow[0];
+    }
+
+    public Flow findOwnerFlowOfSlot(String slotId) {
+        Slot slot = findSlot(slotId);
+        if (slot != null)
+            return this;
+
+        for (Flow dependency : getDependencies()) {
+            Flow result = dependency.findOwnerFlowOfSlot(slotId);
+            if (result != null)
+                return result;
+        }
+
+        return null;
+    }
+
+    public String[] findWiredSubflowSlotIds() {
+        Set<String> collection = new HashSet<>();
+        for (Wire wire : getWires()) {
+            Node sourceNode = findOwnerNode(wire.getSourceId());
+            if (sourceNode == null)
+                throw new IllegalStateException(
+                    "Dangling wire, no source node for slot '" + wire.getSourceId() + "' on: " + this
+                );
+            if (sourceNode.isOfType(Node.TYPE_SUBFLOW))
+                collection.add(findSlot(wire.getSourceId()).getPeerIdentifier().getId());
+
+            Node sinkNode = findOwnerNode(wire.getSinkId());
+            if (sinkNode == null)
+                throw new IllegalStateException(
+                    "Dangling wire, no sink node for slot '" + wire.getSourceId() + "' on: " + this
+                );
+            if (sinkNode.isOfType(Node.TYPE_SUBFLOW))
+                collection.add(findSlot(wire.getSinkId()).getPeerIdentifier().getId());
+        }
+        return collection.toArray(new String[collection.size()]);
     }
 
     public Wire[] getWires() {

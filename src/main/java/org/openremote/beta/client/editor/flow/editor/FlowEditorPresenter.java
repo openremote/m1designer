@@ -36,8 +36,11 @@ public class FlowEditorPresenter extends RequestPresenter {
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-            if (flowDesigner != null && flow != null && flow.getId().equals(event.getMessageEvent().getFlowId())) {
-                flowDesigner.receiveMessageEvent(event.getMessageEvent());
+            if (flowDesigner != null && flow != null) {
+                Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getMessageEvent().getSinkSlotId());
+                if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
+                    flowDesigner.receiveMessageEvent(event.getMessageEvent());
+                }
             }
         });
     }

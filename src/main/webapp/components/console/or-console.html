@@ -4,8 +4,10 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 
-<link rel="import" href="or-console-widget-textlabel.html"/>
+<link rel="import" href="or-console-widget-sink.html"/>
 
+<link rel="import" href="or-console-widget-textlabel.html"/>
+<link rel="import" href="or-console-widget-pushbutton.html"/>
 
 <script>
     function onGwtReadyClient() {
@@ -65,11 +67,9 @@
         <template is="dom-if" if="[[!_haveWidgets]]">
             <div id="empty">
                 <h1>OpenRemote Console</h1>
-
                 <p>
-                    Open the editor with the button in the right top corner and add widgets to this panel.
+                    This panel has no widgets. Open the editor with the button in the top right corner.
                 </p>
-
             </div>
         </template>
         <div id="container"></div>

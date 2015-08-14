@@ -28,7 +28,6 @@
     "paper-item": "PolymerElements/paper-item#~1.0.2",
     "iron-image": "PolymerElements/iron-image#~1.0.2",
     "paper-checkbox": "PolymerElements/paper-checkbox#~1.0.6",
-    "iron-list": "PolymerElements/iron-list#~1.0.2",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#~1.0.6",
     "paper-input": "PolymerElements/paper-input#~1.0.10"
   }

@@ -1,0 +1,44 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<dom-module id="or-console-widget-sink">
+    <script>
+        Polymer({
+            is: "or-console-widget-sink",
+            behaviors: [OpenRemoteConsole.Widget],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.console.WidgetSinkPresenter(this);
+                    }
+                },
+                slot: {
+                    type: String,
+                    reflectToAttribute: true,
+                    value: ""
+                },
+                instance: {
+                    type: String,
+                    reflectToAttribute: true,
+                    value: ""
+                }
+            },
+            listeners: {
+                "message-received": "_onMessageReceived"
+            },
+            _onMessageReceived: function(ce, event) {
+                var value = event.getMessageEvent().getBody();
+                // This will start pushing the value up the chain of widgets
+                this.set("value", value);
+            },
+            _onUpdateValue: function (event, detail) {
+                var updatedValue = detail.value;
+                // We override the widget behavior here and instead of pushing it further
+                // down (there is nowhere to go from here), we send a message
+                this._presenter.sendMessage(updatedValue);
+            }
+        });
+    </script>
+</dom-module>
+
+

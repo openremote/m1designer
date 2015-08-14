@@ -66,6 +66,7 @@ public class FilterRoute extends NodeRoute {
                             exchange.getIn().setHeader(FILTER_PASS, true);
                         } else {
                             LOG.debug("Filter received trigger but has no data for instance: " + instanceId);
+                            exchange.getIn().setHeader(FILTER_PASS, false);
                         }
                     }
                 })

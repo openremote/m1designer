@@ -89,71 +89,51 @@ public class ThermostatControlTest extends IntegrationTest {
 
         messageEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.TEMPERATURE_CONSUMER,
                 SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
                 INSTANCE_ID,
                 "75"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "75"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.CELCIUS_PRODUCER,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
                 INSTANCE_ID,
                 "23"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.LABEL_PRODUCER,
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
                 INSTANCE_ID,
                 "23 C"
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.TEMPERATURE_LABEL,
                 SampleThermostatControl.TEMPERATURE_LABEL_SINK,
                 INSTANCE_ID,
                 "23 C"
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_CONSUMER,
                 SampleThermostatControl.SETPOINT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "70"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "70"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.CELCIUS_PRODUCER,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
                 INSTANCE_ID,
                 "21"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.LABEL_PRODUCER,
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
                 INSTANCE_ID,
                 "21 C"
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_LABEL,
                 SampleThermostatControl.SETPOINT_LABEL_SINK,
                 INSTANCE_ID,
                 "21 C"
@@ -162,8 +142,6 @@ public class ThermostatControlTest extends IntegrationTest {
 
         Exchange exchange = new DefaultExchange(context());
         exchange.getIn().setBody(new MessageEvent(
-            SampleThermostatControl.FLOW,
-            SampleThermostatControl.TEMPERATURE_CONSUMER,
             SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
             INSTANCE_ID,
             "75"
@@ -171,13 +149,7 @@ public class ThermostatControlTest extends IntegrationTest {
         producerTemplate.send("direct:sendMessageEvent", exchange);
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
-            SampleThermostatControl.FLOW,
-            SampleThermostatControl.SETPOINT_CONSUMER,
-            SampleThermostatControl.SETPOINT_CONSUMER_SINK,
-            INSTANCE_ID,
-            "70"
-        ));
+        exchange.getIn().setBody(new MessageEvent(SampleThermostatControl.SETPOINT_CONSUMER_SINK, INSTANCE_ID, "70"));
         producerTemplate.send("direct:sendMessageEvent", exchange);
 
         LOG.info("##########################################################################");
@@ -194,29 +166,21 @@ public class ThermostatControlTest extends IntegrationTest {
         messageEventReceiver.reset();
         messageEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_MINUS_BUTTON,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
                 INSTANCE_ID,
                 null
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_PRODUCER,
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 INSTANCE_ID,
                 "69"
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_MINUS_BUTTON,
                 SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
                 INSTANCE_ID,
                 null
             )),
             toJson(new MessageEvent(
-                SampleThermostatControl.FLOW,
-                SampleThermostatControl.SETPOINT_PRODUCER,
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 INSTANCE_ID,
                 "69"
@@ -224,23 +188,11 @@ public class ThermostatControlTest extends IntegrationTest {
         );
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
-            SampleThermostatControl.FLOW,
-            SampleThermostatControl.SETPOINT_MINUS_BUTTON,
-            SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-            INSTANCE_ID,
-            null
-        ));
+        exchange.getIn().setBody(new MessageEvent(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK, INSTANCE_ID, null));
         producerTemplate.send("direct:sendMessageEvent", exchange);
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
-            SampleThermostatControl.FLOW,
-            SampleThermostatControl.SETPOINT_MINUS_BUTTON,
-            SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK,
-            INSTANCE_ID,
-            null
-        ));
+        exchange.getIn().setBody(new MessageEvent(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SINK, INSTANCE_ID, null));
         producerTemplate.send("direct:sendMessageEvent", exchange);
 
         LOG.info("##########################################################################");

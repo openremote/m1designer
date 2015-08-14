@@ -173,7 +173,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
         }
     }
 
-    public void sendMessageEvent(Flow flow, Node node, Slot sink, String body, Map<String, Object> headers) {
+    public void sendMessageEvent(Node node, Slot sink, String body, Map<String, Object> headers) {
         LOG.debug("Preparing outgoing message event for: " + node);
 
         if (!isClientAccessEnabled(node)) {
@@ -186,7 +186,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
         String instanceId = SubflowRoute.peekCorrelationStack(messageHeaders, true, true);
 
-        MessageEvent messageEvent = new MessageEvent(flow, node, sink, instanceId, body);
+        MessageEvent messageEvent = new MessageEvent(sink, instanceId, body);
         if (messageHeaders.size() > 0)
             messageEvent.setHeaders(messageHeaders);
 

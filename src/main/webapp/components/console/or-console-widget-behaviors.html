@@ -1,11 +1,44 @@
 <script>
-    window.OpenRemoteConsole = window.OpenRemoteConsole|| {};
+    window.OpenRemoteConsole = window.OpenRemoteConsole || {};
 
     window.OpenRemoteConsole.Widget = {
 
-        ready: function() {
-        }
+        properties: {
+            value: {
+                type: String,
+                observer: "_onValueChange"
+            }
+        },
+        listeners: {
+            "update-value": "_onUpdateValue"
 
-    }
+        },
+        ready: function() {
+            Polymer.dom(this).classList.add("or-console-widget");
+        },
+        _onValueChange: function (newValue, oldValue) {
+            // When the value changes on a widget, we push it up to the parent widget
+            var parent = Polymer.dom(this).parentNode;
+            if (parent && parent.classList.contains("or-console-widget")) {
+                parent.setAttribute("value", newValue);
+            }
+        },
+        _onUpdateValue: function(event, detail) {
+            var updatedValue = detail.value;
+            // When a widget fires an update event, we push it down until we hit a sink that sends a message
+            var children = this.querySelectorAll(".or-console-widget");
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                this.fire("update-value", detail, {bubbles: false, node: child});
+            }
+        },
+        updateValue: function(value) {
+            this.fire("update-value", {value: value}, {bubbles: false});
+        },
+        trigger: function () {
+            this.updateValue(1);
+        }
+    };
+
 
 </script>

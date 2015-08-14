@@ -58,9 +58,7 @@ public class FlowNodePresenter extends AbstractPresenter {
             instanceId = flow.getId();
         }
 
-        MessageEvent messageEvent = new MessageEvent(
-            flow, node, slot, instanceId, body
-        );
+        MessageEvent messageEvent = new MessageEvent(slot, instanceId, body);
         dispatchEvent(new MessageSendEvent(messageEvent));
     }
 

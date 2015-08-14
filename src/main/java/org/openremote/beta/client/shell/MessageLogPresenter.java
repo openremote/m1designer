@@ -4,6 +4,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
+import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -17,57 +18,45 @@ public class MessageLogPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageLogPresenter.class);
 
+    public boolean active;
     public Flow flow;
+    public boolean watchAllFlows;
 
     public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
+        addEventListener(MessageLogOpenEvent.class, event -> {
+            active = true;
+        });
+
+        addEventListener(MessageLogCloseEvent.class, event -> {
+            active = false;
+        });
+
         addEventListener(FlowEditEvent.class, true, false, event -> {
             this.flow = event.getFlow();
         });
-    }
 
-    public boolean isCurrentFlow(MessageEvent messageEvent) {
-        return flow != null && flow.getId().equals(messageEvent.getFlowId());
-    }
+        addEventListener(MessageReceivedEvent.class, event -> {
+            MessageEvent msgEvent = event.getMessageEvent();
 
-    public String getFlowLabel(MessageEvent messageEvent) {
-        if (isCurrentFlow(messageEvent)) {
-            return flow.getLabel();
-        }
-        return messageEvent.getFlowId();
-    }
-
-    public String getNodeLabel(MessageEvent messageEvent) {
-        if (isCurrentFlow(messageEvent)) {
-            Node node = flow.findNode(messageEvent.getNodeId());
-            if (node != null)
-                return node.getLabel();
-        }
-        return messageEvent.getNodeId();
-    }
-
-    public String getSinkLabel(MessageEvent messageEvent) {
-        if (isCurrentFlow(messageEvent)) {
-            Node node = flow.findNode(messageEvent.getNodeId());
-            if (node != null) {
-                Slot slot = node.findSlot(messageEvent.getSinkSlotId());
-                if (slot != null && slot.isOfType(Slot.TYPE_SINK) && slot.getLabel() != null)
-                    return slot.getLabel();
+            Flow msgFlow = null;
+            Node msgNode = null;
+            Slot msgSlot = null;
+            if (flow != null) {
+                msgFlow = flow.findOwnerFlowOfSlot(msgEvent.getSinkSlotId());
+                if (msgFlow != null)
+                    msgNode = msgFlow.findOwnerNode(msgEvent.getSinkSlotId());
+                if (msgNode != null)
+                    msgSlot = msgNode.findSlot(msgEvent.getSinkSlotId());
             }
-        }
-        return messageEvent.getSinkSlotId();
-    }
 
-    public boolean haveSinkLabel(MessageEvent messageEvent) {
-        if (isCurrentFlow(messageEvent)) {
-            Node node = flow.findNode(messageEvent.getNodeId());
-            if (node != null) {
-                Slot slot = node.findSlot(messageEvent.getSinkSlotId());
-                if (slot != null && slot.isOfType(Slot.TYPE_SINK) && slot.getLabel() != null)
-                    return true;
+            if (watchAllFlows || msgFlow != null) {
+                MessageLogDetail detail = new MessageLogDetail(
+                    msgEvent, msgFlow, msgNode, msgSlot
+                );
+                dispatchEvent(new MessageLogUpdateEvent(detail));
             }
-        }
-        return false;
+        });
     }
 }

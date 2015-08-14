@@ -145,7 +145,7 @@ public abstract class NodeRoute extends RouteBuilder {
                     headers.remove(RouteConstants.INSTANCE_ID);
                     String body = exchange.getIn().getBody(String.class);
                     getContext().hasService(EventService.class).sendMessageEvent(
-                        getFlow(), getNode(), sink, body, headers
+                        getNode(), sink, body, headers
                     );
                 })
                 .id(getProcessorId("toClients"));

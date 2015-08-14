@@ -1,6 +1,5 @@
 <link rel="import" href="../shared/or-panel.html">
 
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
@@ -60,29 +59,27 @@
                   switchable="right"
                   hidden>
             <div class="content">
-                <iron-list items="[[_messageLog]]" as="msg">
-                    <template>
-                        <div>
-                            <div class="message layout horizontal center">
-                                <div class="flex-6 layout vertical">
-                                    <div class$="{{_getLabelClass(msg.flowId)}}">
-                                        Flow:&#160;<span class="value">{{_getFlowLabel(msg)}}</span>
-                                    </div>
-                                    <div class$="{{_getLabelClass(msg.nodeId)}}">
-                                        Node:&#160;<span class="value">{{_getNodeLabel(msg)}}</span>
-                                    </div>
-                                    <div class$="{{_getSinkLabelClass(msg)}}">
-                                        Sink:&#160;<span class="value">{{_getSinkLabel(msg)}}</span>
-                                    </div>
-                                    <div class$="{{_getLabelClass(msg.instanceId)}}">
-                                        Instance:&#160;<span class="value">{{msg.instanceId}}</span>
-                                    </div>
+                <template is="dom-repeat" items="[[_messageLog]]">
+                    <div>
+                        <div class="message layout horizontal center">
+                            <div class="flex-6 layout vertical">
+                                <div class$="{{_getLabelClass(item.flowLabel)}}">
+                                    Flow:&#160;<span class="value">[[item.flowLabel]]</span>
                                 </div>
-                                <div class="flex-5 body">{{_getBody(msg.body)}}</div>
+                                <div class$="{{_getLabelClass(item.nodeLabel)}}">
+                                    Node:&#160;<span class="value">[[item.nodeLabel]]</span>
+                                </div>
+                                <div class$="{{_getLabelClass(item.sinkLabel)}}">
+                                    Sink:&#160;<span class="value">[[item.sinkLabel]]</span>
+                                </div>
+                                <div class$="{{_getLabelClass(item.instanceLabel)}}">
+                                    Instance:&#160;<span class="value">[[item.instanceLabel]]</span>
+                                </div>
                             </div>
+                            <div class="flex-5 body">[[item.body]]</div>
                         </div>
-                    </template>
-                </iron-list>
+                    </div>
+                </template>
                 <template is="dom-if" if="[[!_messageLog.length]]">
                     No messages.
                 </template>
@@ -91,7 +88,9 @@
             <div class="toolbar layout horizontal center">
 
                 <div class="layout horizontal center">
-                    <paper-toggle-button checked id="messagesForAllFlows"></paper-toggle-button>
+                    <paper-toggle-button checked
+                                         id="messagesForAllFlows"
+                                         on-change="_onMessagesForAllFlowsChanged"></paper-toggle-button>
                     <span style="margin: 0 0.5em;">WATCH ALL FLOWS</span>
                 </div>
 
@@ -116,13 +115,9 @@
                             return new openremote.shell.MessageLogPresenter(this);
                         }
                     },
-                    _active: {
-                        type: Boolean,
-                        value: false
-                    },
-                    _flow: {
-                        type: Object,
-                        value: {}
+                    _flowLabel: {
+                        type: String,
+                        value: ""
                     },
                     _messageLog: {
                         type: Array,
@@ -131,62 +126,45 @@
                     _panelTitle: {
                         type: String,
                         value: "Message Log",
-                        computed: "_computePanelTitle(_flow, _messageLog.*)"
+                        computed: "_computePanelTitle(_flowLabel, _messageLog.*)"
                     }
                 },
                 listeners: {
                     "message-log-open": "_onMessageLogOpen",
                     "message-log-close": "_onMessageLogClose",
-                    "message-received": "_onMessageReceived",
+                    "message-log-update": "_onMessageLogUpdate",
                     "flow-edit": "_onFlowEdit"
                 },
                 _onMessageLogOpen: function () {
                     this.toggleAttribute("hidden", false, this.$.panel);
-                    this.set("_active", true);
                 },
                 _onMessageLogClose: function () {
                     this.toggleAttribute("hidden", true, this.$.panel);
-                    this.set("_active", false);
                     this._clearMessageLog();
-                    this.set("_flow", {});
                 },
-                _onMessageReceived: function (ce, event) {
-                    var messageEvent = event.getMessageEvent();
-                    if (this._active && (this.$.messagesForAllFlows.checked || this._presenter.isCurrentFlow(messageEvent))) {
-                        this.push("_messageLog", messageEvent);
-                        this.$.panel.scrollToBottom();
-                    }
-                },
-                _onFlowEdit: function(ce, event) {
-                    this.set("_flow", event.getFlow());
-                    this.toggleAttribute("checked", false, this.$.messagesForAllFlows);
+                _onMessagesForAllFlowsChanged: function(event) {
+                    this._presenter.watchAllFlows = event.target.checked;
                 },
                 _clearMessageLog: function () {
                     this.set("_messageLog", []);
                 },
-                _getLabelClass: function (value) {
-                    return "layout horizontal label " + (value ? "" : "empty");
+                _onFlowEdit: function(ce, event) {
+                    this.set("_flowLabel", event.getFlow().label);
+                    this.toggleAttribute("checked", false, this.$.messagesForAllFlows);
                 },
-                _getFlowLabel: function (msgEvent) {
-                    return this._presenter.getFlowLabel(msgEvent);
-                },
-                _getNodeLabel: function (msgEvent) {
-                    return this._presenter.getNodeLabel(msgEvent);
-                },
-                _getSinkLabelClass: function (msgEvent) {
-                    return "layout horizontal label " + (msgEvent.sinkSlotId && this._presenter.haveSinkLabel(msgEvent) ? "" : "empty");
-                },
-                _getSinkLabel: function (msgEvent) {
-                    return this._presenter.getSinkLabel(msgEvent);
-                },
-                _getBody: function (body) {
-                    return body ? body : "(EMPTY MESSAGE)"
-                },
-                _computePanelTitle: function(flow, messageLog) {
+                _computePanelTitle: function(flowLabel, messageLog) {
                     var title = "Message Log";
-                    title += flow.label ? " (Flow: " + flow.label + ", " : " (";
+                    title += flowLabel ? " (Flow: " + flowLabel+ ", " : " (";
                     title += "Received: " + messageLog.base.length + ")";
                     return title;
+                },
+                _onMessageLogUpdate: function (ce, event) {
+                    var messageLogDetail = event.getDetail();
+                    this.push("_messageLog", messageLogDetail);
+                    this.$.panel.scrollToBottom();
+                },
+                _getLabelClass: function (value) {
+                    return "layout horizontal label " + (value ? "" : "empty");
                 }
             });
         });

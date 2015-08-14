@@ -74,40 +74,23 @@ public class TemperatureProcessorTest extends IntegrationTest {
         mockProducerCelcius.expectedBodiesReceived("23");
         mockProducerLabel.expectedBodiesReceived("23 C");
 
-        final String INSTANCE_ID = IdentifierUtil.generateGlobalUniqueId();
-
         messageEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
-                INSTANCE_ID,
                 "75"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.CELCIUS_PRODUCER,
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
-                INSTANCE_ID,
                 "23"
             )),
             toJson(new MessageEvent(
-                SampleTemperatureProcessor.FLOW,
-                SampleTemperatureProcessor.LABEL_PRODUCER,
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
-                INSTANCE_ID,
                 "23 C"
             ))
         );
 
         Exchange exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
-            SampleTemperatureProcessor.FLOW,
-            SampleTemperatureProcessor.FAHRENHEIT_CONSUMER,
-            SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
-            INSTANCE_ID,
-            "75"
-        ));
+        exchange.getIn().setBody(new MessageEvent(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, "75"));
         producerTemplate.send("direct:sendMessageEvent", exchange);
 
         mockTemperatureDatabase.assertIsSatisfied();

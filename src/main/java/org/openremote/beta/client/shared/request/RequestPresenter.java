@@ -71,7 +71,32 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         public void onFailure(RequestFailure requestFailure) {
             dispatchEvent(new RequestFailureEvent(requestFailure));
-        };
+        }
+    }
+
+    protected abstract class StatusResponseCallback extends ResponseCallback<Void> {
+
+        protected final int expectedStatusCode;
+
+        public StatusResponseCallback(String requestText, int expectedStatusCode) {
+            super(requestText, null);
+            this.expectedStatusCode = expectedStatusCode;
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            super.onSuccess(method, response);
+            try {
+                if (method.getResponse().getStatusCode() != expectedStatusCode) {
+                    throw new IllegalArgumentException("Response status code must be " + expectedStatusCode);
+                }
+                onResponse();
+            } catch (Exception ex) {
+                onFailure(method, ex);
+            }
+        }
+
+        protected abstract void onResponse();
     }
 
     protected abstract class ObjectResponseCallback<T> extends ResponseCallback<T> {
@@ -124,21 +149,6 @@ public abstract class RequestPresenter extends AbstractPresenter {
         }
 
         protected abstract void onResponse(List<T> data);
-    }
-
-    protected abstract class NoContentResponseCallback extends ResponseCallback<Void> {
-
-        public NoContentResponseCallback(String requestText) {
-            super(requestText, null);
-        }
-
-        @Override
-        public void onSuccess(Method method, JSONValue response) {
-            super.onSuccess(method, response);
-            onResponse();
-        }
-
-        protected abstract void onResponse();
     }
 
     protected Resource resource(String base, String... pathElement) {

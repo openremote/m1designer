@@ -6,9 +6,11 @@ import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
+import static org.openremote.beta.server.util.JsonUtil.JSON;
 import static org.openremote.beta.shared.util.Util.createMap;
 
 public class SampleEnvironmentWidget {
@@ -162,4 +164,11 @@ public class SampleEnvironmentWidget {
         }
     );
 
+    public static Flow getCopy() {
+        try {
+            return JSON.readValue(JSON.writeValueAsString(FLOW), Flow.class);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }
