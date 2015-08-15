@@ -33,7 +33,6 @@ public interface FlowDesignerConstants {
     double WIRE_WIDTH = 8;
     int WIRE_DELETE_DISTANCE = 50;
 
-    IColor BACKGROUND_COLOR = WHITE;
     IColor TOOLTIP_BACKGROUND_COLOR = new Color(240, 240, 240);
     IColor PATCH_COLOR = new Color(69, 90, 100);
     IColor PATCH_TITLE_COLOR = new Color(240, 240, 240);

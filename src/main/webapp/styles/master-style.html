@@ -32,8 +32,20 @@
         --paper-toggle-button-unchecked-button-color: var(--or-lightgrey);
         --paper-toggle-button-unchecked-ink-color: var(--or-lightgrey);
 
-        /* ######################## END THEME ######################## */
+        --paper-tab-ink: var(--default-primary-color);
+        --paper-tabs-selection-bar-color: var(--default-primary-color);
 
+        --paper-tab: {
+            background-color: black;
+            padding: 0 5px;
+        };
+
+        --paper-tab-content: {
+            color: var(--default-primary-color);
+            font-style: italic;
+        };
+
+        /* ######################## END THEME ######################## */
     }
 
     html {
@@ -55,6 +67,18 @@
 
     * {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+
+    :root {
+        --paper-tabs: {
+            height: 40px;
+            width: 100%;
+        };
+
+        --paper-menu-button: {
+            padding: 0;
+        };
     }
 
 </style>

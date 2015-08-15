@@ -1,5 +1,6 @@
 package org.openremote.beta.client.editor.flow.editor;
 
+import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
@@ -7,7 +8,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
-import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
 import org.openremote.beta.client.shared.request.RequestPresenter;
@@ -26,6 +26,7 @@ public class FlowEditorPresenter extends RequestPresenter {
     public Flow flow;
     public FlowDesigner flowDesigner;
     protected LienzoPanel flowDesignerPanel;
+    protected Transform flowDesignerInitialTransform;
 
     public FlowEditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -47,7 +48,6 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     public void prepareFlowDesignerContainer(Element container) {
         this.flowDesignerPanel = new LienzoPanel();
-        flowDesignerPanel.setBackgroundColor(FlowDesignerConstants.BACKGROUND_COLOR);
 
         Window.addResizeHandler(event -> flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight()));
         flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight());
@@ -60,14 +60,19 @@ public class FlowEditorPresenter extends RequestPresenter {
             }
         });
 
+        this.flowDesignerInitialTransform = flowDesignerPanel.getViewport().getTransform();
+
         // Needed for event propagation
         HTMLPanel containerPanel = HTMLPanel.wrap((com.google.gwt.dom.client.Element) container);
         containerPanel.add(flowDesignerPanel);
     }
 
     protected void startFlowDesigner() {
+
         flowDesignerPanel.getScene().removeAll();
-        flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
+        flowDesignerPanel.getViewport().setTransform(flowDesignerInitialTransform);
+
+            flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
             @Override
             protected void onSelectionNode(Node node) {
                 dispatchEvent(new FlowDesignerNodeSelectedEvent(node));

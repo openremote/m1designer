@@ -1,0 +1,220 @@
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+
+<link rel="import" href="or-editor-flows.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-sidebar',
+            properties: {
+                _selectedTab: {
+                    type: Number,
+                    value: 1,
+                    observer: "_onTabSelect"
+                },
+                libraryVisible: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: "_onLibraryVisible"
+                },
+                _showDiscovery: false,
+                _showInventory: false
+            },
+            attached: function () {
+                this._loadFlows();
+            },
+            _onTabSelect: function (index) {
+                switch (index) {
+                    case 0:
+                        this.set("_showDiscovery", true);
+                        this.set("_showInventory", false);
+                        break;
+                    case 1:
+                        this.set("_showDiscovery", false);
+                        this.set("_showInventory", true);
+                        break;
+                }
+            },
+            _onLibraryVisible: function (visible) {
+                this.toggleClass("libraryVisible", visible, this.$.browser);
+            },
+            _loadFlows: function () {
+                this.async(function () {
+                    var event = new openremote.editor.flow.crud.FlowsLoadEvent();
+                    this.$$("#flows").fire(event.getType(), event);
+                });
+            }
+        });
+    });
+</script>
+
+
+<dom-module id="or-editor-sidebar">
+    <style>
+        :host {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #browser {
+            height: 100%;
+            width: 100%;
+            min-width: 240px;
+        }
+
+        #browser.libraryVisible {
+            height: 50%;
+        }
+
+        #library {
+            height: 50%;
+            width: 100%;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section .head {
+            background-color: var(--or-editor-sidebar-title-background-color, black);
+            color: var(--or-editor-sidebar-title-color, white);
+            flex: 0 0 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center
+        }
+
+        .section .headWithToolbar {
+            flex: 0 0 80px;
+        }
+
+        .section .headWithToolbar .toolbar {
+            height: 40px;
+            display: flex;
+            justify-content: space-around;
+            background: var(--or-editor-sidebar-toolbar-background-color);
+            color: var(--or-editor-sidebar-toolbar-color);
+        }
+
+        .section .headWithToolbar .toolbar /deep/ paper-menu .iron-selected {
+            font-weight: inherit;
+        }
+
+        .section .head .title {
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .section .content {
+            flex: 1 0 0;
+            overflow: auto;
+        }
+
+        @media all and (max-width: 640px) {
+
+            #container {
+                flex-direction: row;
+            }
+
+            #browser,
+            #browser.libraryVisible,
+            #library {
+                height: 40%;
+            }
+
+        }
+
+    </style>
+
+    <template>
+
+        <div id="container">
+            <div id="browser" class="section">
+                <div class="headWithToolbar">
+                    <paper-tabs selected="{{_selectedTab}}">
+                        <paper-tab>DISCOVERY</paper-tab>
+                        <paper-tab>INVENTORY</paper-tab>
+                    </paper-tabs>
+                    <template is="dom-if" if="[[_showDiscovery]]">
+                        <div class="toolbar">
+                            <paper-button>
+                                <iron-icon icon="add"></iron-icon>
+                                SOME
+                            </paper-button>
+                            <paper-button>
+                                <iron-icon icon="check"></iron-icon>
+                                ACTION
+                            </paper-button>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="[[_showInventory]]">
+                        <div class="toolbar">
+                            <paper-button>
+                                <iron-icon icon="add"></iron-icon>
+                                MORE
+                            </paper-button>
+                            <paper-menu-button no-animations vertical-offset="20" horizontal-offset="20">
+                                <paper-button class="dropdown-trigger">
+                                    <iron-icon icon="menu"></iron-icon>
+                                    Manage
+                                </paper-button>
+                                <paper-menu class="dropdown-content">
+                                    <div>
+                                        <paper-button>
+                                            <iron-icon icon="add"></iron-icon>
+                                            Do more work
+                                        </paper-button>
+                                    </div>
+                                    <div>
+                                        <paper-button>
+                                            <iron-icon icon="delete"></iron-icon>
+                                            More items...
+                                        </paper-button>
+                                    </div>
+                                </paper-menu>
+                            </paper-menu-button>
+                        </div>
+                    </template>
+                </div>
+                <template is="dom-if" if="[[_showDiscovery]]">
+                    <div class="content">
+                        This will be the inxbox...
+                    </div>
+                </template>
+                <template is="dom-if" if="[[_showInventory]]">
+                    <div class="content">
+                        <or-editor-flows id="flows"></or-editor-flows>
+                    </div>
+                </template>
+            </div>
+
+            <template is="dom-if" if="[[libraryVisible]]">
+                <div id="library" class="section">
+                    <div class="head">
+                        <div class="title">LIBRARY</div>
+                    </div>
+                    <div class="content">
+                        Here are patches/widgets you can use when you edit a flow.
+                    </div>
+                </div>
+            </template>
+        </div>
+
+    </template>
+</dom-module>
+

@@ -91,12 +91,14 @@ Custom property | Description | Default
                     this.set("flows", event.getFlows());
 
                     // TODO Load first flow by default, should be the flow you have seen in console
+/*
                     if (event.getFlows().length > 0) {
                         var event = new openremote.editor.flow.crud.FlowLoadEvent(
                                 this.flows[0].getId()
                         );
                         this.fire(event.getType(), event);
                     }
+*/
 
                 },
                 _requestFailure: function (type, event) {
