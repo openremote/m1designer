@@ -10,7 +10,7 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 
 @JsonTypeName("FLOW_STATUS")
 @JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class FlowStatusEvent extends FlowIdEvent {
 
     public FlowDeploymentPhase phase;

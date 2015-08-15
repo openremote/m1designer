@@ -17,7 +17,7 @@ public class MessageLogDetail {
 
     public MessageLogDetail(MessageEvent event, Flow msgFlow, Node msgNode, Slot msgSlot) {
         this.flowLabel = msgFlow != null ? msgFlow.getLabel() : null;
-        this.nodeLabel = msgNode != null ? msgNode.getLabel() + " (" + Node.getTypeLabel(msgNode.getIdentifier().getType()) + ")" : null;
+        this.nodeLabel = msgNode != null ? msgNode.getLabel() + " (" + msgNode.getEditorPropertyString("typeLabel") + ")" : null;
         if (msgNode == null || msgSlot == null || !msgNode.getLabel().equals(msgSlot.getLabel())) {
             this.sinkLabel = msgSlot != null ? msgSlot.getLabel() : event.getSinkSlotId();
         }

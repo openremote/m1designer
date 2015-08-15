@@ -1,9 +1,12 @@
 package org.openremote.beta.server.testdata;
 
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.server.catalog.change.ChangeNodeDescriptor;
+import org.openremote.beta.server.catalog.function.FunctionNodeDescriptor;
+import org.openremote.beta.server.catalog.storage.StorageNodeDescriptor;
+import org.openremote.beta.server.route.ActuatorRoute;
+import org.openremote.beta.server.route.ConsumerRoute;
+import org.openremote.beta.server.route.ProducerRoute;
+import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.io.IOException;
@@ -19,7 +22,7 @@ public class SampleTemperatureProcessor {
 
     public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot("Fahrenheit", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER), FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
+    public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), ConsumerRoute.NODE_TYPE), FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -27,6 +30,8 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 10);
         editor.put("y", 50);
+        editor.put("color", NodeColor.VIRTUAL);
+        editor.put("typeLabel", ConsumerRoute.NODE_TYPE_LABEL);
         FAHRENHEIT_CONSUMER.setProperties(properties);
     }
 
@@ -34,7 +39,7 @@ public class SampleTemperatureProcessor {
 
     public static Slot FAHRENHEIT_CONVERTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot FAHRENHEIT_CONVERTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_FUNCTION), FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
+    public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE), FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -42,13 +47,15 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 80);
+        editor.put("color", NodeColor.DEFAULT);
+        editor.put("typeLabel", FunctionNodeDescriptor.TYPE_LABEL);
         FAHRENHEIT_CONVERTER.setProperties(properties);
     }
 
     /* ###################################################################################### */
 
     public static Slot TEMPERATURE_DATABASE_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", new Identifier(generateGlobalUniqueId(), Node.TYPE_STORAGE), TEMPERATURE_DATABASE_SINK);
+    public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", new Identifier(generateGlobalUniqueId(), StorageNodeDescriptor.TYPE), TEMPERATURE_DATABASE_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -56,6 +63,8 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 350);
         editor.put("y", 200);
+        editor.put("color", NodeColor.DEFAULT);
+        editor.put("typeLabel", StorageNodeDescriptor.TYPE_LABEL);
         TEMPERATURE_DATABASE.setProperties(properties);
     }
 
@@ -63,7 +72,7 @@ public class SampleTemperatureProcessor {
 
     public static Slot CELCIUS_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot CELCIUS_PRODUCER_SOURCE = new Slot("Celcius", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
-    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), CELCIUS_PRODUCER_SINK, CELCIUS_PRODUCER_SOURCE);
+    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), ProducerRoute.NODE_TYPE), CELCIUS_PRODUCER_SINK, CELCIUS_PRODUCER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -72,6 +81,8 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 50);
+        editor.put("color", NodeColor.VIRTUAL);
+        editor.put("typeLabel", ProducerRoute.NODE_TYPE_LABEL);
         CELCIUS_PRODUCER.setProperties(properties);
     }
 
@@ -79,7 +90,7 @@ public class SampleTemperatureProcessor {
 
     public static Slot CELCIUS_APPENDER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot CELCIUS_APPENDER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), Node.TYPE_CHANGE), CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
+    public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), ChangeNodeDescriptor.TYPE), CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -87,6 +98,8 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 650);
         editor.put("y", 200);
+        editor.put("color", NodeColor.DEFAULT);
+        editor.put("typeLabel", ChangeNodeDescriptor.TYPE_LABEL);
         CELCIUS_APPENDER.setProperties(properties);
     }
 
@@ -94,7 +107,7 @@ public class SampleTemperatureProcessor {
 
     public static Slot LABEL_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
     public static Slot LABEL_PRODUCER_SOURCE = new Slot("Label", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
-    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER), LABEL_PRODUCER_SINK, LABEL_PRODUCER_SOURCE);
+    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), ProducerRoute.NODE_TYPE), LABEL_PRODUCER_SINK, LABEL_PRODUCER_SOURCE);
 
     static {
         Map<String, Object> properties = createMap();
@@ -103,6 +116,8 @@ public class SampleTemperatureProcessor {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 1000);
         editor.put("y", 250);
+        editor.put("color", NodeColor.VIRTUAL);
+        editor.put("typeLabel", ProducerRoute.NODE_TYPE_LABEL);
         LABEL_PRODUCER.setProperties(properties);
     }
 

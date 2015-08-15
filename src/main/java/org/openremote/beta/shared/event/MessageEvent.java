@@ -16,7 +16,7 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsExport
 @JsType
 @JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class MessageEvent extends Event {
 
     public String sinkSlotId;

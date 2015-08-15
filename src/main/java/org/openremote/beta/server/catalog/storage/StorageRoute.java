@@ -1,7 +1,8 @@
-package org.openremote.beta.server.route;
+package org.openremote.beta.server.catalog.storage;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
+import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 

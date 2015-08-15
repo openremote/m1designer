@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static org.openremote.beta.shared.util.Util.getMap;
-import static org.openremote.beta.shared.util.Util.getString;
 
 public class EventService implements StaticService, FlowDeploymentListener {
 
@@ -33,13 +32,6 @@ public class EventService implements StaticService, FlowDeploymentListener {
     public static final String OUTGOING_FLOW_EVENT_QUEUE = "seda://outgoingFlowEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
     public static final String INCOMING_MESSAGE_EVENT_QUEUE = "seda://incomingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
     public static final String OUTGOING_MESSAGE_EVENT_QUEUE = "seda://outgoingMessageEvent?multipleConsumers=true&waitForTaskToComplete=NEVER";
-
-    public static boolean isClientAccessEnabled(Node node) {
-        // Should we accept client message events for this node's sinks and should
-        // we send client message events when a message has been received?
-        return (node.hasProperties() && Boolean.valueOf(getString(getMap(node.getProperties()), "clientAccess")))
-            || node.isOfType(Node.TYPE_CLIENT); // TODO ugly, fix with better node type system
-    }
 
     final protected CamelContext context;
     final protected ProducerTemplate producerTemplate;
@@ -146,7 +138,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
         }
         // TODO: Should we check flow/node identifiers against message event data?
 
-        if (!isClientAccessEnabled(sinkNode)) {
+        if (!sinkNode.isClientAccessEnabled()) {
             LOG.debug("Client access not enabled, dropping received message event for: " + sinkNode);
             return;
         }
@@ -176,7 +168,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
     public void sendMessageEvent(Node node, Slot sink, String body, Map<String, Object> headers) {
         LOG.debug("Preparing outgoing message event for: " + node);
 
-        if (!isClientAccessEnabled(node)) {
+        if (!node.isClientAccessEnabled()) {
             LOG.debug("Client access not enabled, not sending message event to: " + node);
             return;
         }

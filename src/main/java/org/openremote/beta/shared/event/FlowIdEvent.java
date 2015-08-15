@@ -23,7 +23,7 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
     property = "event"
 )
 @JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class FlowIdEvent extends Event {
 
     public String flowId;

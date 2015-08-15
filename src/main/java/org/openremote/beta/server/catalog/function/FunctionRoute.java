@@ -1,8 +1,9 @@
-package org.openremote.beta.server.route;
+package org.openremote.beta.server.catalog.function;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.script.ScriptBuilder;
 import org.apache.camel.model.RouteDefinition;
+import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;

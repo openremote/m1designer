@@ -1,12 +1,11 @@
 package org.openremote.beta.server.testdata;
 
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.server.route.ActuatorRoute;
+import org.openremote.beta.server.route.SensorRoute;
+import org.openremote.beta.shared.flow.*;
+import org.openremote.beta.shared.inventory.Actuator;
 import org.openremote.beta.shared.model.Identifier;
 import org.openremote.beta.shared.widget.Composite;
-import org.openremote.beta.shared.widget.PushButton;
 import org.openremote.beta.shared.widget.Widget;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class SampleEnvironmentWidget {
 
     public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node LIVINGROOM_TEMPERATURE_SENSOR = new Node("Livingroom Temperature", new Identifier(generateGlobalUniqueId(), Node.TYPE_SENSOR), LIVINGROOM_TEMPERATURE_SENSOR_SOURCE, LIVINGROOM_TEMPERATURE_SENSOR_SINK);
+    public static Node LIVINGROOM_TEMPERATURE_SENSOR = new Node("Livingroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), LIVINGROOM_TEMPERATURE_SENSOR_SOURCE, LIVINGROOM_TEMPERATURE_SENSOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -30,6 +29,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 50);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", SensorRoute.NODE_TYPE_LABEL);
         LIVINGROOM_TEMPERATURE_SENSOR.setProperties(properties);
     }
 
@@ -37,7 +38,7 @@ public class SampleEnvironmentWidget {
 
     public static Slot LIVINGROOM_SETPOINT_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot LIVINGROOM_SETPOINT_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node LIVINGROOM_SETPOINT_SENSOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_SENSOR), LIVINGROOM_SETPOINT_SENSOR_SOURCE, LIVINGROOM_SETPOINT_SENSOR_SINK);
+    public static Node LIVINGROOM_SETPOINT_SENSOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), LIVINGROOM_SETPOINT_SENSOR_SOURCE, LIVINGROOM_SETPOINT_SENSOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -45,6 +46,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 150);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", SensorRoute.NODE_TYPE_LABEL);
         LIVINGROOM_SETPOINT_SENSOR.setProperties(properties);
     }
 
@@ -60,6 +63,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 100);
+        editor.put("color", NodeColor.VIRTUAL);
+        editor.put("typeLabel", Node.TYPE_SUBFLOW_LABEL);
         LIVINGROOM_THERMOSTAT.setProperties(properties);
 
         Map<String, Object> widgetProperties =
@@ -71,7 +76,7 @@ public class SampleEnvironmentWidget {
     /* ###################################################################################### */
 
     public static Slot LIVINGROOM_SETPOINT_ACTUATOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node LIVINGROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_ACTUATOR), LIVINGROOM_SETPOINT_ACTUATOR_SINK);
+    public static Node LIVINGROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE), LIVINGROOM_SETPOINT_ACTUATOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -80,6 +85,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 100);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", ActuatorRoute.NODE_TYPE_LABEL);
         LIVINGROOM_SETPOINT_ACTUATOR.setProperties(properties);
     }
 
@@ -87,7 +94,7 @@ public class SampleEnvironmentWidget {
 
     public static Slot BEDROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot BEDROOM_TEMPERATURE_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node BEDROOM_TEMPERATURE_SENSOR = new Node("Bedroom Temperature", new Identifier(generateGlobalUniqueId(), Node.TYPE_SENSOR), BEDROOM_TEMPERATURE_SENSOR_SOURCE, BEDROOM_TEMPERATURE_SENSOR_SINK);
+    public static Node BEDROOM_TEMPERATURE_SENSOR = new Node("Bedroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), BEDROOM_TEMPERATURE_SENSOR_SOURCE, BEDROOM_TEMPERATURE_SENSOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -95,6 +102,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 300);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", SensorRoute.NODE_TYPE_LABEL);
         BEDROOM_TEMPERATURE_SENSOR.setProperties(properties);
     }
 
@@ -102,7 +111,7 @@ public class SampleEnvironmentWidget {
 
     public static Slot BEDROOM_SETPOINT_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     public static Slot BEDROOM_SETPOINT_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node BEDROOM_SETPOINT_SENSOR = new Node("Bedroom Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_SENSOR), BEDROOM_SETPOINT_SENSOR_SOURCE, BEDROOM_SETPOINT_SENSOR_SINK);
+    public static Node BEDROOM_SETPOINT_SENSOR = new Node("Bedroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), BEDROOM_SETPOINT_SENSOR_SOURCE, BEDROOM_SETPOINT_SENSOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -110,6 +119,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 400);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", SensorRoute.NODE_TYPE_LABEL);
         BEDROOM_SETPOINT_SENSOR.setProperties(properties);
     }
 
@@ -125,6 +136,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 350);
+        editor.put("color", NodeColor.VIRTUAL);
+        editor.put("typeLabel", Node.TYPE_SUBFLOW_LABEL);
         BEDROOM_THERMOSTAT.setProperties(properties);
 
         Map<String, Object> widgetProperties =
@@ -136,7 +149,7 @@ public class SampleEnvironmentWidget {
     /* ###################################################################################### */
 
     public static Slot BEDROOM_SETPOINT_ACTUATOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node BEDROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_ACTUATOR), BEDROOM_SETPOINT_ACTUATOR_SINK);
+    public static Node BEDROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE), BEDROOM_SETPOINT_ACTUATOR_SINK);
 
     static {
         Map<String, Object> properties = createMap();
@@ -145,6 +158,8 @@ public class SampleEnvironmentWidget {
         Map<String, Object> editor = createMap(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 350);
+        editor.put("color", NodeColor.SENSOR_ACTUATOR);
+        editor.put("typeLabel", ActuatorRoute.NODE_TYPE_LABEL);
         BEDROOM_SETPOINT_ACTUATOR.setProperties(properties);
     }
 

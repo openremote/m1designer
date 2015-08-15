@@ -11,51 +11,15 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
+import static org.openremote.beta.shared.util.Util.*;
 
 @JsType
 @JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Node extends FlowObject {
 
-    // TODO We need a node type system
-
-    public static final String TYPE_CONSUMER = "urn:org-openremote:flow:node:consumer";
-    public static final String TYPE_PRODUCER = "urn:org-openremote:flow:node:producer";
-    public static final String TYPE_SENSOR = "urn:org-openremote:flow:node:sensor";
-    public static final String TYPE_ACTUATOR = "urn:org-openremote:flow:node:actuator";
-    public static final String TYPE_FUNCTION = "urn:org-openremote:flow:node:function";
-    public static final String TYPE_FILTER = "urn:org-openremote:flow:node:filter";
-    public static final String TYPE_CHANGE = "urn:org-openremote:flow:node:change";
-    public static final String TYPE_STORAGE = "urn:org-openremote:flow:node:storage";
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
-    public static final String TYPE_CLIENT = "urn:org-openremote:flow:node:client";
-
-    public static String getTypeLabel(String type) {
-        switch (type) {
-            case TYPE_CONSUMER:
-                return "Consumer";
-            case TYPE_PRODUCER:
-                return "Producer";
-            case TYPE_SENSOR:
-                return "Sensor";
-            case TYPE_ACTUATOR:
-                return "Actuator";
-            case TYPE_FUNCTION:
-                return "Function";
-            case TYPE_FILTER:
-                return "Filter";
-            case TYPE_CHANGE:
-                return "Change";
-            case TYPE_STORAGE:
-                return "Storage";
-            case TYPE_SUBFLOW:
-                return "Flow";
-            case TYPE_CLIENT:
-                return "Console";
-            default:
-                return type;
-        }
-    }
+    public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
     public Slot[] slots = new Slot[0];
     public Object properties;
@@ -84,6 +48,24 @@ public class Node extends FlowObject {
 
     public Object getProperties() {
         return properties;
+    }
+
+    public String getEditorPropertyString(String property) {
+        if (!hasProperties())
+            return null;
+        return getString(getMap(getMap(getProperties()), "editor"), property);
+    }
+
+    public Double getEditorPropertyDouble(String property) {
+        if (!hasProperties())
+            return null;
+        return getDouble(getMap(getMap(getProperties()), "editor"), property);
+    }
+
+    public boolean isClientAccessEnabled() {
+        // Should we accept client message events for this node's sinks and should
+        // we send client message events when this node received a message?
+        return hasProperties() && getBoolean(getMap(getProperties()), "clientAccess");
     }
 
     public void setProperties(Object properties) {

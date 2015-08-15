@@ -3,13 +3,11 @@ package org.openremote.beta.client.editor.flow.designer;
 import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.NodeColor;
 
-import static com.ait.lienzo.shared.core.types.ColorName.*;
+import static com.ait.lienzo.shared.core.types.ColorName.WHITE;
 import static java.lang.Math.min;
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
-import static org.openremote.beta.shared.flow.Node.*;
-import static org.openremote.beta.shared.util.Util.getDouble;
-import static org.openremote.beta.shared.util.Util.getMap;
 
 public abstract class NodeShape extends Box {
 
@@ -18,15 +16,12 @@ public abstract class NodeShape extends Box {
     static Color CLIENT_COLOR = new Color(25, 118, 210);
 
     public static Color getNodeColor(Node node) {
-        switch (node.getIdentifier().getType()) {
-            case TYPE_SENSOR:
-            case TYPE_ACTUATOR:
+        switch (NodeColor.valueOf(node.getEditorPropertyString("color"))) {
+            case SENSOR_ACTUATOR:
                 return SENSOR_ACTUATOR_COLOR;
-            case TYPE_CONSUMER:
-            case TYPE_PRODUCER:
-            case TYPE_SUBFLOW:
+            case VIRTUAL:
                 return VIRTUAL_COLOR;
-            case TYPE_CLIENT:
+            case CLIENT:
                 return CLIENT_COLOR;
             default:
                 return null;
@@ -34,19 +29,7 @@ public abstract class NodeShape extends Box {
     }
 
     public static Color getNodeLabelColor(Node node) {
-        switch (node.getIdentifier().getType()) {
-            case TYPE_SENSOR:
-            case TYPE_ACTUATOR:
-                return WHITE.getColor();
-            case TYPE_CONSUMER:
-            case TYPE_PRODUCER:
-            case TYPE_SUBFLOW:
-                return WHITE.getColor();
-            case TYPE_CLIENT:
-                return WHITE.getColor();
-            default:
-                return null;
-        }
+        return WHITE.getColor();
     }
 
     final protected Node node;
@@ -66,12 +49,16 @@ public abstract class NodeShape extends Box {
             PATCH_PADDING
         );
 
+        if (!node.hasProperties()) {
+            throw new IllegalArgumentException("No properties on node: " + node);
+        }
+
         this.node = node;
         this.title = new Box(
             PATCH_TITLE_CORNER_RADIUS,
             PATCH_TITLE_COLOR,
             new TextLabel(
-                Node.getTypeLabel(node.getIdentifier().getType()),
+                node.getEditorPropertyString("typeLabel"),
                 FONT_FAMILY,
                 PATCH_TITLE_FONT_SIZE,
                 PATCH_TITLE_TEXT_COLOR
@@ -83,11 +70,8 @@ public abstract class NodeShape extends Box {
         setDraggable(true);
         setDragMode(DragMode.SAME_LAYER);
 
-        if (node.getProperties() == null) {
-            throw new IllegalArgumentException("No properties on node: " + node);
-        }
-        setX(getDouble(getMap(getMap(node.getProperties()), "editor"), "x"));
-        setY(getDouble(getMap(getMap(node.getProperties()), "editor"), "y"));
+        setX(node.getEditorPropertyDouble("x"));
+        setY(node.getEditorPropertyDouble("y"));
 
         // This sets a minimum width to title width plus some padding
         setWidth(title.getWidth() + PATCH_PADDING * 4);

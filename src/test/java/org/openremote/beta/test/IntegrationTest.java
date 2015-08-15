@@ -9,6 +9,7 @@ import org.apache.camel.impl.DefaultShutdownStrategy;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
 import org.openremote.beta.server.*;
+import org.openremote.beta.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.beta.server.event.EventServiceConfiguration;
 import org.openremote.beta.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.beta.server.flow.FlowServiceConfiguration;
@@ -70,6 +71,7 @@ public class IntegrationTest extends CamelTestSupport {
         properties.put(WebserverConfiguration.WEBSERVER_PORT, getWebServerPort());
         configurations.add(new WebserverConfiguration());
 
+        configurations.add(new NodeDescriptorConfiguration());
         configurations.add(new RouteManagementServiceConfiguration());
         configurations.add(new FlowServiceConfiguration());
         configurations.add(new EventServiceConfiguration());

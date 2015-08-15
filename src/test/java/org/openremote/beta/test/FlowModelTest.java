@@ -10,6 +10,7 @@ import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -17,6 +18,32 @@ import static org.testng.Assert.*;
 public class FlowModelTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowModelTest.class);
+
+    Flow sampleEnvironmentWidget;
+    Flow sampleThermostatControl;
+    Flow sampleTemperatureProcessor;
+
+    @BeforeMethod
+    public void prepareFlows() {
+        sampleEnvironmentWidget = SampleEnvironmentWidget.getCopy();
+        sampleThermostatControl = SampleThermostatControl.getCopy();
+        sampleTemperatureProcessor = SampleTemperatureProcessor.getCopy();
+
+        FlowDependencyResolver dependencyResolver = new FlowDependencyResolver() {
+            @Override
+            protected Flow findOwnerFlowOfSlot(String slotId) {
+                if (sampleTemperatureProcessor.findSlot(slotId) != null)
+                    return sampleTemperatureProcessor;
+                if (sampleThermostatControl.findSlot(slotId) != null)
+                    return sampleThermostatControl;
+                if (sampleEnvironmentWidget.findSlot(slotId) != null)
+                    return sampleEnvironmentWidget;
+                return null;
+            }
+        };
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+    }
 
     @Test
     public void duplicateWires() throws Exception {
@@ -33,25 +60,6 @@ public class FlowModelTest {
 
     @Test
     public void resolveDependencies() throws Exception {
-        Flow sampleEnvironmentWidget = SampleEnvironmentWidget.getCopy();
-        Flow sampleThermostatControl = SampleThermostatControl.getCopy();
-        Flow sampleTemperatureProcessor = SampleTemperatureProcessor.getCopy();
-
-        FlowDependencyResolver dependencyResolver = new FlowDependencyResolver() {
-            @Override
-            protected Flow findOwnerFlowOfSlot(String slotId) {
-                if (sampleTemperatureProcessor.findSlot(slotId) != null)
-                    return sampleTemperatureProcessor;
-                if (sampleThermostatControl.findSlot(slotId) != null)
-                    return sampleThermostatControl;
-                if (sampleEnvironmentWidget.findSlot(slotId) != null)
-                    return sampleEnvironmentWidget;
-                return null;
-            }
-        };
-
-        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
-
         assertNull(sampleEnvironmentWidget.findOwnerFlowOfSlot("123"));
 
         assertEquals(
@@ -74,6 +82,30 @@ public class FlowModelTest {
         assertEquals(
             sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId()),
             sampleTemperatureProcessor
+        );
+    }
+
+    @Test
+    public void findNodesOfType() {
+        assertEquals(
+            sampleEnvironmentWidget.findNodes(Node.TYPE_SUBFLOW).length,
+            2
+        );
+    }
+
+    @Test
+    public void findNodesWithProperty() {
+        assertEquals(
+            sampleThermostatControl.findNodesWithProperty("widget").length,
+            4
+        );
+    }
+
+    @Test
+    public void findSubflow() {
+        assertEquals(
+            sampleEnvironmentWidget.findSubflow(sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).getId(),
+            sampleThermostatControl.getId()
         );
     }
 

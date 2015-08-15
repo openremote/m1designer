@@ -15,7 +15,7 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsType
 @JsonTypeName("FLOW_DEPLOY")
 @JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class FlowDeployEvent extends FlowIdEvent {
 
     @JsNoExport

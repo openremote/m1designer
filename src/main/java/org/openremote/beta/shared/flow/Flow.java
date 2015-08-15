@@ -3,17 +3,20 @@ package org.openremote.beta.shared.flow;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.util.Util;
 
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
+import static org.openremote.beta.shared.util.Util.getMap;
 
 @JsType
 @JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Flow extends FlowObject {
 
     public static final String TYPE = "urn:org-openremote:flow";
@@ -57,6 +60,15 @@ public class Flow extends FlowObject {
             Node node = it.next();
             if (!node.getIdentifier().getType().equals(type))
                 it.remove();
+        }
+        return collection.toArray(new Node[collection.size()]);
+    }
+
+    public Node[] findNodesWithProperty(String property) {
+        Set<Node> collection = new HashSet<>();
+        for (Node node : getNodes()) {
+            if (node.hasProperties() && getMap(node.getProperties()).containsKey(property))
+                collection.add(node);
         }
         return collection.toArray(new Node[collection.size()]);
     }
@@ -213,24 +225,21 @@ public class Flow extends FlowObject {
         return null;
     }
 
-    public boolean isNodeWiredToNodeOfType(Node node, String nodeType) {
+    public Node[] findWiredNodesOf(Node node) {
+        Set<Node> collection = new HashSet<>();
         for (Slot source : node.findSlots(Slot.TYPE_SOURCE)) {
             Wire[] wires = findWiresForSource(source.getId());
             for (Wire wire : wires) {
-                Node otherSide = findOwnerNode(wire.getSinkId());
-                if (!otherSide.getIdentifier().getType().equals(nodeType))
-                    return true;
+                collection.add(findOwnerNode(wire.getSinkId()));
             }
         }
         for (Slot sink : node.findSlots(Slot.TYPE_SINK)) {
             Wire[] wires = findWiresForSink(sink.getId());
             for (Wire wire : wires) {
-                Node otherSide = findOwnerNode(wire.getSourceId());
-                if (!otherSide.getIdentifier().getType().equals(Node.TYPE_CLIENT))
-                    return true;
+                collection.add(findOwnerNode(wire.getSourceId()));
             }
         }
-        return false;
+        return collection.toArray(new Node[collection.size()]);
     }
 
     public Node findOwnerNode(String slotId) {

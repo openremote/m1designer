@@ -3,7 +3,9 @@ package org.openremote.beta.server.route.procedure;
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
-import org.openremote.beta.server.route.*;
+import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.server.route.FlowRoutes;
+import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
@@ -16,7 +18,7 @@ public class FlowStartProcedure extends FlowProcedure {
     }
 
     public FlowRoutes execute() throws FlowProcedureException {
-        FlowRoutes flowRoutes = new FlowRoutes(flow);
+        FlowRoutes flowRoutes = new FlowRoutes(getFlow());
         initRoutes(flowRoutes);
         addRoutesToContext(flowRoutes);
         startRoutes(flowRoutes);
@@ -24,45 +26,16 @@ public class FlowStartProcedure extends FlowProcedure {
     }
 
     protected void initRoutes(FlowRoutes flowRoutes) throws FlowProcedureException {
-        // TODO We need a node type system
-        for (Node node : flow.getNodes()) {
+        for (Node node : getFlow().getNodes()) {
             try {
                 clearProcessed();
                 NodeRoute nodeRoute;
-                switch (node.getIdentifier().getType()) {
-                    case Node.TYPE_CONSUMER:
-                        nodeRoute = new ConsumerRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_PRODUCER:
-                        nodeRoute = new ProducerRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_SENSOR:
-                        nodeRoute = new SensorRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_ACTUATOR:
-                        nodeRoute = new ActuatorRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_CLIENT:
-                        nodeRoute = new ClientRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_FUNCTION:
-                        nodeRoute = new FunctionRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_FILTER:
-                        nodeRoute = new FilterRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_CHANGE:
-                        nodeRoute = new ChangeRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_STORAGE:
-                        nodeRoute = new StorageRoute(context, flow, node);
-                        break;
-                    case Node.TYPE_SUBFLOW:
-                        nodeRoute = new SubflowRoute(context, flow, node);
-                        break;
-                    default:
-                        throw new UnsupportedOperationException("Can't build route for type of node: " + node);
+                NodeDescriptor nodeDescriptor =
+                    (NodeDescriptor) getContext().getRegistry().lookupByName(node.getIdentifier().getType());
+                if (nodeDescriptor == null) {
+                    throw new UnsupportedOperationException("No descriptor for type of node: " + node);
                 }
+                nodeRoute = nodeDescriptor.createRoute(getContext(), getFlow(), node);
                 flowRoutes.getNodeRoutes().add(nodeRoute);
                 addProcessed(node);
             } catch (Exception ex) {

@@ -35,6 +35,7 @@ public class ConsolePresenter extends AbstractPresenter {
         addEventListener(ConsoleRefreshEvent.class, event -> {
             Element container = clearContainer();
             updateWidgets(event.getFlow(), container);
+            haveWidgets = haveWidgets || container.getChildElementCount() > 0;
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -91,9 +92,12 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected void addWidgets(Flow flow, Element container, String instanceId) {
-        Node[] clientNodes = flow.findNodes(Node.TYPE_CLIENT);
-        haveWidgets = haveWidgets || clientNodes.length > 0;
-        for (Node node : clientNodes) {
+        Node[] widgetNodes = flow.findNodesWithProperty("widget");
+        for (Node node : widgetNodes) {
+
+            if (node.isOfType(Node.TYPE_SUBFLOW))
+                continue;
+
             Element widget = addWidget(node, container);
             addWidgetSinks(node, widget, instanceId);
         }
@@ -102,7 +106,7 @@ public class ConsolePresenter extends AbstractPresenter {
     protected Element addWidget(Node node, Element container) {
         Map<String, Object> widgetProperties = getMap(getMap(node.getProperties()), "widget");
         if (widgetProperties == null)
-            return null;
+            return container;
 
         LOG.debug("Adding widget: " + widgetProperties);
 

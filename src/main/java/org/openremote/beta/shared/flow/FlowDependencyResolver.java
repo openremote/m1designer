@@ -11,7 +11,7 @@ public abstract class FlowDependencyResolver {
 
         flow.clearDependencies();
 
-        String[] subflowSlotIds= flow.findWiredSubflowSlotIds();
+       String[] subflowSlotIds= flow.findWiredSubflowSlotIds();
 
         for (String subflowSlotId : subflowSlotIds) {
             Flow subflow = findOwnerFlowOfSlot(subflowSlotId);

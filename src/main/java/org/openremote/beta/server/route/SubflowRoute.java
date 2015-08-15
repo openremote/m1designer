@@ -2,10 +2,8 @@ package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +14,28 @@ import java.util.Stack;
 public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
+
+    public static class Descriptor extends NodeDescriptor {
+        @Override
+        public String getType() {
+            return Node.TYPE_SUBFLOW;
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return Node.TYPE_SUBFLOW_LABEL;
+        }
+
+        @Override
+        public NodeRoute createRoute(CamelContext context, Flow flow, Node node) {
+            return new SubflowRoute(context, flow, node);
+        }
+
+        @Override
+        public NodeColor getColor() {
+            return NodeColor.VIRTUAL;
+        }
+    }
 
     private static final String SUBFLOW_CORRELATION_STACK = "SUBFLOW_CORRELATION_STACK";
 
@@ -121,7 +141,7 @@ public class SubflowRoute extends NodeRoute {
                 .process(exchange -> {
                     LOG.debug("Received message from asynchronous queue: " + sourceSlot.getPeerIdentifier().getId());
 
-                    if (!hasCorrelationStack(exchange.getIn().getHeaders())){
+                    if (!hasCorrelationStack(exchange.getIn().getHeaders())) {
                         LOG.warn("No correlation stack in message from asynchronous queue, dropping here: " + getNode());
                         return;
                     }

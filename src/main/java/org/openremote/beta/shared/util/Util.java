@@ -18,12 +18,17 @@ public class Util {
 
     @SuppressWarnings("unchecked")
     public static String getString(Map<String, Object> map, String key) {
-        return (String) map.get(key);
+        return map.containsKey(key) ? map.get(key).toString() : null;
     }
 
     @SuppressWarnings("unchecked")
     public static Double getDouble(Map<String, Object> map, String key) {
-        return (Double) map.get(key);
+        return map.containsKey(key) ? Double.valueOf(map.get(key).toString()) : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean getBoolean(Map<String, Object> map, String key) {
+        return map.containsKey(key) ? Boolean.valueOf(map.get(key).toString()) : false;
     }
 
     @SuppressWarnings("unchecked")
