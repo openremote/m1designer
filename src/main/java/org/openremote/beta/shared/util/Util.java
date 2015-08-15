@@ -6,8 +6,6 @@ import java.util.Map;
 
 public class Util {
 
-    protected final static char[] LOWER_CASE_ALPHA = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getMap(Object map) {
         return (Map<String, Object>) map;
@@ -41,23 +39,27 @@ public class Util {
     }
 
     public static String toLowerCaseDash(String camelCase) {
-        // Don't have regex that works on both client and server, so this
-        // transforms 'EXFooBar123' into 'ex-foo-bar-123
+        // Transforms 'EXFooBar123' into 'ex-foo-bar-123 and "attributeX" into "attribute-x" without regex (GWT!)
         if (camelCase == null)
             return null;
         if (camelCase.length() == 0)
             return camelCase;
         StringBuilder sb = new StringBuilder();
         char[] chars = camelCase.toCharArray();
+        boolean inNonLowerCase = false;
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
-            if (!isLowerCaseAlpha(c)
-                && i > 0
-                && i<chars.length-1
-                && sb.length() > 1
-                && sb.charAt(sb.length()-2) != '-') {
-                sb.append("-");
-            };
+            if (!Character.isLowerCase(c)) {
+                if (!inNonLowerCase) {
+                    if (i > 0)
+                        sb.append("-");
+                } else if (i < chars.length -1 && Character.isLowerCase(chars[i+1])) {
+                    sb.append("-");
+                }
+                inNonLowerCase = true;
+            } else {
+                inNonLowerCase = false;
+            }
             sb.append(c);
         }
         String name = sb.toString();
@@ -65,10 +67,4 @@ public class Util {
         return name;
     }
 
-    protected static boolean isLowerCaseAlpha(char c) {
-        for (char u : LOWER_CASE_ALPHA)
-            if (c == u)
-                return true;
-        return false;
-    }
 }

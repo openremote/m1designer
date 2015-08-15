@@ -123,6 +123,20 @@ public class Flow extends FlowObject {
         return collection.toArray(new String[collection.size()]);
     }
 
+    public Flow findSubflow(Node subflowNode) {
+        Slot[] slots = subflowNode.getSlots();
+        // TODO: This assumes that the first slot we find will have the right peer
+        for (Slot slot : slots) {
+            String peerSlotId = slot.getPeerIdentifier().getId();
+            if (peerSlotId == null)
+                continue;
+            Flow subflow = findOwnerFlowOfSlot(peerSlotId);
+            if (subflow != null)
+                return subflow;
+        }
+        return null;
+    }
+
     public Wire[] getWires() {
         return wires;
     }

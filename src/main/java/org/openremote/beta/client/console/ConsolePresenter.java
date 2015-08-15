@@ -10,15 +10,14 @@ import org.openremote.beta.client.shared.session.message.MessageSendEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.widget.Widget;
+import org.openremote.beta.shared.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.openremote.beta.shared.util.Util.getMap;
+import static org.openremote.beta.shared.util.Util.getString;
 
 @JsExport
 @JsType
@@ -35,7 +34,7 @@ public class ConsolePresenter extends AbstractPresenter {
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
             Element container = clearContainer();
-            updateWidgets(container, event.getFlow());
+            updateWidgets(event.getFlow(), container);
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -68,51 +67,66 @@ public class ConsolePresenter extends AbstractPresenter {
         return container;
     }
 
-    protected void updateWidgets(Element container, Flow flow) {
-        updateWidgets(container, flow, flow, null);
+    protected void updateWidgets(Flow flow, Element container) {
+        updateWidgets(flow, flow, container, null);
     }
 
-    protected void updateWidgets(Element container, Flow rootFlow, Flow currentFlow, String subflowInstanceId) {
-        Node[] clientNodes = currentFlow.findNodes(Node.TYPE_CLIENT);
-        haveWidgets = haveWidgets || clientNodes.length > 0;
-        for (Node node : clientNodes) {
-            Map<String, Object> widgetProperties = getMap(getMap(node.getProperties()), "widget");
-            if (widgetProperties == null)
-                continue;
-
-            String widgetComponent = Widget.getWidgetComponent(widgetProperties);
-
-            Element widget = container.getOwnerDocument().createElement(widgetComponent);
-            container.appendChild(widget);
-
-            Slot[] sinkSlots = node.findSlots(Slot.TYPE_SINK);
-            for (Slot sink : sinkSlots) {
-                Element widgetSink = container.getOwnerDocument().createElement("or-console-widget-sink");
-                widgetSink.setAttribute("slot", sink.getId());
-                widgetSink.setAttribute("instance", subflowInstanceId != null ? subflowInstanceId : "");
-                widget.appendChild(widgetSink);
-            }
-        }
+    protected void updateWidgets(Flow rootFlow, Flow currentFlow, Element container, String instanceId) {
+        addWidgets(currentFlow, container, instanceId);
 
         Node[] subflowNodes = currentFlow.findNodes(Node.TYPE_SUBFLOW);
+
         for (Node subflowNode : subflowNodes) {
 
-            Slot[] slots = subflowNode.getSlots();
-            List<String> handledSubflows = new ArrayList<>();
-
-            for (Slot slot : slots) {
-                String peerSlotId = slot.getPeerIdentifier().getId();
-                if (peerSlotId == null)
-                    continue;
-                Flow subflow = rootFlow.findOwnerFlowOfSlot(peerSlotId);
-                if (subflow != null) {
-                    if (handledSubflows.contains(subflow.getId())) {
-                        continue;
-                    }
-                    updateWidgets(container, rootFlow, subflow, subflowNode.getId());
-                    handledSubflows.add(subflow.getId());
-                }
+            Flow subflow = rootFlow.findSubflow(subflowNode);
+            if (subflow == null) {
+                LOG.warn("Illegal subflow node, can't find referenced peer: " + subflowNode);
+                continue;
             }
+
+            Element compositeWidget = addWidget(subflowNode, container);
+
+            updateWidgets(rootFlow, subflow, compositeWidget, subflowNode.getId());
+        }
+    }
+
+    protected void addWidgets(Flow flow, Element container, String instanceId) {
+        Node[] clientNodes = flow.findNodes(Node.TYPE_CLIENT);
+        haveWidgets = haveWidgets || clientNodes.length > 0;
+        for (Node node : clientNodes) {
+            Element widget = addWidget(node, container);
+            addWidgetSinks(node, widget, instanceId);
+        }
+    }
+
+    protected Element addWidget(Node node, Element container) {
+        Map<String, Object> widgetProperties = getMap(getMap(node.getProperties()), "widget");
+        if (widgetProperties == null)
+            return null;
+
+        LOG.debug("Adding widget: " + widgetProperties);
+
+        String widgetComponent = getString(widgetProperties, "component");
+
+        Element widget = container.getOwnerDocument().createElement(widgetComponent);
+
+        Map<String, Object> widgetDefaults = getMap(widgetProperties, "default");
+        for (Map.Entry<String, Object> entry : widgetDefaults.entrySet()) {
+            widget.setAttribute(Util.toLowerCaseDash(entry.getKey()), entry.getValue().toString());
+        }
+
+        container.appendChild(widget);
+
+        return widget;
+    }
+
+    protected void addWidgetSinks(Node node, Element widget, String instanceId) {
+        Slot[] sinkSlots = node.findSlots(Slot.TYPE_SINK);
+        for (Slot sink : sinkSlots) {
+            Element widgetSink = widget.getOwnerDocument().createElement("or-console-widget-sink");
+            widgetSink.setAttribute("slot", sink.getId());
+            widgetSink.setAttribute("instance", instanceId != null ? instanceId: "");
+            widget.appendChild(widgetSink);
         }
     }
 

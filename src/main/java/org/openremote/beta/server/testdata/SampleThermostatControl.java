@@ -5,6 +5,8 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.widget.PushButton;
+import org.openremote.beta.shared.widget.TextLabel;
 import org.openremote.beta.shared.widget.Widget;
 
 import java.io.IOException;
@@ -91,7 +93,12 @@ public class SampleThermostatControl {
         editor.put("x", 750);
         editor.put("y", 50);
         TEMPERATURE_LABEL.setProperties(properties);
-        Widget.configureProperties(TEMPERATURE_LABEL, Widget.TYPE_TEXT_LABEL);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(TEMPERATURE_LABEL, TextLabel.TYPE, TextLabel.COMPONENT);
+        widgetProperties.put("positionX", 0);
+        widgetProperties.put("positionY", 0);
+        widgetProperties.put("color", "#ff0000");
     }
 
     /* ###################################################################################### */
@@ -106,7 +113,12 @@ public class SampleThermostatControl {
         editor.put("x", 750);
         editor.put("y", 150);
         SETPOINT_LABEL.setProperties(properties);
-        Widget.configureProperties(SETPOINT_LABEL, Widget.TYPE_TEXT_LABEL);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(SETPOINT_LABEL, TextLabel.TYPE, TextLabel.COMPONENT);
+        widgetProperties.put("positionX", 0);
+        widgetProperties.put("positionY", 25);
+        widgetProperties.put("color", "#0000ff");
     }
 
     /* ###################################################################################### */
@@ -121,7 +133,11 @@ public class SampleThermostatControl {
         editor.put("x", 50);
         editor.put("y", 400);
         SETPOINT_PLUS_BUTTON.setProperties(properties);
-        Widget.configureProperties(SETPOINT_PLUS_BUTTON, Widget.TYPE_PUSH_BUTTON);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(SETPOINT_PLUS_BUTTON, PushButton.TYPE, PushButton.COMPONENT);
+        widgetProperties.put("positionX", 150);
+        widgetProperties.put("positionY", 50);
     }
 
     /* ###################################################################################### */
@@ -136,7 +152,11 @@ public class SampleThermostatControl {
         editor.put("x", 50);
         editor.put("y", 500);
         SETPOINT_MINUS_BUTTON.setProperties(properties);
-        Widget.configureProperties(SETPOINT_MINUS_BUTTON, Widget.TYPE_PUSH_BUTTON);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(SETPOINT_MINUS_BUTTON, PushButton.TYPE, PushButton.COMPONENT);
+        widgetProperties.put("positionX", 0);
+        widgetProperties.put("positionY", 50);
     }
 
     /* ###################################################################################### */

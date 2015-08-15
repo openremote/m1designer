@@ -7,7 +7,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
-@JsonSerialize(include= NON_NULL)
+@JsonSerialize(include = NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class Property {
 
@@ -38,32 +38,36 @@ public class Property {
         return label;
     }
 
-    public void setLabel(String label) {
+    public Property setLabel(String label) {
         this.label = label;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Property setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public Type getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public Property setType(Type type) {
         this.type = type;
+        return this;
     }
 
     public boolean isRequired() {
         return required;
     }
 
-    public void setRequired(boolean required) {
+    public Property setRequired(boolean required) {
         this.required = required;
+        return this;
     }
 
     public boolean hasValue() {
@@ -74,40 +78,43 @@ public class Property {
         return value;
     }
 
-    public void setValue(String value) {
+    public Property setValue(String value) {
         this.value = value;
+        return this;
     }
 
     public Number getNumberValue() {
         return hasValue() ? Integer.valueOf(getValue()) : null;
     }
 
-    public void setNumberValue(Number value) {
-        setValue(value != null ? value.toString() : null);
+    public Property setNumberValue(Number value) {
+        return setValue(value != null ? value.toString() : null);
     }
 
     public Boolean getBooleanValue() {
         return hasValue() ? Boolean.valueOf(getValue()) : null;
     }
 
-    public void setBooleanValue(Boolean value) {
-        setValue(value != null ? value.toString() : null);
+    public Property setBooleanValue(Boolean value) {
+        return setValue(value != null ? value.toString() : null);
     }
 
     public String getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public Property setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+        return this;
     }
 
     public String getDefaultValueNote() {
         return defaultValueNote;
     }
 
-    public void setDefaultValueNote(String defaultValueNote) {
+    public Property setDefaultValueNote(String defaultValueNote) {
         this.defaultValueNote = defaultValueNote;
+        return this;
     }
 
     @Override

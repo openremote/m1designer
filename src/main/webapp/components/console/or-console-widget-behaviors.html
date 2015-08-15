@@ -1,7 +1,7 @@
 <script>
     window.OpenRemoteConsole = window.OpenRemoteConsole || {};
 
-    window.OpenRemoteConsole.Widget = {
+    window.OpenRemoteConsole.ValueAwareWidget = {
 
         properties: {
             value: {
@@ -13,7 +13,7 @@
             "update-value": "_onUpdateValue"
 
         },
-        ready: function() {
+        ready: function () {
             Polymer.dom(this).classList.add("or-console-widget");
         },
         _onValueChange: function (newValue, oldValue) {
@@ -23,7 +23,7 @@
                 parent.setAttribute("value", newValue);
             }
         },
-        _onUpdateValue: function(event, detail) {
+        _onUpdateValue: function (event, detail) {
             var updatedValue = detail.value;
             // When a widget fires an update event, we push it down until we hit a sink that sends a message
             var children = this.querySelectorAll(".or-console-widget");
@@ -32,13 +32,36 @@
                 this.fire("update-value", detail, {bubbles: false, node: child});
             }
         },
-        updateValue: function(value) {
+        updateValue: function (value) {
             this.fire("update-value", {value: value}, {bubbles: false});
         },
         trigger: function () {
             this.updateValue(1);
         }
     };
+
+    window.OpenRemoteConsole.VisibleWidget = {
+        properties: {
+            positionX: {
+                type: Number,
+                reflectToAttribute: true,
+                observer: "_onPositionXChanged"
+            },
+            positionY: {
+                type: Number,
+                reflectToAttribute: true,
+                observer: "_onPositionYChanged"
+            }
+        },
+        _onPositionXChanged: function (newValue) {
+            this.style.left = newValue + "px";
+        },
+        _onPositionYChanged: function (newValue) {
+            this.style.top = newValue + "px";
+        }
+    };
+
+    window.OpenRemoteConsole.Widget = [OpenRemoteConsole.ValueAwareWidget, OpenRemoteConsole.VisibleWidget]
 
 
 </script>

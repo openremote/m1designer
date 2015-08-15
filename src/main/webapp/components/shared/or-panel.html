@@ -153,10 +153,12 @@ Custom property | Description | Default
             attached: function () {
                 this.async(function () {
                     if (this.switchable == "right") {
-                        if (this.title) {
+                        if (this.title && this.$$("#switchTitle")) {
                             this.$$("#switchTitle").classList.add("end-justified");
                         }
-                        this.$$("#switchButton").style.order = "3";
+                        if (this.$$("#switchButton")) {
+                            this.$$("#switchButton").style.order = "3";
+                        }
                     }
                     this.$.panel.noCancelOnEscKey = true;
                     this.$.panel.noCancelOnOutsideClick = true;

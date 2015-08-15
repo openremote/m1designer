@@ -2,10 +2,14 @@
 
 <dom-module id="or-console-widget-textlabel">
     <style>
+        :host {
+            display: block;
+            position: absolute;
+        }
+
         #container {
             background: lightgreen;
             color: black;
-            margin: 0.2em;
         }
 
     </style>
@@ -15,7 +19,18 @@
     <script>
         Polymer({
             is: "or-console-widget-textlabel",
-            behaviors: [OpenRemoteConsole.Widget]
+            behaviors: [OpenRemoteConsole.Widget],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.console.WidgetPresenter(
+                                this,
+                                new openremote.shared.widget.TextLabel()
+                        );
+                    }
+                }
+            }
         });
     </script>
 </dom-module>

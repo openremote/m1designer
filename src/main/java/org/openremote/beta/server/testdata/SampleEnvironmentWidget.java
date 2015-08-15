@@ -5,6 +5,9 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.widget.Composite;
+import org.openremote.beta.shared.widget.PushButton;
+import org.openremote.beta.shared.widget.Widget;
 
 import java.io.IOException;
 import java.util.Map;
@@ -58,6 +61,11 @@ public class SampleEnvironmentWidget {
         editor.put("x", 400);
         editor.put("y", 100);
         LIVINGROOM_THERMOSTAT.setProperties(properties);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(LIVINGROOM_THERMOSTAT, Composite.TYPE, Composite.COMPONENT);
+        widgetProperties.put("positionX", 10);
+        widgetProperties.put("positionY", 10);
     }
 
     /* ###################################################################################### */
@@ -118,6 +126,11 @@ public class SampleEnvironmentWidget {
         editor.put("x", 400);
         editor.put("y", 350);
         BEDROOM_THERMOSTAT.setProperties(properties);
+
+        Map<String, Object> widgetProperties =
+            Widget.configureProperties(BEDROOM_THERMOSTAT, Composite.TYPE, Composite.COMPONENT);
+        widgetProperties.put("positionX", 10);
+        widgetProperties.put("positionY", 100);
     }
 
     /* ###################################################################################### */
