@@ -4,10 +4,13 @@ import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
+import org.openremote.beta.shared.model.Properties;
+import org.openremote.beta.shared.model.PropertyDescriptor;
 
 import static com.ait.lienzo.shared.core.types.ColorName.WHITE;
 import static java.lang.Math.min;
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
+import static org.openremote.beta.shared.model.PropertyDescriptor.TYPE_DOUBLE;
 
 public abstract class NodeShape extends Box {
 
@@ -16,7 +19,8 @@ public abstract class NodeShape extends Box {
     static Color CLIENT_COLOR = new Color(25, 118, 210);
 
     public static Color getNodeColor(Node node) {
-        switch (NodeColor.valueOf(node.getEditorPropertyString("color"))) {
+        String color = Properties.get(node.getEditorProperties(), "color");
+        switch (color != null ? NodeColor.valueOf(color) : NodeColor.DEFAULT) {
             case SENSOR_ACTUATOR:
                 return SENSOR_ACTUATOR_COLOR;
             case VIRTUAL:
@@ -58,7 +62,7 @@ public abstract class NodeShape extends Box {
             PATCH_TITLE_CORNER_RADIUS,
             PATCH_TITLE_COLOR,
             new TextLabel(
-                node.getEditorPropertyString("typeLabel"),
+                Properties.get(node.getEditorProperties(), "typeLabel"),
                 FONT_FAMILY,
                 PATCH_TITLE_FONT_SIZE,
                 PATCH_TITLE_TEXT_COLOR
@@ -70,8 +74,8 @@ public abstract class NodeShape extends Box {
         setDraggable(true);
         setDragMode(DragMode.SAME_LAYER);
 
-        setX(node.getEditorPropertyDouble("x"));
-        setY(node.getEditorPropertyDouble("y"));
+        setX(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, "x"));
+        setY(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, "y"));
 
         // This sets a minimum width to title width plus some padding
         setWidth(title.getWidth() + PATCH_PADDING * 4);

@@ -11,6 +11,7 @@ import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +21,6 @@ import java.util.Map;
 import static org.openremote.beta.server.route.RouteConstants.INSTANCE_ID;
 import static org.openremote.beta.server.route.RouteConstants.SINK_SLOT_ID;
 import static org.openremote.beta.server.route.SubflowRoute.copyCorrelationStack;
-import static org.openremote.beta.shared.util.Util.getMap;
-import static org.openremote.beta.shared.util.Util.getString;
 
 public abstract class NodeRoute extends RouteBuilder {
 
@@ -86,12 +85,6 @@ public abstract class NodeRoute extends RouteBuilder {
         return exchange.getIn().getHeader(INSTANCE_ID, String.class);
     }
 
-    public String getPropertyValue(String property) {
-        if (!getNode().hasProperties())
-            return null;
-        return getString(getMap(node.getProperties()), property);
-    }
-
     @Override
     public void configure() throws Exception {
         if (!isServerRoutingEnabled()) {
@@ -153,7 +146,7 @@ public abstract class NodeRoute extends RouteBuilder {
 
         // Optional sending exchange to an endpoint before node processing
         if (node.hasProperties()) {
-            String preEndpoint = getPropertyValue("preEndpoint");
+            String preEndpoint = Properties.get(node.getProperties(), "preEndpoint");
             if (preEndpoint != null) {
                 routeDefinition.to(preEndpoint)
                     .id(getProcessorId("preEndpoint"));
@@ -165,7 +158,7 @@ public abstract class NodeRoute extends RouteBuilder {
 
         // Optional sending exchange to an endpoint after processing
         if (node.hasProperties()) {
-            String postEndpoint = getPropertyValue("postEndpoint");
+            String postEndpoint = Properties.get(node.getProperties(), "postEndpoint");
             if (postEndpoint != null) {
                 routeDefinition.to(postEndpoint)
                     .id(getProcessorId("postEndpoint"));

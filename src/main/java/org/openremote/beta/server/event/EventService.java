@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static org.openremote.beta.shared.util.Util.getMap;
-
 public class EventService implements StaticService, FlowDeploymentListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventService.class);
@@ -145,7 +143,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
         LOG.debug("Processing message event with node: " + sinkNode);
         Map<String, Object> exchangeHeaders = new HashMap<>(
-            messageEvent.hasHeaders() ? getMap(messageEvent.getHeaders()) : Collections.EMPTY_MAP
+            messageEvent.hasHeaders() ? messageEvent.getHeaders() : Collections.EMPTY_MAP
         );
 
 

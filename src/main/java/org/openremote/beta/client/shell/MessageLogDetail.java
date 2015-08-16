@@ -5,6 +5,7 @@ import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Properties;
 
 @JsType
 public class MessageLogDetail {
@@ -17,7 +18,7 @@ public class MessageLogDetail {
 
     public MessageLogDetail(MessageEvent event, Flow msgFlow, Node msgNode, Slot msgSlot) {
         this.flowLabel = msgFlow != null ? msgFlow.getLabel() : null;
-        this.nodeLabel = msgNode != null ? msgNode.getLabel() + " (" + msgNode.getEditorPropertyString("typeLabel") + ")" : null;
+        this.nodeLabel = msgNode != null ? msgNode.getLabel() + " (" + Properties.get(msgNode.getEditorProperties(), "typeLabel") + ")" : null;
         if (msgNode == null || msgSlot == null || !msgNode.getLabel().equals(msgSlot.getLabel())) {
             this.sinkLabel = msgSlot != null ? msgSlot.getLabel() : event.getSinkSlotId();
         }

@@ -2,6 +2,7 @@ package org.openremote.beta.server.route.predicate;
 
 import org.apache.camel.Exchange;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.model.Properties;
 
 import java.util.Locale;
 
@@ -26,7 +27,7 @@ public class PropertyIsEquals extends NodePredicate {
     public boolean matches(Exchange exchange) {
         if (value == null)
             return false;
-        String propertyValue = getPropertyValue(property);
+        String propertyValue = Properties.get(getNode().getProperties(), property);
         if (propertyValue == null)
             return false;
         if (!casesSensitive) {

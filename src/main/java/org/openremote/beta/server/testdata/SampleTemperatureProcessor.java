@@ -8,13 +8,13 @@ import org.openremote.beta.server.route.ConsumerRoute;
 import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.model.Properties;
 
 import java.io.IOException;
 import java.util.Map;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
-import static org.openremote.beta.shared.util.Util.createMap;
 
 public class SampleTemperatureProcessor {
 
@@ -25,9 +25,9 @@ public class SampleTemperatureProcessor {
     public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), ConsumerRoute.NODE_TYPE), FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONSUMER_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 10);
         editor.put("y", 50);
         editor.put("color", NodeColor.VIRTUAL);
@@ -42,9 +42,9 @@ public class SampleTemperatureProcessor {
     public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE), FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("javascript", "output['value'] = ((input - 32)*5)/9");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 80);
         editor.put("color", NodeColor.DEFAULT);
@@ -58,9 +58,9 @@ public class SampleTemperatureProcessor {
     public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", new Identifier(generateGlobalUniqueId(), StorageNodeDescriptor.TYPE), TEMPERATURE_DATABASE_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("postEndpoint", "mock:temperatureDatabase");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 350);
         editor.put("y", 200);
         editor.put("color", NodeColor.DEFAULT);
@@ -75,10 +75,10 @@ public class SampleTemperatureProcessor {
     public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), ProducerRoute.NODE_TYPE), CELCIUS_PRODUCER_SINK, CELCIUS_PRODUCER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerCelcius");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 50);
         editor.put("color", NodeColor.VIRTUAL);
@@ -93,9 +93,9 @@ public class SampleTemperatureProcessor {
     public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), ChangeNodeDescriptor.TYPE), CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("append", " C");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 650);
         editor.put("y", 200);
         editor.put("color", NodeColor.DEFAULT);
@@ -110,10 +110,10 @@ public class SampleTemperatureProcessor {
     public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), ProducerRoute.NODE_TYPE), LABEL_PRODUCER_SINK, LABEL_PRODUCER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerLabel");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 1000);
         editor.put("y", 250);
         editor.put("color", NodeColor.VIRTUAL);

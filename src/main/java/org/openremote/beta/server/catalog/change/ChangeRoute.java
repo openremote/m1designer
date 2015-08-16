@@ -6,6 +6,7 @@ import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.route.predicate.PropertyIsSet;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.model.Properties;
 
 public class ChangeRoute extends NodeRoute {
 
@@ -19,11 +20,11 @@ public class ChangeRoute extends NodeRoute {
             .choice()
             .id(getProcessorId("selectChange"))
                 .when(new PropertyIsSet(getNode(), "prepend"))
-                    .transform(body().prepend(getPropertyValue("prepend")))
+                    .transform(body().prepend(Properties.get(getNode().getProperties(), "prepend")))
                     .id(getProcessorId("doPrepend"))
                 .endChoice()
                 .when(new PropertyIsSet(getNode(), "append"))
-                    .transform(body().append(getPropertyValue("append")))
+                    .transform(body().append(Properties.get(getNode().getProperties(), "append")))
                     .id(getProcessorId("doAppend"))
                 .endChoice()
             .end();

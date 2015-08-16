@@ -4,14 +4,17 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.model.Properties;
+import org.openremote.beta.shared.model.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-import static org.openremote.beta.shared.util.Util.*;
+import static org.openremote.beta.shared.model.PropertyDescriptor.TYPE_BOOLEAN;
 
 @JsType
 @JsonSerialize(include = NON_NULL)
@@ -22,7 +25,7 @@ public class Node extends FlowObject {
     public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
     public Slot[] slots = new Slot[0];
-    public Object properties;
+    public Map<String, Object> properties;
 
     public Node() {
     }
@@ -36,7 +39,7 @@ public class Node extends FlowObject {
         this.slots = slots;
     }
 
-    public Node(String label, Identifier identifier, Slot[] slots, Object properties) {
+    public Node(String label, Identifier identifier, Slot[] slots, Map<String, Object> properties) {
         super(label, identifier);
         this.slots = slots;
         this.properties = properties;
@@ -46,34 +49,25 @@ public class Node extends FlowObject {
         return slots;
     }
 
-    public Object getProperties() {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public String getEditorPropertyString(String property) {
-        if (!hasProperties())
-            return null;
-        return getString(getMap(getMap(getProperties()), "editor"), property);
-    }
-
-    public Double getEditorPropertyDouble(String property) {
-        if (!hasProperties())
-            return null;
-        return getDouble(getMap(getMap(getProperties()), "editor"), property);
-    }
-
-    public boolean isClientAccessEnabled() {
-        // Should we accept client message events for this node's sinks and should
-        // we send client message events when this node received a message?
-        return hasProperties() && getBoolean(getMap(getProperties()), "clientAccess");
-    }
-
-    public void setProperties(Object properties) {
+   public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
 
     public boolean hasProperties() {
         return getProperties() != null;
+    }
+
+    public Map<String, Object> getEditorProperties() {
+        return Properties.getProperties(getProperties(), "editor");
+    }
+    public boolean isClientAccessEnabled() {
+        // Should we accept client message events for this node's sinks and should
+        // we send client message events when this node received a message?
+        return Properties.isTrue(getProperties(), TYPE_BOOLEAN, "clientAccess");
     }
 
     public Slot findSlot(String slotId) {

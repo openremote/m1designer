@@ -10,6 +10,7 @@ import org.openremote.beta.server.route.RouteManagementUtil;
 import org.openremote.beta.shared.inventory.Adapter;
 import org.openremote.beta.shared.model.Identifier;
 import org.openremote.beta.shared.model.Property;
+import org.openremote.beta.shared.model.PropertyDescriptor;
 import org.openremote.component.ValidationGroupDiscovery;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
 import org.slf4j.Logger;
@@ -81,7 +82,7 @@ public class AdapterDiscoveryService implements StaticService {
         ComponentConfiguration discoveryConfig =
             context.getComponent(adapter.getId()).createComponentConfiguration();
         discoveryConfig.setBaseUri(adapter.getDiscoveryEndpoint());
-        for (Map.Entry<String, Property> entry : adapter.getExtra().entrySet()) {
+        for (Map.Entry<String, Property> entry : adapter.getProperties().entrySet()) {
             if (entry.getValue().hasValue()) {
                 discoveryConfig.setParameter(entry.getKey(), entry.getValue().getValue());
             }
@@ -139,6 +140,7 @@ public class AdapterDiscoveryService implements StaticService {
         if (discoveryEndpointRequiredProperties != null) {
             Collections.addAll(requiredProperties, discoveryEndpointRequiredProperties.split(" "));
         }
+        // TODO: handle required properties
 
         Adapter adapter = new Adapter(label, new Identifier(name, componentType), discoveryEndpoint);
 
@@ -149,15 +151,20 @@ public class AdapterDiscoveryService implements StaticService {
                 if (field.isAnnotationPresent(UriParam.class)) {
                     UriParam uriParam = field.getAnnotation(UriParam.class);
 
-                    String propertyName = uriParam.name().length() != 0 ? uriParam.name() : field.getName();
-                    Property property = new Property();
+                    String propertyLabel = uriParam.label().length() > 0 ? uriParam.label() : null;
+                    String propertyDescription = uriParam.description().length() > 0 ? uriParam.description() : null;
 
+                    PropertyDescriptor propertyDescriptor;
                     if (String.class.isAssignableFrom(field.getType())) {
-                        property.setType(Property.Type.STRING);
-                    } else if (Number.class.isAssignableFrom(field.getType())) {
-                        property.setType(Property.Type.NUMBER);
+                        propertyDescriptor = new PropertyDescriptor.StringType(propertyLabel, propertyDescription);
+                    } else if (Long.class.isAssignableFrom(field.getType())) {
+                        propertyDescriptor = new PropertyDescriptor.LongType(propertyLabel, propertyDescription);
+                    } else if (Integer.class.isAssignableFrom(field.getType())) {
+                        propertyDescriptor = new PropertyDescriptor.IntegerType(propertyLabel, propertyDescription);
+                    } else if (Double.class.isAssignableFrom(field.getType())) {
+                        propertyDescriptor = new PropertyDescriptor.DoubleType(propertyLabel, propertyDescription);
                     } else if (Boolean.class.isAssignableFrom(field.getType())) {
-                        property.setType(Property.Type.BOOLEAN);
+                        propertyDescriptor = new PropertyDescriptor.BooleanType(propertyLabel, propertyDescription);
                     } else {
                         throw new RuntimeException(
                             "Unsupported type of adapter endpoint property '" + name + "': " + field.getType()
@@ -167,17 +174,17 @@ public class AdapterDiscoveryService implements StaticService {
                     if (field.isAnnotationPresent(NotNull.class)) {
                         for (Class<?> group : field.getAnnotation(NotNull.class).groups()) {
                             if (ValidationGroupDiscovery.class.isAssignableFrom(group)) {
-                                property.setRequired(true);
+                                propertyDescriptor.setRequired(true);
+                                break;
                             }
                         }
                     }
+                    propertyDescriptor.setDefaultValue(uriParam.defaultValue().length() > 0 ? uriParam.defaultValue() : null);
+                    propertyDescriptor.setDefaultValueNote(uriParam.defaultValueNote().length() > 0 ? uriParam.defaultValueNote() : null);
 
-                    property.setLabel(uriParam.label().length() > 0 ? uriParam.label() : null);
-                    property.setDescription(uriParam.description().length() > 0 ? uriParam.description() : null);
-                    property.setDefaultValue(uriParam.defaultValue().length() > 0 ? uriParam.defaultValue() : null);
-                    property.setDefaultValueNote(uriParam.defaultValueNote().length() > 0 ? uriParam.defaultValueNote() : null);
+                    String propertyName = uriParam.name().length() != 0 ? uriParam.name() : field.getName();
 
-                    adapter.getExtra().put(propertyName, property);
+                    adapter.getProperties().put(propertyName, new Property(propertyDescriptor, null));
                 }
             } catch (NoSuchFieldException ex) {
                 // Ignoring config parameter if there is no annotated field on endpoint class

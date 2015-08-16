@@ -8,11 +8,9 @@ import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.openremote.beta.shared.util.Util.getMap;
-import static org.openremote.beta.shared.util.Util.getString;
 
 @JsExport
 @JsType
@@ -29,6 +27,7 @@ public class FlowNodePresenter extends AbstractPresenter {
         addEventListener(FlowNodeEditEvent.class, event -> {
             this.flow = event.getFlow();
             this.node = event.getNode();
+
             dispatchEvent(new FlowNodeOpenEvent(event.getFlow(), event.getNode(), getNodeLabel(event.getNode())));
         });
     }
@@ -40,7 +39,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     public String getNodeLabel(Node node) {
-        return node.getLabel() + " (" + node.getEditorPropertyString("typeLabel") + ")";
+        return node.getLabel() + " (" + Properties.get(node.getEditorProperties(), "typeLabel") + ")";
     }
 
     public void sendMessage(Slot slot, String body) {

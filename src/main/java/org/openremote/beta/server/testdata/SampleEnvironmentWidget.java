@@ -3,8 +3,8 @@ package org.openremote.beta.server.testdata;
 import org.openremote.beta.server.route.ActuatorRoute;
 import org.openremote.beta.server.route.SensorRoute;
 import org.openremote.beta.shared.flow.*;
-import org.openremote.beta.shared.inventory.Actuator;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.model.Properties;
 import org.openremote.beta.shared.widget.Composite;
 import org.openremote.beta.shared.widget.Widget;
 
@@ -13,7 +13,6 @@ import java.util.Map;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
-import static org.openremote.beta.shared.util.Util.createMap;
 
 public class SampleEnvironmentWidget {
 
@@ -24,9 +23,9 @@ public class SampleEnvironmentWidget {
     public static Node LIVINGROOM_TEMPERATURE_SENSOR = new Node("Livingroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), LIVINGROOM_TEMPERATURE_SENSOR_SOURCE, LIVINGROOM_TEMPERATURE_SENSOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 50);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);
@@ -41,9 +40,9 @@ public class SampleEnvironmentWidget {
     public static Node LIVINGROOM_SETPOINT_SENSOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), LIVINGROOM_SETPOINT_SENSOR_SOURCE, LIVINGROOM_SETPOINT_SENSOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 150);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);
@@ -59,8 +58,8 @@ public class SampleEnvironmentWidget {
     public static Node LIVINGROOM_THERMOSTAT = new Node(SampleThermostatControl.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK, LIVINGROOM_THERMOSTAT_SETPOINT_SINK, LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> properties = Properties.create();
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 100);
         editor.put("color", NodeColor.VIRTUAL);
@@ -79,10 +78,10 @@ public class SampleEnvironmentWidget {
     public static Node LIVINGROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE), LIVINGROOM_SETPOINT_ACTUATOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:livingroomSetpointActuator");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 100);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);
@@ -97,9 +96,9 @@ public class SampleEnvironmentWidget {
     public static Node BEDROOM_TEMPERATURE_SENSOR = new Node("Bedroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), BEDROOM_TEMPERATURE_SENSOR_SOURCE, BEDROOM_TEMPERATURE_SENSOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 300);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);
@@ -114,9 +113,9 @@ public class SampleEnvironmentWidget {
     public static Node BEDROOM_SETPOINT_SENSOR = new Node("Bedroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE), BEDROOM_SETPOINT_SENSOR_SOURCE, BEDROOM_SETPOINT_SENSOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 400);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);
@@ -132,8 +131,8 @@ public class SampleEnvironmentWidget {
     public static Node BEDROOM_THERMOSTAT = new Node(SampleThermostatControl.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), BEDROOM_THERMOSTAT_TEMPERATURE_SINK, BEDROOM_THERMOSTAT_SETPOINT_SINK, BEDROOM_THERMOSTAT_SETPOINT_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> properties = Properties.create();
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 400);
         editor.put("y", 350);
         editor.put("color", NodeColor.VIRTUAL);
@@ -152,10 +151,10 @@ public class SampleEnvironmentWidget {
     public static Node BEDROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE), BEDROOM_SETPOINT_ACTUATOR_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:bedroomSetpointActuator");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 350);
         editor.put("color", NodeColor.SENSOR_ACTUATOR);

@@ -2,7 +2,6 @@ package org.openremote.beta.shared.widget;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.shared.model.Property;
 
 @JsExport
 @JsType

@@ -20,7 +20,7 @@ public class InventoryObject {
 
     public Identifier[] keys = new Identifier[0];
 
-    public Map<String, Property> extra = new LinkedHashMap<>();
+    public Map<String, Property> properties = new LinkedHashMap<>();
 
     protected InventoryObject() {
     }
@@ -68,8 +68,8 @@ public class InventoryObject {
         keys = list.toArray(new Identifier[keys.length]);
     }
 
-    public Map<String, Property> getExtra() {
-        return extra;
+    public Map<String, Property> getProperties() {
+        return properties;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class InventoryObject {
             "label='" + label + '\'' +
             ", id=" + identifier +
             ", keys=" + Arrays.toString(keys) +
-            ", extra=" + extra +
+            ", properties=" + properties +
             '}';
     }
 }

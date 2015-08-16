@@ -7,7 +7,7 @@ import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.inventory.discovery.AdapterDiscoveryService;
 import org.openremote.beta.server.inventory.discovery.DiscoveryServiceConfiguration;
 import org.openremote.beta.shared.inventory.Adapter;
-import org.openremote.beta.shared.model.Property;
+import org.openremote.beta.shared.model.PropertyDescriptor;
 import org.openremote.beta.zwave.component.MockZWAdapter;
 import org.openremote.beta.zwave.component.ZWAdapter;
 import org.openremote.beta.zwave.component.ZWComponent;
@@ -19,7 +19,6 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.openremote.controller.protocol.zwave.model.commandclasses.DeviceDiscoveryCommandClassVisitor.*;
 
@@ -32,7 +31,7 @@ public class DiscoveryTest extends IntegrationTest {
     List<DiscoveredDeviceAttrDTO> mockDeviceAttrDTO = new ArrayList<>();
 
     @Override
-    protected void configure(Properties properties, List<Configuration> configurations, CamelContext context) throws Exception {
+    protected void configure(java.util.Properties properties, List<Configuration> configurations, CamelContext context) throws Exception {
         super.configure(properties, configurations, context);
 
         configurations.add(new DiscoveryServiceConfiguration());
@@ -116,19 +115,19 @@ public class DiscoveryTest extends IntegrationTest {
         assertEquals(adapter.getIdentifier().getId(), "zwaveMock");
         assertEquals(adapter.getDiscoveryEndpoint(), "zwaveMock://discovery");
         assertEquals(adapter.getLabel(), "ZWave Mock Adapter");
-        assertEquals(adapter.getExtra().get("serialPort").getLabel(), "Serial Port");
-        assertEquals(adapter.getExtra().get("serialPort").getType(), Property.Type.STRING);
-        assertTrue(adapter.getExtra().get("serialPort").isRequired());
-        assertEquals(adapter.getExtra().get("command").getLabel(), "Command");
-        assertEquals(adapter.getExtra().get("command").getType(), Property.Type.STRING);
-        assertFalse(adapter.getExtra().get("command").isRequired());
-        assertEquals(adapter.getExtra().get("arg").getLabel(), "Argument");
-        assertEquals(adapter.getExtra().get("arg").getType(), Property.Type.STRING);
-        assertFalse(adapter.getExtra().get("arg").isRequired());
+        assertEquals(adapter.getProperties().get("serialPort").getDescriptor().getLabel(), "Serial Port");
+        assertEquals(adapter.getProperties().get("serialPort").getDescriptor().getClass(), PropertyDescriptor.TYPE_STRING.getClass());
+        assertTrue(adapter.getProperties().get("serialPort").getDescriptor().isRequired());
+        assertEquals(adapter.getProperties().get("command").getDescriptor().getLabel(), "Command");
+        assertEquals(adapter.getProperties().get("command").getDescriptor().getClass(), PropertyDescriptor.TYPE_STRING.getClass());
+        assertFalse(adapter.getProperties().get("command").getDescriptor().isRequired());
+        assertEquals(adapter.getProperties().get("arg").getDescriptor().getLabel(), "Argument");
+        assertEquals(adapter.getProperties().get("arg").getDescriptor().getClass(), PropertyDescriptor.TYPE_STRING.getClass());
+        assertFalse(adapter.getProperties().get("arg").getDescriptor().isRequired());
 
         // Now configure the adapter and add it to the inbox for auto-discovery
 
-        adapter.getExtra().get("serialPort").setValue("TEST_SERIAL_PORT");
+        adapter.getProperties().get("serialPort").setValue("TEST_SERIAL_PORT");
 
         Exchange addAdapterToInboxExchange = createExchangeWithBody(context(), toJson(adapter));
         addAdapterToInboxExchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);

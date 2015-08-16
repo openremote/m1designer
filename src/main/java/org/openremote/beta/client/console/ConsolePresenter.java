@@ -10,14 +10,12 @@ import org.openremote.beta.client.shared.session.message.MessageSendEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Properties;
 import org.openremote.beta.shared.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-
-import static org.openremote.beta.shared.util.Util.getMap;
-import static org.openremote.beta.shared.util.Util.getString;
 
 @JsExport
 @JsType
@@ -104,17 +102,22 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected Element addWidget(Node node, Element container) {
-        Map<String, Object> widgetProperties = getMap(getMap(node.getProperties()), "widget");
+        Map<String, Object> widgetProperties = Properties.getProperties(node.getProperties(), "widget");
         if (widgetProperties == null)
             return container;
 
         LOG.debug("Adding widget: " + widgetProperties);
 
-        String widgetComponent = getString(widgetProperties, "component");
+        String widgetComponent = Properties.get(widgetProperties, "component");
+        if (widgetComponent == null)
+            return container;
 
         Element widget = container.getOwnerDocument().createElement(widgetComponent);
 
-        Map<String, Object> widgetDefaults = getMap(widgetProperties, "default");
+        Map<String, Object> widgetDefaults = Properties.getProperties(widgetProperties, "default");
+        if (widgetDefaults == null)
+            return container;
+
         for (Map.Entry<String, Object> entry : widgetDefaults.entrySet()) {
             widget.setAttribute(Util.toLowerCaseDash(entry.getKey()), entry.getValue().toString());
         }

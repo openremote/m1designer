@@ -3,16 +3,13 @@ package org.openremote.beta.shared.flow;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.util.Util;
 
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-import static org.openremote.beta.shared.util.Util.getMap;
 
 @JsType
 @JsonSerialize(include = NON_NULL)
@@ -67,7 +64,7 @@ public class Flow extends FlowObject {
     public Node[] findNodesWithProperty(String property) {
         Set<Node> collection = new HashSet<>();
         for (Node node : getNodes()) {
-            if (node.hasProperties() && getMap(node.getProperties()).containsKey(property))
+            if (node.hasProperties() && node.getProperties().containsKey(property))
                 collection.add(node);
         }
         return collection.toArray(new Node[collection.size()]);

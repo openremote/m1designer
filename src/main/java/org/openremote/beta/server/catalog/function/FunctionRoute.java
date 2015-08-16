@@ -7,6 +7,7 @@ import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.model.Properties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class FunctionRoute extends NodeRoute {
 
     @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
-        String javascriptlet = getPropertyValue("javascript");
+        String javascriptlet = Properties.get(getNode().getProperties(), "javascript");
         if (javascriptlet != null && javascriptlet.length() > 0) {
             routeDefinition
                 .process(exchange -> {

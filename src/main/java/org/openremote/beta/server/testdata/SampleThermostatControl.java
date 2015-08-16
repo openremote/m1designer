@@ -4,11 +4,11 @@ import org.openremote.beta.server.catalog.filter.FilterNodeDescriptor;
 import org.openremote.beta.server.catalog.function.FunctionNodeDescriptor;
 import org.openremote.beta.server.catalog.widget.PushButtonNodeDescriptor;
 import org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor;
-import org.openremote.beta.server.route.ClientRoute;
 import org.openremote.beta.server.route.ConsumerRoute;
 import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.model.Properties;
 import org.openremote.beta.shared.widget.PushButton;
 import org.openremote.beta.shared.widget.TextLabel;
 import org.openremote.beta.shared.widget.Widget;
@@ -21,7 +21,6 @@ import static org.openremote.beta.server.util.JsonUtil.JSON;
 import static org.openremote.beta.shared.flow.Node.TYPE_SUBFLOW;
 import static org.openremote.beta.shared.flow.Slot.TYPE_SINK;
 import static org.openremote.beta.shared.flow.Slot.TYPE_SOURCE;
-import static org.openremote.beta.shared.util.Util.createMap;
 
 public class SampleThermostatControl {
 
@@ -32,9 +31,9 @@ public class SampleThermostatControl {
     public static Node TEMPERATURE_CONSUMER = new Node("Temperature", new Identifier(generateGlobalUniqueId(), ConsumerRoute.NODE_TYPE), TEMPERATURE_CONSUMER_SINK, TEMPERATURE_CONSUMER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 20);
         editor.put("y", 20);
         editor.put("color", NodeColor.VIRTUAL);
@@ -49,9 +48,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_CONSUMER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), ConsumerRoute.NODE_TYPE), SETPOINT_CONSUMER_SINK, SETPOINT_CONSUMER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 20);
         editor.put("y", 200);
         editor.put("color", NodeColor.VIRTUAL);
@@ -67,8 +66,8 @@ public class SampleThermostatControl {
     public static Node TEMPERATURE_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK, TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE, TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> properties = Properties.create();
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 300);
         editor.put("y", 20);
         editor.put("color", NodeColor.VIRTUAL);
@@ -84,8 +83,8 @@ public class SampleThermostatControl {
     public static Node SETPOINT_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK, SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE, SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> properties = Properties.create();
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 300);
         editor.put("y", 150);
         editor.put("color", NodeColor.VIRTUAL);
@@ -99,10 +98,10 @@ public class SampleThermostatControl {
     public static Node TEMPERATURE_LABEL = new Node("Temperature Label", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE), TEMPERATURE_LABEL_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:labelTemperature");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 50);
         editor.put("color", NodeColor.CLIENT);
@@ -122,10 +121,10 @@ public class SampleThermostatControl {
     public static Node SETPOINT_LABEL = new Node("Setpoint Label", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE), SETPOINT_LABEL_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:labelSetpoint");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 150);
         editor.put("color", NodeColor.CLIENT);
@@ -146,9 +145,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE), SETPOINT_PLUS_BUTTON_SOURCE, SETPOINT_PLUS_BUTTON_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 400);
         editor.put("color", NodeColor.CLIENT);
@@ -168,9 +167,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE), SETPOINT_MINUS_BUTTON_SOURCE, SETPOINT_MINUS_BUTTON_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 50);
         editor.put("y", 500);
         editor.put("color", NodeColor.CLIENT);
@@ -191,9 +190,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_PLUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), FilterNodeDescriptor.TYPE), SETPOINT_PLUS_FILTER_SINK, SETPOINT_PLUS_FILTER_TRIGGER_SINK, SETPOINT_PLUS_FILTER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("onTrigger", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 450);
         editor.put("y", 300);
         editor.put("color", NodeColor.DEFAULT);
@@ -209,9 +208,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_MINUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), FilterNodeDescriptor.TYPE), SETPOINT_MINUS_FILTER_SINK, SETPOINT_MINUS_FILTER_TRIGGER_SINK, SETPOINT_MINUS_FILTER_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("onTrigger", "true");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 450);
         editor.put("y", 450);
         editor.put("color", NodeColor.DEFAULT);
@@ -226,9 +225,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_INCREMENT_FUNCTION = new Node("Increment by 1", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE), SETPOINT_INCREMENT_FUNCTION_SINK, SETPOINT_INCREMENT_FUNCTION_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("javascript", "output['value'] = input + 1");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 300);
         editor.put("color", NodeColor.DEFAULT);
@@ -243,9 +242,9 @@ public class SampleThermostatControl {
     public static Node SETPOINT_DECREMENT_FUNCTION = new Node("Decrement by 1", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE), SETPOINT_DECREMENT_FUNCTION_SINK, SETPOINT_DECREMENT_FUNCTION_SOURCE);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("javascript", "output['value'] = input - 1");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 750);
         editor.put("y", 450);
         editor.put("color", NodeColor.DEFAULT);
@@ -260,10 +259,10 @@ public class SampleThermostatControl {
     public static Node SETPOINT_PRODUCER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), ProducerRoute.NODE_TYPE), SETPOINT_PRODUCER_SOURCE, SETPOINT_PRODUCER_SINK);
 
     static {
-        Map<String, Object> properties = createMap();
+        Map<String, Object> properties = Properties.create();
         properties.put("clientAccess", "true");
         properties.put("postEndpoint", "mock:producerSetpoint");
-        Map<String, Object> editor = createMap(properties, "editor");
+        Map<String, Object> editor = Properties.create(properties, "editor");
         editor.put("x", 1050);
         editor.put("y", 375);
         editor.put("color", NodeColor.VIRTUAL);

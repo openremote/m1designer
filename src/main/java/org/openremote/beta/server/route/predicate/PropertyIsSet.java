@@ -2,6 +2,7 @@ package org.openremote.beta.server.route.predicate;
 
 import org.apache.camel.Exchange;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.model.Properties;
 
 public class PropertyIsSet extends NodePredicate {
 
@@ -14,6 +15,6 @@ public class PropertyIsSet extends NodePredicate {
 
     @Override
     public boolean matches(Exchange exchange) {
-        return getPropertyValue(property) != null;
+        return Properties.isSet(node.getProperties(), property);
     }
 }
