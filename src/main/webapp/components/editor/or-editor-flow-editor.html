@@ -102,10 +102,10 @@
                     e.preventDefault();
                     this.toggleClass("dragOver", false, this.$.flowDesigner);
                     var nodeType = e.dataTransfer.getData("text/plain");
-                    var event = new openremote.ShowInfoEvent(
+                    var showInfoEvent = new openremote.ShowInfoEvent(
                             "TODO: Implement node drop '" + nodeType +"' at position: " + e.offsetX + "/" + e.offsetY
                     );
-                    this.fire(event.getType(), event);
+                    this.fire(showInfoEvent.getType(), showInfoEvent);
                 }
 
             });

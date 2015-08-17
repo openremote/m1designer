@@ -8,7 +8,7 @@ import com.google.gwt.core.client.js.JsType;
 public enum CatalogCategory {
 
     WIDGETS("Widgets"),
-    VIRTUAL("Virtual"),
+    WIRING("Flow Wiring"),
     PROCESSORS("Processors");
 
     final public String label;

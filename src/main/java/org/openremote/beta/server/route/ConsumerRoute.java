@@ -10,7 +10,7 @@ import org.openremote.beta.shared.flow.NodeColor;
 public class ConsumerRoute extends NodeRoute {
 
     public static final String NODE_TYPE = "urn:org-openremote:flow:node:consumer";
-    public static final String NODE_TYPE_LABEL = "Consumer";
+    public static final String NODE_TYPE_LABEL = "Sink";
 
     public static class Descriptor extends VirtualNodeDescriptor {
 

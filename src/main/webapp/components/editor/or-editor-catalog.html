@@ -11,20 +11,20 @@
         }
 
         .section {
-
+            padding: 0.4em 0.4em 0 0.4em;
         }
 
         .category {
-            margin: 0.8em 0.4em 0 0.4em;
         }
 
         .category .label {
             font-weight: bold;
+            cursor: default;
         }
 
         .item {
             display: inline-block;
-            margin: 0.4em;
+            margin: 0.2em;
             padding: 0.4em;
             border-radius: 0.4em;
             background-color: var(--or-editor-flow-item-background-color, white);
@@ -121,6 +121,15 @@
                         }
                         categorizedItem.catalogItems.push(item);
                     });
+
+                    categorizedItems.sort(function(a, b) {
+                        if (a.category.label  < b.category.label)
+                            return -1;
+                        if (a.category.label > b.category.label)
+                            return 1;
+                        return 0;
+                    });
+
                     this.set("_categorizedItems", categorizedItems);
                 },
                 _requestFailure: function (type, event) {
@@ -132,7 +141,10 @@
                         var item = items[i];
                         this.toggleClass("selected", item == e.currentTarget, item);
                     }
-                    console.log("### CATALOG ITEM SELECTED: " + e.model.catalogItem);
+                    var showInfoEvent = new openremote.ShowInfoEvent(
+                            "TODO: Implement help display for selected: " + e.model.catalogItem
+                    );
+                    this.fire(showInfoEvent.getType(), showInfoEvent);
                 },
                 _itemDragStart: function(e) {
                     e.dataTransfer.setData('text/plain', e.model.catalogItem.nodeType);

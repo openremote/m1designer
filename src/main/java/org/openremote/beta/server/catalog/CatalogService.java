@@ -34,7 +34,7 @@ public class CatalogService implements StaticService {
             if (nodeDescriptor instanceof WidgetNodeDescriptor) {
                 catalogCategory = CatalogCategory.WIDGETS;
             } else if (nodeDescriptor instanceof VirtualNodeDescriptor) {
-                catalogCategory = CatalogCategory.VIRTUAL;
+                catalogCategory = CatalogCategory.WIRING;
             } else {
                 catalogCategory = CatalogCategory.PROCESSORS;
             }
