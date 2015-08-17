@@ -13,6 +13,12 @@ public class ActuatorRoute extends NodeRoute {
     public static final String NODE_TYPE_LABEL = "Actuator";
 
     public static class Descriptor extends NodeDescriptor {
+
+        @Override
+        public boolean isInternal() {
+            return true;
+        }
+
         @Override
         public String getType() {
             return NODE_TYPE;

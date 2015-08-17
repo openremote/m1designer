@@ -6,6 +6,7 @@
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 
 <link rel="import" href="or-editor-flows.html">
+<link rel="import" href="or-editor-catalog.html">
 
 <script>
     document.addEventListener("gwtReadyClient", function () {
@@ -17,11 +18,11 @@
                     value: 1,
                     observer: "_onTabSelect"
                 },
-                libraryVisible: {
+                catalogVisible: {
                     type: Boolean,
                     value: false,
                     reflectToAttribute: true,
-                    observer: "_onLibraryVisible"
+                    observer: "onCatalogVisible"
                 },
                 _showDiscovery: false,
                 _showInventory: false
@@ -41,8 +42,8 @@
                         break;
                 }
             },
-            _onLibraryVisible: function (visible) {
-                this.toggleClass("libraryVisible", visible, this.$.browser);
+            onCatalogVisible: function (visible) {
+                this.toggleClass("catalogVisible", visible, this.$.browser);
             },
             _loadFlows: function () {
                 this.async(function () {
@@ -75,11 +76,11 @@
             min-width: 240px;
         }
 
-        #browser.libraryVisible {
+        #browser.catalogVisible {
             height: 50%;
         }
 
-        #library {
+        #catalog {
             height: 50%;
             width: 100%;
         }
@@ -132,8 +133,8 @@
             }
 
             #browser,
-            #browser.libraryVisible,
-            #library {
+            #browser.catalogVisible,
+            #catalog{
                 height: 40%;
             }
 
@@ -203,13 +204,15 @@
                 </template>
             </div>
 
-            <template is="dom-if" if="[[libraryVisible]]">
-                <div id="library" class="section">
+            <template is="dom-if" if="[[catalogVisible]]">
+                <div id="catalog" class="section">
                     <div class="head">
-                        <div class="title">LIBRARY</div>
+                        <div class="title">CATALOG</div>
                     </div>
                     <div class="content">
-                        Here are patches/widgets you can use when you edit a flow.
+                        <or-editor-catalog id="catalog">
+                            <content select="#dragDropContainer"></content>
+                        </or-editor-catalog>
                     </div>
                 </div>
             </template>

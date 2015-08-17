@@ -23,8 +23,6 @@ public class ConsolePresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsolePresenter.class);
 
-    public boolean haveWidgets;
-
     public ConsolePresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
@@ -33,7 +31,7 @@ public class ConsolePresenter extends AbstractPresenter {
         addEventListener(ConsoleRefreshEvent.class, event -> {
             Element container = clearContainer();
             updateWidgets(event.getFlow(), container);
-            haveWidgets = haveWidgets || container.getChildElementCount() > 0;
+            dispatchEvent(new ConsoleRefreshedEvent());
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -62,7 +60,6 @@ public class ConsolePresenter extends AbstractPresenter {
         while (((child = container.getFirstElementChild()) != null)) {
             container.removeChild(child);
         }
-        haveWidgets = false;
         return container;
     }
 
@@ -84,7 +81,6 @@ public class ConsolePresenter extends AbstractPresenter {
             }
 
             Element compositeWidget = addWidget(subflowNode, container);
-
             updateWidgets(rootFlow, subflow, compositeWidget, subflowNode.getId());
         }
     }

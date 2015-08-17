@@ -2,7 +2,7 @@ package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
-import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
@@ -12,7 +12,8 @@ public class ConsumerRoute extends NodeRoute {
     public static final String NODE_TYPE = "urn:org-openremote:flow:node:consumer";
     public static final String NODE_TYPE_LABEL = "Consumer";
 
-    public static class Descriptor extends NodeDescriptor {
+    public static class Descriptor extends VirtualNodeDescriptor {
+
         @Override
         public String getType() {
             return NODE_TYPE;

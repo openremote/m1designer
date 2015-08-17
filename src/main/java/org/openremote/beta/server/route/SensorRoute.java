@@ -13,6 +13,12 @@ public class SensorRoute extends NodeRoute {
     public static final String NODE_TYPE_LABEL = "Sensor";
 
     public static class Descriptor extends NodeDescriptor {
+
+        @Override
+        public boolean isInternal() {
+            return true;
+        }
+
         @Override
         public String getType() {
             return NODE_TYPE;

@@ -1,8 +1,9 @@
 <script src="../util.js"></script>
 <script src="../../gwt/Client/Client.nocache.js"></script>
+<script src="../../bower_components/draggabilly/dist/draggabilly.pkgd.min.js"></script>
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <link rel="import" href="or-console-widget-composite.html"/>
 <link rel="import" href="or-console-widget-sink.html"/>
@@ -33,15 +34,62 @@
                 _haveWidgets: {
                     type: Boolean,
                     value: false
+                },
+                _draggableWidgets: {
+                    type: Array,
+                    value: []
                 }
             },
             listeners: {
-                "console-refresh": "_onConsoleRefresh"
+                "editor-opened": "_onEditorOpened",
+                "editor-closed": "_onEditorClosed",
+                "console-refreshed": "_onConsoleRefreshed"
             },
-            _onConsoleRefresh: function () {
+            _onEditorOpened: function () {
+                this.toggleAttribute("hidden", false, this.$.controls);
+            },
+            _onEditorClosed: function () {
+                this.toggleAttribute("hidden", true, this.$.controls);
+                this._disableDragging();
+            },
+            _onConsoleRefreshed: function (ce, event) {
+                var widgets = Polymer.dom(this.$.container).childNodes;
+                this.set("_haveWidgets", widgets.length);
+                this.toggleAttribute("checked", false, this.$$("#draggingSwitch"));
+
+                widgets.forEach(function (widget) {
+                    var draggableWidget = new Draggabilly(widget, {
+                        grid: [10, 10]
+                    });
+                    this.push("_draggableWidgets", draggableWidget);
+                }.bind(this));
+
                 this.async(function () {
-                    this.notifyPath("_haveWidgets", this._presenter.haveWidgets);
-                })
+                    this._disableDragging();
+                });
+            },
+            _enableDragging: function () {
+                this._draggableWidgets.forEach(function (draggable) {
+                    draggable.enable();
+                    draggable.element.draggable = true;
+                    draggable.element.style.cursor = "move";
+                }.bind(this));
+                this.updateStyles();
+            },
+            _disableDragging: function () {
+                this._draggableWidgets.forEach(function (draggable) {
+                    draggable.disable();
+                    draggable.element.draggable = false;
+                    draggable.element.style.cursor = "";
+                }.bind(this));
+                this.updateStyles();
+            },
+            _onDraggingSwitch: function (e) {
+                if (e.target.checked) {
+                    this._enableDragging();
+                } else {
+                    this._disableDragging();
+                }
             }
         });
     });
@@ -58,6 +106,12 @@
             background-color: var(--or-console-background-color);
         }
 
+        #draggingSwitch {
+            position: fixed;
+            top: 50px;
+            right: 5px;
+        }
+
         #empty {
             color: var(--or-console-empty-color);
             padding: 1em;
@@ -65,13 +119,21 @@
 
         #container {
             white-space: nowrap;
+            cursor: default;
         }
 
     </style>
     <template>
+        <div id="controls" hidden>
+            <template is="dom-if" if="[[_haveWidgets]]">
+                <paper-toggle-button id="draggingSwitch"
+                                     on-change="_onDraggingSwitch"></paper-toggle-button>
+            </template>
+        </div>
         <template is="dom-if" if="[[!_haveWidgets]]">
             <div id="empty">
                 <h1>OpenRemote Console</h1>
+
                 <p>
                     This panel has no widgets. Open the editor with the button in the top right corner.
                 </p>

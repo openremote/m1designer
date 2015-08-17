@@ -1,6 +1,7 @@
 org.openremote.beta.server.SystemConfiguration
 org.openremote.beta.server.WebserverConfiguration
 org.openremote.beta.server.catalog.NodeDescriptorConfiguration
+org.openremote.beta.server.catalog.CatalogServiceConfiguration
 org.openremote.beta.server.route.RouteManagementServiceConfiguration
 org.openremote.beta.server.flow.FlowServiceConfiguration
 org.openremote.beta.server.event.EventServiceConfiguration

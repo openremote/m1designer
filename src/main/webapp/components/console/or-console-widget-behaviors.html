@@ -26,10 +26,10 @@
         _onUpdateValue: function (event, detail) {
             var updatedValue = detail.value;
             // When a widget fires an update event, we push it down until we hit a sink that sends a message
-            var children = this.querySelectorAll(".or-console-widget");
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                this.fire("update-value", detail, {bubbles: false, node: child});
+            var widgets = this.querySelectorAll(".or-console-widget");
+            for (var i = 0; i < widgets.length; i++) {
+                var widget = widgets[i];
+                this.fire("update-value", detail, {bubbles: false, node: widget});
             }
         },
         updateValue: function (value) {
@@ -51,6 +51,10 @@
                 type: Number,
                 reflectToAttribute: true,
                 observer: "_onPositionYChanged"
+            },
+            draggable: {
+                type: Boolean,
+                observer: "_onDraggableChanged"
             }
         },
         _onPositionXChanged: function (newValue) {
@@ -58,6 +62,13 @@
         },
         _onPositionYChanged: function (newValue) {
             this.style.top = newValue + "px";
+        },
+        _onDraggableChanged: function(newValue) {
+            var controls = this.querySelectorAll(".control");
+            for (var i = 0; i < controls.length; i++) {
+                var control = controls[i];
+                control.style.pointerEvents = newValue ? "none" : "initial";
+            }
         }
     };
 

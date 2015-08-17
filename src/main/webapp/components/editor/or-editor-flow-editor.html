@@ -16,7 +16,13 @@
         }
 
         #flowDesigner {
-            z-index: 10;
+        }
+
+        #flowDesigner.dragOver {
+            background: radial-gradient(#ccc 0, #ccc 15%, white 15%, white 100%);
+            background-origin: padding-box;
+            background-clip: border-box;
+            background-size: 10px 10px;
         }
 
         #empty {
@@ -31,7 +37,11 @@
             <div id="empty">Please select or create a data flow in your inventory.</div>
         </template>
 
-        <div id="flowDesigner"></div>
+        <div id="flowDesigner"
+             on-dragenter="_onDragEnter"
+             on-dragleave="_onDragLeave"
+             on-dragover="_onDragOver"
+             on-drop="_onDrop"></div>
 
         <or-editor-flow-control id="flowControl"></or-editor-flow-control>
 
@@ -56,15 +66,15 @@
                     'flow-edit': "_flowEdit",
                     'flow-designer-node-selected': '_flowDesignerNodeSelected'
                 },
-                attached: function() {
+                attached: function () {
                     // Need to do this async, when the shady children are available
-                    this.async(function() {
+                    this.async(function () {
                         this._presenter.prepareFlowDesignerContainer(this.$.flowDesigner);
                     })
                 },
                 _flowEdit: function (ce, event) {
 
-                    this.async(function() {
+                    this.async(function () {
                         this.notifyPath("_presenter.flow", this._presenter.flow);
                     });
 
@@ -77,7 +87,27 @@
                 _flowDesignerNodeSelected: function (type, event) {
                     var flowNodeEditEvent = new openremote.editor.flow.node.FlowNodeEditEvent(this._presenter.flow, event.getNode());
                     this.$.flowNode.fire(flowNodeEditEvent.getType(), flowNodeEditEvent);
+                },
+                _onDragEnter: function (e) {
+                    this.toggleClass("dragOver", true, this.$.flowDesigner);
+                },
+                _onDragLeave: function (e) {
+                    this.toggleClass("dragOver", false, this.$.flowDesigner);
+                },
+                _onDragOver: function (e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "copy";
+                },
+                _onDrop: function (e) {
+                    e.preventDefault();
+                    this.toggleClass("dragOver", false, this.$.flowDesigner);
+                    var nodeType = e.dataTransfer.getData("text/plain");
+                    var event = new openremote.ShowInfoEvent(
+                            "TODO: Implement node drop '" + nodeType +"' at position: " + e.offsetX + "/" + e.offsetY
+                    );
+                    this.fire(event.getType(), event);
                 }
+
             });
         });
     </script>

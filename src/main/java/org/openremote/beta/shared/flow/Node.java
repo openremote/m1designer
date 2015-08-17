@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
 import org.openremote.beta.shared.model.Properties;
-import org.openremote.beta.shared.model.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,9 @@
 <link rel="import" href="or-console-widget-behaviors.html">
 
 <dom-module id="or-console-widget-pushbutton">
+
+    <link rel="import" type="css" href="../../styles/console-widget-style.css">
+
     <style>
         :host {
             display: block;
@@ -11,9 +14,12 @@
             color: black;
         }
 
+        button {
+        }
+
     </style>
     <template>
-        <div id="container">PushButton: <button on-tap="trigger">CLICK</button></div>
+        <div id="container">PushButton: <button class="control" on-tap="trigger">CLICK</button></div>
     </template>
     <script>
         Polymer({

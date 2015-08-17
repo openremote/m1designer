@@ -1,4 +1,5 @@
 <script src="../util.js"></script>
+<script src="../webkit-drag-drop-shim.js"></script>
 <script src="../../gwt/Client/Client.nocache.js"></script>
 
 <link rel="import" href="../shared/or-form.html">
@@ -32,6 +33,12 @@
             },
             listeners: {
                 "flow-loaded": "_onFlowLoaded"
+            },
+            attached: function() {
+                this.async(function() {
+                    var editorOpenedEvent = new openremote.editor.EditorOpenedEvent();
+                    this.fire(editorOpenedEvent.getType(), editorOpenedEvent);
+                });
             },
             _onFlowLoaded: function (ce, event) {
                 var flowEditEvent = new openremote.editor.flow.editor.FlowEditEvent(event.getFlow());
@@ -96,7 +103,7 @@
     <template>
         <div id="container">
             <div id="sidebar">
-                <or-editor-sidebar library-visible$="[[_flowEditorOpen]]"></or-editor-sidebar>
+                <or-editor-sidebar catalog-visible$="[[_flowEditorOpen]]"></or-editor-sidebar>
             </div>
             <div id="main">
                 <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>

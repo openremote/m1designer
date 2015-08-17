@@ -5,6 +5,7 @@ import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.html.IFrameElement;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
+import org.openremote.beta.client.editor.EditorOpenedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.message.MessageSessionPresenter;
@@ -20,6 +21,9 @@ public class ShellPresenter extends MessageSessionPresenter {
     public ShellPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
+        addEventListener(EditorOpenedEvent.class, event -> dispatchEvent(getConsoleView(), event));
+        addEventListener(EditorClosedEvent.class, event -> dispatchEvent(getConsoleView(), event));
+
         addEventListener(
             FlowEditEvent.class,
             event -> {
@@ -31,11 +35,19 @@ public class ShellPresenter extends MessageSessionPresenter {
         addEventListener(
             MessageReceivedEvent.class,
             event -> {
-                dispatchEvent(getRequiredChildView("#messageLog"), event);
-                dispatchEvent(getEditorView(), event);
+                if (isEditorViewAvailable()) {
+                    dispatchEvent(getEditorView(), event);
+                    dispatchEvent(getRequiredChildView("#messageLog"), event);
+                }
                 dispatchEvent(getConsoleView(), event);
             }
         );
+    }
+
+    protected boolean isEditorViewAvailable() {
+        IFrameElement frame = (IFrameElement) getRequiredChildView("#editor");
+        Element view = frame.getContentDocument().querySelector("or-editor");
+        return view != null;
     }
 
     protected Element getEditorView() {

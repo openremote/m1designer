@@ -67,9 +67,11 @@
                 'request-complete': '_loadComplete'
             },
             attached: function () {
-                // Set "opposite" of what the user wants as initial state, then toggle
-                this.editorVisible = !this.editorVisible;
-                this._toggleEditor();
+                if (this.editorVisible) {
+                    this._showEditor();
+                } else {
+                    this._hideEditor();
+                }
 
                 this.$.busyIndicator.hide();
 
@@ -100,6 +102,14 @@
                 this.$.consoleContainer.style.flexBasis = "100vw";
                 this.$.consoleResizeHandle.style.minWidth = "0";
                 this.$.consoleResizeHandle.style.display = "none";
+
+                if (this.editorVisible) {
+                    this.async(function() {
+                        var editorClosedEvent = new openremote.shell.EditorClosedEvent();
+                        this.fire(editorClosedEvent.getType(), editorClosedEvent);
+                    });
+                }
+
                 this.editorVisible = false;
 
                 var messageLogCloseEvent = new openremote.shell.MessageLogCloseEvent();
@@ -218,6 +228,7 @@
             height: 28px;
             background: transparent;
             border: 2px dotted var(--default-primary-color, white);
+            cursor: pointer;
         }
 
         #editorToggleButton:active {

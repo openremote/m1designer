@@ -3,6 +3,7 @@ package org.openremote.beta.server.route;
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,13 @@ public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
 
-    public static class Descriptor extends NodeDescriptor {
+    public static class Descriptor extends VirtualNodeDescriptor {
+
+        @Override
+        public boolean isInternal() {
+            return true;
+        }
+
         @Override
         public String getType() {
             return Node.TYPE_SUBFLOW;

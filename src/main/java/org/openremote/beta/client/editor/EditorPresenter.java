@@ -28,6 +28,7 @@ public class EditorPresenter extends AbstractPresenter {
         addRedirectToShellView(RequestFailureEvent.class);
         addRedirectToShellView(ShowInfoEvent.class);
         addRedirectToShellView(ShowFailureEvent.class);
+        addRedirectToShellView(EditorOpenedEvent.class);
         addRedirectToShellView(FlowEditEvent.class);
         addRedirectToShellView(MessageSendEvent.class);
 

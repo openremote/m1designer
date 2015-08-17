@@ -1,0 +1,145 @@
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+
+<dom-module id="or-editor-catalog">
+
+    <style>
+        .list {
+        }
+
+        .list #empty {
+            @apply(--or-editor-flow-empty)
+        }
+
+        .section {
+
+        }
+
+        .category {
+            margin: 0.8em 0.4em 0 0.4em;
+        }
+
+        .category .label {
+            font-weight: bold;
+        }
+
+        .item {
+            display: inline-block;
+            margin: 0.4em;
+            padding: 0.4em;
+            border-radius: 0.4em;
+            background-color: var(--or-editor-flow-item-background-color, white);
+            overflow-x: auto;
+            cursor: pointer;
+        }
+
+        .item .label {
+            color: var(--or-editor-flow-item-label-color, black);
+        }
+
+        .item.selected {
+            background-color: var(--or-editor-flow-item-selected-background-color, black);
+        }
+
+        .item.selected .label {
+            color: var(--or-editor-flow-item-selected-label-color, white);
+        }
+
+    </style>
+
+    <template>
+        <content select="#dragDropContainer"></content>
+        <div id="list" class="list">
+            <template is="dom-if" if="{{!_items.length}}">
+                <div id="empty">Catalog is empty.</div>
+            </template>
+            <template is="dom-repeat" items="[[_categorizedItems]]" as="categorizedItem">
+                <div class="section">
+
+                    <div class="category">
+                        <span class="label">[[categorizedItem.category.label]]</span>
+                    </div>
+
+                    <template is="dom-repeat" items="[[categorizedItem.catalogItems]]" as="catalogItem">
+                        <div class="item"
+                             draggable="true"
+                             on-dragstart="_itemDragStart"
+                             on-tap="_itemSelected">
+                            <span class="label">[[catalogItem.label]]</span>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener("gwtReadyClient", function () {
+            Polymer({
+                is: 'or-editor-catalog',
+                properties: {
+                    _presenter: {
+                        type: Object,
+                        value: function () {
+                            return new openremote.editor.catalog.CatalogPresenter(this);
+                        }
+                    },
+                    _categories: {
+                        type: Array
+                    },
+                    _categorizedItems: {
+                        type: Object
+                    }
+                },
+                attached: function () {
+                    var event = new openremote.editor.catalog.CatalogLoadEvent();
+                    this.fire(event.getType(), event);
+                },
+                listeners: {
+                    'catalog-loaded': '_onCatalogLoaded',
+                    'request-failure': '_requestFailure'
+                },
+                _onCatalogLoaded: function (type, event) {
+                    var items = event.getItems();
+                    // Some shuffling to display this (Polymer can only repeat arrays)
+                    var categorizedItems = [];
+                    items.forEach(function (item) {
+                        var category = openremote.shared.catalog.CatalogCategory.valueOf(item.category);
+                        var categorizedItem;
+                        var index = -1;
+                        for (var i = 0; i < categorizedItems.length; i++) {
+                            if (categorizedItems[i].category === category) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index >= 0) {
+                            categorizedItem = categorizedItems[index];
+                        } else {
+                            categorizedItem = {category: category, catalogItems: []};
+                            categorizedItems.push(categorizedItem);
+                        }
+                        categorizedItem.catalogItems.push(item);
+                    });
+                    this.set("_categorizedItems", categorizedItems);
+                },
+                _requestFailure: function (type, event) {
+                    this.set("_categorizedItems", []);
+                },
+                _itemSelected: function (e) {
+                    var items = this.$.list.querySelectorAll(".item");
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        this.toggleClass("selected", item == e.currentTarget, item);
+                    }
+                    console.log("### CATALOG ITEM SELECTED: " + e.model.catalogItem);
+                },
+                _itemDragStart: function(e) {
+                    e.dataTransfer.setData('text/plain', e.model.catalogItem.nodeType);
+                    e.dataTransfer.effectAllowed = 'copy';
+                }
+            });
+        });
+    </script>
+</dom-module>
+

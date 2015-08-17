@@ -14,6 +14,10 @@ public abstract class NodeDescriptor {
 
     abstract public NodeRoute createRoute(CamelContext context, Flow flow, Node node);
 
+    public boolean isInternal() {
+        return false;
+    }
+
     public NodeColor getColor() {
         return NodeColor.DEFAULT;
     }
