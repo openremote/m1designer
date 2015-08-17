@@ -33,6 +33,11 @@ public class ConsumerRoute extends NodeRoute {
         public NodeColor getColor() {
             return NodeColor.VIRTUAL;
         }
+
+        @Override
+        public boolean isClientAccessEnabled() {
+            return true;
+        }
     }
 
     public ConsumerRoute(CamelContext context, Flow flow, Node node) {

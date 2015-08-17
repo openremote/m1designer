@@ -20,6 +20,16 @@ import static org.openremote.beta.shared.model.PropertyDescriptor.TYPE_BOOLEAN;
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Node extends FlowObject {
 
+    public static final String PROPERTY_CLIENT_ACCESS = "clientAccess";
+    public static final String PROPERTY_PRE_ENDPOINT = "preEndpoint";
+    public static final String PROPERTY_POST_ENDPOINT = "postEndpoint";
+
+    public static final String EDITOR_PROPERTIES = "editor";
+    public static final String EDITOR_PROPERTY_X = "x";
+    public static final String EDITOR_PROPERTY_Y = "y";
+    public static final String EDITOR_PROPERTY_COLOR = "color";
+    public static final String EDITOR_PROPERTY_TYPE_LABEL = "typeLabel";
+
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
     public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
@@ -49,6 +59,9 @@ public class Node extends FlowObject {
     }
 
     public Map<String, Object> getProperties() {
+        if (properties == null) {
+            properties = Properties.create();
+        }
         return properties;
     }
 
@@ -57,16 +70,20 @@ public class Node extends FlowObject {
     }
 
     public boolean hasProperties() {
-        return getProperties() != null;
+        return properties != null;
     }
 
     public Map<String, Object> getEditorProperties() {
-        return Properties.getProperties(getProperties(), "editor");
+        if (Properties.getProperties(getProperties(), EDITOR_PROPERTIES)  == null) {
+            Properties.create(getProperties(), EDITOR_PROPERTIES);
+        }
+        return Properties.getProperties(getProperties(), EDITOR_PROPERTIES);
     }
+
     public boolean isClientAccessEnabled() {
         // Should we accept client message events for this node's sinks and should
         // we send client message events when this node received a message?
-        return Properties.isTrue(getProperties(), TYPE_BOOLEAN, "clientAccess");
+        return Properties.isTrue(getProperties(), TYPE_BOOLEAN, PROPERTY_CLIENT_ACCESS);
     }
 
     public Slot findSlot(String slotId) {

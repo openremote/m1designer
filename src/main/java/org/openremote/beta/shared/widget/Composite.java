@@ -7,7 +7,6 @@ import com.google.gwt.core.client.js.JsType;
 @JsType
 public class Composite extends Widget {
 
-    public static final String TYPE = "urn:org-openremote:widget:composite";
     public static final String COMPONENT = "or-console-widget-composite";
 
     public Composite() {

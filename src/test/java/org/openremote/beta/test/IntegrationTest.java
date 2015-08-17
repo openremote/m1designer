@@ -5,10 +5,10 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.DefaultShutdownStrategy;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
 import org.openremote.beta.server.*;
+import org.openremote.beta.server.catalog.CatalogServiceConfiguration;
 import org.openremote.beta.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.beta.server.event.EventServiceConfiguration;
 import org.openremote.beta.server.event.WebSocketEventServiceConfiguration;
@@ -72,6 +72,7 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new WebserverConfiguration());
 
         configurations.add(new NodeDescriptorConfiguration());
+        configurations.add(new CatalogServiceConfiguration());
         configurations.add(new RouteManagementServiceConfiguration());
         configurations.add(new FlowServiceConfiguration());
         configurations.add(new EventServiceConfiguration());
@@ -123,12 +124,15 @@ public class IntegrationTest extends CamelTestSupport {
         StringBuilder path = new StringBuilder();
         if (pathSegments != null) {
             for (String pathSegment : pathSegments) {
-                path.append(pathSegment.startsWith("/") ? "" : "/").append(pathSegment);
+                path
+                    .append(pathSegment.startsWith("/") ? "" : "/")
+                    .append(pathSegment);
             }
         }
         try {
             URI uri = new URI(getWebServerScheme(), null, getServerHost(), Integer.valueOf(getWebServerPort()), path.toString(), null, null);
-            return uri.toString() + "?throwExceptionOnFailure=false";
+            System.err.println(uri);
+            return uri.toString() + "?throwExceptionOnFailure=false"; // Don't swallow OUT message with status code > 400
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
         }
@@ -138,7 +142,9 @@ public class IntegrationTest extends CamelTestSupport {
         StringBuilder path = new StringBuilder();
         if (pathSegments != null) {
             for (String pathSegment : pathSegments) {
-                path.append(pathSegment.startsWith("/") ? "" : "/").append(pathSegment);
+                path
+                    .append(pathSegment.startsWith("/") ? "" : "/")
+                    .append(pathSegment);
             }
         }
         try {

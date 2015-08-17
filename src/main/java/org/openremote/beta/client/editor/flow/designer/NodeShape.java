@@ -1,5 +1,6 @@
 package org.openremote.beta.client.editor.flow.designer;
 
+import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
@@ -10,6 +11,7 @@ import org.openremote.beta.shared.model.PropertyDescriptor;
 import static com.ait.lienzo.shared.core.types.ColorName.WHITE;
 import static java.lang.Math.min;
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
+import static org.openremote.beta.shared.flow.Node.*;
 import static org.openremote.beta.shared.model.PropertyDescriptor.TYPE_DOUBLE;
 
 public abstract class NodeShape extends Box {
@@ -19,7 +21,7 @@ public abstract class NodeShape extends Box {
     static Color CLIENT_COLOR = new Color(25, 118, 210);
 
     public static Color getNodeColor(Node node) {
-        String color = Properties.get(node.getEditorProperties(), "color");
+        String color = Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_COLOR);
         switch (color != null ? NodeColor.valueOf(color) : NodeColor.DEFAULT) {
             case SENSOR_ACTUATOR:
                 return SENSOR_ACTUATOR_COLOR;
@@ -62,7 +64,7 @@ public abstract class NodeShape extends Box {
             PATCH_TITLE_CORNER_RADIUS,
             PATCH_TITLE_COLOR,
             new TextLabel(
-                Properties.get(node.getEditorProperties(), "typeLabel"),
+                Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL),
                 FONT_FAMILY,
                 PATCH_TITLE_FONT_SIZE,
                 PATCH_TITLE_TEXT_COLOR
@@ -74,8 +76,8 @@ public abstract class NodeShape extends Box {
         setDraggable(true);
         setDragMode(DragMode.SAME_LAYER);
 
-        setX(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, "x"));
-        setY(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, "y"));
+        setX(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_X));
+        setY(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_Y));
 
         // This sets a minimum width to title width plus some padding
         setWidth(title.getWidth() + PATCH_PADDING * 4);

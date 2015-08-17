@@ -1,6 +1,7 @@
 package org.openremote.beta.server.catalog.widget;
 
 import org.openremote.beta.server.catalog.WidgetNodeDescriptor;
+import org.openremote.beta.shared.widget.PushButton;
 
 public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
 
@@ -15,5 +16,10 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
     @Override
     public String getTypeLabel() {
         return TYPE_LABEL;
+    }
+
+    @Override
+    protected String getComponent() {
+        return PushButton.COMPONENT;
     }
 }

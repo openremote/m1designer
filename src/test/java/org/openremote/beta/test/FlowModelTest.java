@@ -8,10 +8,13 @@ import org.openremote.beta.shared.flow.FlowDependencyResolver;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.Arrays;
 
 import static org.testng.Assert.*;
 
@@ -96,8 +99,8 @@ public class FlowModelTest {
     @Test
     public void findNodesWithProperty() {
         assertEquals(
-            sampleThermostatControl.findNodesWithProperty("widget").length,
-            4
+            sampleThermostatControl.findNodesWithProperty(Widget.WIDGET_PROPERTIES).length,
+            6
         );
     }
 

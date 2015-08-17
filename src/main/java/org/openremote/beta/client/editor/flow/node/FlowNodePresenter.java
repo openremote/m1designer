@@ -12,6 +12,8 @@ import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_TYPE_LABEL;
+
 @JsExport
 @JsType
 public class FlowNodePresenter extends AbstractPresenter {
@@ -39,7 +41,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     public String getNodeLabel(Node node) {
-        return node.getLabel() + " (" + Properties.get(node.getEditorProperties(), "typeLabel") + ")";
+        return node.getLabel() + " (" + Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")";
     }
 
     public void sendMessage(Slot slot, String body) {

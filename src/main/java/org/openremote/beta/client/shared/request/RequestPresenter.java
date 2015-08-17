@@ -40,6 +40,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         protected final String requestText;
         protected final JsonEncoderDecoder<T> encoderDecoder;
         protected boolean dispatchedComplete = false;
+        protected boolean notifyUserOnSuccess = false;
 
         public ResponseCallback(String requestText, JsonEncoderDecoder<T> encoderDecoder) {
             this.requestText = requestText;
@@ -48,7 +49,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         @Override
         public void onSuccess(Method method, JSONValue response) {
-            if (!dispatchedComplete) {
+            if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
                 dispatchEvent(new RequestCompleteEvent());
             }
@@ -71,6 +72,10 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         public void onFailure(RequestFailure requestFailure) {
             dispatchEvent(new RequestFailureEvent(requestFailure));
+        }
+
+        public void setNotifyUserOnSuccess(boolean notifyUserOnSuccess) {
+            this.notifyUserOnSuccess = notifyUserOnSuccess;
         }
     }
 
@@ -166,7 +171,14 @@ public abstract class RequestPresenter extends AbstractPresenter {
     }
 
     protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {
-        dispatchEvent(new RequestStartEvent());
+        sendRequest(true, method, callback);
+    }
+
+    protected <T> void sendRequest(boolean notifyUser, Method method, ResponseCallback<T> callback) {
+        if (notifyUser) {
+            dispatchEvent(new RequestStartEvent());
+            callback.setNotifyUserOnSuccess(true);
+        }
         method.send(callback);
     }
 

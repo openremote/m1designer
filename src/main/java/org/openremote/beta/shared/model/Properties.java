@@ -9,14 +9,6 @@ public class Properties {
         return new HashMap<>();
     }
 
-    public static Map<String, Object> createIfNull(Object object) {
-        if (object != null && object instanceof Map) {
-            //noinspection unchecked
-            return (Map) object;
-        }
-        return create();
-    }
-
     public static Map<String, Object> create(Map<String, Object> properties, String key) {
         Map<String, Object> newProperties = new HashMap<>();
         properties.put(key, newProperties);

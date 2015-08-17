@@ -18,7 +18,21 @@ public abstract class NodeDescriptor {
         return false;
     }
 
+    public boolean isClientAccessEnabled() {
+        return false;
+    }
+
     public NodeColor getColor() {
         return NodeColor.DEFAULT;
+    }
+
+    public Node initialize(Node node) {
+        if (isClientAccessEnabled()) {
+            node.getProperties().put(Node.PROPERTY_CLIENT_ACCESS, true);
+        }
+
+        node.getEditorProperties().put(Node.EDITOR_PROPERTY_COLOR, getColor().name());
+        node.getEditorProperties().put(Node.EDITOR_PROPERTY_TYPE_LABEL, getTypeLabel());
+        return node;
     }
 }

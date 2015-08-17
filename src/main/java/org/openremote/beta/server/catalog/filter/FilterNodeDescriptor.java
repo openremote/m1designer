@@ -11,6 +11,8 @@ public class FilterNodeDescriptor extends NodeDescriptor {
     public static final String TYPE = "urn:org-openremote:flow:node:filter";
     public static final String TYPE_LABEL = "Filter";
 
+    public static final String PROPERTY_ON_TRIGGER = "onTrigger";
+
     @Override
     public String getType() {
         return TYPE;

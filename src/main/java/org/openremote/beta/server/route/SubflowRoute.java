@@ -5,12 +5,18 @@ import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.NodeDescriptor;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.shared.flow.*;
+import org.openremote.beta.shared.widget.Composite;
+import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+
+import static org.openremote.beta.shared.widget.Widget.PROPERTY_COMPONENT;
+import static org.openremote.beta.shared.widget.Widget.PROPERTY_POSITION_X;
+import static org.openremote.beta.shared.widget.Widget.PROPERTY_POSITION_Y;
 
 public class SubflowRoute extends NodeRoute {
 
@@ -41,6 +47,15 @@ public class SubflowRoute extends NodeRoute {
         @Override
         public NodeColor getColor() {
             return NodeColor.VIRTUAL;
+        }
+
+        @Override
+        public Node initialize(Node node) {
+            Node result = super.initialize(node);
+            Widget.getWidgetProperties(node).put(PROPERTY_COMPONENT, Composite.COMPONENT);
+            Widget.getWidgetDefaults(node).put(PROPERTY_POSITION_X, 0);
+            Widget.getWidgetDefaults(node).put(PROPERTY_POSITION_Y, 0);
+            return result;
         }
     }
 

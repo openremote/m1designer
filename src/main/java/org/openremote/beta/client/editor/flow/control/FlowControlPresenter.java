@@ -19,7 +19,7 @@ public class FlowControlPresenter extends SessionPresenter {
     private static final Logger LOG = LoggerFactory.getLogger(FlowControlPresenter.class);
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
-    final protected FlowIdEventCodec FLOW_EVENT_CODEC = GWT.create(FlowIdEventCodec.class);
+    private static final FlowIdEventCodec FLOW_EVENT_CODEC = GWT.create(FlowIdEventCodec.class);
 
     final protected String serviceUrl;
 

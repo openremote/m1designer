@@ -1,6 +1,7 @@
 package org.openremote.beta.server.catalog.widget;
 
 import org.openremote.beta.server.catalog.WidgetNodeDescriptor;
+import org.openremote.beta.shared.widget.TextLabel;
 
 public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
 
@@ -17,4 +18,8 @@ public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
         return TYPE_LABEL;
     }
 
+    @Override
+    protected String getComponent() {
+        return TextLabel.COMPONENT;
+    }
 }

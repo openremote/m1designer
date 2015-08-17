@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.openremote.beta.server.catalog.filter.FilterNodeDescriptor.PROPERTY_ON_TRIGGER;
+
 public class FilterRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterRoute.class);
@@ -50,7 +52,7 @@ public class FilterRoute extends NodeRoute {
                 .id(getProcessorId("assumeFilterPass"))
                 .choice()
                     .id(getProcessorId("applyRules"))
-                        .when(new PropertyIsTrue(getNode(), "onTrigger"))
+                        .when(new PropertyIsTrue(getNode(), PROPERTY_ON_TRIGGER))
                             .setHeader(FILTER_PASS, constant(false))
                             .id(getProcessorId("applyOnTrigger"))
                         // TODO: Other filter rules

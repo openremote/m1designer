@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
+import org.openremote.beta.server.flow.FlowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,14 @@ public class CatalogServiceConfiguration implements Configuration {
                 .get()
                 .route().id("GET all catalog items")
                 .bean(getContext().hasService(CatalogService.class), "getItems")
+                .endRest()
+
+                .get("/node/{type}")
+                .route().id("GET new node by node type ")
+                .bean(getContext().hasService(CatalogService.class), "getNewNode")
+                .to("direct:restStatusNotFound")
                 .endRest();
+
         }
     }
 

@@ -40,6 +40,11 @@ public class ProducerRoute extends NodeRoute {
         public NodeColor getColor() {
             return NodeColor.VIRTUAL;
         }
+
+        @Override
+        public boolean isClientAccessEnabled() {
+            return true;
+        }
     }
 
     public ProducerRoute(CamelContext context, Flow flow, Node node) {

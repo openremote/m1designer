@@ -11,6 +11,9 @@ public class ChangeNodeDescriptor extends NodeDescriptor {
     public static final String TYPE = "urn:org-openremote:flow:node:change";
     public static final String TYPE_LABEL = "Change";
 
+    public static final String PROPERTY_PREPEND = "prepend";
+    public static final String PROPERTY_APPEND = "append";
+
     @Override
     public String getType() {
         return TYPE;

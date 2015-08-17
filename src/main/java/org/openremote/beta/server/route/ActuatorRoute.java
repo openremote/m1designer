@@ -38,6 +38,11 @@ public class ActuatorRoute extends NodeRoute {
         public NodeColor getColor() {
             return NodeColor.SENSOR_ACTUATOR;
         }
+
+        @Override
+        public boolean isClientAccessEnabled() {
+            return true;
+        }
     }
 
     public ActuatorRoute(CamelContext context, Flow flow, Node node) {

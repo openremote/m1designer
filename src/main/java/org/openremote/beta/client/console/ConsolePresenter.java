@@ -12,6 +12,7 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Properties;
 import org.openremote.beta.shared.util.Util;
+import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +87,7 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected void addWidgets(Flow flow, Element container, String instanceId) {
-        Node[] widgetNodes = flow.findNodesWithProperty("widget");
+        Node[] widgetNodes = flow.findNodesWithProperty(Widget.WIDGET_PROPERTIES);
         for (Node node : widgetNodes) {
 
             if (node.isOfType(Node.TYPE_SUBFLOW))
@@ -98,19 +99,15 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected Element addWidget(Node node, Element container) {
-        Map<String, Object> widgetProperties = Properties.getProperties(node.getProperties(), "widget");
-        if (widgetProperties == null)
-            return container;
+        LOG.debug("Adding widget: " + node);
 
-        LOG.debug("Adding widget: " + widgetProperties);
-
-        String widgetComponent = Properties.get(widgetProperties, "component");
+        String widgetComponent = Properties.get(Widget.getWidgetProperties(node), Widget.PROPERTY_COMPONENT);
         if (widgetComponent == null)
             return container;
 
         Element widget = container.getOwnerDocument().createElement(widgetComponent);
 
-        Map<String, Object> widgetDefaults = Properties.getProperties(widgetProperties, "default");
+        Map<String, Object> widgetDefaults = Widget.getWidgetDefaults(node);
         if (widgetDefaults == null)
             return container;
 

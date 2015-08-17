@@ -32,6 +32,22 @@
             cursor: pointer;
         }
 
+        .item.nodeColor.DEFAULT {
+            background-color: var(--or-editor-flow-item-nodecolor-default);
+        }
+
+        .item.nodeColor.SENSOR_ACTUATOR {
+            background-color: var(--or-editor-flow-item-nodecolor-sensor-actuator);
+        }
+
+        .item.nodeColor.VIRTUAL {
+            background-color: var(--or-editor-flow-item-nodecolor-virtual);
+        }
+
+        .item.nodeColor.CLIENT {
+            background-color: var(--or-editor-flow-item-nodecolor-client);
+        }
+
         .item .label {
             color: var(--or-editor-flow-item-label-color, black);
         }
@@ -60,7 +76,7 @@
                     </div>
 
                     <template is="dom-repeat" items="[[categorizedItem.catalogItems]]" as="catalogItem">
-                        <div class="item"
+                        <div class$="{{_getItemClass(catalogItem)}}"
                              draggable="true"
                              on-dragstart="_itemDragStart"
                              on-tap="_itemSelected">
@@ -134,6 +150,9 @@
                 },
                 _requestFailure: function (type, event) {
                     this.set("_categorizedItems", []);
+                },
+                _getItemClass: function(item) {
+                    return "item nodeColor " + item.nodeColor;
                 },
                 _itemSelected: function (e) {
                     var items = this.$.list.querySelectorAll(".item");

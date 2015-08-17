@@ -2,11 +2,13 @@ package org.openremote.beta.client.editor.flow.editor;
 
 import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
@@ -23,6 +25,8 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowEditorPresenter.class);
 
+    private static final NodeCodec NODE_CODEC = GWT.create(NodeCodec.class);
+
     public Flow flow;
     public FlowDesigner flowDesigner;
     protected LienzoPanel flowDesignerPanel;
@@ -34,6 +38,12 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(FlowEditEvent.class, event -> {
             this.flow = event.getFlow();
             startFlowDesigner();
+        });
+
+        addEventListener(NodeCreateEvent.class, event -> {
+            if (flowDesigner != null && flow != null) {
+                createNode(event, flow.getId());
+            }
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -79,5 +89,31 @@ public class FlowEditorPresenter extends RequestPresenter {
             }
         };
         flowDesignerPanel.draw();
+    }
+
+    protected void createNode(NodeCreateEvent event, String flowId) {
+        sendRequest(
+            false,
+            resource("catalog", "node", event.getNodeType()).get(),
+            new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {
+                @Override
+                protected void onResponse(Node node) {
+                    // Check if this is still the same flow designer instance as before the request
+                    if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
+
+                        // Calculate the offset with the current transform (zoom, panning)
+                        // TODO If I would know maths, I could probably do this with the transform matrices
+                        Transform currentTransform = flowDesigner.getViewport().getAbsoluteTransform();
+                        double x = (event.getPositionX() - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
+                        double y = (event.getPositionY() - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
+                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);
+                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
+
+                        LOG.debug("Adding node to flow: " + node);
+                        flowDesigner.add(node);
+                    }
+                }
+            }
+        );
     }
 }

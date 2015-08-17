@@ -25,7 +25,7 @@ public class PropertiesTest {
         PropertyDescriptor<Integer> abcDescriptor = new PropertyDescriptor.IntegerType("Abc", "This is abc");
         PropertyDescriptor<Double> someDescriptor = new PropertyDescriptor.DoubleType("Some", "This is some other value");
 
-        Map<String, Object> properties = Properties.createIfNull(null);
+        Map<String, Object> properties = Properties.create();
         properties.put("foo", "FOO");
         properties.put("bar", 123l);
         properties.put("baz", true);
