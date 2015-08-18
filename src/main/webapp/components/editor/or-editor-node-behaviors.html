@@ -1,0 +1,50 @@
+<script>
+    window.OpenRemoteEditor = window.OpenRemoteEditor || {};
+
+    window.OpenRemoteEditor.NodeEditor = {
+
+        properties: {
+            flow: {
+                type: Object
+            },
+            node: {
+                type: Object,
+                observer: "_init"
+            },
+            nodeProperties: {
+                type: Object
+            }
+        },
+        observers: [
+            "nodePropertiesEdited(nodeProperties.*)"
+        ],
+        attached: function() {
+            Polymer.dom(this.root).querySelectorAll(".nodePropertyInput").forEach(function(nodePropertyInput) {
+                nodePropertyInput.addEventListener("keypress", this.onFormInputKeypress.bind(this));
+                nodePropertyInput.addEventListener("blur", this.onNodePropertyChange.bind(this));
+            }.bind(this));
+        },
+        _init: function(node) {
+            this.set("nodeProperties", openremote.Properties.getProperties(node.properties));
+            this._markDirty(false);
+        },
+        nodePropertiesEdited: function() {
+            this._markDirty(true);
+        },
+        onFormInputKeypress: function(e) {
+            if (e.charCode == 13) {
+                this.onNodePropertyChange();
+            }
+        },
+        onNodePropertyChange: function() {
+            openremote.Properties.setProperties(this.nodeProperties, this.node.properties);
+            var event = new openremote.editor.flow.node.NodeUpdatedEvent(this.flow, this.node);
+            this.fire(event.getType(), event);
+            this._markDirty(false);
+        },
+        _markDirty: function(dirty) {
+            this.fire(dirty ? "dirty" : "clean");
+        }
+    };
+
+</script>

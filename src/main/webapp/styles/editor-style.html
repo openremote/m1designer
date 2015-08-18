@@ -29,8 +29,28 @@
         --or-editor-flow-item-nodecolor-sensor-actuator: var(--or-violet);
         --or-editor-flow-item-nodecolor-virtual: var(--or-mediumgrey);
         --or-editor-flow-item-nodecolor-client: var(--or-blue);
+
+
+
     }
     /* ######################## END THEME ######################## */
+
+    html /deep/ .form {
+    }
+
+    html /deep/ .formItem {
+        display: flex;
+        flex-direction: row;
+    }
+
+    html /deep/ .formLabel {
+        font-weight: bold;
+        flex: 0 0 4em;
+    }
+
+    html /deep/ .formValue {
+        flex: 1;
+    }
 
 </style>
 

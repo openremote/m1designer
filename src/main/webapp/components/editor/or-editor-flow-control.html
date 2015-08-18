@@ -135,16 +135,18 @@
                     'session-opened': "_sessionOpened",
                     'session-closed-clean': "_sessionClosedClean",
                     'session-closed-error': "_sessionClosedError",
-                    'flow-status-detail': "_updateFlowStatus"
+                    'flow-status-detail': "_updateFlowStatus",
+                    'flow-updated': "_onFlowUpdated",
+                    "flow-saved": "_onFlowSaved"
                 },
                 ready: function () {
                     this.toggleAttribute("disabled", true, this.$.startButton);
                 },
                 _sessionOpened: function (type, event) {
                     this.toggleAttribute("hidden", false, this.$.panel);
-                    this.$.panel.open();
                     this.notifyPath("_presenter.flow", this._presenter.flow);
                     this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
+                    this.$.panel.open();
                 },
                 _sessionClosedClean: function (type, event) {
                     this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
@@ -163,6 +165,13 @@
                     this.set("_flowStatusDetail", flowStatusDetail);
                     this.toggleAttribute("disabled", !flowStatusDetail.canStart, this.$.startButton);
                     this.toggleAttribute("disabled", !flowStatusDetail.canStop, this.$.stopButton);
+                },
+                _onFlowUpdated: function (e) {
+                    e.stopPropagation();
+                    this.$.panel.dirty = true;
+                },
+                _onFlowSaved: function () {
+                    this.$.panel.dirty = false;
                 },
                 _redeployFlow: function () {
                     this._presenter.redeployFlow();

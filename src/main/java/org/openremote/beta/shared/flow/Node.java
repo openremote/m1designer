@@ -25,6 +25,7 @@ public class Node extends FlowObject {
     public static final String PROPERTY_POST_ENDPOINT = "postEndpoint";
 
     public static final String EDITOR_PROPERTIES = "editor";
+    public static final String EDITOR_PROPERTY_COMPONENT= "component";
     public static final String EDITOR_PROPERTY_X = "x";
     public static final String EDITOR_PROPERTY_Y = "y";
     public static final String EDITOR_PROPERTY_COLOR = "color";

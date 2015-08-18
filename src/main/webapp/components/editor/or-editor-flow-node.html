@@ -1,5 +1,8 @@
 <link rel="import" href="../shared/or-panel.html">
 
+<link rel="import" href="or-editor-node-behaviors.html">
+<link rel="import" href="or-editor-node-change.html">
+
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
@@ -17,6 +20,10 @@
             --or-panel-max-height: 50vh;
         }
 
+        #panel.dirty {
+            --or-panel-header-background-color: red;
+        }
+
         .content {
             padding: 0 0.4em;
             user-select: text;
@@ -31,10 +38,6 @@
             padding: 0.5em;
             border-radius: 0.2em;
         }
-
-        #empty {
-            padding: 0.4em;
-        }
     </style>
 
     <template>
@@ -44,24 +47,24 @@
                   hidden>
             <div class="content">
 
-                <div class="form">
+                <div id="mainForm" class="form">
 
                     <div class="formItem">
                         <div class="formValue">
                             <paper-input autofocus
                                          value="{{_presenter.node.label}}"
+                                         on-keypress="_nodePropertyKeypress"
+                                         on-blur="_nodePropertyChanged"
                                          label="Label"></paper-input>
                         </div>
                     </div>
 
                 </div>
 
-                <template is="dom-if" if="{{!_sinks.length}}">
-                    <div id="empty">No directly accessible slots.</div>
-                </template>
+                <div id="editorComponentContainer"></div>
 
                 <template is="dom-repeat" items="{{_sinks}}">
-                    <div class="layout horizontal center">
+                    <div id=slots" class="layout horizontal center">
                         <template is="dom-if" if="{{_isMultipleSinks()}}">
                             <div class="sinkIndex">{{index}}</div>
                         </template>
@@ -102,10 +105,29 @@
                     'flow-node-close': "_nodeClose"
                 },
                 observers: [
-                    "_nodePropertyChanged(_presenter.node.*)"
+                        "_nodePropertyEdited(_presenter.node.*)"
                 ],
                 _nodeOpen: function (ce, event) {
                     this.notifyPath("_presenter.node", this._presenter.node);
+                    this.$.panel.dirty = false;
+
+                    var container = Polymer.dom(this.root).querySelector("#editorComponentContainer");
+                    while (container.lastChild) {
+                        Polymer.dom(container).removeChild(container.lastChild);
+                    }
+                    if (event.getEditorComponent()) {
+                        var editorComponent = document.createElement(event.getEditorComponent());
+                        Polymer.dom(container).appendChild(editorComponent);
+                        editorComponent.set("flow", event.getFlow());
+                        editorComponent.set("node", event.getNode());
+                        editorComponent.addEventListener("clean", function() {
+                            this.$.panel.dirty = false;
+                        }.bind(this));
+                        editorComponent.addEventListener("dirty", function() {
+                            this.$.panel.dirty = true;
+                        }.bind(this));
+                    }
+
                     this.set("_sinks", this._presenter.getAccessibleSinks());
 
                     this.toggleAttribute("hidden", false, this.$.panel);
@@ -115,8 +137,18 @@
                 _nodeClose: function () {
                     this.toggleAttribute("hidden", true, this.$.panel);
                 },
+                _nodePropertyEdited: function() {
+                    this.$.panel.dirty = true;
+                },
+                _nodePropertyKeypress: function(e) {
+                    if (e.charCode == 13) {
+                        this._nodePropertyChanged();
+                    }
+                },
                 _nodePropertyChanged: function() {
                     this._presenter.nodePropertyChanged();
+                    this.$.panel.setAttribute("title", this._presenter.getNodeLabel(this._presenter.node));
+                    this.$.panel.dirty = false;
                 },
                 _isMultipleSinks: function () {
                     return this._sinks && this._sinks.length > 1;

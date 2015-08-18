@@ -86,6 +86,12 @@ public class FlowModelTest {
             sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId()),
             sampleTemperatureProcessor
         );
+
+        // Peer label resolution (a subflow's slots must have the same labels as the target flows' consumer/producer nodes)
+        assertEquals(
+            sampleEnvironmentWidget.findSlot(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK.getId()).getLabel(),
+            sampleThermostatControl.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId()).getLabel()
+        );
     }
 
     @Test

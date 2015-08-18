@@ -150,21 +150,23 @@ public class Flow extends FlowObject {
         return wires;
     }
 
-    public void addWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
-        addWire(new Wire(sourceSlot.getId(), sinkSlot.getId()));
+    public Wire addWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
+        return addWire(new Wire(sourceSlot.getId(), sinkSlot.getId()));
     }
 
-    public void addWire(Wire wire) {
+    public Wire addWire(Wire wire) {
         for (Wire existing : getWires()) {
             if (existing.equals(wire))
-                return;
+                return null;
         }
         List<Wire> list = new ArrayList<>(Arrays.asList(getWires()));
         list.add(wire);
         this.wires = list.toArray(new Wire[list.size()]);
+        return wire;
     }
 
-    public void removeWire(Slot sourceSlot, Slot sinkSlot) {
+    public Wire removeWire(Slot sourceSlot, Slot sinkSlot) {
+        Wire removed = null;
         ArrayList<Wire> collection = new ArrayList<>(Arrays.asList(getWires()));
         Iterator<Wire> it = collection.iterator();
         while (it.hasNext()) {
@@ -172,9 +174,18 @@ public class Flow extends FlowObject {
             if (wire.getSourceId().equals(sourceSlot.getId())
                 && wire.getSinkId().equals(sinkSlot.getId())) {
                 it.remove();
+                removed = wire;
             }
         }
         this.wires = collection.toArray(new Wire[collection.size()]);
+        return removed;
+    }
+
+    public Slot findSlotInAllFlows(String slotId) {
+        Flow ownerFlow = findOwnerFlowOfSlot(slotId);
+        if (ownerFlow != null)
+            return ownerFlow.findSlot(slotId);
+        return null;
     }
 
     public Slot findSlot(String slotId) {
@@ -184,6 +195,17 @@ public class Flow extends FlowObject {
                 return slot;
         }
         return null;
+    }
+
+    public Slot[] findSlotsWithPeer() {
+        Set<Slot> collection = new HashSet<>();
+        for (Node node : getNodes()) {
+            for (Slot slot : node.getSlots()) {
+                if (slot.getPeerIdentifier() != null)
+                    collection.add(slot);
+            }
+        }
+        return collection.toArray(new Slot[collection.size()]);
     }
 
     public boolean hasWires(String slotId) {

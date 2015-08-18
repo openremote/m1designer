@@ -12,11 +12,13 @@ public class FlowNodeOpenEvent extends FlowEvent {
 
     final protected Node node;
     final String label;
+    final String editorComponent;
 
-    public FlowNodeOpenEvent(Flow flow, Node node, String label) {
+    public FlowNodeOpenEvent(Flow flow, Node node, String label, String editorComponent) {
         super(flow);
         this.node = node;
         this.label = label;
+        this.editorComponent = editorComponent;
     }
 
     public Node getNode() {
@@ -25,5 +27,9 @@ public class FlowNodeOpenEvent extends FlowEvent {
 
     public String getLabel() {
         return label;
+    }
+
+    public String getEditorComponent() {
+        return editorComponent;
     }
 }

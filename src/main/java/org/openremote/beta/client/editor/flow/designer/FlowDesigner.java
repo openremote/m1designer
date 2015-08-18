@@ -28,7 +28,12 @@ public abstract class FlowDesigner extends Layer {
 
         @Override
         protected void selected(Node node) {
-            onSelectionNode(node);
+            onSelection(node);
+        }
+
+        @Override
+        protected void moved(Node node) {
+            onMoved(node);
         }
     }
 
@@ -70,15 +75,22 @@ public abstract class FlowDesigner extends Layer {
 
         @Override
         protected void attached(Node sourceNode, Slot sourceSlot, Node sinkNode, Slot sinkSlot) {
-            if (sourceSlot != null && sinkSlot != null)
-                flow.addWireBetweenSlots(sourceSlot, sinkSlot);
+            if (sourceSlot != null && sinkSlot != null) {
+                Wire wire = flow.addWireBetweenSlots(sourceSlot, sinkSlot);
+                if (wire != null) {
+                    onAddition(wire);
+                }
+            }
             updateSlots(sourceSlot, sinkSlot);
         }
 
         @Override
         protected void detached(Node sourceNode, Slot sourceSlot, Node sinkNode, Slot sinkSlot) {
-            if (sourceSlot != null && sinkSlot != null)
-                flow.removeWire(sourceSlot, sinkSlot);
+            if (sourceSlot != null && sinkSlot != null) {
+                Wire wire = flow.removeWire(sourceSlot, sinkSlot);
+                if (wire != null)
+                    onRemoval(wire);
+            }
             updateSlots(sourceSlot, sinkSlot);
         }
 
@@ -159,6 +171,12 @@ public abstract class FlowDesigner extends Layer {
         }
     }
 
+    public void addNode(Node node) {
+        flow.addNode(node);
+        addNodeShape(node);
+        onAddition(node);
+    }
+
     public void addNodeShape(Node node) {
         Slots slots = new Slots(node) {
             @Override
@@ -206,5 +224,14 @@ public abstract class FlowDesigner extends Layer {
         return null;
     }
 
-    protected abstract void onSelectionNode(Node node);
+    protected abstract void onSelection(Node node);
+
+    protected abstract void onAddition(Node node);
+
+    protected abstract void onMoved(Node node);
+
+    protected abstract void onAddition(Wire wire);
+
+    protected abstract void onRemoval(Wire wire);
+
 }

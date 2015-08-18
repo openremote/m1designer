@@ -40,4 +40,8 @@ public class ChangeNodeDescriptor extends NodeDescriptor {
         };
     }
 
+    @Override
+    public String getEditorComponent() {
+        return "or-editor-node-change";
+    }
 }

@@ -7,11 +7,16 @@ import org.openremote.beta.server.route.predicate.PropertyIsSet;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.model.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_APPEND;
 import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_PREPEND;
 
 public class ChangeRoute extends NodeRoute {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ChangeRoute.class);
+
 
     public ChangeRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);

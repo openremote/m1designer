@@ -12,6 +12,7 @@ import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_COMPONENT;
 import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_TYPE_LABEL;
 
 @JsExport
@@ -29,8 +30,14 @@ public class FlowNodePresenter extends AbstractPresenter {
         addEventListener(FlowNodeEditEvent.class, event -> {
             this.flow = event.getFlow();
             this.node = event.getNode();
-
-            dispatchEvent(new FlowNodeOpenEvent(event.getFlow(), event.getNode(), getNodeLabel(event.getNode())));
+            dispatchEvent(
+                new FlowNodeOpenEvent(
+                    flow,
+                    node,
+                    getNodeLabel(node),
+                    Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_COMPONENT)
+                )
+            );
         });
     }
 

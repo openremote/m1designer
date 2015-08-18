@@ -27,6 +27,10 @@ public abstract class NodeDescriptor {
         return NodeColor.DEFAULT;
     }
 
+    public String getEditorComponent() {
+        return null;
+    }
+
     public Slot[] createSlots() {
         return new Slot[0];
     }
@@ -35,7 +39,9 @@ public abstract class NodeDescriptor {
         if (isClientAccessEnabled()) {
             node.getProperties().put(Node.PROPERTY_CLIENT_ACCESS, true);
         }
-
+        if (getEditorComponent() != null) {
+            node.getEditorProperties().put(Node.EDITOR_PROPERTY_COMPONENT, getEditorComponent());
+        }
         node.getEditorProperties().put(Node.EDITOR_PROPERTY_COLOR, getColor().name());
         node.getEditorProperties().put(Node.EDITOR_PROPERTY_TYPE_LABEL, getTypeLabel());
         return node;

@@ -44,6 +44,12 @@ Custom property | Description | Default
             color: var(--or-panel-header-color, black);
         }
 
+        #switchableTitlePanel.dirty,
+        #regularTitlePanel.dirty {
+            background-color: var(--or-panel-header-dirty-background-color, red);
+            color: var(--or-panel-header-dirty-color, white);
+        }
+
         #panel,
         #switchableTitlePanel,
         #regularTitlePanel {
@@ -148,6 +154,11 @@ Custom property | Description | Default
                 title: {
                     type: String,
                     value: ""
+                },
+                dirty: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_onDirtyChange"
                 }
             },
             attached: function () {
@@ -183,6 +194,14 @@ Custom property | Description | Default
                     var scrollable = this.$.panelScrollable.querySelector("#scrollable");
                     scrollable.scrollTop = scrollable.scrollHeight;
                 });
+            },
+            _onDirtyChange: function(dirty) {
+                if (this.$$("#switchableTitlePanel")) {
+                    this.toggleClass("dirty", dirty, this.$$("#switchableTitlePanel"));
+                }
+                if (this.$$("#regularTitlePanel")) {
+                    this.toggleClass("dirty", dirty, this.$$("#regularTitlePanel"));
+                }
             }
         });
     </script>

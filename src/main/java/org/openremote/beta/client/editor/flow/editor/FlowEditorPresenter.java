@@ -18,6 +18,7 @@ import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(NodeUpdatedEvent.class, event -> {
             if (flowDesigner != null && flow != null && flow.getId().equals(event.getFlow().getId())) {
                 flowDesigner.updateNodeShape(event.getNode());
+                dispatchEvent(new FlowUpdatedEvent(flow));
             }
         });
 
@@ -92,10 +94,30 @@ public class FlowEditorPresenter extends RequestPresenter {
         flowDesignerPanel.getScene().removeAll();
         flowDesignerPanel.getViewport().setTransform(flowDesignerInitialTransform);
 
-            flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
+        flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
             @Override
-            protected void onSelectionNode(Node node) {
+            protected void onSelection(Node node) {
                 dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
+            }
+
+            @Override
+            protected void onAddition(Node node) {
+                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+            }
+
+            @Override
+            protected void onMoved(Node node) {
+                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+            }
+
+            @Override
+            protected void onAddition(Wire wire) {
+                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+            }
+
+            @Override
+            protected void onRemoval(Wire wire) {
+                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
             }
         };
         flowDesignerPanel.draw();
@@ -119,11 +141,8 @@ public class FlowEditorPresenter extends RequestPresenter {
                         node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);
                         node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
 
-                        LOG.debug("Adding node to flow: " + node);
-                        flow.addNode(node);
-                        flowDesigner.addNodeShape(node);
-                        dispatchEvent(new FlowUpdatedEvent(flow));
-
+                        LOG.debug("Adding node to flow designer: " + node);
+                        flowDesigner.addNode(node);
                         dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
                     }
                 }

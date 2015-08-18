@@ -1,0 +1,37 @@
+<link rel="import" href="or-editor-node-behaviors.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<dom-module id="or-editor-node-change">
+
+    <style>
+    </style>
+    <template>
+        <div class="form">
+
+            <div class="formItem">
+                <div class="formValue">
+                    <paper-input label="Prepend text on message"
+                                 value="{{nodeProperties.prepend}}"
+                                 class="nodePropertyInput"></paper-input>
+                </div>
+            </div>
+            <div class="formItem">
+                <div class="formValue">
+                    <paper-input value="{{nodeProperties.append}}"
+                                 label="Append text on message"
+                                 class="nodePropertyInput"></paper-input>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-editor-node-change",
+            behaviors: [OpenRemoteEditor.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

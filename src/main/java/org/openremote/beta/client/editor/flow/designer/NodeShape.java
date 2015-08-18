@@ -128,6 +128,8 @@ public abstract class NodeShape extends Box {
             this.node.getEditorProperties().put(EDITOR_PROPERTY_Y, getY());
         });
 
+        addNodeDragEndHandler(event -> moved(this.node));
+
         new SelectionEventHandler(this) {
             @Override
             protected void onSelection() {
@@ -137,5 +139,7 @@ public abstract class NodeShape extends Box {
     }
 
     protected abstract void selected(Node node);
+
+    protected abstract void moved(Node node);
 
 }

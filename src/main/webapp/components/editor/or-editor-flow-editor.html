@@ -45,7 +45,7 @@
 
         <or-editor-flow-control id="flowControl"></or-editor-flow-control>
 
-        <or-editor-flow-node id="flowNode" on-node-updated="_onNodeUpdated"></or-editor-flow-node>
+        <or-editor-flow-node id="flowNode"></or-editor-flow-node>
 
     </template>
 
@@ -64,6 +64,7 @@
                 },
                 listeners: {
                     'flow-edit': "_onFlowEdit",
+                    'flow-updated': "_onFlowUpdated",
                     'flow-designer-node-selected': '_onFlowDesignerNodeSelected'
                 },
                 attached: function () {
@@ -84,12 +85,12 @@
                     var flowNodeCloseEvent = new openremote.editor.flow.node.FlowNodeCloseEvent(this._presenter.flow);
                     this.$.flowNode.fire(flowNodeCloseEvent.getType(), flowNodeCloseEvent);
                 },
+                _onFlowUpdated: function(ce, event) {
+                    this.$.flowControl.fire(ce.type, event);
+                },
                 _onFlowDesignerNodeSelected: function (ce, event) {
                     var flowNodeEditEvent = new openremote.editor.flow.node.FlowNodeEditEvent(this._presenter.flow, event.getNode());
                     this.$.flowNode.fire(flowNodeEditEvent.getType(), flowNodeEditEvent);
-                },
-                _onNodeUpdated: function(ce, event) {
-                    this.fire(ce.type, event);
                 },
                 _onDragEnter: function (e) {
                     this.toggleClass("dragOver", true, this.$.flowDesigner);

@@ -1,6 +1,7 @@
 package org.openremote.beta.client.editor.flow.designer;
 
 import com.ait.lienzo.client.core.shape.Group;
+import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 
