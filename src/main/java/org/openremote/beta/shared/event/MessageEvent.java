@@ -85,7 +85,7 @@ public class MessageEvent extends Event {
     @Override
     public String toString() {
         return "MessageEvent{" +
-            ", sinkSlotId='" + sinkSlotId + '\'' +
+            "sinkSlotId='" + sinkSlotId + '\'' +
             ", instanceId='" + instanceId + '\'' +
             ", headers=" + headers +
             ", body='" + body + '\'' +

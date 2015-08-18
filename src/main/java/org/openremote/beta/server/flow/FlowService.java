@@ -39,10 +39,6 @@ public class FlowService implements StaticService {
                     return null;
                 }
             };
-
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(
-                SAMPLE_FLOWS.get(SampleEnvironmentWidget.FLOW.getId())
-            );
         }
     }
 
@@ -69,6 +65,11 @@ public class FlowService implements StaticService {
     public Flow getFlow(@Header("id") String id) {
         LOG.debug("Getting sample flow: " + id);
         synchronized (SAMPLE_FLOWS) {
+            // TODO This is ugly, we assume that all dependencies are reachable from the environment widget
+            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(
+                SAMPLE_FLOWS.get(SampleEnvironmentWidget.FLOW.getId())
+            );
+
             return SAMPLE_FLOWS.get(id);
         }
     }
@@ -84,7 +85,6 @@ public class FlowService implements StaticService {
                 throw new IllegalArgumentException("Don't send dependencies when updating a flow");
 
             SAMPLE_FLOWS.put(flow.getId(), flow);
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow);
 
             return true;
         }

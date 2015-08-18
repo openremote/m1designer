@@ -18,7 +18,7 @@
         }
 
         .content {
-            padding: 0.4em;
+            padding: 0 0.4em;
             user-select: text;
             -webkit-user-select: text;
             -moz-user-select: text;
@@ -31,24 +31,30 @@
             padding: 0.5em;
             border-radius: 0.2em;
         }
+
+        #empty {
+            padding: 0.4em;
+        }
     </style>
 
     <template>
         <or-panel id="panel"
-                         switchable="right"
-                         title="Node"
-                         hidden>
+                  switchable="right"
+                  title="Node"
+                  hidden>
             <div class="content">
-                <!--
+
                 <div class="form">
 
                     <div class="formItem">
-                        <div class="formLabel">Type:</div>
-                        <div class="formValue">[[_presenter.node.identifier.type]]</div>
+                        <div class="formValue">
+                            <paper-input autofocus
+                                         value="{{_presenter.node.label}}"
+                                         label="Label"></paper-input>
+                        </div>
                     </div>
 
                 </div>
-                -->
 
                 <template is="dom-if" if="{{!_sinks.length}}">
                     <div id="empty">No directly accessible slots.</div>
@@ -95,7 +101,10 @@
                     'flow-node-open': "_nodeOpen",
                     'flow-node-close': "_nodeClose"
                 },
-                _nodeOpen: function(ce, event) {
+                observers: [
+                    "_nodePropertyChanged(_presenter.node.*)"
+                ],
+                _nodeOpen: function (ce, event) {
                     this.notifyPath("_presenter.node", this._presenter.node);
                     this.set("_sinks", this._presenter.getAccessibleSinks());
 
@@ -103,16 +112,19 @@
                     this.$.panel.setAttribute("title", event.getLabel());
                     this.$.panel.open();
                 },
-                _nodeClose: function() {
+                _nodeClose: function () {
                     this.toggleAttribute("hidden", true, this.$.panel);
                 },
-                _isMultipleSinks: function() {
+                _nodePropertyChanged: function() {
+                    this._presenter.nodePropertyChanged();
+                },
+                _isMultipleSinks: function () {
                     return this._sinks && this._sinks.length > 1;
                 },
-                _getSinkLabel: function(sink) {
-                    return sink.label ? sink.label + " Slot": "Sink Slot";
+                _getSinkLabel: function (sink) {
+                    return sink.label ? sink.label + " Slot" : "Sink Slot";
                 },
-                _sendMessage: function(e) {
+                _sendMessage: function (e) {
                     var slot = e.model.item;
                     var body = e.model.item.msgValue;
                     this._presenter.sendMessage(slot, body);

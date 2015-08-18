@@ -45,7 +45,7 @@
 
         <or-editor-flow-control id="flowControl"></or-editor-flow-control>
 
-        <or-editor-flow-node id="flowNode"></or-editor-flow-node>
+        <or-editor-flow-node id="flowNode" on-node-updated="_onNodeUpdated"></or-editor-flow-node>
 
     </template>
 
@@ -63,8 +63,8 @@
                     }
                 },
                 listeners: {
-                    'flow-edit': "_flowEdit",
-                    'flow-designer-node-selected': '_flowDesignerNodeSelected'
+                    'flow-edit': "_onFlowEdit",
+                    'flow-designer-node-selected': '_onFlowDesignerNodeSelected'
                 },
                 attached: function () {
                     // Need to do this async, when the shady children are available
@@ -72,7 +72,7 @@
                         this._presenter.prepareFlowDesignerContainer(this.$.flowDesigner);
                     })
                 },
-                _flowEdit: function (ce, event) {
+                _onFlowEdit: function (ce, event) {
 
                     this.async(function () {
                         this.notifyPath("_presenter.flow", this._presenter.flow);
@@ -84,9 +84,12 @@
                     var flowNodeCloseEvent = new openremote.editor.flow.node.FlowNodeCloseEvent(this._presenter.flow);
                     this.$.flowNode.fire(flowNodeCloseEvent.getType(), flowNodeCloseEvent);
                 },
-                _flowDesignerNodeSelected: function (type, event) {
+                _onFlowDesignerNodeSelected: function (ce, event) {
                     var flowNodeEditEvent = new openremote.editor.flow.node.FlowNodeEditEvent(this._presenter.flow, event.getNode());
                     this.$.flowNode.fire(flowNodeEditEvent.getType(), flowNodeEditEvent);
+                },
+                _onNodeUpdated: function(ce, event) {
+                    this.fire(ce.type, event);
                 },
                 _onDragEnter: function (e) {
                     this.toggleClass("dragOver", true, this.$.flowDesigner);

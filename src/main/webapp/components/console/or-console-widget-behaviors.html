@@ -59,15 +59,25 @@
         },
         _onPositionXChanged: function (newValue) {
             this.style.left = newValue + "px";
+            var event = new openremote.console.WidgetPropertyChangedEvent(
+                    openremote.shared.widget.Widget.PROPERTY_POSITION_X,
+                    newValue
+            );
+            this.fire(event.getType(), event);
         },
         _onPositionYChanged: function (newValue) {
             this.style.top = newValue + "px";
+            var event = new openremote.console.WidgetPropertyChangedEvent(
+                    openremote.shared.widget.Widget.PROPERTY_POSITION_Y,
+                    newValue
+            );
+            this.fire(event.getType(), event);
         },
         _onDraggableChanged: function(newValue) {
             var controls = this.querySelectorAll(".control");
             for (var i = 0; i < controls.length; i++) {
                 var control = controls[i];
-                control.style.pointerEvents = newValue ? "none" : "initial";
+                control.style.pointerEvents = newValue ? "none" : "";
             }
         }
     };

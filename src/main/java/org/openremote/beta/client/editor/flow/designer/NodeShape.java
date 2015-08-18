@@ -1,12 +1,10 @@
 package org.openremote.beta.client.editor.flow.designer;
 
-import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.model.Properties;
-import org.openremote.beta.shared.model.PropertyDescriptor;
 
 import static com.ait.lienzo.shared.core.types.ColorName.WHITE;
 import static java.lang.Math.min;
@@ -38,20 +36,15 @@ public abstract class NodeShape extends Box {
         return WHITE.getColor();
     }
 
-    final protected Node node;
-    final protected Box title;
-    final protected Slots slots;
+    protected Node node;
+    protected Box title;
+    protected Slots slots;
 
     public NodeShape(Node node, Slots slots) {
         super(
             PATCH_CORNER_RADIUS,
             getNodeColor(node) != null ? getNodeColor(node) : PATCH_COLOR,
-            new TextLabel(
-                node.getLabel(),
-                FONT_FAMILY,
-                PATCH_LABEL_FONT_SIZE,
-                getNodeLabelColor(node) != null ? getNodeLabelColor(node) : PATCH_LABEL_TEXT_COLOR
-            ),
+            null,
             PATCH_PADDING
         );
 
@@ -59,58 +52,88 @@ public abstract class NodeShape extends Box {
             throw new IllegalArgumentException("No properties on node: " + node);
         }
 
+        initialize();
+
+        // TODO: We don't dynamically update slots
+        this.slots = slots;
+        this.slots.setSlots(node.getSlots());
+
+        setNode(node);
+    }
+
+    public Slots getSlots() {
+        return slots;
+    }
+
+    public void setNode(Node node) {
         this.node = node;
+        setTextLabel(
+            new TextLabel(
+                node.getLabel(),
+                FONT_FAMILY,
+                PATCH_LABEL_FONT_SIZE,
+                getNodeLabelColor(node) != null ? getNodeLabelColor(node) : PATCH_LABEL_TEXT_COLOR
+            )
+        );
+        setTitle();
+        updateSizeAndPosition();
+    }
+
+    protected void updateSizeAndPosition() {
+        setX(Properties.get(this.node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_X));
+        setY(Properties.get(this.node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_Y));
+
+        // This sets a minimum width to title width plus some padding
+        setWidth(title.getWidth() + PATCH_PADDING * 4);
+        setHeight(slots.getHeight());
+
+        // Position slots on our coordinates
+        slots.setX(getX());
+        slots.setY(getY());
+        // Distance between sink and source slots is width of node
+        slots.setNodeWidth(getWidth());
+
+        // Position title in this group
+        title.centerHorizontal(this);
+        title.setY(title.getY() - title.getHeight() + min(PATCH_TITLE_PADDING, PATCH_PADDING));
+    }
+
+    protected void setTitle() {
+        if (this.title != null)
+            remove(this.title);
         this.title = new Box(
             PATCH_TITLE_CORNER_RADIUS,
             PATCH_TITLE_COLOR,
             new TextLabel(
-                Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL),
+                Properties.get(this.node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL),
                 FONT_FAMILY,
                 PATCH_TITLE_FONT_SIZE,
                 PATCH_TITLE_TEXT_COLOR
             ),
             PATCH_TITLE_PADDING
         );
-        this.slots = slots;
+        add(title);
+    }
 
+    protected void initialize() {
         setDraggable(true);
         setDragMode(DragMode.SAME_LAYER);
 
-        setX(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_X));
-        setY(Properties.get(node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_Y));
-
-        // This sets a minimum width to title width plus some padding
-        setWidth(title.getWidth() + PATCH_PADDING * 4);
-
-        // Set the slots and the height depending on slot number/size
-        slots.setSlots(getWidth(), node.getSlots());
-        setHeight(slots.getHeight());
-
-        // Position title in this group
-        add(title);
-        title.centerHorizontal(this);
-        title.setY(title.getY() - title.getHeight() + min(PATCH_TITLE_PADDING, PATCH_PADDING));
-
-        // Initial position slots
-        slots.setX(getX());
-        slots.setY(getY());
-
         // Update position slots (they are not in this group because we don't want them draggable)
         addNodeDragMoveHandler(event -> {
-            slots.setX(getX());
-            slots.setY(getY());
+            this.slots.setX(getX());
+            this.slots.setY(getY());
+
+            this.node.getEditorProperties().put(EDITOR_PROPERTY_X, getX());
+            this.node.getEditorProperties().put(EDITOR_PROPERTY_Y, getY());
         });
 
         new SelectionEventHandler(this) {
             @Override
             protected void onSelection() {
-                selected(node);
+                selected(NodeShape.this.node);
             }
         };
-    }
-
-    public Slots getSlots() {
-        return slots;
     }
 
     protected abstract void selected(Node node);

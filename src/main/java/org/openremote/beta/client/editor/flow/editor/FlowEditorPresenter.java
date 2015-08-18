@@ -5,6 +5,7 @@ import com.ait.lienzo.client.widget.LienzoPanel;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
@@ -12,6 +13,7 @@ import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
+import org.openremote.beta.client.editor.flow.node.NodeUpdatedEvent;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.flow.Flow;
@@ -46,6 +48,12 @@ public class FlowEditorPresenter extends RequestPresenter {
             }
         });
 
+        addEventListener(NodeUpdatedEvent.class, event -> {
+            if (flowDesigner != null && flow != null && flow.getId().equals(event.getFlow().getId())) {
+                flowDesigner.updateNodeShape(event.getNode());
+            }
+        });
+
         addEventListener(MessageReceivedEvent.class, event -> {
             if (flowDesigner != null && flow != null) {
                 Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getMessageEvent().getSinkSlotId());
@@ -58,6 +66,8 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     public void prepareFlowDesignerContainer(Element container) {
         this.flowDesignerPanel = new LienzoPanel();
+
+        flowDesignerPanel.setSelectCursor(Style.Cursor.MOVE);
 
         Window.addResizeHandler(event -> flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight()));
         flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight());
@@ -110,7 +120,11 @@ public class FlowEditorPresenter extends RequestPresenter {
                         node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
 
                         LOG.debug("Adding node to flow: " + node);
-                        flowDesigner.add(node);
+                        flow.addNode(node);
+                        flowDesigner.addNodeShape(node);
+                        dispatchEvent(new FlowUpdatedEvent(flow));
+
+                        dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
                     }
                 }
             }

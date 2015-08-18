@@ -24,10 +24,10 @@
                 }
             },
             listeners: {
-                "message-received": "_onMessageReceived"
+                "message": "_onMessage"
             },
-            _onMessageReceived: function(ce, event) {
-                var value = event.getMessageEvent().getBody();
+            _onMessage: function(ce, event) {
+                var value = event.getBody();
                 // This will start pushing the value up the chain of widgets
                 this.set("value", value);
             },

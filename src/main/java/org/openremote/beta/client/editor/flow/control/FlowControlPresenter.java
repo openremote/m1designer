@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.FlowIdEventCodec;
+import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.shared.session.*;
@@ -75,7 +76,7 @@ public class FlowControlPresenter extends SessionPresenter {
             if (this.flow != null) {
                 dispatchEvent(new SessionConnectEvent(serviceUrl));
             }
-       });
+        });
     }
 
     @Override
@@ -88,33 +89,59 @@ public class FlowControlPresenter extends SessionPresenter {
     }
 
     public void redeployFlow() {
-        stopFlow();
-
-        // TODO cleaner solution
-        Flow flowCopy = FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
-        flowCopy.clearDependencies();
-
-        sendRequest(
-            resource("flow", flow.getId()).put().json(FLOW_CODEC.encode(flowCopy)),
-            new StatusResponseCallback("Save flow", 204) {
-                @Override
-                protected void onResponse() {
-                    dispatchEvent(new ShowInfoEvent("Flow '" + flow.getLabel() + "' saved, redeploying..."));
-                    startFlow();
+        if (flow == null)
+            return;
+        String flowId = flow.getId();
+        String flowLabel = flow.getLabel();
+        dispatchEvent(new FlowStopEvent(flowId));
+        saveFlow(flow, new StatusResponseCallback("Save flow", 204) {
+            @Override
+            protected void onResponse() {
+                dispatchEvent(new ShowInfoEvent("Flow '" + flowLabel + "' saved, redeploying..."));
+                dispatchEvent(new FlowDeployEvent(flowId));
+                // If we are still editing the same flow, let everyone know there might be an update
+                // TODO No happy with this, all edits/updates should have been propagated already before redeploy
+                if (flow != null && flowId.equals(flow.getId())) {
+                    dispatchEvent(new FlowUpdatedEvent(flow));
                 }
             }
-        );
+        });
+    }
+
+    public void saveFlow() {
+        if (flow == null)
+            return;
+        String flowLabel = flow.getLabel();
+        saveFlow(flow, new StatusResponseCallback("Save flow", 204) {
+            @Override
+            protected void onResponse() {
+                dispatchEvent(new ShowInfoEvent("Flow '" + flowLabel + "' saved"));
+            }
+        });
     }
 
     public void startFlow() {
+        if (flow == null)
+            return;
         dispatchEvent(new FlowDeployEvent(flow.getId()));
     }
 
     public void stopFlow() {
+        if (flow == null)
+            return;
         dispatchEvent(new FlowStopEvent(flow.getId()));
     }
 
     public String getFlowJson() {
+        if (flow == null)
+            return "";
         return FLOW_CODEC.encode(this.flow).toString();
+    }
+
+    protected void saveFlow(Flow flow, StatusResponseCallback callback) {
+        // Make a copy and remove dependencies, they are calculated on the server
+        final Flow flowCopy = FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
+        flowCopy.clearDependencies();
+        sendRequest(resource("flow", flowCopy.getId()).put().json(FLOW_CODEC.encode(flowCopy)), callback);
     }
 }

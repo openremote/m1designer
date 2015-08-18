@@ -57,10 +57,17 @@
                 this.set("_haveWidgets", widgets.length);
                 this.toggleAttribute("checked", false, this.$$("#draggingSwitch"));
 
+                this.set("_draggableWidgets", []);
                 widgets.forEach(function (widget) {
                     var draggableWidget = new Draggabilly(widget, {
                         grid: [10, 10]
                     });
+
+                    draggableWidget.on("dragEnd", function (event, pointer) {
+                        draggableWidget.element.setAttribute("position-x", draggableWidget.element.offsetLeft);
+                        draggableWidget.element.setAttribute("position-y", draggableWidget.element.offsetTop);
+                    });
+
                     this.push("_draggableWidgets", draggableWidget);
                 }.bind(this));
 
@@ -71,7 +78,6 @@
             _enableDragging: function () {
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.enable();
-                    draggable.element.draggable = true;
                     draggable.element.style.cursor = "move";
                 }.bind(this));
                 this.updateStyles();
@@ -79,7 +85,6 @@
             _disableDragging: function () {
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.disable();
-                    draggable.element.draggable = false;
                     draggable.element.style.cursor = "";
                 }.bind(this));
                 this.updateStyles();

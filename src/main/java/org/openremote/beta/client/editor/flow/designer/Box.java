@@ -4,11 +4,15 @@ import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.Rectangle;
 import com.ait.lienzo.client.core.shape.Text;
 import com.ait.lienzo.shared.core.types.IColor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A box with rounded corners and optional centered text label.
  */
 public class Box extends Group {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Box.class);
 
     public static class TextLabel extends Text {
 
@@ -27,9 +31,9 @@ public class Box extends Group {
 
     }
 
-    final protected TextLabel textLabel;
     final protected double padding;
     final protected Rectangle body;
+    protected TextLabel textLabel;
 
     public Box(double cornerRadius, IColor backgroundColor, TextLabel textLabel, double padding) {
         this.textLabel = textLabel;
@@ -39,7 +43,14 @@ public class Box extends Group {
         body.setFillColor(backgroundColor);
         add(body);
 
-        if (textLabel != null) {
+        setTextLabel(textLabel);
+    }
+
+    public void setTextLabel(TextLabel textLabel) {
+        if (this.textLabel != null)
+            this.remove(this.textLabel);
+        this.textLabel = textLabel;
+        if (this.textLabel != null) {
             add(textLabel);
         }
         setWidth(0);

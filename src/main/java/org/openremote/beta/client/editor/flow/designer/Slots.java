@@ -27,7 +27,7 @@ public abstract class Slots extends Group {
         return node;
     }
 
-    public void setSlots(double offsetBetweenSinkAndSource, Slot... slots) {
+    public void setSlots(Slot... slots) {
         removeAll();
         sinkSlots.clear();
         sourceSlots.clear();
@@ -61,12 +61,17 @@ public abstract class Slots extends Group {
         double sourcesHeight = SLOT_PADDING;
         for (int i = 0; i < sourceSlots.size(); i++) {
             SlotShape slotShape = sourceSlots.get(i);
-            slotShape.setX(slotShape.getX() + offsetBetweenSinkAndSource - min(SLOT_PADDING, PATCH_PADDING));
             slotShape.setY(slotShape.getY() + SLOT_PADDING + (i * (slotShape.getHeight() + SLOT_PADDING)));
             sourcesHeight += slotShape.getHeight() + SLOT_PADDING;
         }
 
         height = max(sinksHeight, sourcesHeight);
+    }
+
+    public void setNodeWidth(double nodeWidth) {
+        for (SlotShape slotShape : sourceSlots) {
+            slotShape.setX(nodeWidth - min(SLOT_PADDING, PATCH_PADDING));
+        }
     }
 
     public double getHeight() {

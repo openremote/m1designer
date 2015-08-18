@@ -5,10 +5,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
+import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,14 @@ public class ProducerRoute extends NodeRoute {
         @Override
         public boolean isClientAccessEnabled() {
             return true;
+        }
+
+        @Override
+        public Slot[] createSlots() {
+            return new Slot[] {
+                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)),
+                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), false),
+            };
         }
     }
 

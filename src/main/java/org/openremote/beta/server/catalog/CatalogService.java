@@ -6,10 +6,8 @@ import org.apache.camel.StaticService;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.catalog.CatalogCategory;
 import org.openremote.beta.shared.catalog.CatalogItem;
-import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +82,8 @@ public class CatalogService implements StaticService {
 
         Node node = new Node(
             nodeDescriptor.getTypeLabel(),
-            new Identifier(IdentifierUtil.generateGlobalUniqueId(), nodeType)
+            new Identifier(IdentifierUtil.generateGlobalUniqueId(), nodeType),
+            nodeDescriptor.createSlots()
         );
 
         return nodeDescriptor.initialize(node);

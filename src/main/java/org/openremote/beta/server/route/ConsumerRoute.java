@@ -3,9 +3,12 @@ package org.openremote.beta.server.route;
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
+import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
+import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Identifier;
 
 public class ConsumerRoute extends NodeRoute {
 
@@ -37,6 +40,14 @@ public class ConsumerRoute extends NodeRoute {
         @Override
         public boolean isClientAccessEnabled() {
             return true;
+        }
+
+        @Override
+        public Slot[] createSlots() {
+            return new Slot[] {
+                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), false),
+                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE))
+            };
         }
     }
 

@@ -5,6 +5,7 @@ import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
+import org.openremote.beta.shared.flow.Slot;
 
 public abstract class NodeDescriptor {
 
@@ -24,6 +25,10 @@ public abstract class NodeDescriptor {
 
     public NodeColor getColor() {
         return NodeColor.DEFAULT;
+    }
+
+    public Slot[] createSlots() {
+        return new Slot[0];
     }
 
     public Node initialize(Node node) {

@@ -122,10 +122,10 @@ public abstract class FlowDesigner extends Layer {
         getViewport().getOverLayer().add(toolTip);
 
         for (Node node : flow.getNodes()) {
-            add(node);
+            addNodeShape(node);
         }
         for (Wire wire : flow.getWires()) {
-            add(wire);
+            addWireShape(wire);
         }
     }
 
@@ -151,7 +151,15 @@ public abstract class FlowDesigner extends Layer {
         }
     }
 
-    public void add(Node node) {
+    public void updateNodeShape(Node node) {
+        NodeShape nodeShape = getNodeShape(node.getId());
+        if (nodeShape != null) {
+            nodeShape.setNode(node);
+            batch();
+        }
+    }
+
+    public void addNodeShape(Node node) {
         Slots slots = new Slots(node) {
             @Override
             protected WireShape createWireShape(double x1, double y1, double x2, double y2, Slot source, Slot sink) {
@@ -166,7 +174,7 @@ public abstract class FlowDesigner extends Layer {
         batch();
     }
 
-    public void add(Wire wire) {
+    public void addWireShape(Wire wire) {
         SlotShape sourceShape = getSlotShape(wire.getSourceId());
         SlotShape sinkShape = getSlotShape(wire.getSinkId());
         if (sourceShape != null && sinkShape != null) {
@@ -182,6 +190,17 @@ public abstract class FlowDesigner extends Layer {
                 SlotShape slotShape = nodeShape.getSlots().getSlotShape(slotId);
                 if (slotShape != null)
                     return slotShape;
+            }
+        }
+        return null;
+    }
+
+    protected NodeShape getNodeShape(String nodeId) {
+        for (IPrimitive<?> primitive : getChildNodes()) {
+            if (primitive instanceof NodeShape) {
+                NodeShape nodeShape = (NodeShape) primitive;
+                if (nodeShape.node.getId().equals(nodeId))
+                    return nodeShape;
             }
         }
         return null;

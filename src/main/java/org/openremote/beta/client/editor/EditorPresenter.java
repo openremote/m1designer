@@ -3,6 +3,7 @@ package org.openremote.beta.client.editor;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
@@ -30,6 +31,7 @@ public class EditorPresenter extends AbstractPresenter {
         addRedirectToShellView(ShowFailureEvent.class);
         addRedirectToShellView(EditorOpenedEvent.class);
         addRedirectToShellView(FlowEditEvent.class);
+        addRedirectToShellView(FlowUpdatedEvent.class);
         addRedirectToShellView(MessageSendEvent.class);
 
         addEventListener(MessageReceivedEvent.class, event -> dispatchEvent(getRequiredChildView("#flowEditor"), event));

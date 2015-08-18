@@ -7,6 +7,7 @@ import elemental.dom.NodeList;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.message.MessageSendEvent;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -36,19 +37,24 @@ public class ConsolePresenter extends AbstractPresenter {
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-
-            String instanceId = event.getMessageEvent().getInstanceId();
-            String sinkId = event.getMessageEvent().getSinkSlotId();
-
-            String sinkSelector = "or-console-widget-sink" +
-                "[slot='" + sinkId + "']" +
-                "[instance='" + (instanceId != null ? instanceId : "") + "']";
-            NodeList sinks = getContainer().querySelectorAll(sinkSelector);
-            for (int i = 0; i < sinks.getLength(); i++) {
-                Element sink = (Element) sinks.item(i);
-                dispatchEvent(sink, event);
-            }
+            LOG.debug("Message event received from server: " + event.getMessageEvent());
+            messageReceived(event.getMessageEvent());
         });
+    }
+
+    protected void messageReceived(MessageEvent event) {
+        String instanceId = event.getInstanceId();
+        String sinkId = event.getSinkSlotId();
+
+        String sinkSelector = "or-console-widget-sink" +
+            "[slot='" + sinkId + "']" +
+            "[instance='" + (instanceId != null ? instanceId : "") + "']";
+        NodeList sinks = getContainer().querySelectorAll(sinkSelector);
+        for (int i = 0; i < sinks.getLength(); i++) {
+            Element sink = (Element) sinks.item(i);
+            LOG.debug("Dispatching message to sink: " + sink.getOuterHTML());
+            dispatchEvent(sink, event);
+        }
     }
 
     protected Element getContainer() {
@@ -57,9 +63,8 @@ public class ConsolePresenter extends AbstractPresenter {
 
     protected Element clearContainer() {
         Element container = getContainer();
-        Element child;
-        while (((child = container.getFirstElementChild()) != null)) {
-            container.removeChild(child);
+        while (container.hasChildNodes()) {
+            container.removeChild(container.getLastChild());
         }
         return container;
     }
@@ -106,6 +111,11 @@ public class ConsolePresenter extends AbstractPresenter {
             return container;
 
         Element widget = container.getOwnerDocument().createElement(widgetComponent);
+        addEventListener(widget, WidgetPropertyChangedEvent.class, event -> {
+            LOG.debug("Widget property changed, updating node: " + event.getName() + " => " + event.getValue());
+            // TODO: type conversion!
+            Widget.getWidgetDefaults(node).put(event.getName(), event.getValue());
+        });
 
         Map<String, Object> widgetDefaults = Widget.getWidgetDefaults(node);
         if (widgetDefaults == null)
@@ -125,7 +135,7 @@ public class ConsolePresenter extends AbstractPresenter {
         for (Slot sink : sinkSlots) {
             Element widgetSink = widget.getOwnerDocument().createElement("or-console-widget-sink");
             widgetSink.setAttribute("slot", sink.getId());
-            widgetSink.setAttribute("instance", instanceId != null ? instanceId: "");
+            widgetSink.setAttribute("instance", instanceId != null ? instanceId : "");
             widget.appendChild(widgetSink);
         }
     }

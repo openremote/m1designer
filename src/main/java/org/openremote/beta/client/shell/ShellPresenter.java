@@ -7,6 +7,7 @@ import elemental.html.IFrameElement;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.editor.EditorOpenedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.message.MessageSessionPresenter;
 import org.slf4j.Logger;
@@ -30,6 +31,11 @@ public class ShellPresenter extends MessageSessionPresenter {
                 dispatchEvent(getRequiredChildView("#messageLog"), event);
                 dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
             }
+        );
+
+        addEventListener(
+            FlowUpdatedEvent.class,
+            event -> dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()))
         );
 
         addEventListener(

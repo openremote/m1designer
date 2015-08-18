@@ -56,11 +56,10 @@ public abstract class WireShape extends Group {
 
             addNodeDragEndHandler(event -> {
                 SlotShape slotShape = findSlotShape(event.getX(), event.getY());
-                if (slotShape != null) {
+                if (slotShape != null && isAttachable(slotShape)) {
                     setAttachedSlotShape(slotShape);
                 }
             });
-
         }
 
         public void setPosition(SlotShape slotShape) {
