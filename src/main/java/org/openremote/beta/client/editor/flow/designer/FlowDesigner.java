@@ -13,18 +13,30 @@ import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.TOOLTIP_AUTO_HIDE_MILLIS;
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.TOOLTIP_BACKGROUND_COLOR;
 
-public abstract class FlowDesigner extends Layer {
+public abstract class FlowDesigner {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowDesigner.class);
 
     class NodeShapeImpl extends NodeShape {
 
-        public NodeShapeImpl(Node node, Slots slots) {
-            super(node, slots);
+        public NodeShapeImpl(Node node) {
+            super(node);
         }
+
+        @Override
+        public WireShape createWireShape(double x1, double y1, double x2, double y2, Slot source, Slot sink) {
+            WireShape wireShape = new WireShapeImpl(x1, y1, x2, y2);
+            wiringLayer.add(wireShape);
+            FlowDesigner.this.getLayer().batch();
+            return wireShape;
+        }
+
 
         @Override
         protected void selected(Node node) {
@@ -34,6 +46,13 @@ public abstract class FlowDesigner extends Layer {
         @Override
         protected void moved(Node node) {
             onMoved(node);
+        }
+
+        @Override
+        protected void slotRemoved(SlotShape slotShape) {
+            for (WireShape attachedWireShape : getAttachedWireShape(slotShape.getSlot().getId())) {
+                attachedWireShape.finalizeRemove();
+            }
         }
     }
 
@@ -50,10 +69,18 @@ public abstract class FlowDesigner extends Layer {
         }
 
         @Override
+        protected void layoutChanged() {
+            FlowDesigner.this.getLayer().batch();
+        }
+
+        @Override
         protected SlotShape findSlotShape(int x, int y) {
-            Shape<?> shape = FlowDesigner.this.findShapeAtPoint(x, y);
-            if (shape != null && shape.getParent() instanceof SlotShape) {
-                return (SlotShape) shape.getParent();
+            Shape<?> shape = FlowDesigner.this.getLayer().findShapeAtPoint(x, y);
+            if (shape != null) {
+                if (shape instanceof SlotShape.Handle) {
+                    SlotShape.Handle slotHandle = (SlotShape.Handle) shape;
+                    return slotHandle.getSlotShape();
+                }
             }
             return null;
         }
@@ -107,7 +134,7 @@ public abstract class FlowDesigner extends Layer {
                     return;
                 slotShape.setAttached(flow.hasWires(slot.getId()));
             }
-            batch();
+            FlowDesigner.this.getLayer().batch();
         }
     }
 
@@ -116,7 +143,15 @@ public abstract class FlowDesigner extends Layer {
     final protected WiringLayer wiringLayer = new WiringLayer() {
         @Override
         protected void batchAll() {
-            FlowDesigner.this.batch();
+            FlowDesigner.this.getLayer().batch();
+        }
+    };
+
+    final protected Layer layer = new Layer() {
+        @Override
+        public Layer batch() {
+            wiringLayer.batch();
+            return super.batch();
         }
     };
 
@@ -125,13 +160,13 @@ public abstract class FlowDesigner extends Layer {
     public FlowDesigner(Flow flow, Scene scene) {
         this.flow = flow;
 
-        scene.add(this);
+        scene.add(layer);
         scene.add(wiringLayer);
 
         this.toolTip = new ToolTip()
             .setAutoHideTime(TOOLTIP_AUTO_HIDE_MILLIS)
             .setFillColor(TOOLTIP_BACKGROUND_COLOR);
-        getViewport().getOverLayer().add(toolTip);
+        getLayer().getViewport().getOverLayer().add(toolTip);
 
         for (Node node : flow.getNodes()) {
             addNodeShape(node);
@@ -145,12 +180,6 @@ public abstract class FlowDesigner extends Layer {
         return flow;
     }
 
-    @Override
-    public Layer batch() {
-        wiringLayer.batch();
-        return super.batch();
-    }
-
     public void viewPortChanged() {
         toolTip.hide();
     }
@@ -158,16 +187,16 @@ public abstract class FlowDesigner extends Layer {
     public void receiveMessageEvent(MessageEvent event) {
         SlotShape slotShape = getSlotShape(event.getSinkSlotId());
         if (slotShape != null) {
-            slotShape.setLabelValue(event.getBody());
-            batch();
+            slotShape.setSlotValue(event.getBody());
+            getLayer().batch();
         }
     }
 
-    public void updateNodeShape(Node node) {
+    public void updateNode(Node node) {
         NodeShape nodeShape = getNodeShape(node.getId());
         if (nodeShape != null) {
-            nodeShape.setNode(node);
-            batch();
+            nodeShape.updateNode(node);
+            getLayer().batch();
         }
     }
 
@@ -177,35 +206,41 @@ public abstract class FlowDesigner extends Layer {
         onAddition(node);
     }
 
-    public void addNodeShape(Node node) {
-        Slots slots = new Slots(node) {
-            @Override
-            protected WireShape createWireShape(double x1, double y1, double x2, double y2, Slot source, Slot sink) {
-                WireShape wireShape = new WireShapeImpl(x1, y1, x2, y2);
-                wiringLayer.add(wireShape);
-                batch();
-                return wireShape;
-            }
-        };
-        add(new NodeShapeImpl(node, slots));
-        add(slots);
-        batch();
+    protected Layer getLayer() {
+        return layer;
     }
 
-    public void addWireShape(Wire wire) {
+    protected void addNodeShape(Node node) {
+        getLayer().add(new NodeShapeImpl(node));
+        getLayer().batch();
+    }
+
+    protected void addWireShape(Wire wire) {
         SlotShape sourceShape = getSlotShape(wire.getSourceId());
         SlotShape sinkShape = getSlotShape(wire.getSinkId());
         if (sourceShape != null && sinkShape != null) {
             wiringLayer.add(new WireShapeImpl(sourceShape, sinkShape));
         }
-        batch();
+        getLayer().batch();
+    }
+
+    protected WireShape[] getAttachedWireShape(String slotId) {
+        Set<WireShape> collection = new HashSet<>();
+        for (IPrimitive<?> primitive : wiringLayer.getChildNodes()) {
+            if (primitive instanceof WireShape) {
+                WireShape wireShape = (WireShape) primitive;
+                if (wireShape.isAttached(slotId))
+                    collection.add(wireShape);
+            }
+        }
+        return collection.toArray(new WireShape[collection.size()]);
     }
 
     protected SlotShape getSlotShape(String slotId) {
-        for (IPrimitive<?> primitive : getChildNodes()) {
+        for (IPrimitive<?> primitive : getLayer().getChildNodes()) {
             if (primitive instanceof NodeShape) {
                 NodeShape nodeShape = (NodeShape) primitive;
-                SlotShape slotShape = nodeShape.getSlots().getSlotShape(slotId);
+                SlotShape slotShape = nodeShape.getSlotShape(slotId);
                 if (slotShape != null)
                     return slotShape;
             }
@@ -214,7 +249,7 @@ public abstract class FlowDesigner extends Layer {
     }
 
     protected NodeShape getNodeShape(String nodeId) {
-        for (IPrimitive<?> primitive : getChildNodes()) {
+        for (IPrimitive<?> primitive : getLayer().getChildNodes()) {
             if (primitive instanceof NodeShape) {
                 NodeShape nodeShape = (NodeShape) primitive;
                 if (nodeShape.node.getId().equals(nodeId))

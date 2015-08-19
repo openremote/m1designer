@@ -47,7 +47,7 @@ public class CatalogServiceTest extends IntegrationTest {
         );
 
         assertNotNull(textLabelNode.getId());
-        assertNotNull(textLabelNode.getLabel());
+        assertNull(textLabelNode.getLabel());
         assertEquals(textLabelNode.getIdentifier().getType(), TextLabelNodeDescriptor.TYPE);
 
         assertTrue(Properties.isTrue(textLabelNode.getProperties(), Node.PROPERTY_CLIENT_ACCESS));

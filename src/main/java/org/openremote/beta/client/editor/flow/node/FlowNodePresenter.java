@@ -48,7 +48,9 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     public String getNodeLabel(Node node) {
-        return node.getLabel() + " (" + Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")";
+        return node.getLabel() != null
+            ? node.getLabel() + " (" + Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")"
+            : Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL);
     }
 
     public void nodePropertyChanged() {

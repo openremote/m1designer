@@ -14,7 +14,7 @@
     <style>
         :host {
             position: absolute;
-            bottom: 10px;
+            top: 10px;
             left: 10px;
         }
 
@@ -67,7 +67,7 @@
                     <iron-icon icon="refresh"></iron-icon>
                     Redeploy
                 </paper-button>
-                <paper-menu-button no-animations horizontal-align="right" vertical-align="bottom">
+                <paper-menu-button no-animations horizontal-align="right" vertical-align="top">
                     <paper-button class="dropdown-trigger">
                         <iron-icon icon="menu"></iron-icon>
                         Manage
@@ -146,7 +146,7 @@
                     this.toggleAttribute("hidden", false, this.$.panel);
                     this.notifyPath("_presenter.flow", this._presenter.flow);
                     this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
-                    this.$.panel.open();
+                    this.$.panel.dirty = false;
                 },
                 _sessionClosedClean: function (type, event) {
                     this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});

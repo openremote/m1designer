@@ -69,7 +69,8 @@
                             <div class="sinkIndex">{{index}}</div>
                         </template>
                         <div class="flex sinkInput">
-                            <paper-input value="{{item.msgValue}}" label="{{_getSinkLabel(item)}}"></paper-input>
+                            <paper-input value="{{item.msgValue}}"
+                                         label="{{_getSinkLabel(item)}}"></paper-input>
                         </div>
                         <div>
                             <paper-button raised on-tap="_sendMessage">

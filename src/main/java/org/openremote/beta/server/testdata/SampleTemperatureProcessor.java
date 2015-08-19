@@ -28,7 +28,7 @@ public class SampleTemperatureProcessor {
     static {
         new ConsumerRoute.Descriptor().initialize(FAHRENHEIT_CONSUMER);
         FAHRENHEIT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_X, 10);
-        FAHRENHEIT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 50);
+        FAHRENHEIT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
     }
 
     /* ###################################################################################### */
@@ -40,8 +40,8 @@ public class SampleTemperatureProcessor {
     static {
         new FunctionNodeDescriptor().initialize(FAHRENHEIT_CONVERTER);
         FAHRENHEIT_CONVERTER.getProperties().put(FunctionNodeDescriptor.PROPERTY_JAVASCRIPT, "output['value'] = ((input - 32)*5)/9");
-        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_X, 400);
-        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 80);
+        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_X, 300);
+        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
     }
 
     /* ###################################################################################### */
@@ -53,7 +53,7 @@ public class SampleTemperatureProcessor {
         new StorageNodeDescriptor().initialize(TEMPERATURE_DATABASE);
         TEMPERATURE_DATABASE.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:temperatureDatabase");
         TEMPERATURE_DATABASE.getEditorProperties().put(EDITOR_PROPERTY_X, 350);
-        TEMPERATURE_DATABASE.getEditorProperties().put(EDITOR_PROPERTY_Y, 200);
+        TEMPERATURE_DATABASE.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
     }
 
     /* ###################################################################################### */
@@ -66,7 +66,7 @@ public class SampleTemperatureProcessor {
         new ProducerRoute.Descriptor().initialize(CELCIUS_PRODUCER);
         CELCIUS_PRODUCER.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:producerCelcius");
         CELCIUS_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        CELCIUS_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 50);
+        CELCIUS_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
     }
 
     /* ###################################################################################### */
@@ -79,7 +79,7 @@ public class SampleTemperatureProcessor {
         new ChangeNodeDescriptor().initialize(CELCIUS_APPENDER);
         CELCIUS_APPENDER.getProperties().put(ChangeNodeDescriptor.PROPERTY_APPEND, " C");
         CELCIUS_APPENDER.getEditorProperties().put(EDITOR_PROPERTY_X, 650);
-        CELCIUS_APPENDER.getEditorProperties().put(EDITOR_PROPERTY_Y, 200);
+        CELCIUS_APPENDER.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
     }
 
     /* ###################################################################################### */
@@ -92,7 +92,7 @@ public class SampleTemperatureProcessor {
         new ProducerRoute.Descriptor().initialize(LABEL_PRODUCER);
         LABEL_PRODUCER.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:producerLabel");
         LABEL_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 1000);
-        LABEL_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
+        LABEL_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
     }
 
     /* ###################################################################################### */

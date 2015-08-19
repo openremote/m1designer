@@ -1,24 +1,20 @@
 package org.openremote.beta.server.testdata;
 
-import org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.beta.server.route.ActuatorRoute;
-import org.openremote.beta.server.route.ConsumerRoute;
 import org.openremote.beta.server.route.SensorRoute;
 import org.openremote.beta.server.route.SubflowRoute;
-import org.openremote.beta.shared.flow.*;
+import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.flow.Wire;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.model.Properties;
-import org.openremote.beta.shared.widget.Composite;
 import org.openremote.beta.shared.widget.Widget;
 
 import java.io.IOException;
-import java.util.Map;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
-import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_X;
-import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_Y;
-import static org.openremote.beta.shared.flow.Node.PROPERTY_POST_ENDPOINT;
+import static org.openremote.beta.shared.flow.Node.*;
 
 public class SampleEnvironmentWidget {
 
@@ -31,7 +27,7 @@ public class SampleEnvironmentWidget {
     static {
         new SensorRoute.Descriptor().initialize(LIVINGROOM_TEMPERATURE_SENSOR);
         LIVINGROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        LIVINGROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 50);
+        LIVINGROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 130);
     }
 
     /* ###################################################################################### */
@@ -43,7 +39,7 @@ public class SampleEnvironmentWidget {
     static {
         new SensorRoute.Descriptor().initialize(LIVINGROOM_SETPOINT_SENSOR);
         LIVINGROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        LIVINGROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 150);
+        LIVINGROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
     }
 
     /* ###################################################################################### */
@@ -56,7 +52,7 @@ public class SampleEnvironmentWidget {
     static {
         new SubflowRoute.Descriptor().initialize(LIVINGROOM_THERMOSTAT);
         LIVINGROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_X, 400);
-        LIVINGROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_Y, 100);
+        LIVINGROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_Y, 200);
         Widget.getWidgetDefaults(LIVINGROOM_THERMOSTAT).put(Widget.PROPERTY_POSITION_X, 10);
         Widget.getWidgetDefaults(LIVINGROOM_THERMOSTAT).put(Widget.PROPERTY_POSITION_Y, 10);
     }
@@ -70,7 +66,7 @@ public class SampleEnvironmentWidget {
         new ActuatorRoute.Descriptor().initialize(LIVINGROOM_SETPOINT_ACTUATOR);
         LIVINGROOM_SETPOINT_ACTUATOR.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:livingroomSetpointActuator");
         LIVINGROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        LIVINGROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 100);
+        LIVINGROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 200);
     }
 
     /* ###################################################################################### */
@@ -82,7 +78,7 @@ public class SampleEnvironmentWidget {
     static {
         new SensorRoute.Descriptor().initialize(BEDROOM_TEMPERATURE_SENSOR);
         BEDROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        BEDROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 300);
+        BEDROOM_TEMPERATURE_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
     }
 
     /* ###################################################################################### */
@@ -94,7 +90,7 @@ public class SampleEnvironmentWidget {
     static {
         new SensorRoute.Descriptor().initialize(BEDROOM_SETPOINT_SENSOR);
         BEDROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        BEDROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
+        BEDROOM_SETPOINT_SENSOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 520);
     }
 
     /* ###################################################################################### */
@@ -107,7 +103,7 @@ public class SampleEnvironmentWidget {
     static {
         new SubflowRoute.Descriptor().initialize(BEDROOM_THERMOSTAT);
         BEDROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_X, 400);
-        BEDROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_Y, 350);
+        BEDROOM_THERMOSTAT.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
         Widget.getWidgetDefaults(BEDROOM_THERMOSTAT).put(Widget.PROPERTY_POSITION_X, 10);
         Widget.getWidgetDefaults(BEDROOM_THERMOSTAT).put(Widget.PROPERTY_POSITION_Y, 100);
     }
@@ -121,7 +117,7 @@ public class SampleEnvironmentWidget {
         new ActuatorRoute.Descriptor().initialize(BEDROOM_SETPOINT_ACTUATOR);
         BEDROOM_SETPOINT_ACTUATOR.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:bedroomSetpointActuator");
         BEDROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        BEDROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 350);
+        BEDROOM_SETPOINT_ACTUATOR.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
     }
 
     /* ###################################################################################### */

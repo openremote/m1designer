@@ -33,7 +33,7 @@ public class SampleThermostatControl {
     static {
         new ConsumerRoute.Descriptor().initialize(TEMPERATURE_CONSUMER);
         TEMPERATURE_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_X, 20);
-        TEMPERATURE_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 20);
+        TEMPERATURE_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 120);
     }
 
     /* ###################################################################################### */
@@ -45,7 +45,7 @@ public class SampleThermostatControl {
     static {
         new ConsumerRoute.Descriptor().initialize(SETPOINT_CONSUMER);
         SETPOINT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_X, 20);
-        SETPOINT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 200);
+        SETPOINT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 300);
     }
 
     /* ###################################################################################### */
@@ -58,7 +58,7 @@ public class SampleThermostatControl {
     static {
         new SubflowRoute.Descriptor().initialize(TEMPERATURE_PROCESSOR_FLOW);
         TEMPERATURE_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_X, 300);
-        TEMPERATURE_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_Y, 20);
+        TEMPERATURE_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_Y, 110);
     }
 
     /* ###################################################################################### */
@@ -71,7 +71,7 @@ public class SampleThermostatControl {
     static {
         new SubflowRoute.Descriptor().initialize(SETPOINT_PROCESSOR_FLOW);
         SETPOINT_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_X, 300);
-        SETPOINT_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_Y, 150);
+        SETPOINT_PROCESSOR_FLOW.getEditorProperties().put(EDITOR_PROPERTY_Y, 260);
     }
 
     /* ###################################################################################### */
@@ -82,8 +82,8 @@ public class SampleThermostatControl {
     static {
         new TextLabelNodeDescriptor().initialize(TEMPERATURE_LABEL);
         TEMPERATURE_LABEL.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:labelTemperature");
-        TEMPERATURE_LABEL.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        TEMPERATURE_LABEL.getEditorProperties().put(EDITOR_PROPERTY_Y, 50);
+        TEMPERATURE_LABEL.getEditorProperties().put(EDITOR_PROPERTY_X, 700);
+        TEMPERATURE_LABEL.getEditorProperties().put(EDITOR_PROPERTY_Y, 130);
     }
 
     /* ###################################################################################### */
@@ -94,8 +94,8 @@ public class SampleThermostatControl {
     static {
         new TextLabelNodeDescriptor().initialize(SETPOINT_LABEL);
         SETPOINT_LABEL.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:labelSetpoint");
-        SETPOINT_LABEL.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        SETPOINT_LABEL.getEditorProperties().put(EDITOR_PROPERTY_Y, 150);
+        SETPOINT_LABEL.getEditorProperties().put(EDITOR_PROPERTY_X, 700);
+        SETPOINT_LABEL.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
         Widget.getWidgetDefaults(SETPOINT_LABEL).put(Widget.PROPERTY_POSITION_Y, 25);
     }
 
@@ -108,7 +108,7 @@ public class SampleThermostatControl {
     static {
         new PushButtonNodeDescriptor().initialize(SETPOINT_PLUS_BUTTON);
         SETPOINT_PLUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        SETPOINT_PLUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
+        SETPOINT_PLUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_Y, 500);
         Widget.getWidgetDefaults(SETPOINT_PLUS_BUTTON).put(Widget.PROPERTY_POSITION_X, 150);
         Widget.getWidgetDefaults(SETPOINT_PLUS_BUTTON).put(Widget.PROPERTY_POSITION_Y, 50);
     }
@@ -122,7 +122,7 @@ public class SampleThermostatControl {
     static {
         new PushButtonNodeDescriptor().initialize(SETPOINT_MINUS_BUTTON);
         SETPOINT_MINUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_X, 50);
-        SETPOINT_MINUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_Y, 500);
+        SETPOINT_MINUS_BUTTON.getEditorProperties().put(EDITOR_PROPERTY_Y, 620);
         Widget.getWidgetDefaults(SETPOINT_MINUS_BUTTON).put(Widget.PROPERTY_POSITION_X, 0);
         Widget.getWidgetDefaults(SETPOINT_MINUS_BUTTON).put(Widget.PROPERTY_POSITION_Y, 50);
     }
@@ -138,7 +138,7 @@ public class SampleThermostatControl {
         new FilterNodeDescriptor().initialize(SETPOINT_PLUS_FILTER);
         SETPOINT_PLUS_FILTER.getProperties().put(FilterNodeDescriptor.PROPERTY_ON_TRIGGER, true);
         SETPOINT_PLUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_X, 450);
-        SETPOINT_PLUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 300);
+        SETPOINT_PLUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 420);
     }
 
     /* ###################################################################################### */
@@ -152,7 +152,7 @@ public class SampleThermostatControl {
         new FilterNodeDescriptor().initialize(SETPOINT_MINUS_FILTER);
         SETPOINT_MINUS_FILTER.getProperties().put(FilterNodeDescriptor.PROPERTY_ON_TRIGGER, true);
         SETPOINT_MINUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_X, 450);
-        SETPOINT_MINUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
+        SETPOINT_MINUS_FILTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 590);
     }
 
     /* ###################################################################################### */
@@ -164,8 +164,8 @@ public class SampleThermostatControl {
     static {
         new FunctionNodeDescriptor().initialize(SETPOINT_INCREMENT_FUNCTION);
         SETPOINT_INCREMENT_FUNCTION.getProperties().put(FunctionNodeDescriptor.PROPERTY_JAVASCRIPT, "output['value'] = input + 1");
-        SETPOINT_INCREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        SETPOINT_INCREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_Y, 300);
+        SETPOINT_INCREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_X, 730);
+        SETPOINT_INCREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
     }
 
     /* ###################################################################################### */
@@ -177,8 +177,8 @@ public class SampleThermostatControl {
     static {
         new FunctionNodeDescriptor().initialize(SETPOINT_DECREMENT_FUNCTION);
         SETPOINT_DECREMENT_FUNCTION.getProperties().put(FunctionNodeDescriptor.PROPERTY_JAVASCRIPT, "output['value'] = input - 1");
-        SETPOINT_DECREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        SETPOINT_DECREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
+        SETPOINT_DECREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_X, 730);
+        SETPOINT_DECREMENT_FUNCTION.getEditorProperties().put(EDITOR_PROPERTY_Y, 550);
     }
 
     /* ###################################################################################### */
@@ -190,8 +190,8 @@ public class SampleThermostatControl {
     static {
         new ProducerRoute.Descriptor().initialize(SETPOINT_PRODUCER);
         SETPOINT_PRODUCER.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:producerSetpoint");
-        SETPOINT_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 1050);
-        SETPOINT_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 375);
+        SETPOINT_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 930);
+        SETPOINT_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 475);
     }
 
     /* ###################################################################################### */

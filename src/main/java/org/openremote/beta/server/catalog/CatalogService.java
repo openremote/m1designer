@@ -81,7 +81,7 @@ public class CatalogService implements StaticService {
             return null;
 
         Node node = new Node(
-            nodeDescriptor.getTypeLabel(),
+            null,
             new Identifier(IdentifierUtil.generateGlobalUniqueId(), nodeType),
             nodeDescriptor.createSlots()
         );

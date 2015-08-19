@@ -51,7 +51,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
         addEventListener(NodeUpdatedEvent.class, event -> {
             if (flowDesigner != null && flow != null && flow.getId().equals(event.getFlow().getId())) {
-                flowDesigner.updateNodeShape(event.getNode());
+                flowDesigner.updateNode(event.getNode());
                 dispatchEvent(new FlowUpdatedEvent(flow));
             }
         });
@@ -135,7 +135,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
                         // Calculate the offset with the current transform (zoom, panning)
                         // TODO If I would know maths, I could probably do this with the transform matrices
-                        Transform currentTransform = flowDesigner.getViewport().getAbsoluteTransform();
+                        Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
                         double x = (event.getPositionX() - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
                         double y = (event.getPositionY() - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
                         node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);

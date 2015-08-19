@@ -1,6 +1,7 @@
 package org.openremote.beta.client.editor.flow.designer;
 
 import com.ait.lienzo.client.core.shape.BezierCurve;
+import com.ait.lienzo.client.core.shape.Circle;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.guides.ToolTip;
 import com.ait.lienzo.client.core.types.BoundingBox;
@@ -10,6 +11,8 @@ import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.ait.lienzo.client.core.Attribute.X;
 import static com.ait.lienzo.client.core.Attribute.Y;
@@ -17,18 +20,16 @@ import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConsta
 
 public abstract class WireShape extends Group {
 
-    public abstract class Handle extends Box {
+    private static final Logger LOG = LoggerFactory.getLogger(WireShape.class);
+
+    public abstract class Handle extends Circle {
 
         protected SlotShape attachedSlotShape;
 
         public Handle() {
-            super(
-                SLOT_CORNER_RADIUS,
-                WIRE_HANDLE_COLOR,
-                new TextLabel(TextLabel.space(SLOT_PADDING), FONT_FAMILY, SLOT_FONT_SIZE, WIRE_HANDLE_ATTACH_TEXT_COLOR),
-                SLOT_PADDING
-            );
+            super(SLOT_RADIUS - SLOT_PADDING);
 
+            setFillColor(WIRE_HANDLE_COLOR);
             setDraggable(true);
             setDragMode(DragMode.SAME_LAYER);
 
@@ -38,19 +39,12 @@ public abstract class WireShape extends Group {
                 if (slotShape != null) {
                     if (isAttachable(slotShape)) {
                         setFillColor(WIRE_HANDLE_ATTACH_COLOR);
-                        setText(slotShape.getText());
-                        setWidth(slotShape.getWidth(), true);
-                        setHeight(slotShape.getHeight(), true);
                         setPosition(slotShape);
                     } else {
                         setFillColor(WIRE_HANDLE_ATTACH_VETO_COLOR);
-                        setText(TextLabel.space(SLOT_PADDING));
                     }
                 } else {
                     setFillColor(WIRE_HANDLE_COLOR);
-                    setText(TextLabel.space(SLOT_PADDING));
-                    setWidth(0);
-                    setHeight(0);
                 }
             });
 
@@ -63,22 +57,23 @@ public abstract class WireShape extends Group {
         }
 
         public void setPosition(SlotShape slotShape) {
-            setX(slotShape.getParent().getAttributes().getX() + slotShape.getX());
-            setY(slotShape.getParent().getAttributes().getY() + slotShape.getY());
+            setX(slotShape.getX());
+            setY(slotShape.getY());
             layout();
         }
 
         public void setAttachedSlotShape(SlotShape slotShape) {
             this.attachedSlotShape = slotShape;
-            attachedSlotShape.getParent().addAttributesChangedHandler(
-                X, event -> setPosition(attachedSlotShape)
+            attachedSlotShape.getNodeShape().addAttributesChangedHandler(
+                X, event -> {
+                    setPosition(attachedSlotShape);
+                }
             );
-            attachedSlotShape.getParent().addAttributesChangedHandler(
-                Y, event -> setPosition(attachedSlotShape)
+            attachedSlotShape.getNodeShape().addAttributesChangedHandler(
+                Y, event -> {
+                    setPosition(attachedSlotShape);
+                }
             );
-            setText(TextLabel.space(SLOT_PADDING));
-            setWidth(slotShape.getWidth(), true);
-            setHeight(slotShape.getHeight(), true);
             setDraggable(false);
             setVisible(false);
             afterAttach();
@@ -89,7 +84,7 @@ public abstract class WireShape extends Group {
         }
 
         public Node getAttachedNode() {
-            return getAttachedSlotShape() != null ? getAttachedSlotShape().getParent().getNode() : null;
+            return getAttachedSlotShape() != null ? getAttachedSlotShape().getNodeShape().getNode() : null;
         }
 
         public Slot getAttachedSlot() {
@@ -100,19 +95,19 @@ public abstract class WireShape extends Group {
             setVisible(true);
             setFillColor(WIRE_DELETE_COLOR);
             if (getAttachedSlotShape() != null) {
-                getAttachedSlotShape().setVisible(false);
+                getAttachedSlotShape().getHandle().setVisible(false);
             }
         }
 
         public void cancelRemove() {
             if (getAttachedSlotShape() != null) {
-                getAttachedSlotShape().setVisible(true);
+                getAttachedSlotShape().getHandle().setVisible(true);
             }
         }
 
         public void finalizeRemove() {
             if (getAttachedSlotShape() != null) {
-                getAttachedSlotShape().setVisible(true);
+                getAttachedSlotShape().getHandle().setVisible(true);
             }
         }
 
@@ -139,10 +134,10 @@ public abstract class WireShape extends Group {
 
     public WireShape(SlotShape sourceShape, SlotShape sinkShape) {
         this(
-            sourceShape.getParent().getX() + sourceShape.getX(),
-            sourceShape.getParent().getY() + sourceShape.getY(),
-            sinkShape.getParent().getX() + sinkShape.getX(),
-            sinkShape.getParent().getY() + sinkShape.getY()
+            sourceShape.getX(),
+            sourceShape.getY(),
+            sinkShape.getX(),
+            sinkShape.getY()
         );
         getSourceHandle().setAttachedSlotShape(sourceShape);
         getSinkHandle().setAttachedSlotShape(sinkShape);
@@ -155,17 +150,17 @@ public abstract class WireShape extends Group {
             protected void layout() {
                 curve.setPoint2DArray(
                     calculateCurve(
-                        getX() + getWidth(), getY() + getHeight() / 2,
-                        sinkHandle.getX(), sinkHandle.getY() + sinkHandle.getHeight() / 2
-                    )
+                        getX() + SLOT_RADIUS - SLOT_PADDING, getY(),
+                        sinkHandle.getX() - SLOT_RADIUS + SLOT_PADDING, sinkHandle.getY())
                 );
+                layoutChanged();
             }
 
             @Override
             protected boolean isAttachable(SlotShape slotShape) {
                 return slotShape.getSlot().isOfType(Slot.TYPE_SOURCE)
                     && WireShape.this.isAttachable(
-                    slotShape.getParent().getNode(),
+                    slotShape.getNodeShape().getNode(),
                     slotShape.getSlot(),
                     getSinkHandle().getAttachedNode(),
                     getSinkHandle().getAttachedSlot()
@@ -190,10 +185,10 @@ public abstract class WireShape extends Group {
             protected void layout() {
                 curve.setPoint2DArray(
                     calculateCurve(
-                        sourceHandle.getX() + sourceHandle.getWidth(), sourceHandle.getY() + sourceHandle.getHeight() / 2,
-                        getX(), getY() + getHeight() / 2
-                    )
+                        sourceHandle.getX() + SLOT_RADIUS - SLOT_PADDING, sourceHandle.getY(),
+                        getX() - SLOT_RADIUS + SLOT_PADDING, getY())
                 );
+                layoutChanged();
             }
 
             @Override
@@ -202,7 +197,7 @@ public abstract class WireShape extends Group {
                     && WireShape.this.isAttachable(
                     getSourceHandle().getAttachedNode(),
                     getSourceHandle().getAttachedSlot(),
-                    slotShape.getParent().getNode(),
+                    slotShape.getNodeShape().getNode(),
                     slotShape.getSlot()
                 );
             }
@@ -266,6 +261,14 @@ public abstract class WireShape extends Group {
         );
     }
 
+    public boolean isAttached(String slotId) {
+        if (sinkHandle.getAttachedSlot() != null && sinkHandle.getAttachedSlot().getId().equals(slotId))
+            return true;
+        if (sourceHandle.getAttachedSlot() != null && sourceHandle.getAttachedSlot().getId().equals(slotId))
+            return true;
+        return false;
+    }
+
     public void activateToolTip(ToolTip toolTip, String title, String text) {
         curve.addNodeMouseEnterHandler(event -> {
             toolTip.setValues(text, title);
@@ -285,9 +288,12 @@ public abstract class WireShape extends Group {
         sinkHandle.layout();
     }
 
+    abstract protected void layoutChanged();
+
     abstract protected SlotShape findSlotShape(int x, int y);
 
     abstract protected boolean isAttachable(Node sourceNode, Slot sourceSlot, Node sinkNode, Slot sinkSlot);
+
 
     abstract protected void attached(Node sourceNode, Slot sourceSlot, Node sinkNode, Slot sinkSlot);
 

@@ -1,49 +1,167 @@
 package org.openremote.beta.client.editor.flow.designer;
 
+import com.ait.lienzo.client.core.shape.Circle;
+import com.ait.lienzo.client.core.shape.Shape;
+import com.ait.lienzo.client.core.shape.Text;
 import org.openremote.beta.shared.flow.Slot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
 
-public class SlotShape extends Box {
+public class SlotShape {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SlotShape.class);
+
+    public static final double SLOT_DIMENSIONS = (SLOT_RADIUS + SLOT_PADDING) * 2;
+
+    public class Handle extends Circle {
+
+        final protected SlotShape slotShape;
+
+        public Handle(SlotShape slotShape) {
+            super(SLOT_RADIUS - SLOT_PADDING);
+            this.slotShape = slotShape;
+        }
+
+        public SlotShape getSlotShape() {
+            return slotShape;
+        }
+    }
+
+    protected NodeShape nodeShape;
     final protected Slot slot;
-    final protected String originalLabel;
+    final protected boolean isSource;
+    final protected Handle handle;
+    final protected Text slotLabelText;
+    final protected Text slotValueText;
 
-    public SlotShape(Slot slot) {
-        super(
-            SLOT_CORNER_RADIUS,
-            slot.isOfType(Slot.TYPE_SINK) ? SLOT_SINK_COLOR : SLOT_SOURCE_COLOR,
-            new TextLabel(
-                slot.getLabel() != null && slot.getLabel().length() > 0 ? slot.getLabel() : TextLabel.space(SLOT_PADDING),
-                FONT_FAMILY,
-                SLOT_FONT_SIZE,
-                slot.isOfType(Slot.TYPE_SINK) ? SLOT_SINK_TEXT_COLOR : SLOT_SOURCE_TEXT_COLOR
-            ),
-            SLOT_PADDING
-        );
+
+    public SlotShape(NodeShape nodeShape, Slot slot) {
+        this.nodeShape = nodeShape;
         this.slot = slot;
-        this.originalLabel = slot.getLabel();
+        this.isSource = slot.isOfType(Slot.TYPE_SOURCE);
+
+        this.handle = new Handle(this);
+        handle.setFillColor(isSource ? SLOT_SOURCE_COLOR : SLOT_SINK_COLOR);
+        nodeShape.add(handle);
+
+        this.slotLabelText = new Text("", FONT_FAMILY, SLOT_FONT_SIZE);
+        slotLabelText.setFontStyle("normal");
+        slotLabelText.setFillColor(isSource ? SLOT_SOURCE_TEXT_COLOR : SLOT_SINK_TEXT_COLOR);
+        slotLabelText.setListening(false);
+        slotLabelText.setVisible(false);
+        nodeShape.add(slotLabelText);
+
+        this.slotValueText = new Text("", FONT_FAMILY, SLOT_VALUE_FONT_SIZE);
+        slotValueText.setFontStyle("normal");
+        slotValueText.setFillColor(SLOT_VALUE_TEXT_COLOR);
+        slotValueText.setVisible(false);
+        nodeShape.add(slotValueText);
+
+        handle.addNodeMouseDownHandler(event -> createWire());
+        handle.addNodeTouchStartHandler(event -> createWire());
+    }
+
+    public NodeShape getNodeShape() {
+        return nodeShape;
+    }
+
+    public boolean isSource() {
+        return isSource;
     }
 
     public Slot getSlot() {
         return slot;
     }
 
+    public Shape getHandle() {
+        return handle;
+    }
+
+    public double getX() {
+        return getNodeShape().getX() + getHandle().getX();
+    }
+
+    public double getY() {
+        return getNodeShape().getY() + getHandle().getY();
+    }
+
+    public void updateNodeShape(NodeShape nodeShape, double x, double y) {
+        this.nodeShape = nodeShape;
+
+        nodeShape.add(handle);
+        handle.setX(x - (SLOT_PADDING));
+        handle.setY(isSource ? y + (SLOT_RADIUS + SLOT_PADDING) : y - (SLOT_RADIUS + SLOT_PADDING));
+
+        nodeShape.add(slotLabelText);
+        nodeShape.add(slotValueText);
+
+        updateSlotText();
+    }
+
     public void setAttached(boolean attached) {
-        if(attached) {
-            setFillColor(getSlot().isOfType(Slot.TYPE_SINK) ? SLOT_SINK_ATTACHED_COLOR : SLOT_SOURCE_ATTACHED_COLOR);
+        if (attached) {
+            getHandle().setFillColor(getSlot().isOfType(Slot.TYPE_SINK) ? SLOT_SINK_ATTACHED_COLOR : SLOT_SOURCE_ATTACHED_COLOR);
         } else {
-            setFillColor((getSlot().isOfType(Slot.TYPE_SINK) ? SLOT_SINK_COLOR : SLOT_SOURCE_COLOR));
+            getHandle().setFillColor(getSlot().isOfType(Slot.TYPE_SINK) ? SLOT_SINK_COLOR : SLOT_SOURCE_COLOR);
+        }
+    }
+
+    public void setSlotValue(String value) {
+        if (value == null || value.length() == 0) {
+            value = "";
+        }
+        if (value.length() > SLOT_VALUE_MAX_LENGTH) {
+            value = value.substring(0, SLOT_VALUE_MAX_LENGTH - 3) + "...";
+        }
+        slotValueText.setText(value);
+        updateSlotText();
+    }
+
+    protected void updateSlotText() {
+        boolean haveSlotLabel = slot.getLabel() != null && slot.getLabel().length() > 0;
+        boolean haveSlotValue = slotValueText.getText().length() > 0;
+
+        String slotLabel = haveSlotLabel ? slot.getLabel() : (isSource ? SLOT_SOURCE_LABEL : SLOT_SINK_LABEL);
+
+        slotLabelText.setText(slotLabel);
+        slotLabelText.setVisible(true);
+        double slotLabelWidth = slotLabelText.getBoundingBox().getWidth();
+        double slotLabelHeight = slotLabelText.getBoundingBox().getHeight();
+        slotLabelText.setX(isSource ? handle.getX() - slotLabelWidth - SLOT_DIMENSIONS / 2 : handle.getX() + SLOT_DIMENSIONS / 2 + SLOT_PADDING * 2);
+        if (haveSlotValue) {
+            slotLabelText.setY(handle.getY() - 2);
+        } else {
+            slotLabelText.setY(handle.getY() + slotLabelHeight / 2);
+        }
+
+        if (haveSlotValue) {
+            slotValueText.setVisible(true);
+            double slotValueWidth = slotValueText.getBoundingBox().getWidth();
+            double slotValueHeight = slotValueText.getBoundingBox().getHeight();
+            slotValueText.setX(isSource ? handle.getX() - slotValueWidth - SLOT_DIMENSIONS / 2 : handle.getX() + SLOT_DIMENSIONS / 2 + SLOT_PADDING * 2);
+            slotValueText.setY(handle.getY() + slotValueHeight);
+        }
+    }
+
+    protected void createWire() {
+        WireShape wireShape;
+        if (getSlot().isOfType(Slot.TYPE_SINK)) {
+            wireShape = getNodeShape().createWireShape(getX(), getY(), getX(), getY(), null, getSlot());
+            wireShape.getSinkHandle().setAttachedSlotShape(this);
+            wireShape.getSourceHandle().moveToTop();
+        } else {
+            wireShape = getNodeShape().createWireShape(getX(), getY(), getX(), getY(), getSlot(), null);
+            wireShape.getSourceHandle().setAttachedSlotShape(this);
+            wireShape.getSinkHandle().moveToTop();
         }
     }
 
     @Override
-    public Slots getParent() {
-        return (Slots)super.getParent();
-    }
-
-    public void setLabelValue(String value) {
-        setText((originalLabel != null ? originalLabel : "")
-            + ( value != null && value.length() > 0 ? " (" + value + ")" : ""));
+    public String toString() {
+        return "SlotShape{" +
+            "slot=" + slot +
+            '}';
     }
 }

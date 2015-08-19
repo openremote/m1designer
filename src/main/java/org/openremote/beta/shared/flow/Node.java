@@ -104,6 +104,15 @@ public class Node extends FlowObject {
         return list.toArray(new Slot[list.size()]);
     }
 
+    public Slot[] findConnectableSlots(String type) {
+        List<Slot> list = new ArrayList<>();
+        for (Slot slot : getSlots()) {
+            if (slot.isOfType(type) && slot.isConnectable())
+                list.add(slot);
+        }
+        return list.toArray(new Slot[list.size()]);
+    }
+
     public Slot findSlotByPosition(int position, String type) {
         if (position > getSlots().length-1)
             return null;
