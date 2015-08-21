@@ -20,7 +20,13 @@ public class MessageLogDetail {
 
     public MessageLogDetail(MessageEvent event, Flow msgFlow, Node msgNode, Slot msgSlot) {
         this.flowLabel = msgFlow != null ? msgFlow.getLabel() : null;
-        this.nodeLabel = msgNode != null ? msgNode.getLabel() + " (" + Properties.get(msgNode.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")" : null;
+
+        if (msgNode != null) {
+            this.nodeLabel = msgNode.getLabel() != null
+                ? msgNode.getLabel() + " (" + Properties.get(msgNode.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")"
+                : Properties.get(msgNode.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL);
+        }
+
         if (msgNode == null || msgSlot == null || !msgNode.getLabel().equals(msgSlot.getLabel())) {
             this.sinkLabel = msgSlot != null ? msgSlot.getLabel() : event.getSinkSlotId();
         }

@@ -1,7 +1,7 @@
 <script>
-    window.OpenRemoteConsole = window.OpenRemoteConsole || {};
+    window.openremote = window.openremote || {};
 
-    window.OpenRemoteConsole.ValueAwareWidget = {
+    window.openremote.ValueAwareWidget = {
 
         properties: {
             value: {
@@ -40,7 +40,7 @@
         }
     };
 
-    window.OpenRemoteConsole.VisibleWidget = {
+    window.openremote.VisibleWidget = {
         properties: {
             positionX: {
                 type: Number,
@@ -59,19 +59,19 @@
         },
         _onPositionXChanged: function (newValue) {
             this.style.left = newValue + "px";
-            var event = new openremote.console.WidgetPropertyChangedEvent(
+            var widgetPropertyChangedEvent = new openremote.console.WidgetPropertyChangedEvent(
                     openremote.shared.widget.Widget.PROPERTY_POSITION_X,
                     newValue
             );
-            this.fire(event.getType(), event);
+            this.fire(widgetPropertyChangedEvent.getType(), widgetPropertyChangedEvent);
         },
         _onPositionYChanged: function (newValue) {
             this.style.top = newValue + "px";
-            var event = new openremote.console.WidgetPropertyChangedEvent(
+            var widgetPropertyChangedEvent = new openremote.console.WidgetPropertyChangedEvent(
                     openremote.shared.widget.Widget.PROPERTY_POSITION_Y,
                     newValue
             );
-            this.fire(event.getType(), event);
+            this.fire(widgetPropertyChangedEvent.getType(), widgetPropertyChangedEvent);
         },
         _onDraggableChanged: function(newValue) {
             var controls = this.querySelectorAll(".control");
@@ -82,7 +82,7 @@
         }
     };
 
-    window.OpenRemoteConsole.Widget = [OpenRemoteConsole.ValueAwareWidget, OpenRemoteConsole.VisibleWidget]
+    window.openremote.Widget = [openremote.ValueAwareWidget, openremote.VisibleWidget]
 
 
 </script>

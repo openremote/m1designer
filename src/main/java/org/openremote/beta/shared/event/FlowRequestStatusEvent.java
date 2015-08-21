@@ -18,6 +18,8 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class FlowRequestStatusEvent extends FlowIdEvent {
 
+    // TODO This should probably be synchronous or we can't really correlate a "NOT FOUND" response
+
     @JsNoExport
     public FlowRequestStatusEvent() {
         this(null);

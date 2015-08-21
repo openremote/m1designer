@@ -2,13 +2,13 @@ package org.openremote.beta.client.shared.session.message;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.shared.PropagationOptions;
+import org.openremote.beta.client.shared.NonBubblingEvent;
 import org.openremote.beta.shared.event.Event;
 import org.openremote.beta.shared.event.MessageEvent;
 
 @JsExport
 @JsType
-public class MessageReceivedEvent extends Event implements PropagationOptions {
+public class MessageReceivedEvent extends Event implements NonBubblingEvent {
 
     final protected MessageEvent messageEvent;
 
@@ -26,15 +26,5 @@ public class MessageReceivedEvent extends Event implements PropagationOptions {
 
     public MessageEvent getMessageEvent() {
         return messageEvent;
-    }
-
-    @Override
-    public boolean isBubbling() {
-        return false;
-    }
-
-    @Override
-    public boolean isCancelable() {
-        return false;
     }
 }

@@ -14,4 +14,8 @@ public class JsUtil {
         };
         setTimeout(runnable, millis);
     }-*/;
+
+    public native static int compare(String a, String b) /*-{
+        return a.localeCompare(b);
+    }-*/;
 }

@@ -1,14 +1,13 @@
 package org.openremote.beta.client.editor.flow.control;
 
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.shared.event.Event;
 import org.openremote.beta.shared.event.FlowDeploymentFailureEvent;
 import org.openremote.beta.shared.event.FlowDeploymentPhase;
 
 import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
 
 @JsType
-public class FlowStatusDetailEvent extends Event {
+public class FlowStatusDetail {
 
     public static final String MARK_DEPLOYED = "deployed";
     public static final String MARK_DEPLOYING = "deploying";
@@ -19,14 +18,22 @@ public class FlowStatusDetailEvent extends Event {
     public final boolean canStop;
     public final String text;
 
-    public FlowStatusDetailEvent(String mark, boolean canStart, boolean canStop, String text) {
+    public FlowStatusDetail(String text) {
+        this(null, false, false, text);
+    }
+
+    public FlowStatusDetail(String mark, String text) {
+        this(mark, false, false, text);
+    }
+
+    public FlowStatusDetail(String mark, boolean canStart, boolean canStop, String text) {
         this.mark = mark;
         this.canStart = canStart;
         this.canStop = canStop;
         this.text = text;
     }
 
-    public FlowStatusDetailEvent(FlowDeploymentPhase phase) {
+    public FlowStatusDetail(FlowDeploymentPhase phase) {
         switch (phase) {
             case STARTING:
                 mark = MARK_DEPLOYING;
@@ -67,7 +74,7 @@ public class FlowStatusDetailEvent extends Event {
         }
     }
 
-    public FlowStatusDetailEvent(FlowDeploymentFailureEvent failureEvent) {
+    public FlowStatusDetail(FlowDeploymentFailureEvent failureEvent) {
         // TODO More details in event
         this(failureEvent.getPhase());
     }

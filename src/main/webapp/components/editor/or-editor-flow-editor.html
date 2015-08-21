@@ -1,6 +1,39 @@
 <link rel="import" href="or-editor-flow-node.html">
 <link rel="import" href="or-editor-flow-control.html">
 
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-flow-editor',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.flow.editor.FlowEditorPresenter(this);
+                    }
+                }
+            },
+            _onDragEnter: function (e) {
+                this.toggleClass("dragOver", true, this.$.flowDesigner);
+            },
+            _onDragLeave: function (e) {
+                this.toggleClass("dragOver", false, this.$.flowDesigner);
+            },
+            _onDragOver: function (e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+            },
+            _onDrop: function (e) {
+                e.preventDefault();
+                this.toggleClass("dragOver", false, this.$.flowDesigner);
+                var nodeType = e.dataTransfer.getData("text/plain");
+                this._presenter.createNode(nodeType, e.offsetX, e.offsetY);
+            }
+        });
+    });
+</script>
+
 <dom-module id="or-editor-flow-editor">
 
     <style>
@@ -48,71 +81,5 @@
         <or-editor-flow-node id="flowNode"></or-editor-flow-node>
 
     </template>
-
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-
-            Polymer({
-                is: 'or-editor-flow-editor',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.editor.flow.editor.FlowEditorPresenter(this);
-                        }
-                    }
-                },
-                listeners: {
-                    'flow-edit': "_onFlowEdit",
-                    'flow-updated': "_onFlowUpdated",
-                    'flow-designer-node-selected': '_onFlowDesignerNodeSelected'
-                },
-                attached: function () {
-                    // Need to do this async, when the shady children are available
-                    this.async(function () {
-                        this._presenter.prepareFlowDesignerContainer(this.$.flowDesigner);
-                    })
-                },
-                _onFlowEdit: function (ce, event) {
-
-                    this.async(function () {
-                        this.notifyPath("_presenter.flow", this._presenter.flow);
-                    });
-
-                    var flowControlStartEvent = new openremote.editor.flow.control.FlowControlStartEvent(event.getFlow());
-                    this.$.flowControl.fire(flowControlStartEvent.getType(), flowControlStartEvent);
-
-                    var flowNodeCloseEvent = new openremote.editor.flow.node.FlowNodeCloseEvent(this._presenter.flow);
-                    this.$.flowNode.fire(flowNodeCloseEvent.getType(), flowNodeCloseEvent);
-                },
-                _onFlowUpdated: function(ce, event) {
-                    this.$.flowControl.fire(ce.type, event);
-                },
-                _onFlowDesignerNodeSelected: function (ce, event) {
-                    var flowNodeEditEvent = new openremote.editor.flow.node.FlowNodeEditEvent(this._presenter.flow, event.getNode());
-                    this.$.flowNode.fire(flowNodeEditEvent.getType(), flowNodeEditEvent);
-                },
-                _onDragEnter: function (e) {
-                    this.toggleClass("dragOver", true, this.$.flowDesigner);
-                },
-                _onDragLeave: function (e) {
-                    this.toggleClass("dragOver", false, this.$.flowDesigner);
-                },
-                _onDragOver: function (e) {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = "copy";
-                },
-                _onDrop: function (e) {
-                    e.preventDefault();
-                    this.toggleClass("dragOver", false, this.$.flowDesigner);
-                    var nodeType = e.dataTransfer.getData("text/plain");
-
-                    var nodeCreateEvent = new openremote.editor.flow.editor.NodeCreateEvent(nodeType, e.offsetX, e.offsetY);
-                    this.fire(nodeCreateEvent.getType(), nodeCreateEvent);
-                }
-
-            });
-        });
-    </script>
 </dom-module>
 

@@ -2,6 +2,8 @@
 <script src="../webkit-drag-drop-shim.js"></script>
 <script src="../../gwt/Client/Client.nocache.js"></script>
 
+<link rel="import" href="../shared/or-component-behaviors.html">
+
 <link rel="import" href="or-editor-sidebar.html">
 <link rel="import" href="or-editor-flow-editor.html">
 
@@ -17,31 +19,14 @@
     document.addEventListener("gwtReadyClient", function () {
         Polymer({
             is: 'or-editor',
+            behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,
-                    value: function() {
+                    value: function () {
                         return new openremote.editor.EditorPresenter(this);
                     }
-                },
-                _flowEditorOpen: {
-                    type: Boolean,
-                    value: false
                 }
-            },
-            listeners: {
-                "flow-loaded": "_onFlowLoaded"
-            },
-            attached: function() {
-                this.async(function() {
-                    var editorOpenedEvent = new openremote.editor.EditorOpenedEvent();
-                    this.fire(editorOpenedEvent.getType(), editorOpenedEvent);
-                });
-            },
-            _onFlowLoaded: function (ce, event) {
-                var flowEditEvent = new openremote.editor.flow.editor.FlowEditEvent(event.getFlow());
-                this.$.flowEditor.fire(flowEditEvent.getType(), flowEditEvent);
-                this.set("_flowEditorOpen", true);
             }
         });
     });
@@ -101,7 +86,7 @@
     <template>
         <div id="container">
             <div id="sidebar">
-                <or-editor-sidebar catalog-visible$="[[_flowEditorOpen]]"></or-editor-sidebar>
+                <or-editor-sidebar id="editorSidebar"></or-editor-sidebar>
             </div>
             <div id="main">
                 <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>

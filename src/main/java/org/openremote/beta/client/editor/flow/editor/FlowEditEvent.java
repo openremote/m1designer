@@ -9,8 +9,14 @@ import org.openremote.beta.shared.flow.Flow;
 @JsType
 public class FlowEditEvent extends FlowEvent {
 
-    public FlowEditEvent(Flow flow) {
+    final protected boolean unsaved;
+
+    public FlowEditEvent(Flow flow, boolean unsaved) {
         super(flow);
+        this.unsaved = unsaved;
     }
 
+    public boolean isUnsaved() {
+        return unsaved;
+    }
 }

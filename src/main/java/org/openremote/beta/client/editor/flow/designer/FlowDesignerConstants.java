@@ -9,7 +9,7 @@ public interface FlowDesignerConstants {
 
     String FONT_FAMILY = "Helvetica";
 
-    double ZOOM_FACTOR = 0.04;
+    double ZOOM_FACTOR = 0.015;
     double ZOOM_MAX_SCALE = 2;
     double ZOOM_MIN_SCALE = 0.4;
     double ZOOM_TOUCH_THRESHOLD = 10;

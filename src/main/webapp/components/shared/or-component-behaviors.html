@@ -1,0 +1,20 @@
+<script>
+    window.openremote = window.openremote || {};
+
+    window.openremote.PresenterAware = {
+        ready: function() {
+            if (this._presenter) {
+                this._presenter.ready();
+            }
+        },
+        attached: function() {
+            if (this._presenter) {
+                this.async(function() {
+                    this._presenter.attached();
+
+                });
+            }
+        }
+    };
+
+</script>

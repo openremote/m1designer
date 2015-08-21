@@ -3,7 +3,6 @@ package org.openremote.beta.client.shared.session.message;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.shared.session.SessionClosedCleanEvent;
 import org.openremote.beta.client.shared.session.SessionConnectEvent;
 import org.openremote.beta.client.shared.session.SessionPresenter;
 import org.slf4j.Logger;
@@ -17,20 +16,11 @@ public class MessageSessionPresenter extends SessionPresenter {
 
     final protected MessageEventCodec MESSAGE_CODEC = GWT.create(MessageEventCodec.class);
 
-    final protected String serviceUrl;
-
     public MessageSessionPresenter(com.google.gwt.dom.client.Element view) {
-        super(view);
-
-        this.serviceUrl = getWebSocketUrl("message");
+        super(view, getWebSocketUrl("message"));
 
         addEventListener(MessageServerConnectEvent.class, event -> {
-            connectAndRetryOnFailure(serviceUrl, 12, 5000); // TODO one minute?
-        });
-
-        addEventListener(SessionClosedCleanEvent.class, event -> {
-            // Try to reconnect
-            dispatchEvent(new SessionConnectEvent(serviceUrl));
+            dispatchEvent(new SessionConnectEvent());
         });
 
         addEventListener(MessageSendEvent.class, event -> {

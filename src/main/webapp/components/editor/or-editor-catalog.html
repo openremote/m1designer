@@ -1,13 +1,58 @@
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
 
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-catalog',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.catalog.CatalogPresenter(this);
+                    }
+                }
+            },
+            _getItemClass: function (item) {
+                return "item nodeColor " + item.nodeColor;
+            },
+            _itemSelected: function (e) {
+                // Deselecting all others is a bit difficult...
+                var items = this.$.list.querySelectorAll(".item");
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    this.toggleClass("selected", item == e.currentTarget, item);
+                }
+
+                this._presenter.itemSelected(e.model.catalogItem);
+            },
+            _itemDragStart: function (e) {
+                e.dataTransfer.setData('text/plain', e.model.catalogItem.nodeType);
+                e.dataTransfer.effectAllowed = 'copy';
+            }
+        });
+    });
+</script>
+
 <dom-module id="or-editor-catalog">
 
     <style>
-        .list {
+
+        :host {
+            display: flex;
+            flex-direction: column;
+            @apply(--or-editor-catalog)
         }
 
-        .list #empty {
-            @apply(--or-editor-flow-empty)
+        #list {
+            flex: 1 0 0;
+            overflow: auto;
+
+            @apply(--or-editor-catalog-list)
+        }
+
+        #list #empty {
+            @apply(--or-editor-catalog-list-empty)
         }
 
         .section {
@@ -63,12 +108,11 @@
     </style>
 
     <template>
-        <content select="#dragDropContainer"></content>
-        <div id="list" class="list">
+        <div id="list">
             <template is="dom-if" if="{{!_items.length}}">
                 <div id="empty">Catalog is empty.</div>
             </template>
-            <template is="dom-repeat" items="[[_categorizedItems]]" as="categorizedItem">
+            <template is="dom-repeat" items="[[_presenter.categorizedItems]]" as="categorizedItem">
                 <div class="section">
 
                     <div class="category">
@@ -89,88 +133,5 @@
         </div>
     </template>
 
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-            Polymer({
-                is: 'or-editor-catalog',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.editor.catalog.CatalogPresenter(this);
-                        }
-                    },
-                    _categories: {
-                        type: Array
-                    },
-                    _categorizedItems: {
-                        type: Object
-                    }
-                },
-                attached: function () {
-                    var event = new openremote.editor.catalog.CatalogLoadEvent();
-                    this.fire(event.getType(), event);
-                },
-                listeners: {
-                    'catalog-loaded': '_onCatalogLoaded',
-                    'request-failure': '_requestFailure'
-                },
-                _onCatalogLoaded: function (type, event) {
-                    var items = event.getItems();
-                    // Some shuffling to display this (Polymer can only repeat arrays)
-                    var categorizedItems = [];
-                    items.forEach(function (item) {
-                        var category = openremote.shared.catalog.CatalogCategory.valueOf(item.category);
-                        var categorizedItem;
-                        var index = -1;
-                        for (var i = 0; i < categorizedItems.length; i++) {
-                            if (categorizedItems[i].category === category) {
-                                index = i;
-                                break;
-                            }
-                        }
-                        if (index >= 0) {
-                            categorizedItem = categorizedItems[index];
-                        } else {
-                            categorizedItem = {category: category, catalogItems: []};
-                            categorizedItems.push(categorizedItem);
-                        }
-                        categorizedItem.catalogItems.push(item);
-                    });
-
-                    categorizedItems.sort(function(a, b) {
-                        if (a.category.label  < b.category.label)
-                            return -1;
-                        if (a.category.label > b.category.label)
-                            return 1;
-                        return 0;
-                    });
-
-                    this.set("_categorizedItems", categorizedItems);
-                },
-                _requestFailure: function (type, event) {
-                    this.set("_categorizedItems", []);
-                },
-                _getItemClass: function(item) {
-                    return "item nodeColor " + item.nodeColor;
-                },
-                _itemSelected: function (e) {
-                    var items = this.$.list.querySelectorAll(".item");
-                    for (var i = 0; i < items.length; i++) {
-                        var item = items[i];
-                        this.toggleClass("selected", item == e.currentTarget, item);
-                    }
-                    var showInfoEvent = new openremote.ShowInfoEvent(
-                            "TODO: Implement help display for selected: " + e.model.catalogItem
-                    );
-                    this.fire(showInfoEvent.getType(), showInfoEvent);
-                },
-                _itemDragStart: function(e) {
-                    e.dataTransfer.setData('text/plain', e.model.catalogItem.nodeType);
-                    e.dataTransfer.effectAllowed = 'copy';
-                }
-            });
-        });
-    </script>
 </dom-module>
 

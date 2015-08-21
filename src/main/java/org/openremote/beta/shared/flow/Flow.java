@@ -96,6 +96,17 @@ public class Flow extends FlowObject {
         this.dependencies = new Flow[0];
     }
 
+    public boolean hasDependency(String flowId) {
+        for (Flow dependency : dependencies) {
+            if (dependency.getId().equals(flowId))
+                return true;
+            boolean hasDependency = dependency.hasDependency(flowId);
+            if (hasDependency)
+                return true;
+        }
+        return false;
+    }
+
     public Flow findOwnerFlowOfSlot(String slotId) {
         Slot slot = findSlot(slotId);
         if (slot != null)

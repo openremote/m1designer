@@ -8,8 +8,6 @@ import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.flow.FlowService;
 import org.openremote.beta.server.route.RouteManagementService;
-import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
-import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

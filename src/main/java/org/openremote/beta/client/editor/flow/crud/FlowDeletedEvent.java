@@ -7,9 +7,9 @@ import org.openremote.beta.shared.flow.Flow;
 
 @JsExport
 @JsType
-public class FlowLoadedEvent extends FlowEvent {
+public class FlowDeletedEvent extends FlowEvent {
 
-    public FlowLoadedEvent(Flow flow) {
+    public FlowDeletedEvent(Flow flow) {
         super(flow);
     }
 }

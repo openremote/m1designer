@@ -9,7 +9,7 @@ public class RouteManagementServiceConfiguration implements Configuration {
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
 
-        RouteManagementService routeManagementService = new RouteManagementService();
+        RouteManagementService routeManagementService = new RouteManagementService(context);
         context.addService(routeManagementService);
     }
 

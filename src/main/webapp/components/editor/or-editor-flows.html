@@ -1,24 +1,63 @@
-<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 
-<!--
-`<or-editor-flows>` is loads available flows and presents them in a selection list.
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-flows',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.flow.crud.FlowsPresenter(this);
+                    }
+                }
+            },
+            _flowSelected: function (e) {
+                this._presenter.loadFlow(e.model.flow.getId());
+            },
+            _createFlow: function () {
+                this._presenter.createFlow();
+            }
+        });
+    });
+</script>
 
-Use the `--or-editor-flow-item-selected` CSS mixin to style the selected flow item.
-
-Use the `--or-editor-flow-empty` CSS mixin to style the empty list element.
-
-The events `loading` and `complete` are fired, reflecting the current state.
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--or-editor-flow-item-background-color` | Background color of flow list item | `white`
-`--or-editor-flow-item-label-color` | Label text color of flow list item | `#333`
--->
 <dom-module id="or-editor-flows">
 
     <style>
-        .list {
+        :host {
+            display: flex;
+            flex-direction: column;
+            @apply(--or-editor-flows)
+        }
+
+        #toolbar {
+            flex: 0 0 40px;
+            display: flex;
+            justify-content: space-around;
+
+            @apply(--or-editor-flows-toolbar)
+        }
+
+        #toolbar paper-menu .iron-selected {
+            font-weight: inherit;
+        }
+
+        #list {
+            flex: 1 0 0;
+            overflow: auto;
             padding: 0.4em;
+
+            @apply(--or-editor-flows-list);
+        }
+
+        #list #empty {
+            @apply(--or-editor-flows-list-empty)
         }
 
         .flow {
@@ -31,86 +70,52 @@ Custom property | Description | Default
             cursor: pointer;
         }
 
-        .list #empty {
-            @apply(--or-editor-flow-empty)
-        }
-
         .flow .label {
             color: var(--or-editor-flow-item-label-color, black);
-        }
-
-        .flow.iron-selected {
-            background-color: var(--or-editor-flow-item-selected-background-color, black);
-        }
-
-        .flow.iron-selected .label {
-            color: var(--or-editor-flow-item-selected-label-color, white);
         }
     </style>
 
     <template>
-        <div class="list">
-            <template is="dom-if" if="{{!flows.length}}">
+
+        <div id="toolbar">
+            <paper-button on-tap="_createFlow">
+                <iron-icon icon="add"></iron-icon>
+                NEW FLOW
+            </paper-button>
+            <paper-menu-button no-animations vertical-offset="20" horizontal-offset="20">
+                <paper-button class="dropdown-trigger">
+                    <iron-icon icon="menu"></iron-icon>
+                    Manage
+                </paper-button>
+                <paper-menu class="dropdown-content">
+                    <div>
+                        <paper-button>
+                            <iron-icon icon="add"></iron-icon>
+                            Do more work
+                        </paper-button>
+                    </div>
+                    <div>
+                        <paper-button>
+                            <iron-icon icon="delete"></iron-icon>
+                            More items...
+                        </paper-button>
+                    </div>
+                </paper-menu>
+            </paper-menu-button>
+        </div>
+
+        <div id="list">
+            <template is="dom-if" if="{{!_presenter.flows.length}}">
                 <div id="empty">No flows found.</div>
             </template>
-            <iron-selector on-selected-changed="_flowSelected">
-                <template is="dom-repeat" items="[[flows]]">
-                    <div class="flow">
-                        <div>
-                            <span class="label">[[item.label]]</span>
-                        </div>
+            <template is="dom-repeat" items="[[_presenter.flows]]" as="flow">
+                <div class="flow" on-tap="_flowSelected">
+                    <div>
+                        <span class="label">[[flow.label]]</span>
                     </div>
-                </template>
-            </iron-selector>
+                </div>
+            </template>
         </div>
     </template>
-
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-            Polymer({
-                is: 'or-editor-flows',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.editor.flow.crud.FlowsPresenter(this);
-                        }
-                    },
-                    /**
-                     * The available flows.
-                     */
-                    flows: {
-                        type: Array,
-                        notify: true
-                    }
-                },
-                listeners: {
-                    'flows-loaded': '_flowsLoaded',
-                    'request-failure': '_requestFailure'
-                },
-                _flowsLoaded: function (type, event) {
-                    this.set("flows", event.getFlows());
-
-                    // TODO Load first flow by default, should be the flow you have seen in console
-                    if (event.getFlows().length > 0) {
-                        var event = new openremote.editor.flow.crud.FlowLoadEvent(
-                                this.flows[1].getId()
-                        );
-                        this.fire(event.getType(), event);
-                    }
-
-                },
-                _requestFailure: function (type, event) {
-                    this.set("flows", []);
-                },
-                _flowSelected: function (e) {
-                    var event = new openremote.editor.flow.crud.FlowLoadEvent(
-                            this.flows[e.detail.value].getId()
-                    );
-                    this.fire(event.getType(), event);
-                }
-            });
-        });
-    </script>
 </dom-module>
 

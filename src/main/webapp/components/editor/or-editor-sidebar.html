@@ -12,24 +12,23 @@
     document.addEventListener("gwtReadyClient", function () {
         Polymer({
             is: 'or-editor-sidebar',
+            behaviors: [openremote.PresenterAware],
             properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.EditorSidebarPresenter(this)
+                    }
+                },
                 _selectedTab: {
                     type: Number,
                     value: 1,
                     observer: "_onTabSelect"
-                },
-                catalogVisible: {
-                    type: Boolean,
-                    value: false,
-                    reflectToAttribute: true,
-                    observer: "onCatalogVisible"
-                },
-                _showDiscovery: false,
-                _showInventory: false
+                }
             },
-            attached: function () {
-                this._loadFlows();
-            },
+            observers: [
+                    "_onCatalogVisible(_presenter.catalogVisible)"
+            ],
             _onTabSelect: function (index) {
                 switch (index) {
                     case 0:
@@ -42,14 +41,8 @@
                         break;
                 }
             },
-            onCatalogVisible: function (visible) {
+            _onCatalogVisible: function (visible) {
                 this.toggleClass("catalogVisible", visible, this.$.browser);
-            },
-            _loadFlows: function () {
-                this.async(function () {
-                    var event = new openremote.editor.flow.crud.FlowsLoadEvent();
-                    this.$$("#flows").fire(event.getType(), event);
-                });
             }
         });
     });
@@ -100,31 +93,26 @@
             align-items: center
         }
 
-        .section .headWithToolbar {
-            flex: 0 0 80px;
-        }
-
-        .section .headWithToolbar .toolbar {
-            height: 40px;
-            display: flex;
-            justify-content: space-around;
-            background: var(--or-editor-sidebar-toolbar-background-color);
-            color: var(--or-editor-sidebar-toolbar-color);
-        }
-
-        .section .headWithToolbar .toolbar /deep/ paper-menu .iron-selected {
-            font-weight: inherit;
-        }
-
         .section .head .title {
             font-style: italic;
             font-size: 14px;
             cursor: default;
         }
 
-        .section .content {
-            flex: 1 0 0;
-            overflow: auto;
+        #flows {
+            --or-editor-flows: {
+                flex: 1 0 0;
+            };
+            --or-editor-flows-toolbar: {
+                background: var(--or-editor-sidebar-toolbar-background-color);
+                color: var(--or-editor-sidebar-toolbar-color);
+            };
+        }
+
+        #catalog {
+            --or-editor-catalog: {
+                flex: 1 0 0;
+            };
         }
 
         @media all and (max-width: 640px) {
@@ -135,7 +123,7 @@
 
             #browser,
             #browser.catalogVisible,
-            #catalog{
+            #catalog {
                 height: 40%;
             }
 
@@ -147,74 +135,26 @@
 
         <div id="container">
             <div id="browser" class="section">
-                <div class="headWithToolbar">
+                <div class="head">
                     <paper-tabs selected="{{_selectedTab}}">
                         <paper-tab>DISCOVERY</paper-tab>
                         <paper-tab>INVENTORY</paper-tab>
                     </paper-tabs>
-                    <template is="dom-if" if="[[_showDiscovery]]">
-                        <div class="toolbar">
-                            <paper-button>
-                                <iron-icon icon="add"></iron-icon>
-                                SOME
-                            </paper-button>
-                            <paper-button>
-                                <iron-icon icon="check"></iron-icon>
-                                ACTION
-                            </paper-button>
-                        </div>
-                    </template>
-                    <template is="dom-if" if="[[_showInventory]]">
-                        <div class="toolbar">
-                            <paper-button>
-                                <iron-icon icon="add"></iron-icon>
-                                MORE
-                            </paper-button>
-                            <paper-menu-button no-animations vertical-offset="20" horizontal-offset="20">
-                                <paper-button class="dropdown-trigger">
-                                    <iron-icon icon="menu"></iron-icon>
-                                    Manage
-                                </paper-button>
-                                <paper-menu class="dropdown-content">
-                                    <div>
-                                        <paper-button>
-                                            <iron-icon icon="add"></iron-icon>
-                                            Do more work
-                                        </paper-button>
-                                    </div>
-                                    <div>
-                                        <paper-button>
-                                            <iron-icon icon="delete"></iron-icon>
-                                            More items...
-                                        </paper-button>
-                                    </div>
-                                </paper-menu>
-                            </paper-menu-button>
-                        </div>
-                    </template>
                 </div>
                 <template is="dom-if" if="[[_showDiscovery]]">
-                    <div class="content">
-                        This will be the inxbox...
-                    </div>
+                    This will be the INBOX...
                 </template>
                 <template is="dom-if" if="[[_showInventory]]">
-                    <div class="content">
-                        <or-editor-flows id="flows"></or-editor-flows>
-                    </div>
+                    <or-editor-flows id="flows"></or-editor-flows>
                 </template>
             </div>
 
-            <template is="dom-if" if="[[catalogVisible]]">
+            <template is="dom-if" if="[[_presenter.catalogVisible]]">
                 <div id="catalog" class="section">
                     <div class="head">
                         <div class="title">CATALOG</div>
                     </div>
-                    <div class="content">
-                        <or-editor-catalog id="catalog">
-                            <content select="#dragDropContainer"></content>
-                        </or-editor-catalog>
-                    </div>
+                    <or-editor-catalog id="catalog"></or-editor-catalog>
                 </div>
             </template>
         </div>

@@ -32,7 +32,9 @@ public class ConsolePresenter extends AbstractPresenter {
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
             Element container = clearContainer();
-            updateWidgets(event.getFlow(), container);
+            if (event.getFlow() != null) {
+                updateWidgets(event.getFlow(), container);
+            }
             dispatchEvent(new ConsoleRefreshedEvent());
         });
 

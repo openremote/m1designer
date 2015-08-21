@@ -6,6 +6,7 @@ import elemental.dom.Element;
 import elemental.html.IFrameElement;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.editor.EditorOpenedEvent;
+import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
@@ -22,13 +23,24 @@ public class ShellPresenter extends MessageSessionPresenter {
     public ShellPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
+        addEventListener(
+            MessageReceivedEvent.class,
+            event -> {
+                if (isEditorViewAvailable()) {
+                    dispatchEvent(getEditorView(), event);
+                    dispatchEvent("#messageLog", event);
+                }
+                dispatchEvent(getConsoleView(), event);
+            }
+        );
+
         addEventListener(EditorOpenedEvent.class, event -> dispatchEvent(getConsoleView(), event));
         addEventListener(EditorClosedEvent.class, event -> dispatchEvent(getConsoleView(), event));
 
         addEventListener(
             FlowEditEvent.class,
             event -> {
-                dispatchEvent(getRequiredChildView("#messageLog"), event);
+                dispatchEvent("#messageLog", event);
                 dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
             }
         );
@@ -39,14 +51,8 @@ public class ShellPresenter extends MessageSessionPresenter {
         );
 
         addEventListener(
-            MessageReceivedEvent.class,
-            event -> {
-                if (isEditorViewAvailable()) {
-                    dispatchEvent(getEditorView(), event);
-                    dispatchEvent(getRequiredChildView("#messageLog"), event);
-                }
-                dispatchEvent(getConsoleView(), event);
-            }
+            FlowDeletedEvent.class,
+            event -> dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(null))
         );
     }
 
@@ -71,7 +77,6 @@ public class ShellPresenter extends MessageSessionPresenter {
             throw new IllegalArgumentException("Missing or-console view component in console frame.");
         return view;
     }
-
 
 
 }

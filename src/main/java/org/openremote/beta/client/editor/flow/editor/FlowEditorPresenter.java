@@ -9,10 +9,16 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.editor.flow.NodeCodec;
+import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
+import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
+import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
+import org.openremote.beta.client.editor.flow.node.FlowNodeCloseEvent;
+import org.openremote.beta.client.editor.flow.node.FlowNodeEditEvent;
 import org.openremote.beta.client.editor.flow.node.NodeUpdatedEvent;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
@@ -40,13 +46,26 @@ public class FlowEditorPresenter extends RequestPresenter {
 
         addEventListener(FlowEditEvent.class, event -> {
             this.flow = event.getFlow();
+            notifyPath("flow");
+            dispatchEvent("#flowControl", new FlowControlStartEvent(flow, event.isUnsaved()));
+            dispatchEvent("#flowNode", new FlowNodeCloseEvent());
             startFlowDesigner();
         });
 
-        addEventListener(NodeCreateEvent.class, event -> {
-            if (flowDesigner != null && flow != null) {
-                createNode(event, flow.getId());
-            }
+        addEventListener(FlowUpdatedEvent.class, event -> {
+            dispatchEvent("#flowControl", event);
+        });
+
+        addEventListener(FlowDeletedEvent.class, event -> {
+            this.flow = null;
+            this.notifyPathNull("flow");
+            dispatchEvent("#flowControl", new FlowControlStopEvent());
+            dispatchEvent("#flowNode", new FlowNodeCloseEvent());
+            stopFlowDesigner();
+        });
+
+        addEventListener(FlowDesignerNodeSelectedEvent.class, event -> {
+            dispatchEvent("#flowNode", new FlowNodeEditEvent(flow, event.getNode()));
         });
 
         addEventListener(NodeUpdatedEvent.class, event -> {
@@ -66,7 +85,45 @@ public class FlowEditorPresenter extends RequestPresenter {
         });
     }
 
-    public void prepareFlowDesignerContainer(Element container) {
+    @Override
+    public void attached() {
+        super.attached();
+        initFlowDesigner();
+    }
+
+    public void createNode(String nodeType, double positionX, double positionY) {
+        if (flowDesigner == null || flow == null)
+            return;
+
+        String flowId = flow.getId();
+
+        sendRequest(
+            false, false,
+            resource("catalog", "node", nodeType).get(),
+            new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {
+                @Override
+                protected void onResponse(Node node) {
+                    // Check if this is still the same flow designer instance as before the request
+                    if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
+                        // Calculate the offset with the current transform (zoom, panning)
+                        // TODO If I would know maths, I could probably do this with the transform matrices
+                        Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
+                        double x = (positionX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
+                        double y = (positionY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
+                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);
+                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
+
+                        LOG.debug("Adding node to flow designer: " + node);
+                        flowDesigner.addNode(node);
+                        dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
+                    }
+                }
+            }
+        );
+    }
+
+    protected void initFlowDesigner() {
+        Element container = getRequiredChildView("#flowDesigner");
         this.flowDesignerPanel = new LienzoPanel();
 
         flowDesignerPanel.setSelectCursor(Style.Cursor.MOVE);
@@ -123,30 +180,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         flowDesignerPanel.draw();
     }
 
-    protected void createNode(NodeCreateEvent event, String flowId) {
-        sendRequest(
-            false,
-            resource("catalog", "node", event.getNodeType()).get(),
-            new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {
-                @Override
-                protected void onResponse(Node node) {
-                    // Check if this is still the same flow designer instance as before the request
-                    if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
-
-                        // Calculate the offset with the current transform (zoom, panning)
-                        // TODO If I would know maths, I could probably do this with the transform matrices
-                        Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
-                        double x = (event.getPositionX() - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
-                        double y = (event.getPositionY() - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
-                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);
-                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
-
-                        LOG.debug("Adding node to flow designer: " + node);
-                        flowDesigner.addNode(node);
-                        dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
-                    }
-                }
-            }
-        );
+    protected void stopFlowDesigner() {
+        flowDesignerPanel.getScene().removeAll();
     }
 }

@@ -2,7 +2,6 @@
 <script src="../../gwt/Client/Client.nocache.js"></script>
 
 <link rel="import" href="or-shell-toast.html">
-<link rel="import" href="or-shell-busy-indicator.html">
 <link rel="import" href="or-shell-messagelog.html">
 
 <script>
@@ -27,7 +26,7 @@
             properties: {
                 _presenter: {
                     type: Object,
-                    value: function() {
+                    value: function () {
                         return new openremote.shell.ShellPresenter(this);
                     }
                 },
@@ -63,8 +62,7 @@
             listeners: {
                 'show-info': '_showInfo',
                 'show-failure': '_showFailure',
-                'request-start': '_loadStart',
-                'request-complete': '_loadComplete'
+                'request-complete': '_showInfo'
             },
             attached: function () {
                 if (this.editorVisible) {
@@ -73,10 +71,8 @@
                     this._hideEditor();
                 }
 
-                this.$.busyIndicator.hide();
-
-                var event = new openremote.session.message.MessageServerConnectEvent();
-                this.fire(event.getType(), event);
+                var messageServerConnectEvent = new openremote.session.message.MessageServerConnectEvent();
+                this.fire(messageServerConnectEvent.getType(), messageServerConnectEvent);
             },
             _toggleEditor: function () {
                 if (this.editorVisible) {
@@ -104,7 +100,7 @@
                 this.$.consoleResizeHandle.style.display = "none";
 
                 if (this.editorVisible) {
-                    this.async(function() {
+                    this.async(function () {
                         var editorClosedEvent = new openremote.shell.EditorClosedEvent();
                         this.fire(editorClosedEvent.getType(), editorClosedEvent);
                     });
@@ -129,7 +125,7 @@
             },
             _consoleResizeMove: function (e) {
                 e.preventDefault();
-                this.async(function() {
+                this.async(function () {
                     var x = e.clientX || e.changedTouches[0].clientX;
                     if (x && this._consoleResizeInProgress) {
 
@@ -172,21 +168,11 @@
                 this.$.consoleContainer.style.flexBasis = width + "px";
                 this.consoleWidth = width;
             },
-            _showInfo: function(ce, event) {
-                this.$.toast.show(event.getMessage(), 3000);
-                this.$.busyIndicator.hide();
+            _showInfo: function (ce, event) {
+                this.$.toast.show(false, event.getMessage(), 3000);
             },
-            _showFailure: function(ce, event) {
-                this.$.toast.show(event.getMessage());
-                this.$.busyIndicator.hide();
-            },
-            _loadStart: function() {
-                this.$.toast.show("Loading...");
-                this.$.busyIndicator.show();
-            },
-            _loadComplete: function() {
-                this.$.toast.hide();
-                this.$.busyIndicator.hide();
+            _showFailure: function (ce, event) {
+                this.$.toast.show(true, event.getMessage(), event.getDurationMillis());
             }
         });
 
@@ -201,12 +187,6 @@
             height: 100vh;
             display: flex;
             flex-direction: row;
-        }
-
-        #busyIndicator {
-            position: fixed;
-            top: 50vh;
-            right: 10px;
         }
 
         #messageLog {
@@ -282,8 +262,6 @@
     <template>
 
         <or-shell-toast id="toast"></or-shell-toast>
-
-        <or-shell-busy-indicator id="busyIndicator"></or-shell-busy-indicator>
 
         <or-shell-messagelog id="messageLog"></or-shell-messagelog>
 

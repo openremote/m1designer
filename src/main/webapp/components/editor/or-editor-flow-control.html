@@ -9,6 +9,75 @@
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-flow-control',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.flow.control.FlowControlPresenter(this);
+                    }
+                }
+            },
+            listeners: {
+                'session-connect': "_sessionConnect",
+                'flow-control-stop': "_onFlowControlStop"
+            },
+            observers: [
+                "_flowStatusDetailUpdated(_presenter.flowStatusDetail)",
+                "_flowUnsavedUpdated(_presenter.unsaved)",
+                "_flowPropertyChanged(_presenter.flow.label)"
+            ],
+            _sessionConnect: function () {
+                this.toggleAttribute("hidden", false, this.$.panel);
+            },
+            _onFlowControlStop: function () {
+                this.toggleAttribute("hidden", true, this.$.panel);
+            },
+            _flowStatusDetailUpdated: function (flowStatusDetail) {
+                this.toggleAttribute("disabled", !flowStatusDetail || !flowStatusDetail.canStart, this.$.startButton);
+                this.toggleAttribute("disabled", !flowStatusDetail || !flowStatusDetail.canStop, this.$.stopButton);
+            },
+            _flowUnsavedUpdated: function (unsaved) {
+                this.toggleAttribute("disabled", unsaved, this.$.deleteButton);
+            },
+            _flowPropertyChanged: function (value) {
+                if (value === undefined)
+                    return;
+                this._presenter.flowPropertyChanged();
+/*
+                if (value === undefined)
+                    return;
+                this.debounce("FlowPropertyChanged", function() {
+                    this._presenter.flowPropertyChanged();
+                }.bind(this), 1000);
+*/
+            },
+            _redeployFlow: function () {
+                this._presenter.redeployFlow();
+            },
+            _saveFlow: function () {
+                this._presenter.saveFlow();
+            },
+            _stopFlow: function () {
+                this._presenter.stopFlow();
+            },
+            _startFlow: function () {
+                this._presenter.startFlow();
+            },
+            _deleteFlow: function () {
+                this._presenter.deleteFlow();
+            },
+            _exportFlow: function () {
+                console.log(this._presenter.exportFlow());
+            }
+        });
+    });
+</script>
+
 <dom-module id="or-editor-flow-control">
 
     <style>
@@ -20,7 +89,7 @@
 
         #panel {
             --or-panel-width: 300px;
-            --or-panel-max-height: 75px;
+            --or-panel-max-height: 100px;
         }
 
         .content {
@@ -49,18 +118,9 @@
     <template>
         <or-panel id="panel"
                   switchable="left"
+                  title="[[_presenter.flowControlTitle]]"
+                  dirty="[[_presenter.flowControlDirty]]"
                   hidden>
-
-            <div class="content">
-                <div class="form">
-                    <div class="formItem flowStatus">
-                        <div class="formLabel">Status:</div>
-                        <div class="formValue">
-                            <span class$="[[_flowStatusDetail.mark]]">[[_flowStatusDetail.text]]</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div class="toolbar">
                 <paper-button id="redeployButton" on-tap="_redeployFlow">
@@ -74,7 +134,7 @@
                     </paper-button>
                     <paper-menu class="dropdown-content">
                         <div>
-                            <paper-button id="startButton" on-tap="_startFlow">
+                            <paper-button disabled id="startButton" on-tap="_startFlow">
                                 <iron-icon icon="av:play-arrow"></iron-icon>
                                 Start
                             </paper-button>
@@ -89,6 +149,12 @@
                             <paper-button on-tap="_saveFlow">
                                 <iron-icon icon="icons:save"></iron-icon>
                                 Save
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button id="deleteButton" on-tap="_deleteFlow">
+                                <iron-icon icon="icons:delete"></iron-icon>
+                                Remove
                             </paper-button>
                         </div>
                         <div>
@@ -107,91 +173,25 @@
                 </paper-menu-button>
             </div>
 
+            <div class="content">
+                <div class="form">
+                    <div class="formItem flowStatus">
+                        <div class="formLabel">Status:</div>
+                        <div class="formValue">
+                            <span class$="[[_presenter.flowStatusDetail.mark]]">[[_presenter.flowStatusDetail.text]]</span>
+                        </div>
+                    </div>
+                    <div class="formItem">
+                        <div class="formValue">
+                            <paper-input label="Label"
+                                         value="{{_presenter.flow.label}}"></paper-input>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </or-panel>
 
     </template>
-
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-
-            Polymer({
-                is: 'or-editor-flow-control',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.editor.flow.control.FlowControlPresenter(this);
-                        }
-                    },
-                    _flowStatusDetail: {
-                        type: Object,
-                        value: function () {
-                            return {text: 'CONNECTING TO SERVER'}
-                        },
-                        notify: true
-                    }
-                },
-                listeners: {
-                    'session-opened': "_sessionOpened",
-                    'session-closed-clean': "_sessionClosedClean",
-                    'session-closed-error': "_sessionClosedError",
-                    'flow-status-detail': "_updateFlowStatus",
-                    'flow-updated': "_onFlowUpdated",
-                    "flow-saved": "_onFlowSaved"
-                },
-                ready: function () {
-                    this.toggleAttribute("disabled", true, this.$.startButton);
-                },
-                _sessionOpened: function (type, event) {
-                    this.toggleAttribute("hidden", false, this.$.panel);
-                    this.notifyPath("_presenter.flow", this._presenter.flow);
-                    this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
-                    this.$.panel.dirty = false;
-                },
-                _sessionClosedClean: function (type, event) {
-                    this._updateFlowStatus(null, {text: "CONNECTING TO SERVER"});
-                },
-                _sessionClosedError: function (type, event) {
-                    this._updateFlowStatus(null, {mark: "problem", text: "ERROR CONNECTING TO SERVER"});
-                },
-                _updateFlowStatus: function (type, flowStatusDetail) {
-
-                    if (flowStatusDetail.mark == "deployed") {
-                        this.$.panel.setAttribute("title", this._presenter.flow.getLabel() + " (Deployed)");
-                    } else {
-                        this.$.panel.setAttribute("title", this._presenter.flow.getLabel());
-                    }
-
-                    this.set("_flowStatusDetail", flowStatusDetail);
-                    this.toggleAttribute("disabled", !flowStatusDetail.canStart, this.$.startButton);
-                    this.toggleAttribute("disabled", !flowStatusDetail.canStop, this.$.stopButton);
-                },
-                _onFlowUpdated: function (e) {
-                    e.stopPropagation();
-                    this.$.panel.dirty = true;
-                },
-                _onFlowSaved: function () {
-                    this.$.panel.dirty = false;
-                },
-                _redeployFlow: function () {
-                    this._presenter.redeployFlow();
-                },
-                _saveFlow: function () {
-                    this._presenter.saveFlow();
-                },
-                _stopFlow: function () {
-                    this._presenter.stopFlow();
-                },
-                _startFlow: function () {
-                    this._presenter.startFlow();
-                },
-                _exportFlow: function () {
-                    console.log(this._presenter.getFlowJson());
-                    var event = new openremote.ShowInfoEvent("Export complete, check your JavaScript console.");
-                    this.fire(event.getType(), event);
-                }
-            });
-        });
-    </script>
 </dom-module>
 

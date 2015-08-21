@@ -72,7 +72,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
         Flow flow = flowService.getFlow(flowDeployEvent.getFlowId());
         if (flow != null) {
             try {
-                routeManagementService.startFlowRoutes(context, flow);
+                routeManagementService.startFlowRoutes(flow);
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow start failed: " + flow, ex);
                 producerTemplate.sendBody(OUTGOING_FLOW_EVENT_QUEUE, new FlowDeploymentFailureEvent(
@@ -98,7 +98,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
         Flow flow = flowService.getFlow(flowStopEvent.getFlowId());
         if (flow != null) {
             try {
-                routeManagementService.stopFlowRoutes(context, flow);
+                routeManagementService.stopFlowRoutes(flow);
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow stop failed: " + flow, ex);
                 producerTemplate.sendBody(OUTGOING_FLOW_EVENT_QUEUE, new FlowDeploymentFailureEvent(

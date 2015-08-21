@@ -3,8 +3,77 @@
 <link rel="import" href="or-editor-node-behaviors.html">
 <link rel="import" href="or-editor-node-change.html">
 
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-flow-node',
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.flow.node.FlowNodePresenter(this);
+                    }
+                }
+            },
+            listeners: {
+                'flow-node-open': "_nodeOpen",
+                'flow-node-close': "_nodeClose"
+            },
+            observers: [
+                "_nodePropertyChanged(_presenter.node.label)"
+            ],
+            _nodeOpen: function (ce, event) {
+                this.async(function() {
+                    this._removeEditorComponent();
+                    this._addEditorComponent(event.getEditorComponent());
+                });
+                this.toggleAttribute("hidden", false, this.$.panel);
+                this.$.panel.open();
+            },
+            _nodeClose: function () {
+                this._removeEditorComponent();
+                this.toggleAttribute("hidden", true, this.$.panel);
+            },
+            _addEditorComponent: function(component) {
+                if (component) {
+                    var container = this.$.editorComponentContainer;
+                    var editorComponent = document.createElement(component);
+                    Polymer.dom(container).appendChild(editorComponent);
+                    editorComponent.set("_presenter", this._presenter);
+                    editorComponent.set("flow", this._presenter.flow);
+                    editorComponent.set("node", this._presenter.node);
+                    editorComponent.addEventListener("nodePropertiesChanged", function() {
+                        this._nodePropertyChanged();
+                    }.bind(this));
+                }
+            },
+            _removeEditorComponent: function() {
+                var container = this.$.editorComponentContainer;
+                while (container.lastChild) {
+                    Polymer.dom(container).removeChild(container.lastChild);
+                }
+            },
+            _nodePropertyChanged: function () {
+                this._presenter.nodePropertyChanged();
+            },
+            _getSinkLabel: function(sink) {
+                return this._presenter.getSinkLabel(sink);
+            },
+            _sendSinkMessage: function (e) {
+                var slot = e.model.sink;
+                var body = e.model.sink.msgValue;
+                this._presenter.sendSinkMessage(slot, body);
+            }
+        });
+    });
+</script>
 
 <dom-module id="or-editor-flow-node">
 
@@ -18,10 +87,6 @@
         #panel {
             --or-panel-width: 320px;
             --or-panel-max-height: 50vh;
-        }
-
-        #panel.dirty {
-            --or-panel-header-background-color: red;
         }
 
         .content {
@@ -43,19 +108,45 @@
     <template>
         <or-panel id="panel"
                   switchable="right"
-                  title="Node"
+                  title="[[_presenter.flowNodeTitle]]"
+                  dirty="[[_presenter.flowNodeDirty]]"
                   hidden>
+
+            <div class="toolbar">
+                <paper-button on-tap="_redeployFlow">
+                    <iron-icon icon="delete"></iron-icon>
+                    Remove
+                </paper-button>
+                <paper-menu-button no-animations vertical-offset="20" horizontal-offset="-50">
+                    <paper-button class="dropdown-trigger">
+                        <iron-icon icon="menu"></iron-icon>
+                        Manage
+                    </paper-button>
+                    <paper-menu class="dropdown-content">
+                        <div>
+                            <paper-button>
+                                <iron-icon icon="add"></iron-icon>
+                                Do more work
+                            </paper-button>
+                        </div>
+                        <div>
+                            <paper-button>
+                                <iron-icon icon="delete"></iron-icon>
+                                More items...
+                            </paper-button>
+                        </div>
+                    </paper-menu>
+                </paper-menu-button>
+            </div>
+
             <div class="content">
 
                 <div id="mainForm" class="form">
 
                     <div class="formItem">
                         <div class="formValue">
-                            <paper-input autofocus
-                                         value="{{_presenter.node.label}}"
-                                         on-keypress="_nodePropertyKeypress"
-                                         on-blur="_nodePropertyChanged"
-                                         label="Label"></paper-input>
+                            <paper-input label="Label"
+                                         value="{{_presenter.node.label}}"></paper-input>
                         </div>
                     </div>
 
@@ -63,17 +154,19 @@
 
                 <div id="editorComponentContainer"></div>
 
-                <template is="dom-repeat" items="{{_sinks}}">
+                <template is="dom-repeat" items="{{_presenter.sinks}}" as="sink">
                     <div id=slots" class="layout horizontal center">
-                        <template is="dom-if" if="{{_isMultipleSinks()}}">
+                        <template is="dom-if" if="{{_presenter.hasMultipleSinks}}">
                             <div class="sinkIndex">{{index}}</div>
                         </template>
                         <div class="flex sinkInput">
-                            <paper-input value="{{item.msgValue}}"
-                                         label="{{_getSinkLabel(item)}}"></paper-input>
+                            <paper-input autofocus
+                                         value="{{sink.msgValue}}"
+                                         label="{{_getSinkLabel(sink)}}"></paper-input>
                         </div>
                         <div>
-                            <paper-button raised on-tap="_sendMessage">
+                            <paper-button on-tap="_sendSinkMessage">
+                                <iron-icon icon="send"></iron-icon>
                                 Send
                             </paper-button>
                         </div>
@@ -81,89 +174,8 @@
                 </template>
 
             </div>
+
         </or-panel>
     </template>
-
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-
-            Polymer({
-                is: 'or-editor-flow-node',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.editor.flow.node.FlowNodePresenter(this);
-                        }
-                    },
-                    _sinks: {
-                        type: Array,
-                        value: []
-                    }
-                },
-                listeners: {
-                    'flow-node-open': "_nodeOpen",
-                    'flow-node-close': "_nodeClose"
-                },
-                observers: [
-                        "_nodePropertyEdited(_presenter.node.*)"
-                ],
-                _nodeOpen: function (ce, event) {
-                    this.notifyPath("_presenter.node", this._presenter.node);
-                    this.$.panel.dirty = false;
-
-                    var container = Polymer.dom(this.root).querySelector("#editorComponentContainer");
-                    while (container.lastChild) {
-                        Polymer.dom(container).removeChild(container.lastChild);
-                    }
-                    if (event.getEditorComponent()) {
-                        var editorComponent = document.createElement(event.getEditorComponent());
-                        Polymer.dom(container).appendChild(editorComponent);
-                        editorComponent.set("flow", event.getFlow());
-                        editorComponent.set("node", event.getNode());
-                        editorComponent.addEventListener("clean", function() {
-                            this.$.panel.dirty = false;
-                        }.bind(this));
-                        editorComponent.addEventListener("dirty", function() {
-                            this.$.panel.dirty = true;
-                        }.bind(this));
-                    }
-
-                    this.set("_sinks", this._presenter.getAccessibleSinks());
-
-                    this.toggleAttribute("hidden", false, this.$.panel);
-                    this.$.panel.setAttribute("title", event.getLabel());
-                    this.$.panel.open();
-                },
-                _nodeClose: function () {
-                    this.toggleAttribute("hidden", true, this.$.panel);
-                },
-                _nodePropertyEdited: function() {
-                    this.$.panel.dirty = true;
-                },
-                _nodePropertyKeypress: function(e) {
-                    if (e.charCode == 13) {
-                        this._nodePropertyChanged();
-                    }
-                },
-                _nodePropertyChanged: function() {
-                    this._presenter.nodePropertyChanged();
-                    this.$.panel.setAttribute("title", this._presenter.getNodeLabel(this._presenter.node));
-                    this.$.panel.dirty = false;
-                },
-                _isMultipleSinks: function () {
-                    return this._sinks && this._sinks.length > 1;
-                },
-                _getSinkLabel: function (sink) {
-                    return sink.label ? sink.label + " Slot" : "Sink Slot";
-                },
-                _sendMessage: function (e) {
-                    var slot = e.model.item;
-                    var body = e.model.item.msgValue;
-                    this._presenter.sendMessage(slot, body);
-                }
-            });
-        });
-    </script>
 </dom-module>
 

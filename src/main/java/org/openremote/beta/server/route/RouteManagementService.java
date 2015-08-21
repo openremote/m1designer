@@ -18,16 +18,21 @@ import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
 
 public class RouteManagementService implements StaticService {
 
-    public static interface FlowDeploymentListener {
+    public interface FlowDeploymentListener {
         void onFlowDeployment(Flow flow, FlowDeploymentPhase phase);
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(RouteManagementService.class);
 
+    final protected CamelContext context;
     final protected List<FlowDeploymentListener> phaseListeners = new CopyOnWriteArrayList<>();
     final protected Set<String> startingFlows = new HashSet<>();
     final protected Map<String, FlowRoutes> runningFlows = new HashMap<>();
     final protected Set<String> stoppingFlows = new HashSet<>();
+
+    public RouteManagementService(CamelContext context) {
+        this.context = context;
+    }
 
     @Override
     public void start() throws Exception {
@@ -37,7 +42,7 @@ public class RouteManagementService implements StaticService {
     public void stop() throws Exception {
     }
 
-    synchronized public void startFlowRoutes(CamelContext context, Flow flow) throws FlowProcedureException {
+    synchronized public void startFlowRoutes(Flow flow) throws FlowProcedureException {
         if (isRunning(flow))
             return;
         if (isStartingOrStopping(flow))
@@ -56,7 +61,7 @@ public class RouteManagementService implements StaticService {
         }
     }
 
-    synchronized public void stopFlowRoutes(CamelContext context, Flow flow) throws FlowProcedureException {
+    synchronized public void stopFlowRoutes(Flow flow) throws FlowProcedureException {
         if (!isRunning(flow))
             return;
         if (isStartingOrStopping(flow))

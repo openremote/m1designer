@@ -29,6 +29,16 @@ Custom property | Description | Default
         :host {
         }
 
+        #title {
+            background-color: var(--or-panel-header-background-color, rgba(255, 255, 255, 0.8));
+            color: var(--or-panel-header-color, black);
+        }
+
+        #title.dirty {
+            background-color: var(--or-panel-header-dirty-background-color, red);
+            color: var(--or-panel-header-dirty-color, white);
+        }
+
         #switchButton {
             order: 1;
         }
@@ -36,18 +46,6 @@ Custom property | Description | Default
         #switchTitle {
             cursor: pointer;
             order: 2;
-        }
-
-        #switchableTitlePanel,
-        #regularTitlePanel {
-            background-color: var(--or-panel-header-background-color, rgba(255, 255, 255, 0.8));
-            color: var(--or-panel-header-color, black);
-        }
-
-        #switchableTitlePanel.dirty,
-        #regularTitlePanel.dirty {
-            background-color: var(--or-panel-header-dirty-background-color, red);
-            color: var(--or-panel-header-dirty-color, white);
         }
 
         #panel,
@@ -111,24 +109,26 @@ Custom property | Description | Default
     </style>
     <template>
 
-        <template is="dom-if" if="[[switchable]]">
-            <div id="switchableTitlePanel" class="layout horizontal ">
-                <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
-                <template is="dom-if" if="[[title]]">
-                    <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
-                        <paper-ripple center></paper-ripple>
-                        <span>[[title]]</span>
-                    </div>
-                </template>
-            </div>
-        </template>
-        <template is="dom-if" if="[[!switchable]]">
-            <template is="dom-if" if="[[title]]">
-                <div id="regularTitlePanel" class="layout horizontal flex center-justified">
-                    <div id="regularTitle">[[title]]</div>
+        <div id="title">
+            <template is="dom-if" if="[[switchable]]">
+                <div id="switchableTitlePanel" class="layout horizontal ">
+                    <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
+                    <template is="dom-if" if="[[title]]">
+                        <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
+                            <paper-ripple center></paper-ripple>
+                            <span>[[title]]</span>
+                        </div>
+                    </template>
                 </div>
             </template>
-        </template>
+            <template is="dom-if" if="[[!switchable]]">
+                <template is="dom-if" if="[[title]]">
+                    <div id="regularTitlePanel" class="layout horizontal flex center-justified">
+                        <div id="regularTitle">[[title]]</div>
+                    </div>
+                </template>
+            </template>
+        </div>
 
         <paper-dialog id="panel">
             <div class="buttons">
@@ -158,6 +158,7 @@ Custom property | Description | Default
                 dirty: {
                     type: Boolean,
                     value: false,
+                    reflectToAttribute: true,
                     observer: "_onDirtyChange"
                 }
             },
@@ -196,12 +197,7 @@ Custom property | Description | Default
                 });
             },
             _onDirtyChange: function(dirty) {
-                if (this.$$("#switchableTitlePanel")) {
-                    this.toggleClass("dirty", dirty, this.$$("#switchableTitlePanel"));
-                }
-                if (this.$$("#regularTitlePanel")) {
-                    this.toggleClass("dirty", dirty, this.$$("#regularTitlePanel"));
-                }
+                this.toggleClass("dirty", dirty, this.$.title);
             }
         });
     </script>

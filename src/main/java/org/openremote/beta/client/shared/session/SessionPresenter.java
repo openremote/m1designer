@@ -22,12 +22,17 @@ public abstract class SessionPresenter extends RequestPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionPresenter.class);
 
+    public static final int MAX_ATTEMPTS = 12;
+    public static final int DELAY_MILLIS = 5000;
+
+    final protected String serviceUrl;
     protected WebSocket webSocket;
     protected int failureCount;
     protected int currentReconnectAttempt = -1;
 
-    public SessionPresenter(com.google.gwt.dom.client.Element view) {
+    public SessionPresenter(com.google.gwt.dom.client.Element view, String serviceUrl) {
         super(view);
+        this.serviceUrl = serviceUrl;
 
         addEventListener(SessionConnectEvent.class, event -> {
 
@@ -35,7 +40,7 @@ public abstract class SessionPresenter extends RequestPresenter {
                 if (webSocket.getReadyState() != WebSocket.CLOSED) {
                     // Close silently
                     LOG.debug(
-                        "New connection attempt to '" + event.getServiceUrl() + "', closing " +
+                        "New connection attempt to '" + serviceUrl + "', closing " +
                             "stale existing connection silently: " + webSocket.getUrl()
                     );
                     webSocket.setOnclose(null);
@@ -44,7 +49,7 @@ public abstract class SessionPresenter extends RequestPresenter {
                 webSocket = null;
             }
 
-            webSocket = Browser.getWindow().newWebSocket(event.getServiceUrl());
+            webSocket = Browser.getWindow().newWebSocket(serviceUrl);
             webSocket.setOnopen(evt -> {
                 if (webSocket.getReadyState() == WebSocket.OPEN) {
                     LOG.debug("WebSocket open: " + webSocket.getUrl());
@@ -76,37 +81,34 @@ public abstract class SessionPresenter extends RequestPresenter {
                 webSocket.close(1000, "SessionCloseEvent");
             }
         });
-    }
-
-    public void connectAndRetryOnFailure(String serviceUrl, int maxAttempts, int delayMillis) {
 
         addEventListener(SessionOpenedEvent.class, event -> {
             if (currentReconnectAttempt != -1) {
                 LOG.debug("Session opened successfully, resetting failure count...");
+                dispatchEvent(new ShowInfoEvent("Reconnected successfully to server: " + serviceUrl));
                 failureCount = 0;
                 currentReconnectAttempt = -1;
             }
         });
 
         addEventListener(SessionClosedErrorEvent.class, event -> {
-            dispatchEvent(new ShowInfoEvent("Failed server connection, will try a few more times to reach: " + serviceUrl));
+            dispatchEvent(new ShowFailureEvent("Failed server connection, will try a few more times to reach: " + serviceUrl, 3000));
             LOG.debug("Session closed with error, incrementing failure count: " + failureCount);
             failureCount++;
-            if (failureCount < maxAttempts) {
-                LOG.debug("Session reconnection attempt '" + serviceUrl + "' with delay milliseconds: " + delayMillis);
+            if (failureCount < MAX_ATTEMPTS) {
+                LOG.debug("Session reconnection attempt '" + serviceUrl + "' with delay milliseconds: " + DELAY_MILLIS);
                 currentReconnectAttempt = dispatchEvent(
-                    new SessionConnectEvent(serviceUrl),
-                    delayMillis,
+                    new SessionConnectEvent(),
+                    DELAY_MILLIS,
                     currentReconnectAttempt
                 );
             } else {
                 String failureMessage = "Giving up connecting to service after " + failureCount + " failures: " + serviceUrl;
-                dispatchEvent(new ShowFailureEvent(failureMessage));
+                dispatchEvent(new ShowFailureEvent(failureMessage, ShowFailureEvent.DURABLE));
                 LOG.error(failureMessage);
             }
         });
 
-        currentReconnectAttempt = dispatchEvent(new SessionConnectEvent(serviceUrl));
     }
 
     protected void sendMessage(String data) {
@@ -122,7 +124,7 @@ public abstract class SessionPresenter extends RequestPresenter {
         sendMessage(encoderDecoder.encode(event).toString());
     }
 
-    protected String getWebSocketPort() {
+    protected static String getWebSocketPort() {
         MetaElement metaWebSocketPort =
             (MetaElement) Browser.getDocument().querySelector("meta[name=webSocketPort]");
         if (metaWebSocketPort == null)
@@ -130,7 +132,7 @@ public abstract class SessionPresenter extends RequestPresenter {
         return metaWebSocketPort.getContent();
     }
 
-    protected String getWebSocketUrl(String... pathElement) {
+    protected static String getWebSocketUrl(String... pathElement) {
         StringBuilder sb = new StringBuilder();
         sb.append("ws://").append(hostname()).append(":").append(getWebSocketPort());
         if (pathElement != null) {

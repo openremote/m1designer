@@ -30,7 +30,8 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         addEventListener(RequestFailureEvent.class, event -> {
             dispatchEvent(new ShowFailureEvent(
-                event.getRequestFailure().getFailureMessage()
+                event.getRequestFailure().getFailureMessage(),
+                30000
             ));
         });
     }
@@ -41,6 +42,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         protected final JsonEncoderDecoder<T> encoderDecoder;
         protected boolean dispatchedComplete = false;
         protected boolean notifyUserOnSuccess = false;
+        protected boolean notifyUserOnFailure = true;
 
         public ResponseCallback(String requestText, JsonEncoderDecoder<T> encoderDecoder) {
             this.requestText = requestText;
@@ -51,7 +53,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         public void onSuccess(Method method, JSONValue response) {
             if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
-                dispatchEvent(new RequestCompleteEvent());
+                dispatchEvent(new RequestCompleteEvent(requestText));
             }
         }
 
@@ -59,7 +61,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         public void onFailure(Method method, Throwable exception) {
             if (!dispatchedComplete) {
                 dispatchedComplete = true;
-                dispatchEvent(new RequestCompleteEvent());
+                dispatchEvent(new RequestCompleteEvent(requestText));
             }
             RequestFailure requestFailure = new RequestFailure(
                 requestText,
@@ -71,11 +73,18 @@ public abstract class RequestPresenter extends AbstractPresenter {
         }
 
         public void onFailure(RequestFailure requestFailure) {
-            dispatchEvent(new RequestFailureEvent(requestFailure));
+            if (notifyUserOnFailure)
+                dispatchEvent(new RequestFailureEvent(requestFailure));
         }
 
-        public void setNotifyUserOnSuccess(boolean notifyUserOnSuccess) {
+        public ResponseCallback<T> setNotifyUserOnSuccess(boolean notifyUserOnSuccess) {
             this.notifyUserOnSuccess = notifyUserOnSuccess;
+            return this;
+        }
+
+        public ResponseCallback<T> setNotifyUserOnFailure(boolean notifyUserOnFailure) {
+            this.notifyUserOnFailure = notifyUserOnFailure;
+            return this;
         }
     }
 
@@ -166,19 +175,17 @@ public abstract class RequestPresenter extends AbstractPresenter {
         return resource;
     }
 
-    protected String hostname() {
+    protected static String hostname() {
         return Window.Location.getHostName();
     }
 
     protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {
-        sendRequest(true, method, callback);
+        sendRequest(false, true, method, callback);
     }
 
-    protected <T> void sendRequest(boolean notifyUser, Method method, ResponseCallback<T> callback) {
-        if (notifyUser) {
-            dispatchEvent(new RequestStartEvent());
-            callback.setNotifyUserOnSuccess(true);
-        }
+    protected <T> void sendRequest(boolean notifyUserOnSuccess, boolean notifyUserOnFailure, Method method, ResponseCallback<T> callback) {
+        callback.setNotifyUserOnSuccess(notifyUserOnSuccess);
+        callback.setNotifyUserOnFailure(notifyUserOnFailure);
         method.send(callback);
     }
 

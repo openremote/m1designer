@@ -92,6 +92,12 @@ public class FlowModelTest {
             sampleEnvironmentWidget.findSlot(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK.getId()).getLabel(),
             sampleThermostatControl.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId()).getLabel()
         );
+
+        assertTrue(sampleEnvironmentWidget.hasDependency(sampleThermostatControl.getId()));
+        assertTrue(sampleEnvironmentWidget.hasDependency(sampleTemperatureProcessor.getId()));
+        assertTrue(sampleThermostatControl.hasDependency(sampleTemperatureProcessor.getId()));
+        assertFalse(sampleTemperatureProcessor.hasDependency(sampleThermostatControl.getId()));
+        assertFalse(sampleTemperatureProcessor.hasDependency(sampleEnvironmentWidget.getId()));
     }
 
     @Test

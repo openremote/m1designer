@@ -1,16 +1,26 @@
 package org.openremote.beta.server.flow;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.StaticService;
+import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
+import org.openremote.beta.server.util.IdentifierUtil;
+import org.openremote.beta.shared.event.FlowDeploymentFailureEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependencyResolver;
+import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
+
+import static org.openremote.beta.server.util.JsonUtil.JSON;
 
 public class FlowService implements StaticService {
 
@@ -18,6 +28,20 @@ public class FlowService implements StaticService {
 
     final static protected Map<String, Flow> SAMPLE_FLOWS = new LinkedHashMap<>();
     static protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER;
+
+    public static Flow getCopy(Flow flow) {
+        try {
+            return flow != null ? JSON.readValue(JSON.writeValueAsString(flow), Flow.class) : null;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    final protected RouteManagementService routeManagementService;
+
+    public FlowService(RouteManagementService routeManagementService) {
+        this.routeManagementService = routeManagementService;
+    }
 
     @Override
     public void start() throws Exception {
@@ -30,12 +54,10 @@ public class FlowService implements StaticService {
             SAMPLE_DEPENDENCY_RESOLVER = new FlowDependencyResolver() {
                 @Override
                 protected Flow findOwnerFlowOfSlot(String slotId) {
-                    if (SampleEnvironmentWidget.FLOW.findSlot(slotId) != null)
-                        return SAMPLE_FLOWS.get(SampleEnvironmentWidget.FLOW.getId());
-                    if (SampleThermostatControl.FLOW.findSlot(slotId) != null)
-                        return SAMPLE_FLOWS.get(SampleThermostatControl.FLOW.getId());
-                    if (SampleTemperatureProcessor.FLOW.findSlot(slotId) != null)
-                        return SAMPLE_FLOWS.get(SampleTemperatureProcessor.FLOW.getId());
+                    for (Flow sampleFlow : SAMPLE_FLOWS.values()) {
+                        if (sampleFlow.findSlot(slotId) != null)
+                            return sampleFlow;
+                    }
                     return null;
                 }
             };
@@ -62,20 +84,62 @@ public class FlowService implements StaticService {
         }
     }
 
-    public Flow getFlow(@Header("id") String id) {
-        LOG.debug("Getting sample flow: " + id);
-        synchronized (SAMPLE_FLOWS) {
-            // TODO This is ugly, we assume that all dependencies are reachable from the environment widget
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(
-                SAMPLE_FLOWS.get(SampleEnvironmentWidget.FLOW.getId())
-            );
+    public Flow getFlowTemplate() {
+        LOG.debug("Getting flow template");
+        return new Flow("My Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId()));
+    }
 
-            return SAMPLE_FLOWS.get(id);
+    public Flow getFlow(@Header("id") String id) {
+        LOG.debug("Getting flow: " + id);
+        synchronized (SAMPLE_FLOWS) {
+
+            Flow flow = getCopy(SAMPLE_FLOWS.get(id));
+            if (flow == null)
+                return null;
+
+            // TODO Dependency resolution occurs when a flow is loaded?!
+            // TODO Handle exceptions in resolution?
+            try {
+                SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow);
+            } catch (IllegalStateException ex) {
+                LOG.warn("Exception during flow resolution: " + ex.getMessage(), ex);
+                return null;
+            }
+
+            return flow;
+        }
+    }
+
+    public void deleteFlow(String id) throws Exception {
+        LOG.debug("Delete flow: " + id);
+        synchronized (SAMPLE_FLOWS) {
+            Flow flow = getFlow(id);
+
+            // TODO: We must prevent deletion of a flow that is used as a dependency in other flows, this is a hack
+            for (String otherFlowId : SAMPLE_FLOWS.keySet()) {
+                Flow otherFlow = getFlow(otherFlowId);
+                if (otherFlow.hasDependency(id)) {
+                    throw new IllegalStateException("Can't delete flow '" + id + "', is a dependency of : " + otherFlow);
+                }
+            }
+
+            if (flow != null) {
+                // TODO: Exception handling
+                routeManagementService.stopFlowRoutes(flow);
+                SAMPLE_FLOWS.remove(id);
+            }
+        }
+    }
+
+    public void postFlow(Flow flow) {
+        LOG.debug("Posting new flow: " + flow);
+        synchronized (SAMPLE_FLOWS) {
+            SAMPLE_FLOWS.put(flow.getId(), flow);
         }
     }
 
     public boolean putFlow(Flow flow) {
-        LOG.debug("Putting sample flow: " + flow);
+        LOG.debug("Putting flow: " + flow);
         synchronized (SAMPLE_FLOWS) {
 
             if (!SAMPLE_FLOWS.containsKey(flow.getId()))
