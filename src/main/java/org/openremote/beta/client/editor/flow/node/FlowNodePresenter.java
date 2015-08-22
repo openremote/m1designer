@@ -57,6 +57,14 @@ public class FlowNodePresenter extends AbstractPresenter {
         });
     }
 
+    public void deleteNode() {
+        if (flow == null || node == null)
+            return;
+        flow.removeNode(node);
+        dispatchEvent(new FlowNodeCloseEvent());
+        dispatchEvent(new NodeDeletedEvent(flow, node));
+    }
+
     public String getSinkLabel(Slot sink) {
         return sink.getLabel() != null && sink.getLabel().length() > 0
             ? sink.getLabel() + " Slot"

@@ -30,7 +30,6 @@ public class EditorPresenter extends AbstractPresenter {
         addRedirectToShellView(RequestFailureEvent.class);
         addRedirectToShellView(ShowInfoEvent.class);
         addRedirectToShellView(ShowFailureEvent.class);
-        addRedirectToShellView(EditorOpenedEvent.class);
         addRedirectToShellView(FlowEditEvent.class);
         addRedirectToShellView(FlowUpdatedEvent.class);
         addRedirectToShellView(FlowDeletedEvent.class);
@@ -58,7 +57,6 @@ public class EditorPresenter extends AbstractPresenter {
     @Override
     public void attached() {
         super.attached();
-        dispatchEvent(new EditorOpenedEvent());
         dispatchEvent("#editorSidebar", new InventoryRefreshEvent());
     }
 

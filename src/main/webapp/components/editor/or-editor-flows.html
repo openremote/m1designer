@@ -73,6 +73,10 @@
         .flow .label {
             color: var(--or-editor-flow-item-label-color, black);
         }
+
+        .flow .label.unlabeled {
+            font-style: italic;
+        }
     </style>
 
     <template>
@@ -111,7 +115,12 @@
             <template is="dom-repeat" items="[[_presenter.flows]]" as="flow">
                 <div class="flow" on-tap="_flowSelected">
                     <div>
-                        <span class="label">[[flow.label]]</span>
+                        <template is="dom-if" if="[[flow.label]]">
+                            <span class="label">[[flow.label]]</span>
+                        </template>
+                        <template is="dom-if" if="[[!flow.label]]">
+                            <span class="label unlabeled">Unlabeled Flow</span>
+                        </template>
                     </div>
                 </div>
             </template>

@@ -28,6 +28,7 @@ public class ConsolePresenter extends AbstractPresenter {
     public ConsolePresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
+        addRedirectToShellView(ConsoleReadyEvent.class);
         addRedirectToShellView(MessageSendEvent.class);
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
@@ -42,6 +43,12 @@ public class ConsolePresenter extends AbstractPresenter {
             LOG.debug("Message event received from server: " + event.getMessageEvent());
             messageReceived(event.getMessageEvent());
         });
+    }
+
+    @Override
+    public void attached() {
+        super.attached();
+        dispatchEvent(new ConsoleReadyEvent());
     }
 
     protected void messageReceived(MessageEvent event) {

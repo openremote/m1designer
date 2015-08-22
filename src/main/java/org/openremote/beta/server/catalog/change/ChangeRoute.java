@@ -7,16 +7,11 @@ import org.openremote.beta.server.route.predicate.PropertyIsSet;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.model.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_APPEND;
 import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_PREPEND;
 
 public class ChangeRoute extends NodeRoute {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ChangeRoute.class);
-
 
     public ChangeRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
@@ -26,15 +21,16 @@ public class ChangeRoute extends NodeRoute {
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         routeDefinition
             .choice()
-            .id(getProcessorId("selectChange"))
-                .when(new PropertyIsSet(getNode(), PROPERTY_PREPEND))
-                    .transform(body().prepend(Properties.get(getNode().getProperties(), PROPERTY_PREPEND)))
-                    .id(getProcessorId("doPrepend"))
-                .endChoice()
-                .when(new PropertyIsSet(getNode(), PROPERTY_APPEND))
-                    .transform(body().append(Properties.get(getNode().getProperties(), PROPERTY_APPEND)))
-                    .id(getProcessorId("doAppend"))
-                .endChoice()
+            .id(getProcessorId("choicePrepend"))
+            .when(new PropertyIsSet(getNode(), PROPERTY_PREPEND))
+                .transform(body().prepend(Properties.get(getNode().getProperties(), PROPERTY_PREPEND)))
+                .id(getProcessorId("doPrepend"))
+            .end()
+            .choice()
+            .id(getProcessorId("choiceAppend"))
+            .when(new PropertyIsSet(getNode(), PROPERTY_APPEND))
+                .transform(body().append(Properties.get(getNode().getProperties(), PROPERTY_APPEND)))
+                .id(getProcessorId("doAppend"))
             .end();
     }
 }

@@ -93,7 +93,7 @@ Custom property | Description | Default
 
         /* TODO Mixins don't work with content distribution? */
         #panel .buttons /deep/ .toolbar {
-            padding: 0.4em 0;
+            padding: 0.2em 0;
         }
         #panel .buttons /deep/ paper-menu-button {
             padding: 0;
@@ -191,10 +191,8 @@ Custom property | Description | Default
                 return this.$.panel.opened;
             },
             scrollToBottom: function() {
-                this.async(function() {
-                    var scrollable = this.$.panelScrollable.querySelector("#scrollable");
-                    scrollable.scrollTop = scrollable.scrollHeight;
-                });
+                var scrollable = this.$.panelScrollable.querySelector("#scrollable");
+                scrollable.scrollTop = scrollable.scrollHeight;
             },
             _onDirtyChange: function(dirty) {
                 this.toggleClass("dirty", dirty, this.$.title);

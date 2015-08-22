@@ -11,6 +11,7 @@ import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,6 +110,11 @@ public abstract class WireShape extends Group {
             if (getAttachedSlotShape() != null) {
                 getAttachedSlotShape().getHandle().setVisible(true);
             }
+        }
+
+        @Override
+        public String toString() {
+            return attachedSlotShape != null ? attachedSlotShape.getSlot().toString() : "NOT ATTACHED";
         }
 
         protected abstract void layout();
@@ -286,6 +292,14 @@ public abstract class WireShape extends Group {
         // Calculate curve
         sourceHandle.layout();
         sinkHandle.layout();
+    }
+
+    @Override
+    public String toString() {
+        return "WireShape{" +
+            "source=" + sourceHandle +
+            ", sink=" + sinkHandle +
+            "}";
     }
 
     abstract protected void layoutChanged();

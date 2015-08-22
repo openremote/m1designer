@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -15,6 +17,9 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsonSerialize(include = NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Flow extends FlowObject {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Flow.class);
+
 
     public static final String TYPE = "urn:org-openremote:flow";
 
@@ -76,10 +81,11 @@ public class Flow extends FlowObject {
         this.nodes = collection.toArray(new Node[collection.size()]);
     }
 
-    public void removeNode(Node node) {
+    public Wire[] removeNode(Node node) {
         Set<Node> collection = new HashSet<>(Arrays.asList(getNodes()));
         collection.remove(node);
         this.nodes = collection.toArray(new Node[collection.size()]);
+        return removeWiresOf(node);
     }
 
     public Flow[] getDependencies() {
@@ -176,7 +182,21 @@ public class Flow extends FlowObject {
         return wire;
     }
 
-    public Wire removeWire(Slot sourceSlot, Slot sinkSlot) {
+    public Wire removeWire(Wire wire) {
+        Wire removed = null;
+        ArrayList<Wire> collection = new ArrayList<>(Arrays.asList(getWires()));
+        Iterator<Wire> it = collection.iterator();
+        while (it.hasNext()) {
+            if (it.next().equals(wire)) {
+                removed = wire;
+                it.remove();
+            }
+        }
+        this.wires = collection.toArray(new Wire[collection.size()]);
+        return removed;
+    }
+
+    public Wire removeWireBetweenSlots(Slot sourceSlot, Slot sinkSlot) {
         Wire removed = null;
         ArrayList<Wire> collection = new ArrayList<>(Arrays.asList(getWires()));
         Iterator<Wire> it = collection.iterator();
@@ -190,6 +210,26 @@ public class Flow extends FlowObject {
         }
         this.wires = collection.toArray(new Wire[collection.size()]);
         return removed;
+    }
+
+    public Wire[] removeWiresOf(Node node) {
+        Set<Wire> collection = new HashSet<>();
+        for (Slot slot : node.getSlots()) {
+            if (!hasWires(slot.getId()))
+                continue;
+            if (slot.isOfType(Slot.TYPE_SINK)) {
+                Wire[] wires = findWiresForSink(slot.getId());
+                for (Wire wire : wires) {
+                    collection.add(removeWire(wire));
+                }
+            } else if (slot.isOfType(Slot.TYPE_SOURCE)) {
+                Wire[] wires = findWiresForSource(slot.getId());
+                for (Wire wire : wires) {
+                    collection.add(removeWire(wire));
+                }
+            }
+        }
+        return collection.toArray(new Wire[collection.size()]);
     }
 
     public Slot findSlotInAllFlows(String slotId) {
@@ -270,6 +310,19 @@ public class Flow extends FlowObject {
             }
         }
         return collection.toArray(new Node[collection.size()]);
+    }
+
+    public Wire[] findWiresBetween(Node a, Node b) {
+        Set<Wire> collection = new HashSet<>();
+        for (Wire wire : getWires()) {
+            Node sourceOwner = findOwnerNode(wire.getSourceId());
+            Node sinkOwner = findOwnerNode(wire.getSinkId());
+            if ((sourceOwner.getId().equals(a.getId()) && sinkOwner.getId().equals(b.getId()))
+                || (sourceOwner.getId().equals(b.getId()) && sinkOwner.getId().equals(a.getId()))) {
+                collection.add(wire);
+            }
+        }
+        return collection.toArray(new Wire[collection.size()]);
     }
 
     public Node findOwnerNode(String slotId) {

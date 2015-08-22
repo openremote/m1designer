@@ -13,10 +13,10 @@ public class FlowStatusDetail {
     public static final String MARK_DEPLOYING = "deploying";
     public static final String MARK_PROBLEM = "problem";
 
-    public final String mark;
-    public final boolean canStart;
-    public final boolean canStop;
-    public final String text;
+    public String mark;
+    public boolean canStart;
+    public boolean canStop;
+    public String text;
 
     public FlowStatusDetail(String text) {
         this(null, false, false, text);
@@ -78,4 +78,5 @@ public class FlowStatusDetail {
         // TODO More details in event
         this(failureEvent.getPhase());
     }
+
 }

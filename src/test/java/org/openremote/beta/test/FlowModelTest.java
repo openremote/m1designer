@@ -3,18 +3,13 @@ package org.openremote.beta.test;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.FlowDependencyResolver;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Wire;
+import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
 import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
 
 import static org.testng.Assert.*;
 
@@ -122,6 +117,50 @@ public class FlowModelTest {
             sampleEnvironmentWidget.findSubflow(sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).getId(),
             sampleThermostatControl.getId()
         );
+    }
+
+    @Test
+    public void findSlot() {
+        assertEquals(
+            sampleEnvironmentWidget.findSlotInAllFlows(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()).getId(),
+            SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()
+        );
+
+        assertEquals(
+            sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR.getId()).findConnectableSlots(Slot.TYPE_SOURCE).length,
+            1
+        );
+        assertEquals(
+            sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR.getId()).findConnectableSlots(Slot.TYPE_SINK).length,
+            0
+        );
+    }
+
+    @Test
+    public void removeWire() {
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 1);
+        sampleEnvironmentWidget.removeWireBetweenSlots(
+            SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SOURCE,
+            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK
+        );
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 0);
+    }
+
+    @Test
+    public void removeNode() {
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 1);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 1);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_SETPOINT_ACTUATOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 1);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.BEDROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.BEDROOM_THERMOSTAT).length, 1);
+
+        Node livingroomThermostat = sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId());
+        assertEquals(sampleEnvironmentWidget.removeNode(livingroomThermostat).length, 3);
+
+        assertNull(sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()));
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 0);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_SETPOINT_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 0);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_SETPOINT_ACTUATOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 0);
+        assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.BEDROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.BEDROOM_THERMOSTAT).length, 1);
     }
 
 }

@@ -4,6 +4,6 @@ import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.event.Event;
 
 @JsType
-public class ConsoleRefreshedEvent extends Event {
+public class ConsoleReadyEvent extends Event {
 
 }

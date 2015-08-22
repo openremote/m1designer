@@ -63,6 +63,10 @@ public abstract class AbstractPresenter {
         this.@AbstractPresenter::view.notifyPath("_presenter." + path, Math.random()); // Always trigger an update inside Polymer!
     }-*/;
 
+    protected native void pushArray(String array, Object obj) /*-{
+        this.@AbstractPresenter::view.push("_presenter." + array, obj);
+    }-*/;
+
     protected <E extends Event> EventRemover addEventListener(Class<E> eventClass,
                                                            EventListener<E> listener) {
         return addEventListener(getView(), eventClass, listener);

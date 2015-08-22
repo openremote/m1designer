@@ -1,6 +1,9 @@
 <script src="../util.js"></script>
 <script src="../../gwt/Client/Client.nocache.js"></script>
 
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../shared/or-component-behaviors.html">
+
 <link rel="import" href="or-shell-toast.html">
 <link rel="import" href="or-shell-messagelog.html">
 
@@ -23,6 +26,7 @@
 
         Polymer({
             is: 'or-shell',
+            behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,
@@ -30,29 +34,29 @@
                         return new openremote.shell.ShellPresenter(this);
                     }
                 },
-                editorMinWidth: {
+                editorOpen: {
+                    type: Boolean,
+                    value: false
+                },
+                _editorMinWidth: {
                     type: Number,
                     value: 500
                 },
-                consoleWidth: {
+                _consoleWidth: {
                     type: Number,
                     value: 400
                 },
-                consoleResizeHandleWidth: {
+                _consoleResizeHandleWidth: {
                     type: Number,
                     value: 35
                 },
-                consoleResizeThreshold: {
+                _consoleResizeThreshold: {
                     type: Number,
                     value: 0
                 },
-                consoleResizeSnapRightThreshold: {
+                _consoleResizeSnapRightThreshold: {
                     type: Number,
                     value: 150
-                },
-                editorVisible: {
-                    type: Boolean,
-                    reflectToAttribute: true
                 },
                 _consoleResizeInProgress: {
                     type: Number,
@@ -60,56 +64,35 @@
                 }
             },
             listeners: {
-                'show-info': '_showInfo',
-                'show-failure': '_showFailure',
-                'request-complete': '_showInfo'
+                "editor-open": "_onEditorOpen",
+                "editor-close": "_onEditorClose",
+                "show-info": "_onShowInfo",
+                "show-failure": "_onShowFailure",
+                "request-complete": "_onShowInfo"
             },
-            attached: function () {
-                if (this.editorVisible) {
-                    this._showEditor();
-                } else {
-                    this._hideEditor();
+            attached: function() {
+                if (this.editorOpen) {
+                    this.async(function() {
+                        this._toggleEditor();
+                    })
                 }
-
-                var messageServerConnectEvent = new openremote.session.message.MessageServerConnectEvent();
-                this.fire(messageServerConnectEvent.getType(), messageServerConnectEvent);
             },
             _toggleEditor: function () {
-                if (this.editorVisible) {
-                    this._hideEditor();
-                } else {
-                    this._showEditor();
-                }
+                this._presenter.toggleEditor();
             },
-            _showEditor: function () {
+            _onEditorOpen: function() {
                 this.$.editor.style.display = "inherit";
                 this.$.editor.src = "editor.html";
-                this.$.consoleContainer.style.flexBasis = this.consoleWidth + "px";
-                this.$.consoleResizeHandle.style.minWidth = this.consoleResizeHandleWidth + "px";
-                this.$.consoleResizeHandle.style.display = "inherit";
-                this.editorVisible = true;
-
-                var messageLogOpenEvent = new openremote.shell.MessageLogOpenEvent();
-                this.$.messageLog.fire(messageLogOpenEvent.getType(), messageLogOpenEvent);
+                this.$.consoleContainer.style.flexBasis = this._consoleWidth + "px";
+                this.$.consoleResizeHandle.style.minWidth = this._consoleResizeHandleWidth + "px";
+                this.$.consoleResizeHandle.style.display = "block";
             },
-            _hideEditor: function () {
+            _onEditorClose: function() {
                 this.$.editor.style.display = "none";
                 this.$.editor.src = "about:blank";
                 this.$.consoleContainer.style.flexBasis = "100vw";
                 this.$.consoleResizeHandle.style.minWidth = "0";
                 this.$.consoleResizeHandle.style.display = "none";
-
-                if (this.editorVisible) {
-                    this.async(function () {
-                        var editorClosedEvent = new openremote.shell.EditorClosedEvent();
-                        this.fire(editorClosedEvent.getType(), editorClosedEvent);
-                    });
-                }
-
-                this.editorVisible = false;
-
-                var messageLogCloseEvent = new openremote.shell.MessageLogCloseEvent();
-                this.$.messageLog.fire(messageLogCloseEvent.getType(), messageLogCloseEvent);
             },
             _consoleResizeStart: function (e, detail) {
                 this.$.editor.style.pointerEvents = "none";
@@ -133,18 +116,18 @@
                         var newWidth = this._consoleResizeInProgress.panelWidth + cursorOffset;
 
                         // Only move if diff is larger than threshold, might look choppy but avoids too many events
-                        if (Math.abs(this.$.consoleContainer.clientWidth - newWidth) < this.consoleResizeThreshold) {
+                        if (Math.abs(this.$.consoleContainer.clientWidth - newWidth) < this._consoleResizeThreshold) {
                             return;
                         }
 
                         // Snap to right border if we are getting close and still moving towards the right
-                        if (x > document.documentElement.clientWidth - this.consoleResizeSnapRightThreshold && cursorOffset < 0) {
-                            newWidth = this.consoleResizeHandleWidth;
+                        if (x > document.documentElement.clientWidth - this._consoleResizeSnapRightThreshold && cursorOffset < 0) {
+                            newWidth = this._consoleResizeHandleWidth;
                         }
 
                         // Stay within bounds
-                        if (newWidth >= this.consoleResizeHandleWidth
-                                && newWidth + this.editorMinWidth < document.documentElement.clientWidth + 10) {
+                        if (newWidth >= this._consoleResizeHandleWidth
+                                && newWidth + this._editorMinWidth < document.documentElement.clientWidth + 10) {
                             this._consoleResize(newWidth);
                         }
                     }
@@ -166,12 +149,12 @@
             },
             _consoleResize: function (width) {
                 this.$.consoleContainer.style.flexBasis = width + "px";
-                this.consoleWidth = width;
+                this._consoleWidth = width;
             },
-            _showInfo: function (ce, event) {
+            _onShowInfo: function (ce, event) {
                 this.$.toast.show(false, event.getMessage(), 3000);
             },
-            _showFailure: function (ce, event) {
+            _onShowFailure: function (ce, event) {
                 this.$.toast.show(true, event.getMessage(), event.getDurationMillis());
             }
         });
@@ -230,6 +213,7 @@
         }
 
         #consoleResizeHandle {
+            display: none;
             background-color: black;
             height: 100vh;
             flex: 0 0 0;

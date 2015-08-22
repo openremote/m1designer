@@ -73,11 +73,11 @@
             );
             this.fire(widgetPropertyChangedEvent.getType(), widgetPropertyChangedEvent);
         },
-        _onDraggableChanged: function(newValue) {
+        _onDraggableChanged: function(draggable) {
             var controls = this.querySelectorAll(".control");
             for (var i = 0; i < controls.length; i++) {
                 var control = controls[i];
-                control.style.pointerEvents = newValue ? "none" : "";
+                control.style.pointerEvents = draggable ? "none" : "";
             }
         }
     };

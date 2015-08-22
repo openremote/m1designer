@@ -1,11 +1,9 @@
 package org.openremote.beta.client.shared.session.message;
 
-import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.event.Event;
 import org.openremote.beta.shared.event.MessageEvent;
 
-@JsExport
 @JsType
 public class MessageSendEvent extends Event {
 
@@ -14,7 +12,7 @@ public class MessageSendEvent extends Event {
     public MessageSendEvent(MessageEvent messageEvent) {
         this.messageEvent = messageEvent;
 
-        // TODO
+        // TODO This is an example when we need headers
         /*
         Map<String, Object> headers = createMap();
         headers.put("FOO", "fff");

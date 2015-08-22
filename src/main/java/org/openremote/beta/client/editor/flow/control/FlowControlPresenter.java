@@ -3,6 +3,7 @@ package org.openremote.beta.client.editor.flow.control;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import elemental.client.Browser;
 import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.editor.flow.FlowIdEventCodec;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
@@ -107,6 +108,8 @@ public class FlowControlPresenter extends SessionPresenter {
 
         addEventListener(FlowUpdatedEvent.class, event -> {
             setFlowControlDirty(true);
+            if (flowStatusDetail != null)
+                setFlowStatusDetail(flowStatusDetail);
         });
 
         addEventListener(FlowSavedEvent.class, event -> {
@@ -119,17 +122,15 @@ public class FlowControlPresenter extends SessionPresenter {
         });
 
         addEventListener(FlowDeletedEvent.class, event -> {
-            dispatchEvent(new ShowInfoEvent(event.getFlow().getLabel() + " deleted."));
+            dispatchEvent(new ShowInfoEvent("Flow '" + event.getFlow().getLabel() + "' deleted."));
         });
     }
 
     public void flowPropertyChanged() {
-        flowControlDirty = true;
+        flowControlDirty = true; // Assume this is dirty, now other listeners might run
         debounce("FlowPropertyChange", () -> {
-            if (flowControlDirty) {
-                setFlowControlDirty(true);
-                if (flowStatusDetail != null)
-                    setFlowStatusDetail(flowStatusDetail);
+            if (flowControlDirty) { // If it's still dirty (after other listeners executed), tell the user
+                dispatchEvent(new FlowUpdatedEvent(flow));
             }
         }, 500);
     }
@@ -174,6 +175,10 @@ public class FlowControlPresenter extends SessionPresenter {
     public void deleteFlow() {
         if (flow == null)
             return;
+        boolean result =
+            Browser.getWindow().confirm("Are you sure you want to delete flow '" + flow.getLabel() + "'?");
+        if (!result)
+            return;
         sendRequest(
             false,
             false,
@@ -209,25 +214,25 @@ public class FlowControlPresenter extends SessionPresenter {
     }
 
     protected void setFlowControlDirty(boolean dirty) {
-        flowControlDirty= dirty;
+        flowControlDirty = dirty;
         notifyPath("flowControlDirty", flowControlDirty);
     }
 
     protected void setFlowStatusDetail(FlowStatusDetail flowStatusDetail) {
         if (flow != null) {
+
             this.flowStatusDetail = flowStatusDetail;
             notifyPath("flowStatusDetail");
 
-            if (flowStatusDetail.mark.equals(FlowStatusDetail.MARK_DEPLOYED)) {
+            if (unsaved) {
+                flowControlTitle = flow.getLabel() + " (New)";
+            } else if (flowControlDirty) {
+                flowControlTitle = flow.getLabel() + " (Modified)";
+            } else if (flowStatusDetail.mark.equals(FlowStatusDetail.MARK_DEPLOYED)) {
                 flowControlTitle = flow.getLabel() + " (Deployed)";
             } else {
                 flowControlTitle = flow.getLabel();
             }
-
-            if (unsaved) {
-                flowControlTitle += " (New)";
-            }
-
             notifyPath("flowControlTitle", flowControlTitle);
         }
     }

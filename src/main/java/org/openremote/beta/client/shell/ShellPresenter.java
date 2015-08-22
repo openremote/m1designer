@@ -4,12 +4,13 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.html.IFrameElement;
+import org.openremote.beta.client.console.ConsoleReadyEvent;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
-import org.openremote.beta.client.editor.EditorOpenedEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.message.MessageServerConnectEvent;
 import org.openremote.beta.client.shared.session.message.MessageSessionPresenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class ShellPresenter extends MessageSessionPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShellPresenter.class);
+
+    public boolean editorOpen;
 
     public ShellPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -30,35 +33,100 @@ public class ShellPresenter extends MessageSessionPresenter {
                     dispatchEvent(getEditorView(), event);
                     dispatchEvent("#messageLog", event);
                 }
-                dispatchEvent(getConsoleView(), event);
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), event);
+                }
             }
         );
 
-        addEventListener(EditorOpenedEvent.class, event -> dispatchEvent(getConsoleView(), event));
-        addEventListener(EditorClosedEvent.class, event -> dispatchEvent(getConsoleView(), event));
+        addEventListener(
+            EditorOpenEvent.class,
+            event -> {
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), event);
+                }
+            }
+        );
+
+        addEventListener(
+            EditorCloseEvent.class,
+            event -> {
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), event);
+                }
+            });
+
+        addEventListener(
+            ConsoleReadyEvent.class, event -> {
+                if (!isConsoleViewAvailable())
+                    return;
+                if (editorOpen) {
+                    dispatchEvent(getConsoleView(), new EditorOpenEvent());
+                } else {
+                    dispatchEvent(getConsoleView(), new EditorCloseEvent());
+                }
+            }
+        );
 
         addEventListener(
             FlowEditEvent.class,
             event -> {
                 dispatchEvent("#messageLog", event);
-                dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
+                }
             }
         );
 
         addEventListener(
             FlowUpdatedEvent.class,
-            event -> dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()))
+            event -> {
+                dispatchEvent("#messageLog", event);
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
+                }
+            }
         );
 
         addEventListener(
             FlowDeletedEvent.class,
-            event -> dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(null))
+            event -> {
+                dispatchEvent("#messageLog", event);
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(null));
+                }
+            }
         );
+    }
+
+    @Override
+    public void attached() {
+        super.attached();
+        dispatchEvent(new MessageServerConnectEvent());
+    }
+
+    public void toggleEditor() {
+        if (editorOpen) {
+            dispatchEvent("#messageLog", new MessageLogCloseEvent());
+            dispatchEvent(new EditorCloseEvent());
+            editorOpen = false;
+        } else {
+            dispatchEvent("#messageLog", new MessageLogOpenEvent());
+            dispatchEvent(new EditorOpenEvent());
+            editorOpen = true;
+        }
+        notifyPath("editorOpen", editorOpen);
     }
 
     protected boolean isEditorViewAvailable() {
         IFrameElement frame = (IFrameElement) getRequiredChildView("#editor");
         Element view = frame.getContentDocument().querySelector("or-editor");
+        return view != null;
+    }
+
+    protected boolean isConsoleViewAvailable() {
+        IFrameElement frame = (IFrameElement) getRequiredChildView("#console");
+        Element view = frame.getContentDocument().querySelector("or-console");
         return view != null;
     }
 

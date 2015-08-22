@@ -1,9 +1,8 @@
-package org.openremote.beta.client.console;
+package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.event.Event;
 
 @JsType
-public class ConsoleRefreshedEvent extends Event {
-
+public class EditorCloseEvent extends Event {
 }

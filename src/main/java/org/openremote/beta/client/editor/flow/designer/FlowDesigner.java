@@ -50,7 +50,7 @@ public abstract class FlowDesigner {
 
         @Override
         protected void slotRemoved(SlotShape slotShape) {
-            for (WireShape attachedWireShape : getAttachedWireShape(slotShape.getSlot().getId())) {
+            for (WireShape attachedWireShape : getAttachedWireShapes(slotShape.getSlot().getId())) {
                 attachedWireShape.finalizeRemove();
             }
         }
@@ -114,7 +114,7 @@ public abstract class FlowDesigner {
         @Override
         protected void detached(Node sourceNode, Slot sourceSlot, Node sinkNode, Slot sinkSlot) {
             if (sourceSlot != null && sinkSlot != null) {
-                Wire wire = flow.removeWire(sourceSlot, sinkSlot);
+                Wire wire = flow.removeWireBetweenSlots(sourceSlot, sinkSlot);
                 if (wire != null)
                     onRemoval(wire);
             }
@@ -131,7 +131,7 @@ public abstract class FlowDesigner {
                     continue;
                 SlotShape slotShape = getSlotShape(slot.getId());
                 if (slotShape == null)
-                    return;
+                    continue;
                 slotShape.setAttached(flow.hasWires(slot.getId()));
             }
             FlowDesigner.this.getLayer().batch();
@@ -192,7 +192,7 @@ public abstract class FlowDesigner {
         }
     }
 
-    public void updateNode(Node node) {
+    public void updateNodeShape(Node node) {
         NodeShape nodeShape = getNodeShape(node.getId());
         if (nodeShape != null) {
             nodeShape.updateNode(node);
@@ -200,19 +200,27 @@ public abstract class FlowDesigner {
         }
     }
 
-    public void addNode(Node node) {
-        flow.addNode(node);
-        addNodeShape(node);
-        onAddition(node);
+    public void addNodeShape(Node node) {
+        getLayer().add(new NodeShapeImpl(node));
+        getLayer().batch();
+    }
+
+    public void deleteNodeShape(Node node) {
+        NodeShape nodeShape = getNodeShape(node.getId());
+        getLayer().remove(nodeShape);
+
+        for (Slot slot : node.getSlots()) {
+            WireShape[] wireShapes = getAttachedWireShapes(slot.getId());
+            for (WireShape wireShape : wireShapes) {
+                wireShape.finalizeRemove();
+            }
+        }
+
+        getLayer().batch();
     }
 
     protected Layer getLayer() {
         return layer;
-    }
-
-    protected void addNodeShape(Node node) {
-        getLayer().add(new NodeShapeImpl(node));
-        getLayer().batch();
     }
 
     protected void addWireShape(Wire wire) {
@@ -224,7 +232,7 @@ public abstract class FlowDesigner {
         getLayer().batch();
     }
 
-    protected WireShape[] getAttachedWireShape(String slotId) {
+    protected WireShape[] getAttachedWireShapes(String slotId) {
         Set<WireShape> collection = new HashSet<>();
         for (IPrimitive<?> primitive : wiringLayer.getChildNodes()) {
             if (primitive instanceof WireShape) {
@@ -260,8 +268,6 @@ public abstract class FlowDesigner {
     }
 
     protected abstract void onSelection(Node node);
-
-    protected abstract void onAddition(Node node);
 
     protected abstract void onMoved(Node node);
 

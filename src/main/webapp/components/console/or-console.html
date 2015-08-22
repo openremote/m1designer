@@ -3,13 +3,15 @@
 <script src="../../bower_components/draggabilly/dist/draggabilly.pkgd.min.js"></script>
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../shared/or-component-behaviors.html">
 
 <link rel="import" href="or-console-widget-composite.html"/>
 <link rel="import" href="or-console-widget-sink.html"/>
 
 <link rel="import" href="or-console-widget-textlabel.html"/>
 <link rel="import" href="or-console-widget-pushbutton.html"/>
+
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <script>
     function onGwtReadyClient() {
@@ -24,6 +26,7 @@
 
         Polymer({
             is: 'or-console',
+            behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,
@@ -41,14 +44,14 @@
                 }
             },
             listeners: {
-                "editor-opened": "_onEditorOpened",
-                "editor-closed": "_onEditorClosed",
+                "editor-open": "_onEditorOpen",
+                "editor-close": "_onEditorClose",
                 "console-refreshed": "_onConsoleRefreshed"
             },
-            _onEditorOpened: function () {
+            _onEditorOpen: function () {
                 this.toggleAttribute("hidden", false, this.$.controls);
             },
-            _onEditorClosed: function () {
+            _onEditorClose: function () {
                 this.toggleAttribute("hidden", true, this.$.controls);
                 this._disableDragging();
             },
@@ -79,6 +82,7 @@
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.enable();
                     draggable.element.style.cursor = "move";
+                    draggable.element.set("draggable", true);
                 }.bind(this));
                 this.updateStyles();
             },
@@ -86,6 +90,7 @@
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.disable();
                     draggable.element.style.cursor = "";
+                    draggable.element.set("draggable", false);
                 }.bind(this));
                 this.updateStyles();
             },

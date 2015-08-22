@@ -14,6 +14,7 @@
     document.addEventListener("gwtReadyClient", function () {
         Polymer({
             is: 'or-editor-flow-node',
+            behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,
@@ -59,6 +60,9 @@
                 while (container.lastChild) {
                     Polymer.dom(container).removeChild(container.lastChild);
                 }
+            },
+            _deleteNode: function() {
+                this._presenter.deleteNode();
             },
             _nodePropertyChanged: function () {
                 this._presenter.nodePropertyChanged();
@@ -113,30 +117,10 @@
                   hidden>
 
             <div class="toolbar">
-                <paper-button on-tap="_redeployFlow">
+                <paper-button  on-tap="_deleteNode">
                     <iron-icon icon="delete"></iron-icon>
                     Remove
                 </paper-button>
-                <paper-menu-button no-animations vertical-offset="20" horizontal-offset="-50">
-                    <paper-button class="dropdown-trigger">
-                        <iron-icon icon="menu"></iron-icon>
-                        Manage
-                    </paper-button>
-                    <paper-menu class="dropdown-content">
-                        <div>
-                            <paper-button>
-                                <iron-icon icon="add"></iron-icon>
-                                Do more work
-                            </paper-button>
-                        </div>
-                        <div>
-                            <paper-button>
-                                <iron-icon icon="delete"></iron-icon>
-                                More items...
-                            </paper-button>
-                        </div>
-                    </paper-menu>
-                </paper-menu-button>
             </div>
 
             <div class="content">

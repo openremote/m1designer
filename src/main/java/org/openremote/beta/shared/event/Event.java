@@ -1,19 +1,15 @@
 package org.openremote.beta.shared.event;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsNoExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsExport
 @JsType
 public abstract class Event {
 
     private static final Logger LOG = LoggerFactory.getLogger(Event.class);
 
-    @JsNoExport
     public static String getType(String simpleClassName) {
         String type = Util.toLowerCaseDash(simpleClassName);
 
@@ -23,7 +19,6 @@ public abstract class Event {
         return type;
     }
 
-    @JsNoExport
     public static String getType(Class<? extends Event> actionClass) {
         return getType(actionClass.getSimpleName());
     }

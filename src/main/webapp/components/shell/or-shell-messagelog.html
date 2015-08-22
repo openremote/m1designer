@@ -5,6 +5,48 @@
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-shell-messagelog',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.MessageLogPresenter(this);
+                    }
+                }
+            },
+            listeners: {
+                "message-log-open": "_onMessageLogOpen",
+                "message-log-close": "_onMessageLogClose"
+            },
+            observers: [
+                "_onMessageLogUpdate(_presenter.log.splices)"
+            ],
+            _onMessageLogOpen: function () {
+                this.toggleAttribute("hidden", false, this.$.panel);
+            },
+            _onMessageLogClose: function () {
+                this.toggleAttribute("hidden", true, this.$.panel);
+                this._clearMessageLog();
+            },
+            _clearMessageLog: function () {
+                this._presenter.clearMessageLog();
+            },
+            _onMessageLogUpdate: function () {
+                this.debounce("LogScrollDelay", function() {
+                    this.$.panel.scrollToBottom();
+                }, 1);
+            },
+            _getLabelClass: function (value) {
+                return "layout horizontal label " + (value ? "" : "empty");
+            }
+        });
+    });
+</script>
+
 <dom-module id="or-shell-messagelog">
 
     <style>
@@ -55,28 +97,28 @@
 
     <template>
         <or-panel id="panel"
-                  title="[[_panelTitle]]"
+                  title="[[_presenter.messageLogTitle]]"
                   switchable="right"
                   hidden>
             <div class="content">
-                <template is="dom-repeat" items="[[_messageLog]]">
+                <template is="dom-repeat" items="[[_presenter.log]]" as="logDetail">
                     <div>
                         <div class="message layout horizontal center">
                             <div class="flex-6 layout vertical">
-                                <div class$="{{_getLabelClass(item.flowLabel)}}">
-                                    Flow:&#160;<span class="value">[[item.flowLabel]]</span>
+                                <div class$="{{_getLabelClass(logDetail.flowLabel)}}">
+                                    Flow:&#160;<span class="value">[[logDetail.flowLabel]]</span>
                                 </div>
-                                <div class$="{{_getLabelClass(item.nodeLabel)}}">
-                                    Node:&#160;<span class="value">[[item.nodeLabel]]</span>
+                                <div class$="{{_getLabelClass(logDetail.nodeLabel)}}">
+                                    Node:&#160;<span class="value">[[logDetail.nodeLabel]]</span>
                                 </div>
-                                <div class$="{{_getLabelClass(item.sinkLabel)}}">
-                                    Sink:&#160;<span class="value">[[item.sinkLabel]]</span>
+                                <div class$="{{_getLabelClass(logDetail.sinkLabel)}}">
+                                    Sink:&#160;<span class="value">[[logDetail.sinkLabel]]</span>
                                 </div>
-                                <div class$="{{_getLabelClass(item.instanceLabel)}}">
-                                    Instance:&#160;<span class="value">[[item.instanceLabel]]</span>
+                                <div class$="{{_getLabelClass(logDetail.instanceLabel)}}">
+                                    Instance:&#160;<span class="value">[[logDetail.instanceLabel]]</span>
                                 </div>
                             </div>
-                            <div class="flex-5 body">[[item.body]]</div>
+                            <div class="flex-5 body">[[logDetail.body]]</div>
                         </div>
                     </div>
                 </template>
@@ -86,15 +128,11 @@
             </div>
 
             <div class="toolbar layout horizontal center">
-
                 <div class="layout horizontal center">
-                    <paper-toggle-button checked
-                                         id="messagesForAllFlows"
-                                         on-change="_onMessagesForAllFlowsChanged"></paper-toggle-button>
+                    <paper-toggle-button checked="{{_presenter.watchAllFlows}}"></paper-toggle-button>
                     <span style="margin: 0 0.5em;">WATCH ALL FLOWS</span>
                 </div>
-
-                <paper-button id="clearMessageLogButton" on-tap="_clearMessageLog">
+                <paper-button on-tap="_clearMessageLog">
                     <iron-icon icon="icons:clear"></iron-icon>
                     Clear
                 </paper-button>
@@ -102,72 +140,5 @@
 
         </or-panel>
     </template>
-
-    <script>
-        document.addEventListener("gwtReadyClient", function () {
-
-            Polymer({
-                is: 'or-shell-messagelog',
-                properties: {
-                    _presenter: {
-                        type: Object,
-                        value: function () {
-                            return new openremote.shell.MessageLogPresenter(this);
-                        }
-                    },
-                    _flowLabel: {
-                        type: String,
-                        value: ""
-                    },
-                    _messageLog: {
-                        type: Array,
-                        value: []
-                    },
-                    _panelTitle: {
-                        type: String,
-                        value: "Message Log",
-                        computed: "_computePanelTitle(_flowLabel, _messageLog.*)"
-                    }
-                },
-                listeners: {
-                    "message-log-open": "_onMessageLogOpen",
-                    "message-log-close": "_onMessageLogClose",
-                    "message-log-update": "_onMessageLogUpdate",
-                    "flow-edit": "_onFlowEdit"
-                },
-                _onMessageLogOpen: function () {
-                    this.toggleAttribute("hidden", false, this.$.panel);
-                },
-                _onMessageLogClose: function () {
-                    this.toggleAttribute("hidden", true, this.$.panel);
-                    this._clearMessageLog();
-                },
-                _onMessagesForAllFlowsChanged: function(event) {
-                    this._presenter.watchAllFlows = event.target.checked;
-                },
-                _clearMessageLog: function () {
-                    this.set("_messageLog", []);
-                },
-                _onFlowEdit: function(ce, event) {
-                    this.set("_flowLabel", event.getFlow().label);
-                    this.toggleAttribute("checked", false, this.$.messagesForAllFlows);
-                },
-                _computePanelTitle: function(flowLabel, messageLog) {
-                    var title = "Message Log";
-                    title += flowLabel ? " (Flow: " + flowLabel+ ", " : " (";
-                    title += "Received: " + messageLog.base.length + ")";
-                    return title;
-                },
-                _onMessageLogUpdate: function (ce, event) {
-                    var messageLogDetail = event.getDetail();
-                    this.push("_messageLog", messageLogDetail);
-                    this.$.panel.scrollToBottom();
-                },
-                _getLabelClass: function (value) {
-                    return "layout horizontal label " + (value ? "" : "empty");
-                }
-            });
-        });
-    </script>
 </dom-module>
 

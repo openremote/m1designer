@@ -2,7 +2,9 @@ package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.event.MessageEvent;
@@ -18,23 +20,42 @@ public class MessageLogPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageLogPresenter.class);
 
-    public boolean active;
     public Flow flow;
+    public String messageLogTitle = "Message Log";
+    public MessageLogDetail[] log = new MessageLogDetail[0];
     public boolean watchAllFlows;
 
     public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(MessageLogOpenEvent.class, event -> {
-            active = true;
+            watchAllFlows = true;
+            notifyPath("watchAllFlows", watchAllFlows);
+            setMessageLogTitle();
         });
 
-        addEventListener(MessageLogCloseEvent.class, event -> {
-            active = false;
+        addEventListener(FlowEditEvent.class, false, event -> {
+            flow = event.getFlow();
+            notifyPath("flow");
+            watchAllFlows = false;
+            notifyPath("watchAllFlows", watchAllFlows);
+            setMessageLogTitle();
         });
 
-        addEventListener(FlowEditEvent.class, true, false, event -> {
-            this.flow = event.getFlow();
+        addEventListener(FlowUpdatedEvent.class, event -> {
+            if (this.flow != null && this.flow.getId().equals(event.getFlow().getId())) {
+                this.flow = event.getFlow();
+                notifyPath("flow");
+                setMessageLogTitle();
+            }
+        });
+
+        addEventListener(FlowDeletedEvent.class, event -> {
+            if (this.flow != null && this.flow.getId().equals(event.getFlow().getId())) {
+                this.flow = null;
+                notifyPath("flow");
+                setMessageLogTitle();
+            }
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -51,12 +72,28 @@ public class MessageLogPresenter extends AbstractPresenter {
                     msgSlot = msgNode.findSlot(msgEvent.getSinkSlotId());
             }
 
+            LOG.info("### WATCH ALL FLOWS: " + watchAllFlows);
+
             if (watchAllFlows || msgFlow != null) {
                 MessageLogDetail detail = new MessageLogDetail(
                     msgEvent, msgFlow, msgNode, msgSlot
                 );
-                dispatchEvent(new MessageLogUpdateEvent(detail));
+                pushArray("log", detail);
             }
+            setMessageLogTitle();
         });
+    }
+
+    public void setMessageLogTitle() {
+        messageLogTitle = "Message Log (";
+        if (flow != null && flow.getLabel() != null && flow.getLabel().length() > 0)
+            messageLogTitle += "Flow: " + flow.getLabel() + ", ";
+        messageLogTitle += "Received: " + log.length + ")";
+        notifyPath("messageLogTitle", messageLogTitle);
+    }
+
+    public void clearMessageLog() {
+        this.log = new MessageLogDetail[0];
+        notifyPath("log", log);
     }
 }
