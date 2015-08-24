@@ -50,7 +50,7 @@ public class FlowsPresenter extends RequestPresenter {
         );
     }
 
-    protected void loadFlow(String flowId) {
+    public void loadFlow(String flowId) {
         sendRequest(
             resource("flow", flowId).get(),
             new ObjectResponseCallback<Flow>("Load flow", FLOW_CODEC) {
@@ -62,7 +62,7 @@ public class FlowsPresenter extends RequestPresenter {
         );
     }
 
-    protected void createFlow() {
+    public void createFlow() {
         sendRequest(
             false, false,
             resource("flow", "template").get(),
