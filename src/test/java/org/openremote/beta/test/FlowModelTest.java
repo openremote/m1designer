@@ -5,7 +5,6 @@ import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
@@ -104,9 +103,9 @@ public class FlowModelTest {
     }
 
     @Test
-    public void findNodesWithProperty() {
+    public void findWidgetNodes() {
         assertEquals(
-            sampleThermostatControl.findNodesWithProperty(Widget.WIDGET_PROPERTIES).length,
+            sampleThermostatControl.findClientWidgetNodes().length,
             6
         );
     }

@@ -56,9 +56,9 @@
                 this._disableDragging();
             },
             _onConsoleRefreshed: function (ce, event) {
-                var widgets = Polymer.dom(this.$.container).childNodes;
+                var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
+
                 this.set("_haveWidgets", widgets.length);
-                this.toggleAttribute("checked", false, this.$$("#draggingSwitch"));
 
                 this.set("_draggableWidgets", []);
                 widgets.forEach(function (widget) {
@@ -67,15 +67,17 @@
                     });
 
                     draggableWidget.on("dragEnd", function (event, pointer) {
-                        draggableWidget.element.setAttribute("position-x", draggableWidget.element.offsetLeft);
-                        draggableWidget.element.setAttribute("position-y", draggableWidget.element.offsetTop);
+                        draggableWidget.element.onDragEnd(draggableWidget.element.offsetLeft, draggableWidget.element.offsetTop);
                     });
 
                     this.push("_draggableWidgets", draggableWidget);
                 }.bind(this));
 
                 this.async(function () {
-                    this._disableDragging();
+                    if (this.$$("#draggingSwitch") && this.$$("#draggingSwitch").checked) {
+                        this._disableDragging();
+                        this._enableDragging();
+                    }
                 });
             },
             _enableDragging: function () {
@@ -127,7 +129,7 @@
             padding: 1em;
         }
 
-        #container {
+        #widgetComponentContainer {
             white-space: nowrap;
             cursor: default;
         }
@@ -140,6 +142,7 @@
                                      on-change="_onDraggingSwitch"></paper-toggle-button>
             </template>
         </div>
+
         <template is="dom-if" if="[[!_haveWidgets]]">
             <div id="empty">
                 <h1>OpenRemote Console</h1>
@@ -149,8 +152,8 @@
                 </p>
             </div>
         </template>
-        <div id="container"></div>
+
+        <div id="widgetComponentContainer"></div>
+
     </template>
 </dom-module>
-
-

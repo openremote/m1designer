@@ -3,11 +3,16 @@ package org.openremote.beta.client.editor.flow.designer;
 import com.ait.lienzo.client.core.shape.Circle;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.shape.Text;
+import com.ait.lienzo.client.core.types.Shadow;
+import com.ait.lienzo.shared.core.types.Color;
+import com.ait.lienzo.shared.core.types.ColorName;
+import org.openremote.beta.client.shared.Timeout;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
+import static org.openremote.beta.client.shared.Timeout.debounce;
 
 public class SlotShape {
 
@@ -116,6 +121,23 @@ public class SlotShape {
             value = value.substring(0, SLOT_VALUE_MAX_LENGTH - 3) + "...";
         }
         slotValueText.setText(value);
+
+        slotValueText.setShadow(new Shadow(SLOT_VALUE_TEXT_HIGHLIGHT_SHADOW_COLOR, 5, 0, 0));
+        slotValueText.setFillColor(SLOT_VALUE_TEXT_HIGHLIGHT_COLOR);
+        getHandle().setStrokeColor(SLOT_HANDLE_HIGHLIGHT_OUTLINE_COLOR);
+        getHandle().setStrokeWidth(SLOT_PADDING);
+        debounce(
+            "HighlightSlot" + getSlot().getId(),
+            () -> {
+                slotValueText.setShadow(null);
+                slotValueText.setFillColor(SLOT_VALUE_TEXT_COLOR);
+                getNodeShape().getLayer().batch();
+                getHandle().setStrokeColor(ColorName.TRANSPARENT);
+                getHandle().setStrokeWidth(0);
+            },
+            1000
+        );
+
         updateSlotText();
     }
 

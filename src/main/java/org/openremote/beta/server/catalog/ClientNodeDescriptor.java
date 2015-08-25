@@ -20,8 +20,9 @@ public abstract class ClientNodeDescriptor extends NodeDescriptor {
     }
 
     @Override
-    public boolean isClientAccessEnabled() {
-        return true;
+    public Node initialize(Node node) {
+        node = super.initialize(node);
+        node.setClientAccess(true);
+        return node;
     }
-
 }

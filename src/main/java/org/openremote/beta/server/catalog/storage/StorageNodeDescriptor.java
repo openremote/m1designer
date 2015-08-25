@@ -2,7 +2,6 @@ package org.openremote.beta.server.catalog.storage;
 
 import org.apache.camel.CamelContext;
 import org.openremote.beta.server.catalog.NodeDescriptor;
-import org.openremote.beta.server.catalog.function.FunctionRoute;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;

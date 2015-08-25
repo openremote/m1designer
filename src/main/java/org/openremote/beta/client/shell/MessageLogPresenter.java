@@ -72,8 +72,6 @@ public class MessageLogPresenter extends AbstractPresenter {
                     msgSlot = msgNode.findSlot(msgEvent.getSinkSlotId());
             }
 
-            LOG.info("### WATCH ALL FLOWS: " + watchAllFlows);
-
             if (watchAllFlows || msgFlow != null) {
                 MessageLogDetail detail = new MessageLogDetail(
                     msgEvent, msgFlow, msgNode, msgSlot

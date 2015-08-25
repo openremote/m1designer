@@ -7,23 +7,23 @@ import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.model.Properties;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
 
-public class FunctionRoute extends NodeRoute {
+public class FunctionRoute extends NodeRoute<FunctionProperties> {
 
     public FunctionRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node);
+        super(context, flow, node, FunctionProperties.class);
     }
 
     @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
-        String javascriptlet = Properties.get(getNode().getProperties(), "javascript");
-        if (javascriptlet != null && javascriptlet.length() > 0) {
+        if (getNodeProperties() != null
+            && getNodeProperties().getJavascript() != null
+            && getNodeProperties().getJavascript().length() > 0) {
             routeDefinition
                 .process(exchange -> {
                     Map<String, Object> arguments = new HashMap<>();
@@ -37,7 +37,7 @@ public class FunctionRoute extends NodeRoute {
                     exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
                 })
                 .id(getProcessorId("prepareJavascript"))
-                .transform(javaScript(javascriptlet))
+                .transform(javaScript(getNodeProperties().getJavascript()))
                 .id(getProcessorId("executeJavascript"))
                 .process(exchange -> {
                     Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);

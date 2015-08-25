@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
 import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
@@ -16,10 +17,7 @@ import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
-import org.openremote.beta.client.editor.flow.node.FlowNodeCloseEvent;
-import org.openremote.beta.client.editor.flow.node.FlowNodeEditEvent;
-import org.openremote.beta.client.editor.flow.node.NodeDeletedEvent;
-import org.openremote.beta.client.editor.flow.node.NodeUpdatedEvent;
+import org.openremote.beta.client.editor.flow.node.*;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.shared.flow.Flow;
@@ -38,6 +36,8 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     public Flow flow;
     public FlowDesigner flowDesigner;
+
+    protected boolean isFlowNodeOpen;
     protected LienzoPanel flowDesignerPanel;
     protected Transform flowDesignerInitialTransform;
 
@@ -47,8 +47,12 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(FlowEditEvent.class, event -> {
             this.flow = event.getFlow();
             notifyPath("flow");
+
             dispatchEvent("#flowControl", new FlowControlStartEvent(flow, event.isUnsaved()));
+
             dispatchEvent("#flowNode", new FlowNodeCloseEvent());
+            isFlowNodeOpen = false;
+
             startFlowDesigner();
         });
 
@@ -60,12 +64,16 @@ public class FlowEditorPresenter extends RequestPresenter {
             this.flow = null;
             this.notifyPathNull("flow");
             dispatchEvent("#flowControl", new FlowControlStopEvent());
+
             dispatchEvent("#flowNode", new FlowNodeCloseEvent());
+            isFlowNodeOpen = false;
+
             stopFlowDesigner();
         });
 
         addEventListener(FlowDesignerNodeSelectedEvent.class, event -> {
             dispatchEvent("#flowNode", new FlowNodeEditEvent(flow, event.getNode()));
+            isFlowNodeOpen = true;
         });
 
         addEventListener(NodeUpdatedEvent.class, event -> {
@@ -89,6 +97,25 @@ public class FlowEditorPresenter extends RequestPresenter {
                 Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getMessageEvent().getSinkSlotId());
                 if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
                     flowDesigner.receiveMessageEvent(event.getMessageEvent());
+                }
+            }
+        });
+
+        addEventListener(ConsoleWidgetUpdatedEvent.class, event -> {
+            if (flow != null && flowDesigner != null) {
+                Node node = flow.findNode(event.getNodeId());
+                if (node != null) {
+                    LOG.debug("Received console widget update: " + node);
+                    node.setProperties(event.getProperties());
+
+                    LOG.debug("Updating flow designer node shape with properties: " + node.getProperties());
+                    flowDesigner.updateNodeShape(node);
+
+                    // Careful, this should not bounce back to the console!
+                    dispatchEvent("#flowControl", new FlowUpdatedEvent(flow));
+                    if (isFlowNodeOpen) {
+                        dispatchEvent("#flowNode", new NodePropertiesRefreshEvent(node.getId()));
+                    }
                 }
             }
         });
@@ -123,8 +150,8 @@ public class FlowEditorPresenter extends RequestPresenter {
                         Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
                         double x = (positionX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
                         double y = (positionY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
-                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_X, x);
-                        node.getEditorProperties().put(Node.EDITOR_PROPERTY_Y, y);
+                        node.getEditorSettings().setPositionX(x);
+                        node.getEditorSettings().setPositionY(y);
 
                         LOG.debug("Adding node shape to flow designer: " + node);
                         flowDesigner.addNodeShape(node);
@@ -136,7 +163,7 @@ public class FlowEditorPresenter extends RequestPresenter {
     }
 
     protected void initFlowDesigner() {
-        Element container = getRequiredChildView("#flowDesigner");
+        Element container = getRequiredElement("#flowDesigner");
         this.flowDesignerPanel = new LienzoPanel();
 
         flowDesignerPanel.setSelectCursor(Style.Cursor.MOVE);
@@ -190,5 +217,6 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     protected void stopFlowDesigner() {
         flowDesignerPanel.getScene().removeAll();
+        flowDesigner = null;
     }
 }

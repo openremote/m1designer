@@ -8,9 +8,7 @@ import com.ait.lienzo.shared.core.types.ColorName;
 import com.ait.lienzo.shared.core.types.DragMode;
 import com.ait.lienzo.shared.core.types.IColor;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +17,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.*;
-import static org.openremote.beta.shared.flow.Node.*;
-import static org.openremote.beta.shared.model.PropertyDescriptor.TYPE_DOUBLE;
 
 public abstract class NodeShape extends Group {
 
@@ -35,8 +31,8 @@ public abstract class NodeShape extends Group {
         setDragMode(DragMode.SAME_LAYER);
         addNodeDragMoveHandler(event -> {
             if (this.node != null) {
-                this.node.getEditorProperties().put(EDITOR_PROPERTY_X, getX());
-                this.node.getEditorProperties().put(EDITOR_PROPERTY_Y, getY());
+                this.node.getEditorSettings().setPositionX(getX());
+                this.node.getEditorSettings().setPositionY(getY());
             }
         });
         addNodeDragEndHandler(event -> {
@@ -65,8 +61,8 @@ public abstract class NodeShape extends Group {
     public void updateNode(Node node) {
         this.node = node;
 
-        setX(Properties.get(this.node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_X));
-        setY(Properties.get(this.node.getEditorProperties(), TYPE_DOUBLE, EDITOR_PROPERTY_Y));
+        setX(this.node.getEditorSettings().getPositionX());
+        setY(this.node.getEditorSettings().getPositionY());
 
         updateShape();
     }
@@ -113,7 +109,7 @@ public abstract class NodeShape extends Group {
             add(patchLabel);
         }
 
-        Text patchTypeLabel = new Text(Properties.get(this.node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
+        Text patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
         patchTypeLabel.setFontStyle("italic");
         patchTypeLabel.setFillColor(PATCH_TITLE_TEXT_COLOR);
         patchTypeLabel.setX(header.getBoundingBox().getWidth() / 2 - patchTypeLabel.getBoundingBox().getWidth() / 2);
@@ -134,7 +130,10 @@ public abstract class NodeShape extends Group {
         double width = PATCH_MIN_WIDTH;
         Text patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
         width = Math.max(width, patchLabel.getBoundingBox().getWidth());
-        Text patchTypeLabel = new Text(Properties.get(this.node.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
+        Text patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
+        if (node.getLabel() == null || node.getLabel().length() == 0) {
+            patchTypeLabel.setFontSize(PATCH_LABEL_FONT_SIZE);
+        }
         width = Math.max(width, patchTypeLabel.getBoundingBox().getWidth());
 
         double largestSource = 0;
@@ -158,8 +157,7 @@ public abstract class NodeShape extends Group {
     }
 
     protected IColor getPatchColor() {
-        String color = Properties.get(node.getEditorProperties(), EDITOR_PROPERTY_COLOR);
-        switch (color != null ? NodeColor.valueOf(color) : NodeColor.DEFAULT) {
+        switch (node.getEditorSettings().getNodeColor()) {
             case SENSOR_ACTUATOR:
                 return PATCH_SENSOR_ACTUATOR_COLOR;
             case VIRTUAL:

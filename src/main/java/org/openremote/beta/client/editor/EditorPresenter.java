@@ -2,6 +2,7 @@ package org.openremote.beta.client.editor;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.catalog.CatalogSwitchEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowSavedEvent;
@@ -51,6 +52,10 @@ public class EditorPresenter extends AbstractPresenter {
 
         addEventListener(FlowSavedEvent.class, event -> {
             dispatchEvent("#editorSidebar", new InventoryRefreshEvent());
+        });
+
+        addEventListener(ConsoleWidgetUpdatedEvent.class, event ->  {
+            dispatchEvent("#flowEditor", event);
         });
     }
 

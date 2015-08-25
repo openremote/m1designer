@@ -39,13 +39,10 @@ public class ProducerRoute extends NodeRoute {
         }
 
         @Override
-        public NodeColor getColor() {
-            return NodeColor.VIRTUAL;
-        }
-
-        @Override
-        public boolean isClientAccessEnabled() {
-            return true;
+        public Node initialize(Node node) {
+            node = super.initialize(node);
+            node.setClientAccess(true);
+            return node;
         }
 
         @Override
@@ -64,11 +61,6 @@ public class ProducerRoute extends NodeRoute {
     @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         // Nothing to do
-    }
-
-    @Override
-    protected boolean isPublishingMessageEvents() {
-        return true;
     }
 
     @Override

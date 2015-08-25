@@ -136,7 +136,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
         }
         // TODO: Should we check flow/node identifiers against message event data?
 
-        if (!sinkNode.isClientAccessEnabled()) {
+        if (!sinkNode.isClientAccess()) {
             LOG.debug("Client access not enabled, dropping received message event for: " + sinkNode);
             return;
         }
@@ -166,7 +166,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
     public void sendMessageEvent(Node node, Slot sink, String body, Map<String, Object> headers) {
         LOG.debug("Preparing outgoing message event for: " + node);
 
-        if (!node.isClientAccessEnabled()) {
+        if (!node.isClientAccess()) {
             LOG.debug("Client access not enabled, not sending message event to: " + node);
             return;
         }

@@ -3,34 +3,28 @@ package org.openremote.beta.server.catalog.change;
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.route.NodeRoute;
-import org.openremote.beta.server.route.predicate.PropertyIsSet;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.model.Properties;
 
-import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_APPEND;
-import static org.openremote.beta.server.catalog.change.ChangeNodeDescriptor.PROPERTY_PREPEND;
-
-public class ChangeRoute extends NodeRoute {
+public class ChangeRoute extends NodeRoute<ChangeProperties> {
 
     public ChangeRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node);
+        super(context, flow, node, ChangeProperties.class);
     }
 
     @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
-        routeDefinition
-            .choice()
-            .id(getProcessorId("choicePrepend"))
-            .when(new PropertyIsSet(getNode(), PROPERTY_PREPEND))
-                .transform(body().prepend(Properties.get(getNode().getProperties(), PROPERTY_PREPEND)))
-                .id(getProcessorId("doPrepend"))
-            .end()
-            .choice()
-            .id(getProcessorId("choiceAppend"))
-            .when(new PropertyIsSet(getNode(), PROPERTY_APPEND))
-                .transform(body().append(Properties.get(getNode().getProperties(), PROPERTY_APPEND)))
-                .id(getProcessorId("doAppend"))
-            .end();
+
+        if (getNodeProperties() != null && getNodeProperties().getPrepend() != null) {
+            routeDefinition
+                .transform(body().prepend(getNodeProperties().getPrepend()))
+                .id(getProcessorId("doPrepend"));
+        }
+
+        if (getNodeProperties() != null && getNodeProperties().getAppend() != null) {
+            routeDefinition
+                .transform(body().append(getNodeProperties().getAppend()))
+                .id(getProcessorId("doAppend"));
+        }
     }
 }

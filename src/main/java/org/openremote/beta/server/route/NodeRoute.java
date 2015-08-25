@@ -1,5 +1,6 @@
 package org.openremote.beta.server.route;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -11,20 +12,19 @@ import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
-import org.openremote.beta.shared.model.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.openremote.beta.server.route.RouteConstants.INSTANCE_ID;
 import static org.openremote.beta.server.route.RouteConstants.SINK_SLOT_ID;
 import static org.openremote.beta.server.route.SubflowRoute.copyCorrelationStack;
-import static org.openremote.beta.shared.flow.Node.PROPERTY_POST_ENDPOINT;
-import static org.openremote.beta.shared.flow.Node.PROPERTY_PRE_ENDPOINT;
+import static org.openremote.beta.server.util.JsonUtil.JSON;
 
-public abstract class NodeRoute extends RouteBuilder {
+public abstract class NodeRoute<T> extends RouteBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeRoute.class);
 
@@ -38,12 +38,32 @@ public abstract class NodeRoute extends RouteBuilder {
 
     protected final Flow flow;
     protected final Node node;
+    protected final ObjectNode nodePropertiesTree;
+    protected final T nodeProperties;
     protected final ProducerTemplate producerTemplate;
 
     public NodeRoute(CamelContext context, Flow flow, Node node) {
+        this(context, flow, node, null);
+    }
+    public NodeRoute(CamelContext context, Flow flow, Node node, Class<? extends T> propertiesClass) {
         super(context);
         this.flow = flow;
         this.node = node;
+        if (node.getProperties() != null) {
+            try {
+                this.nodePropertiesTree = JSON.readValue(node.getProperties(), ObjectNode.class);
+                if (propertiesClass != null) {
+                    nodeProperties = JSON.readValue(node.getProperties(), propertiesClass);
+                } else {
+                    nodeProperties = null;
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException("Error reading properties of '" + node.getIdentifier() + "'", ex);
+            }
+        } else {
+            nodePropertiesTree = null;
+            nodeProperties = null;
+        }
         this.producerTemplate = getContext().createProducerTemplate();
     }
 
@@ -53,6 +73,17 @@ public abstract class NodeRoute extends RouteBuilder {
 
     public Node getNode() {
         return node;
+    }
+
+    /**
+     * http://wiki.fasterxml.com/JacksonTreeModel
+     */
+    public ObjectNode getNodePropertiesTree() {
+        return nodePropertiesTree;
+    }
+
+    public T getNodeProperties() {
+        return nodeProperties;
     }
 
     public String getRouteId() {
@@ -147,24 +178,18 @@ public abstract class NodeRoute extends RouteBuilder {
         }
 
         // Optional sending exchange to an endpoint before node processing
-        if (node.hasProperties()) {
-            String preEndpoint = Properties.get(node.getProperties(), PROPERTY_PRE_ENDPOINT);
-            if (preEndpoint != null) {
-                routeDefinition.to(preEndpoint)
-                    .id(getProcessorId("preEndpoint"));
-            }
+        if (getNode().getPreEndpoint() != null) {
+            routeDefinition.to(getNode().getPreEndpoint())
+                .id(getProcessorId("preEndpoint"));
         }
 
         // The processing of the node
         configureProcessing(routeDefinition);
 
         // Optional sending exchange to an endpoint after processing
-        if (node.hasProperties()) {
-            String postEndpoint = Properties.get(node.getProperties(), PROPERTY_POST_ENDPOINT);
-            if (postEndpoint != null) {
-                routeDefinition.to(postEndpoint)
-                    .id(getProcessorId("postEndpoint"));
-            }
+        if (getNode().getPostEndpoint()!= null) {
+            routeDefinition.to(getNode().getPostEndpoint())
+                .id(getProcessorId("postEndpoint"));
         }
 
         routeDefinition.removeHeader(INSTANCE_ID)
@@ -184,11 +209,10 @@ public abstract class NodeRoute extends RouteBuilder {
         return true;
     }
 
-    // Generally all nodes which are stateful should probably publish message events.
     // This can then be selectively enabled in the event service with clientAccess property
     // on the node, so we don't spam the client event bus.
     protected boolean isPublishingMessageEvents() {
-        return false;
+        return true;
     }
 
     protected void configureDestination(RouteDefinition routeDefinition) throws Exception {

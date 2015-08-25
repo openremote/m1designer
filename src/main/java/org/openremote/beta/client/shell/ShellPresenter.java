@@ -6,6 +6,7 @@ import elemental.dom.Element;
 import elemental.html.IFrameElement;
 import org.openremote.beta.client.console.ConsoleReadyEvent;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
+import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
@@ -69,6 +70,14 @@ public class ShellPresenter extends MessageSessionPresenter {
         );
 
         addEventListener(
+            ConsoleWidgetUpdatedEvent.class, event -> {
+                if (isEditorViewAvailable()) {
+                    dispatchEvent(getEditorView(), event);
+                }
+            }
+        );
+
+        addEventListener(
             FlowEditEvent.class,
             event -> {
                 dispatchEvent("#messageLog", event);
@@ -119,19 +128,19 @@ public class ShellPresenter extends MessageSessionPresenter {
     }
 
     protected boolean isEditorViewAvailable() {
-        IFrameElement frame = (IFrameElement) getRequiredChildView("#editor");
+        IFrameElement frame = (IFrameElement) getRequiredElement("#editor");
         Element view = frame.getContentDocument().querySelector("or-editor");
         return view != null;
     }
 
     protected boolean isConsoleViewAvailable() {
-        IFrameElement frame = (IFrameElement) getRequiredChildView("#console");
+        IFrameElement frame = (IFrameElement) getRequiredElement("#console");
         Element view = frame.getContentDocument().querySelector("or-console");
         return view != null;
     }
 
     protected Element getEditorView() {
-        IFrameElement frame = (IFrameElement) getRequiredChildView("#editor");
+        IFrameElement frame = (IFrameElement) getRequiredElement("#editor");
         Element view = frame.getContentDocument().querySelector("or-editor");
         if (view == null)
             throw new IllegalArgumentException("Missing or-editor view component in editor frame.");
@@ -139,7 +148,7 @@ public class ShellPresenter extends MessageSessionPresenter {
     }
 
     protected Element getConsoleView() {
-        IFrameElement frame = (IFrameElement) getRequiredChildView("#console");
+        IFrameElement frame = (IFrameElement) getRequiredElement("#console");
         Element view = frame.getContentDocument().querySelector("or-console");
         if (view == null)
             throw new IllegalArgumentException("Missing or-console view component in console frame.");

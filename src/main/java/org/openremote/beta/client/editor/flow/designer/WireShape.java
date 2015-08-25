@@ -127,10 +127,10 @@ public abstract class WireShape extends Group {
     protected static Point2DArray calculateCurve(double x1, double y1, double x2, double y2) {
         // The plus/minus one is to avoid bleeding of the anti-aliased background
         return new Point2DArray(
-            new Point2D(x1 - 1, y1),
+            new Point2D(x1 - SLOT_PADDING, y1),
             new Point2D(x1 + WIRE_CUBE_DISTANCE, y1),
             new Point2D(x2 - WIRE_CUBE_DISTANCE, y2),
-            new Point2D(x2 + 1, y2)
+            new Point2D(x2 + SLOT_PADDING, y2)
         );
     }
 

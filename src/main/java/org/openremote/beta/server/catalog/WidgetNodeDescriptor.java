@@ -1,31 +1,29 @@
 package org.openremote.beta.server.catalog;
 
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.widget.Widget;
 
-import java.util.Map;
-
-import static org.openremote.beta.shared.widget.Widget.*;
+import java.util.List;
 
 public abstract class WidgetNodeDescriptor extends ClientNodeDescriptor {
 
     @Override
     public Node initialize(Node node) {
-        Node result = super.initialize(node);
-
-        Widget.getWidgetProperties(node).put(PROPERTY_COMPONENT, getComponent());
-
-        initializeDefaults(Widget.getWidgetDefaults(node));
-
-        return result;
+        node = super.initialize(node);
+        node.setClientWidget(true);
+        return node;
     }
 
-    protected void initializeDefaults(Map<String, Object> properties) {
-        properties.put(PROPERTY_POSITION_X, 0);
-        properties.put(PROPERTY_POSITION_Y, 0);
+
+    @Override
+    public void addEditorComponents(List<String> editorComponents) {
+        super.addEditorComponents(editorComponents);
+        editorComponents.add("or-editor-node-widget");
     }
 
-    protected abstract String getComponent();
-
+    @Override
+    protected WidgetProperties getInitialProperties() {
+        return new WidgetProperties(getWidgetComponent(), 0, 0);
+    }
+    protected abstract String getWidgetComponent();
 
 }

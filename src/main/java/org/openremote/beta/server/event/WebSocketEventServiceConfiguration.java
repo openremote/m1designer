@@ -4,7 +4,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.websocket.WebsocketComponent;
-import org.apache.camel.component.websocket.WebsocketConstants;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.shared.event.FlowIdEvent;
@@ -52,7 +51,7 @@ public class WebSocketEventServiceConfiguration implements Configuration {
                     .to("websocket://" + WEBSOCKET_FLOW_EVENTS + "?sendToAll=true");
 
                 // Receive events on the websocket and publish them on the local bus
-                from("websocket://" + WEBSOCKET_MESSAGE_EVENTS)
+                from("websocket://" + WEBSOCKET_MESSAGE_EVENTS + "?maxIdleTime=30000")
                     .routeId("Receive incoming message events on WebSocket")
                     .convertBodyTo(MessageEvent.class)
                     .to(EventService.INCOMING_MESSAGE_EVENT_QUEUE);

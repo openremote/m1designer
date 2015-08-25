@@ -4,7 +4,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.route.predicate.SinkSlotPosition;
-import org.openremote.beta.server.route.predicate.PropertyIsTrue;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.slf4j.Logger;
@@ -13,9 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.openremote.beta.server.catalog.filter.FilterNodeDescriptor.PROPERTY_ON_TRIGGER;
-
-public class FilterRoute extends NodeRoute {
+public class FilterRoute extends NodeRoute<FilterProperties> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterRoute.class);
 
@@ -24,12 +21,7 @@ public class FilterRoute extends NodeRoute {
     final protected Map<String, Object> instanceValues = new HashMap<>();
 
     public FilterRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node);
-    }
-
-    @Override
-    protected boolean isPublishingMessageEvents() {
-        return true;
+        super(context, flow, node, FilterProperties.class);
     }
 
     @Override
@@ -52,9 +44,9 @@ public class FilterRoute extends NodeRoute {
                 .id(getProcessorId("assumeFilterPass"))
                 .choice()
                     .id(getProcessorId("applyRules"))
-                        .when(new PropertyIsTrue(getNode(), PROPERTY_ON_TRIGGER))
+                        .when(method(getNodeProperties(), "isWaitForTrigger"))
                             .setHeader(FILTER_PASS, constant(false))
-                            .id(getProcessorId("applyOnTrigger"))
+                            .id(getProcessorId("applyWaitForTrigger"))
                         // TODO: Other filter rules
                 .end()
             .endChoice()

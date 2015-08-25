@@ -43,8 +43,10 @@ public class SensorRoute extends NodeRoute {
         }
 
         @Override
-        public boolean isClientAccessEnabled() {
-            return true;
+        public Node initialize(Node node) {
+            node = super.initialize(node);
+            node.setClientAccess(true);
+            return node;
         }
 
         @Override
@@ -62,10 +64,5 @@ public class SensorRoute extends NodeRoute {
     @Override
     protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
         // Nothing to do
-    }
-
-    @Override
-    protected boolean isPublishingMessageEvents() {
-        return true;
     }
 }

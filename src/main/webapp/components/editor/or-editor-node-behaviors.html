@@ -2,32 +2,31 @@
     window.openremote = window.openremote || {};
 
     window.openremote.NodeEditor = {
-
         properties: {
-            flow: {
-                type: Object
-            },
-            node: {
+            _presenter: {
                 type: Object,
-                observer: "_init"
+                value: function () {
+                    return new openremote.editor.flow.node.FlowNodeEditorPresenter(this);
+                }
+            },
+            nodeId: {
+                type: String
             },
             nodeProperties: {
-                type: Object
+                type: Object,
+                value: undefined
             }
         },
         observers: [
-            "_nodePropertiesChanged(nodeProperties.*)"
+            "_oNodePropertiesChanged(nodeProperties.*)"
         ],
-        attached: function() {
-            Polymer.dom(this.root).querySelectorAll(".nodePropertyInput").forEach(function(nodePropertyInput) {
-            }.bind(this));
+        ready: function () {
+            Polymer.dom(this).classList.add("or-editor-node-editor");
         },
-        _init: function(node) {
-            this.set("nodeProperties", openremote.Properties.getProperties(node.properties));
-        },
-        _nodePropertiesChanged: function() {
-            openremote.Properties.setProperties(this.nodeProperties, this.node.properties);
-            this.fire("nodePropertiesChanged");
+        _oNodePropertiesChanged: function (event) {
+            if (event.path != "nodeProperties") {
+                this._presenter.nodePropertiesChanged(this.nodeId, this.nodeProperties);
+            }
         }
     };
 

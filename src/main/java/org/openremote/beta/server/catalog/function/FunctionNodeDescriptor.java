@@ -14,8 +14,6 @@ public class FunctionNodeDescriptor extends NodeDescriptor {
     public static final String TYPE = "urn:org-openremote:flow:node:function";
     public static final String TYPE_LABEL = "Function";
 
-    public static final String PROPERTY_JAVASCRIPT = "javascript";
-
     @Override
     public String getType() {
         return TYPE;

@@ -66,10 +66,10 @@ public class Flow extends FlowObject {
         return collection.toArray(new Node[collection.size()]);
     }
 
-    public Node[] findNodesWithProperty(String property) {
+    public Node[] findClientWidgetNodes() {
         Set<Node> collection = new HashSet<>();
         for (Node node : getNodes()) {
-            if (node.hasProperties() && node.getProperties().containsKey(property))
+            if (node.isClientWidget())
                 collection.add(node);
         }
         return collection.toArray(new Node[collection.size()]);

@@ -39,10 +39,4 @@ public class ClientRoute extends NodeRoute {
         }
         return false;
     }
-
-    @Override
-    protected boolean isPublishingMessageEvents() {
-        return true;
-    }
-
 }

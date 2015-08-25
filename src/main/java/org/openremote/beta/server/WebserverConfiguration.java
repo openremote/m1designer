@@ -96,6 +96,7 @@ public class WebserverConfiguration implements Configuration {
                     )
 
                     .bindingMode(RestBindingMode.json)
+                    .dataFormatProperty("json.out.disableFeatures", "WRITE_NULL_MAP_VALUES,WRITE_EMPTY_JSON_ARRAYS")
 
                     .endpointProperty("headerFilterStrategy", "customHeaderFilterStrategy")
                     .endpointProperty("handlers", "staticResourcesHandler");

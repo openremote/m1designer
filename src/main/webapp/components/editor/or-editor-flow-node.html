@@ -2,6 +2,7 @@
 
 <link rel="import" href="or-editor-node-behaviors.html">
 <link rel="import" href="or-editor-node-change.html">
+<link rel="import" href="or-editor-node-widget.html">
 
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/av-icons.html">
@@ -9,6 +10,7 @@
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <script>
     document.addEventListener("gwtReadyClient", function () {
@@ -28,44 +30,21 @@
                 'flow-node-close': "_nodeClose"
             },
             observers: [
-                "_nodePropertyChanged(_presenter.node.label)"
+                "_nodeChanged(_presenter.node.label)",
+                "_nodeChanged(_presenter.node.clientAccess)"
             ],
             _nodeOpen: function (ce, event) {
-                this.async(function() {
-                    this._removeEditorComponent();
-                    this._addEditorComponent(event.getEditorComponent());
-                });
                 this.toggleAttribute("hidden", false, this.$.panel);
                 this.$.panel.open();
             },
             _nodeClose: function () {
-                this._removeEditorComponent();
                 this.toggleAttribute("hidden", true, this.$.panel);
-            },
-            _addEditorComponent: function(component) {
-                if (component) {
-                    var container = this.$.editorComponentContainer;
-                    var editorComponent = document.createElement(component);
-                    Polymer.dom(container).appendChild(editorComponent);
-                    editorComponent.set("_presenter", this._presenter);
-                    editorComponent.set("flow", this._presenter.flow);
-                    editorComponent.set("node", this._presenter.node);
-                    editorComponent.addEventListener("nodePropertiesChanged", function() {
-                        this._nodePropertyChanged();
-                    }.bind(this));
-                }
-            },
-            _removeEditorComponent: function() {
-                var container = this.$.editorComponentContainer;
-                while (container.lastChild) {
-                    Polymer.dom(container).removeChild(container.lastChild);
-                }
             },
             _deleteNode: function() {
                 this._presenter.deleteNode();
             },
-            _nodePropertyChanged: function () {
-                this._presenter.nodePropertyChanged();
+            _nodeChanged: function (e) {
+                this._presenter.nodeChanged();
             },
             _getSinkLabel: function(sink) {
                 return this._presenter.getSinkLabel(sink);
@@ -117,6 +96,11 @@
                   hidden>
 
             <div class="toolbar">
+                <template is="dom-if" if="[[!_presenter.isSubflow]]">
+                    <paper-toggle-button checked="{{_presenter.node.clientAccess}}"></paper-toggle-button>
+                    <span>CLIENT ACCESS</span>
+                </template>
+
                 <paper-button  on-tap="_deleteNode">
                     <iron-icon icon="delete"></iron-icon>
                     Remove

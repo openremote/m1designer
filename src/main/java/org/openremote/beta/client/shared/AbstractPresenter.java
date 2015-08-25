@@ -1,9 +1,11 @@
 package org.openremote.beta.client.shared;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.Node;
 import elemental.dom.TimeoutHandler;
 import elemental.events.CustomEvent;
 import elemental.events.EventRemover;
@@ -31,6 +33,22 @@ public abstract class AbstractPresenter {
         return view;
     }
 
+    public Component getViewComponent() {
+        return (Component)view;
+    }
+
+    public Component.DOM getViewRootDOM() {
+        return getDOMRoot(getView());
+    }
+
+    public Component.DOM getDOM(Node node) {
+        return JsUtil.dom(node);
+    }
+
+    public Component.DOM getDOMRoot(Element element) {
+        return JsUtil.domRoot(element);
+    }
+
     public void ready() {
         LOG.debug("Ready: " + getView().getLocalName());
     }
@@ -53,6 +71,10 @@ public abstract class AbstractPresenter {
 
     protected native void notifyPath(String path, Object[] array) /*-{
         this.@AbstractPresenter::view.notifyPath("_presenter." + path, array);
+    }-*/;
+
+    protected native void notifyPath(String path, JavaScriptObject jso) /*-{
+        this.@AbstractPresenter::view.notifyPath("_presenter." + path, jso);
     }-*/;
 
     protected native void notifyPathNull(String path) /*-{
@@ -121,7 +143,7 @@ public abstract class AbstractPresenter {
 
     // We want to make sure that events dispatched on child views do not bubble up again!
     protected int dispatchEvent(String childViewSelector, Event event) {
-        return dispatchEvent(false, getOptionalChildView(childViewSelector), event, 0, -1);
+        return dispatchEvent(false, getOptionalElement(childViewSelector), event, 0, -1);
     }
 
     // We want to make sure that events dispatched on child views do not bubble up again!
@@ -161,15 +183,19 @@ public abstract class AbstractPresenter {
         }
     }
 
-    protected Element getOptionalChildView(String selector) {
-        return getView().querySelector(selector);
+    protected Element getOptionalElement(String selector) {
+        return getViewComponent().$$(selector);
     }
 
-    protected Element getRequiredChildView(String selector) {
-        Element child = getOptionalChildView(selector);
+    protected Element getRequiredElement(String selector) {
+        Element child = getOptionalElement(selector);
         if (child == null)
-            throw new RuntimeException("Missing child view '" + selector + "' on: " + getView().getLocalName());
+            throw new RuntimeException("Missing child element '" + selector + "' on: " + getView().getLocalName());
         return child;
+    }
+
+    protected Component.DOM getRequiredElementDOM(String selector) {
+        return getDOM(getRequiredElement(selector));
     }
 
     protected void addRedirectToShellView(Class<? extends Event> eventClass) {

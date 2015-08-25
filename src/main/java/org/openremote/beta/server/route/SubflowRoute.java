@@ -2,25 +2,25 @@ package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.RouteDefinition;
-import org.openremote.beta.server.catalog.NodeDescriptor;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
-import org.openremote.beta.shared.flow.*;
-import org.openremote.beta.shared.widget.Composite;
-import org.openremote.beta.shared.widget.Widget;
+import org.openremote.beta.server.catalog.WidgetProperties;
+import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-
-import static org.openremote.beta.shared.widget.Widget.PROPERTY_COMPONENT;
-import static org.openremote.beta.shared.widget.Widget.PROPERTY_POSITION_X;
-import static org.openremote.beta.shared.widget.Widget.PROPERTY_POSITION_Y;
 
 public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
+
+    public static final String WIDGET_COMPONENT = "or-console-widget-composite";
 
     public static class Descriptor extends VirtualNodeDescriptor {
 
@@ -45,17 +45,21 @@ public class SubflowRoute extends NodeRoute {
         }
 
         @Override
-        public NodeColor getColor() {
-            return NodeColor.VIRTUAL;
+        public Node initialize(Node node) {
+            node = super.initialize(node);
+            node.setClientWidget(true);
+            return node;
         }
 
         @Override
-        public Node initialize(Node node) {
-            Node result = super.initialize(node);
-            Widget.getWidgetProperties(node).put(PROPERTY_COMPONENT, Composite.COMPONENT);
-            Widget.getWidgetDefaults(node).put(PROPERTY_POSITION_X, 0);
-            Widget.getWidgetDefaults(node).put(PROPERTY_POSITION_Y, 0);
-            return result;
+        public void addEditorComponents(List<String> editorComponents) {
+            super.addEditorComponents(editorComponents);
+            editorComponents.add("or-editor-node-widget");
+        }
+
+        @Override
+        protected Object getInitialProperties() {
+            return new WidgetProperties(WIDGET_COMPONENT, 0, 0);
         }
     }
 
@@ -120,6 +124,11 @@ public class SubflowRoute extends NodeRoute {
 
     public SubflowRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
+    }
+
+    @Override
+    protected boolean isPublishingMessageEvents() {
+        return false;
     }
 
     @Override

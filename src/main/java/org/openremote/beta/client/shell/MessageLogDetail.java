@@ -5,9 +5,6 @@ import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.model.Properties;
-
-import static org.openremote.beta.shared.flow.Node.EDITOR_PROPERTY_TYPE_LABEL;
 
 @JsType
 public class MessageLogDetail {
@@ -18,17 +15,17 @@ public class MessageLogDetail {
     public String instanceLabel;
     public String body;
 
-    public MessageLogDetail(MessageEvent event, Flow msgFlow, Node msgNode, Slot msgSlot) {
-        this.flowLabel = msgFlow != null ? msgFlow.getLabel() : null;
+    public MessageLogDetail(MessageEvent event, Flow flow, Node node, Slot slot) {
+        this.flowLabel = flow != null ? flow.getLabel() : null;
 
-        if (msgNode != null) {
-            this.nodeLabel = msgNode.getLabel() != null
-                ? msgNode.getLabel() + " (" + Properties.get(msgNode.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL) + ")"
-                : Properties.get(msgNode.getEditorProperties(), EDITOR_PROPERTY_TYPE_LABEL);
+        if (node != null) {
+            this.nodeLabel = node.getLabel() != null
+                ? node.getLabel() + " (" + node.getEditorSettings().getTypeLabel() + ")"
+                : node.getEditorSettings().getTypeLabel();
         }
 
-        if (msgNode == null || msgSlot == null || !msgNode.getLabel().equals(msgSlot.getLabel())) {
-            this.sinkLabel = msgSlot != null ? msgSlot.getLabel() : event.getSinkSlotId();
+        if (node == null || slot == null || !node.getLabel().equals(slot.getLabel())) {
+            this.sinkLabel = slot != null ? slot.getLabel() : event.getSinkSlotId();
         }
         this.instanceLabel = event.getInstanceId();
         this.body = event.getBody() != null && event.getBody().length() > 0 ? event.getBody() : "(EMPTY MESSAGE)";

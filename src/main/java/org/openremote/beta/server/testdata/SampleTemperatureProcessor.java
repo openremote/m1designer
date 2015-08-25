@@ -1,7 +1,9 @@
 package org.openremote.beta.server.testdata;
 
 import org.openremote.beta.server.catalog.change.ChangeNodeDescriptor;
+import org.openremote.beta.server.catalog.change.ChangeProperties;
 import org.openremote.beta.server.catalog.function.FunctionNodeDescriptor;
+import org.openremote.beta.server.catalog.function.FunctionProperties;
 import org.openremote.beta.server.catalog.storage.StorageNodeDescriptor;
 import org.openremote.beta.server.route.ConsumerRoute;
 import org.openremote.beta.server.route.ProducerRoute;
@@ -15,7 +17,6 @@ import java.io.IOException;
 
 import static org.openremote.beta.server.util.IdentifierUtil.generateGlobalUniqueId;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
-import static org.openremote.beta.shared.flow.Node.*;
 
 public class SampleTemperatureProcessor {
 
@@ -27,8 +28,8 @@ public class SampleTemperatureProcessor {
 
     static {
         new ConsumerRoute.Descriptor().initialize(FAHRENHEIT_CONSUMER);
-        FAHRENHEIT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_X, 10);
-        FAHRENHEIT_CONSUMER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
+        FAHRENHEIT_CONSUMER.getEditorSettings().setPositionX((double) 10);
+        FAHRENHEIT_CONSUMER.getEditorSettings().setPositionY((double) 250);
     }
 
     /* ###################################################################################### */
@@ -38,10 +39,14 @@ public class SampleTemperatureProcessor {
     public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE), FAHRENHEIT_CONVERTER_SINK, FAHRENHEIT_CONVERTER_SOURCE);
 
     static {
-        new FunctionNodeDescriptor().initialize(FAHRENHEIT_CONVERTER);
-        FAHRENHEIT_CONVERTER.getProperties().put(FunctionNodeDescriptor.PROPERTY_JAVASCRIPT, "output['value'] = ((input - 32)*5)/9");
-        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_X, 300);
-        FAHRENHEIT_CONVERTER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
+        new FunctionNodeDescriptor() {
+            @Override
+            protected Object getInitialProperties() {
+                return new FunctionProperties("output['value'] = ((input - 32)*5)/9");
+            }
+        }.initialize(FAHRENHEIT_CONVERTER);
+        FAHRENHEIT_CONVERTER.getEditorSettings().setPositionX((double) 300);
+        FAHRENHEIT_CONVERTER.getEditorSettings().setPositionY((double) 250);
     }
 
     /* ###################################################################################### */
@@ -51,9 +56,9 @@ public class SampleTemperatureProcessor {
 
     static {
         new StorageNodeDescriptor().initialize(TEMPERATURE_DATABASE);
-        TEMPERATURE_DATABASE.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:temperatureDatabase");
-        TEMPERATURE_DATABASE.getEditorProperties().put(EDITOR_PROPERTY_X, 350);
-        TEMPERATURE_DATABASE.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
+        TEMPERATURE_DATABASE.setPostEndpoint("mock:temperatureDatabase");
+        TEMPERATURE_DATABASE.getEditorSettings().setPositionX((double) 350);
+        TEMPERATURE_DATABASE.getEditorSettings().setPositionY((double) 400);
     }
 
     /* ###################################################################################### */
@@ -64,9 +69,9 @@ public class SampleTemperatureProcessor {
 
     static {
         new ProducerRoute.Descriptor().initialize(CELCIUS_PRODUCER);
-        CELCIUS_PRODUCER.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:producerCelcius");
-        CELCIUS_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 750);
-        CELCIUS_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 250);
+        CELCIUS_PRODUCER.setPostEndpoint("mock:producerCelcius");
+        CELCIUS_PRODUCER.getEditorSettings().setPositionX((double) 750);
+        CELCIUS_PRODUCER.getEditorSettings().setPositionY((double) 250);
     }
 
     /* ###################################################################################### */
@@ -76,10 +81,14 @@ public class SampleTemperatureProcessor {
     public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), ChangeNodeDescriptor.TYPE), CELCIUS_APPENDER_SINK, CELCIUS_APPENDER_SOURCE);
 
     static {
-        new ChangeNodeDescriptor().initialize(CELCIUS_APPENDER);
-        CELCIUS_APPENDER.getProperties().put(ChangeNodeDescriptor.PROPERTY_APPEND, " C");
-        CELCIUS_APPENDER.getEditorProperties().put(EDITOR_PROPERTY_X, 650);
-        CELCIUS_APPENDER.getEditorProperties().put(EDITOR_PROPERTY_Y, 400);
+        new ChangeNodeDescriptor() {
+            @Override
+            protected Object getInitialProperties() {
+                return new ChangeProperties(null, " C");
+            }
+        }.initialize(CELCIUS_APPENDER);
+        CELCIUS_APPENDER.getEditorSettings().setPositionX((double) 650);
+        CELCIUS_APPENDER.getEditorSettings().setPositionY((double) 400);
     }
 
     /* ###################################################################################### */
@@ -90,9 +99,9 @@ public class SampleTemperatureProcessor {
 
     static {
         new ProducerRoute.Descriptor().initialize(LABEL_PRODUCER);
-        LABEL_PRODUCER.getProperties().put(PROPERTY_POST_ENDPOINT, "mock:producerLabel");
-        LABEL_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_X, 1000);
-        LABEL_PRODUCER.getEditorProperties().put(EDITOR_PROPERTY_Y, 450);
+        LABEL_PRODUCER.setPostEndpoint("mock:producerLabel");
+        LABEL_PRODUCER.getEditorSettings().setPositionX((double) 1000);
+        LABEL_PRODUCER.getEditorSettings().setPositionY((double) 450);
     }
 
     /* ###################################################################################### */

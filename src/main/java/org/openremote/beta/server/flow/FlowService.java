@@ -1,16 +1,12 @@
 package org.openremote.beta.server.flow;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.StaticService;
 import org.openremote.beta.server.route.RouteManagementService;
-import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.shared.event.FlowDeploymentFailureEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependencyResolver;
 import org.openremote.beta.shared.model.Identifier;
@@ -18,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.openremote.beta.server.util.JsonUtil.JSON;
 

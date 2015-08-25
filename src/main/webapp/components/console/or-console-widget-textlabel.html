@@ -22,18 +22,7 @@
     <script>
         Polymer({
             is: "or-console-widget-textlabel",
-            behaviors: [openremote.Widget],
-            properties: {
-                _presenter: {
-                    type: Object,
-                    value: function () {
-                        return new openremote.console.WidgetPresenter(
-                                this,
-                                new openremote.shared.widget.TextLabel()
-                        );
-                    }
-                }
-            }
+            behaviors: [openremote.Widget]
         });
     </script>
 </dom-module>

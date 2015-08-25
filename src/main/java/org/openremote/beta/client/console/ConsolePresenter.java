@@ -1,24 +1,27 @@
 package org.openremote.beta.client.console;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
+import elemental.js.util.JsMapFromStringTo;
 import org.openremote.beta.client.shared.AbstractPresenter;
+import org.openremote.beta.client.shared.Component;
+import org.openremote.beta.client.shared.Component.DOM;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.message.MessageSendEvent;
 import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.model.Properties;
-import org.openremote.beta.shared.util.Util;
-import org.openremote.beta.shared.widget.Widget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
+/**
+ * TODO: This approach of mixing light/shadow DOM manipulation only works with shady DOM, not real Shadow DOM!
+ */
 @JsExport
 @JsType
 public class ConsolePresenter extends AbstractPresenter {
@@ -30,9 +33,11 @@ public class ConsolePresenter extends AbstractPresenter {
 
         addRedirectToShellView(ConsoleReadyEvent.class);
         addRedirectToShellView(MessageSendEvent.class);
+        addRedirectToShellView(ConsoleWidgetUpdatedEvent.class);
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
-            Element container = clearContainer();
+            DOM container = getDOM(getWidgetComponentContainer());
+            clearWidgetContainer(container);
             if (event.getFlow() != null) {
                 updateWidgets(event.getFlow(), container);
             }
@@ -51,38 +56,41 @@ public class ConsolePresenter extends AbstractPresenter {
         dispatchEvent(new ConsoleReadyEvent());
     }
 
+    protected Element getWidgetComponentContainer() {
+        return getRequiredElement("#widgetComponentContainer");
+    }
+
     protected void messageReceived(MessageEvent event) {
         String instanceId = event.getInstanceId();
         String sinkId = event.getSinkSlotId();
 
-        String sinkSelector = "or-console-widget-sink" +
-            "[slot='" + sinkId + "']" +
-            "[instance='" + (instanceId != null ? instanceId : "") + "']";
-        NodeList sinks = getContainer().querySelectorAll(sinkSelector);
+        String sinkSelector = "or-console-widget-sink[slot='" + sinkId + "']";
+        if (instanceId != null) {
+            sinkSelector += "[instance='" + instanceId + "']";
+        }
+
+        LOG.debug("Received message, querying sinks: " + sinkSelector);
+        // USE THE LIGHT DOM FOR THIS QUERY! This only works with shady DOM!
+        NodeList sinks = getWidgetComponentContainer().querySelectorAll(sinkSelector);
+        LOG.debug("Found sinks: " + sinks.getLength());
         for (int i = 0; i < sinks.getLength(); i++) {
             Element sink = (Element) sinks.item(i);
-            LOG.debug("Dispatching message to sink: " + sink.getOuterHTML());
             dispatchEvent(sink, event);
         }
     }
 
-    protected Element getContainer() {
-        return getRequiredChildView("#container");
-    }
-
-    protected Element clearContainer() {
-        Element container = getContainer();
-        while (container.hasChildNodes()) {
+    protected void clearWidgetContainer(DOM container) {
+        while (container.getLastChild() != null) {
             container.removeChild(container.getLastChild());
         }
-        return container;
     }
 
-    protected void updateWidgets(Flow flow, Element container) {
+    protected void updateWidgets(Flow flow, DOM container) {
         updateWidgets(flow, flow, container, null);
     }
 
-    protected void updateWidgets(Flow rootFlow, Flow currentFlow, Element container, String instanceId) {
+    protected void updateWidgets(Flow rootFlow, Flow currentFlow, DOM container, String instanceId) {
+        LOG.debug("Updating widgets of flow: " + currentFlow);
         addWidgets(currentFlow, container, instanceId);
 
         Node[] subflowNodes = currentFlow.findNodes(Node.TYPE_SUBFLOW);
@@ -95,54 +103,65 @@ public class ConsolePresenter extends AbstractPresenter {
                 continue;
             }
 
-            Element compositeWidget = addWidget(subflowNode, container);
+            DOM compositeWidget = addWidget(subflowNode, container);
             updateWidgets(rootFlow, subflow, compositeWidget, subflowNode.getId());
         }
     }
 
-    protected void addWidgets(Flow flow, Element container, String instanceId) {
-        Node[] widgetNodes = flow.findNodesWithProperty(Widget.WIDGET_PROPERTIES);
+    protected void addWidgets(Flow flow, DOM container, String instanceId) {
+        Node[] widgetNodes = flow.findClientWidgetNodes();
+        LOG.debug("Adding widgets '" + flow + "': " + widgetNodes.length);
         for (Node node : widgetNodes) {
 
             if (node.isOfType(Node.TYPE_SUBFLOW))
                 continue;
 
-            Element widget = addWidget(node, container);
+            DOM widget = addWidget(node, container);
             addWidgetSinks(node, widget, instanceId);
         }
     }
 
-    protected Element addWidget(Node node, Element container) {
+    protected DOM addWidget(Node node, DOM container) {
         LOG.debug("Adding widget: " + node);
-
-        String widgetComponent = Properties.get(Widget.getWidgetProperties(node), Widget.PROPERTY_COMPONENT);
-        if (widgetComponent == null)
+        if (node.getProperties() == null) {
+            LOG.debug("Node has no properties, skipping...");
             return container;
-
-        Element widget = container.getOwnerDocument().createElement(widgetComponent);
-        addEventListener(widget, WidgetPropertyChangedEvent.class, event -> {
-            LOG.debug("Widget property changed, updating node: " + event.getName() + " => " + event.getValue());
-            // TODO: type conversion!
-            Widget.getWidgetDefaults(node).put(event.getName(), event.getValue());
-        });
-
-        Map<String, Object> widgetDefaults = Widget.getWidgetDefaults(node);
-        if (widgetDefaults == null)
-            return container;
-
-        for (Map.Entry<String, Object> entry : widgetDefaults.entrySet()) {
-            widget.setAttribute(Util.toLowerCaseDash(entry.getKey()), entry.getValue().toString());
         }
 
-        container.appendChild(widget);
+        JavaScriptObject widgetProperties;
+        try {
+            widgetProperties = JsonUtils.safeEval(node.getProperties());
+        } catch (Exception ex) {
+            LOG.warn("Node '" + node + "' has invalid widget properties: " + node.getProperties());
+            return container;
+        }
 
-        return widget;
+        String widgetComponent = (String) ((JsMapFromStringTo)widgetProperties).get("component");
+        if (widgetComponent == null) {
+            LOG.debug("Widget node has no widget component property: " + node.getProperties());
+            return container;
+        }
+
+        LOG.debug("Creating widget component: " + widgetComponent);
+        Component widget = (Component)getView().getOwnerDocument().createElement(widgetComponent);
+
+        widget.set("nodeId", node.getId());
+
+        if (widget.get("onWidgetPropertiesChanged") != null) {
+            // Must therefore be PropertiesAwareWidget
+            widget.set("widgetProperties", widgetProperties);
+        }
+
+        container.appendChild((Element)widget);
+
+        // Continue manipulating the local DOM of the widget!
+        return getDOMRoot((Element)widget);
     }
 
-    protected void addWidgetSinks(Node node, Element widget, String instanceId) {
+    protected void addWidgetSinks(Node node, DOM widget, String instanceId) {
         Slot[] sinkSlots = node.findSlots(Slot.TYPE_SINK);
         for (Slot sink : sinkSlots) {
-            Element widgetSink = widget.getOwnerDocument().createElement("or-console-widget-sink");
+            Element widgetSink = getView().getOwnerDocument().createElement("or-console-widget-sink");
             widgetSink.setAttribute("slot", sink.getId());
             widgetSink.setAttribute("instance", instanceId != null ? instanceId : "");
             widget.appendChild(widgetSink);

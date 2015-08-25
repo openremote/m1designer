@@ -4,12 +4,12 @@ import org.openremote.beta.server.catalog.WidgetNodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.widget.PushButton;
 
 public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
 
     public static final String TYPE = "urn:org-openremote:widget:pushbutton";
     public static final String TYPE_LABEL = "Push Button";
+    public static final String COMPONENT = "or-console-widget-pushbutton";
 
     @Override
     public String getType() {
@@ -22,8 +22,8 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
     }
 
     @Override
-    protected String getComponent() {
-        return PushButton.COMPONENT;
+    protected String getWidgetComponent() {
+        return COMPONENT;
     }
 
     @Override

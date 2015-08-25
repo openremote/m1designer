@@ -4,12 +4,12 @@ import org.openremote.beta.server.catalog.WidgetNodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
-import org.openremote.beta.shared.widget.TextLabel;
 
 public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
 
     public static final String TYPE = "urn:org-openremote:widget:textlabel";
     public static final String TYPE_LABEL = "Text Label";
+    public static final String COMPONENT = "or-console-widget-textlabel";
 
     @Override
     public String getType() {
@@ -22,8 +22,8 @@ public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
     }
 
     @Override
-    protected String getComponent() {
-        return TextLabel.COMPONENT;
+    protected String getWidgetComponent() {
+        return COMPONENT;
     }
 
     @Override
