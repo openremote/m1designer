@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.testng.Assert.*;
 
 public class FlowModelTest {
@@ -19,27 +22,30 @@ public class FlowModelTest {
     Flow sampleEnvironmentWidget;
     Flow sampleThermostatControl;
     Flow sampleTemperatureProcessor;
+    List<Flow> sampleFlows = new ArrayList<>();
+
+    FlowDependencyResolver dependencyResolver = new FlowDependencyResolver() {
+        @Override
+        protected Flow findFlow(String flowId) {
+            for (Flow sampleFlow : sampleFlows) {
+                if (sampleFlow.getId().equals(flowId)) {
+                    return sampleFlow;
+                }
+            }
+            return null;
+        }
+    };
 
     @BeforeMethod
     public void prepareFlows() {
+        sampleFlows.clear();
+
         sampleEnvironmentWidget = SampleEnvironmentWidget.getCopy();
+        sampleFlows.add(sampleEnvironmentWidget);
         sampleThermostatControl = SampleThermostatControl.getCopy();
+        sampleFlows.add(sampleThermostatControl);
         sampleTemperatureProcessor = SampleTemperatureProcessor.getCopy();
-
-        FlowDependencyResolver dependencyResolver = new FlowDependencyResolver() {
-            @Override
-            protected Flow findOwnerFlowOfSlot(String slotId) {
-                if (sampleTemperatureProcessor.findSlot(slotId) != null)
-                    return sampleTemperatureProcessor;
-                if (sampleThermostatControl.findSlot(slotId) != null)
-                    return sampleThermostatControl;
-                if (sampleEnvironmentWidget.findSlot(slotId) != null)
-                    return sampleEnvironmentWidget;
-                return null;
-            }
-        };
-
-        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+        sampleFlows.add(sampleTemperatureProcessor);
     }
 
     @Test
@@ -57,27 +63,30 @@ public class FlowModelTest {
 
     @Test
     public void resolveDependencies() throws Exception {
-        assertNull(sampleEnvironmentWidget.findOwnerFlowOfSlot("123"));
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+
+        assertNull(sampleEnvironmentWidget.findOwnerOfSlotInAllFlows("123"));
 
         assertEquals(
-            sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleThermostatControl.TEMPERATURE_CONSUMER_SINK.getId()),
+            sampleEnvironmentWidget.findOwnerOfSlotInAllFlows(SampleThermostatControl.TEMPERATURE_CONSUMER_SINK.getId()),
             sampleThermostatControl
         );
         assertEquals(
-            sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleThermostatControl.SETPOINT_CONSUMER_SINK.getId()),
+            sampleEnvironmentWidget.findOwnerOfSlotInAllFlows(SampleThermostatControl.SETPOINT_CONSUMER_SINK.getId()),
             sampleThermostatControl
         );
         assertEquals(
-            sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleThermostatControl.SETPOINT_PRODUCER_SOURCE.getId()),
+            sampleEnvironmentWidget.findOwnerOfSlotInAllFlows(SampleThermostatControl.SETPOINT_PRODUCER_SOURCE.getId()),
             sampleThermostatControl
         );
 
         assertEquals(
-            sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()),
+            sampleEnvironmentWidget.findOwnerOfSlotInAllFlows(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()),
             sampleTemperatureProcessor
         );
         assertEquals(
-            sampleEnvironmentWidget.findOwnerFlowOfSlot(SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId()),
+            sampleEnvironmentWidget.findOwnerOfSlotInAllFlows(SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId()),
             sampleTemperatureProcessor
         );
 
@@ -103,7 +112,29 @@ public class FlowModelTest {
     }
 
     @Test
+    public void getObjectCount() {
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+
+        assertEquals(
+            sampleTemperatureProcessor.getObjectCount(),
+            18
+        );
+        assertEquals(
+            sampleTemperatureProcessor.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId()).getObjectCount(),
+            3
+        );
+        assertEquals(
+            sampleThermostatControl.getObjectCount(),
+            60
+        );
+    }
+
+    @Test
     public void findNodeInAllFlows() {
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+
         assertEquals(
             sampleEnvironmentWidget.findNodeInAllFlows(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()).getId(),
             SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()
@@ -124,14 +155,20 @@ public class FlowModelTest {
 
     @Test
     public void findSubflow() {
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+
         assertEquals(
-            sampleEnvironmentWidget.findSubflow(sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).getId(),
+            sampleEnvironmentWidget.findSubflowInAllFlows(sampleEnvironmentWidget.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).getId(),
             sampleThermostatControl.getId()
         );
     }
 
     @Test
     public void findSlot() {
+
+        dependencyResolver.populateDependencies(sampleEnvironmentWidget);
+
         assertEquals(
             sampleEnvironmentWidget.findSlotInAllFlows(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()).getId(),
             SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId()

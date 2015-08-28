@@ -22,13 +22,22 @@
             },
             _onDragOver: function (e) {
                 e.preventDefault();
-                e.dataTransfer.dropEffect = "copy";
+                if (e.dataTransfer.getData("nodeType")) {
+                    e.dataTransfer.dropEffect = "copy";
+                } else if (e.dataTransfer.getData("flowId")) {
+                    e.dataTransfer.dropEffect = "link";
+                }
             },
             _onDrop: function (e) {
                 e.preventDefault();
                 this.toggleClass("dragOver", false, this.$.flowDesigner);
-                var nodeType = e.dataTransfer.getData("text/plain");
-                this._presenter.createNode(nodeType, e.offsetX, e.offsetY);
+                var nodeType = e.dataTransfer.getData("nodeType");
+                var flowId = e.dataTransfer.getData("flowId");
+                if (nodeType) {
+                    this._presenter.createNode(nodeType, e.offsetX, e.offsetY);
+                } else if (flowId) {
+                    this._presenter.createSubflowNode(flowId, e.offsetX, e.offsetY);
+                }
             }
         });
     });

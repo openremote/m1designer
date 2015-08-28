@@ -69,13 +69,22 @@
                 }
             },
             _getIconStyle: function(widgetProperties) {
+                var dimensions =
+                        "width: " + widgetProperties.fontSizePixels + "px;" +
+                        "height: " + widgetProperties.fontSizePixels + "px;";
+
                 switch (widgetProperties.iconPosition) {
+                    case "top":
+                        return "order: 1; margin-bottom: 0.25em;" + dimensions;
+                        break;
                     case "bottom":
+                        return "order: 2; margin-top: 0.25em;" + dimensions;
+                        break;
                     case "right":
-                        return "order: 2; width: " + widgetProperties.fontSizePixels + "px; height: " + widgetProperties.fontSizePixels + "px;";
+                        return "order: 2;  margin-left: 0.25em;" + dimensions;
                         break;
                     default:
-                        return "order: 1; width: " + widgetProperties.fontSizePixels + "px; height: " + widgetProperties.fontSizePixels + "px;";
+                        return "order: 1; margin-right: 0.25em;" + dimensions;
                 }
             },
             _getTextStyle: function(widgetProperties) {

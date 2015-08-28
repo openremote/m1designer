@@ -6,6 +6,7 @@ import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.InventoryRefreshEvent;
 import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.editor.FlowEditorSwitchEvent;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.shared.flow.Flow;
@@ -23,11 +24,16 @@ public class FlowsPresenter extends RequestPresenter {
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
     public Flow[] flows;
+    public boolean flowEditorVisible;
 
     public FlowsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
         addEventListener(InventoryRefreshEvent.class, event -> loadFlows());
+        addEventListener(FlowEditorSwitchEvent.class, event -> {
+            flowEditorVisible = event.isVisible();
+            notifyPath("flowEditorVisible", flowEditorVisible);
+        });
     }
 
     public void loadFlows() {

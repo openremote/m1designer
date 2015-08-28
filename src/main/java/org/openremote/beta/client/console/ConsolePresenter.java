@@ -91,11 +91,11 @@ public class ConsolePresenter extends AbstractPresenter {
         LOG.debug("Updating widgets of flow using instance '" + instanceId + "': " + currentFlow);
         addWidgets(currentFlow, container, instanceId);
 
-        Node[] subflowNodes = currentFlow.findNodes(Node.TYPE_SUBFLOW);
+        Node[] subflowNodes = currentFlow.findSubflowNodes();
 
         for (Node subflowNode : subflowNodes) {
 
-            Flow subflow = rootFlow.findSubflow(subflowNode);
+            Flow subflow = rootFlow.findSubflowInAllFlows(subflowNode);
             if (subflow == null) {
                 LOG.warn("Illegal subflow node, can't find referenced peer: " + subflowNode);
                 continue;

@@ -1,10 +1,8 @@
 package org.openremote.beta.test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.component.http.HttpMethods;
 import org.openremote.beta.server.catalog.CatalogService;
 import org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.beta.shared.catalog.CatalogItem;
@@ -13,8 +11,6 @@ import org.openremote.beta.shared.flow.NodeColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
 
 import static org.openremote.beta.server.util.JsonUtil.JSON;
 
@@ -29,18 +25,19 @@ public class CatalogServiceTest extends IntegrationTest {
     public void generateIdBatch() throws Exception {
 
         String[] idBatch = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "guid"), null, String.class),
+            producerTemplate.requestBody(createWebClientUri("catalog", "guid", "50"), null, String.class),
             String[].class
         );
 
-        assertEquals(idBatch.length, CatalogService.ID_BATCH_SIZE);
+        assertEquals(idBatch.length, 50);
         assertNotNull(idBatch[0]);
 
         String[] idBatch2 = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "guid"), null, String.class),
+            producerTemplate.requestBody(createWebClientUri("catalog", "guid", "99999999"), null, String.class),
             String[].class
         );
 
+        assertEquals(idBatch2.length, CatalogService.ID_MAX_BATCH_SIZE);
         assertNotEquals(idBatch[0], idBatch2[0]);
     }
 

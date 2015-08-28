@@ -18,7 +18,7 @@ public class CatalogServiceConfiguration implements Configuration {
 
             rest("/catalog")
 
-                .get("/guid")
+                .get("/guid/{size}")
                 .route().id("GET batch of generated GUIDs")
                 .bean(getContext().hasService(CatalogService.class), "generateIdBatch")
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))

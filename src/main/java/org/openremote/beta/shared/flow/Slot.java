@@ -10,7 +10,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
 @JsType
-@JsonSerialize(include= NON_NULL)
+@JsonSerialize(include = NON_NULL)
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Slot extends FlowObject {
 
@@ -45,8 +45,8 @@ public class Slot extends FlowObject {
         this(label, identifier, connectable, null, null);
     }
 
-    public Slot(String id, Slot peer) {
-        this(peer.getLabel(), new Identifier(id, peer.getIdentifier().getType()), true, peer.getId(), null);
+    public Slot(String id, Slot peer, String label) {
+        this(label, new Identifier(id, peer.getIdentifier().getType()), true, peer.getId(), null);
     }
 
     public Slot(String label, Identifier identifier, boolean connectable, String peerId, String propertyPath) {
@@ -87,7 +87,7 @@ public class Slot extends FlowObject {
             ", id=" + identifier +
             ", connectable=" + connectable +
             ", peerId=" + peerId +
-            ", propertyPath=" + propertyPath+
+            ", propertyPath=" + propertyPath +
             '}';
     }
 }

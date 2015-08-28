@@ -2,7 +2,6 @@ package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
@@ -94,7 +93,7 @@ public class MessageLogPresenter extends AbstractPresenter {
         Node msgNode = null;
         Slot msgSlot = null;
         if (flow != null) {
-            msgFlow = flow.findOwnerFlowOfSlot(event.getSlotId());
+            msgFlow = flow.findOwnerOfSlotInAllFlows(event.getSlotId());
             if (msgFlow != null)
                 msgNode = msgFlow.findOwnerNode(event.getSlotId());
             if (msgNode != null)

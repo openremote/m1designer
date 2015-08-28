@@ -9,20 +9,19 @@ public abstract class FlowDependencyResolver {
 
     public void populateDependencies(Flow flow) {
         populateFlowDependencies(flow);
-        populatePeerLabels(flow);
     }
 
     protected void populateFlowDependencies(Flow flow) {
         flow.clearDependencies();
 
-        String[] subflowSlotIds = flow.findWiredSubflowSlotIds();
+        Node[] subflowNodes = flow.findSubflowNodes();
 
-        for (String subflowSlotId : subflowSlotIds) {
-            Flow subflow = findOwnerFlowOfSlot(subflowSlotId);
+        for (Node subflowNode : subflowNodes) {
+            Flow subflow = findFlow(subflowNode.getSubflowId());
 
             if (subflow == null)
                 throw new IllegalStateException(
-                    "Missing subflow dependency slot '" + subflowSlotId + "': in " + flow
+                    "Missing subflow dependency '" + subflowNode.getSubflowId() + "': in " + subflowNode
                 );
 
             flow.addDependency(subflow);
@@ -31,18 +30,6 @@ public abstract class FlowDependencyResolver {
         }
     }
 
-    protected void populatePeerLabels(Flow flow) {
-        for (Slot slot : flow.findSlotsWithPeer()) {
-            String peerSlotId = slot.getPeerId();
-            Flow ownerFlow = flow.findOwnerFlowOfSlot(peerSlotId);
-            Node ownerNode = ownerFlow.findOwnerNode(peerSlotId);
-            slot.setLabel(ownerNode.getLabel());
-        }
-        for (Flow subflow : flow.getDependencies()) {
-            populatePeerLabels(subflow);
-        }
-    }
-
-    protected abstract Flow findOwnerFlowOfSlot(String slotId);
+    protected abstract Flow findFlow(String slotId);
 
 }

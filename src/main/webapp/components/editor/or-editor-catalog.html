@@ -27,8 +27,8 @@
                 this._presenter.itemSelected(e.model.catalogItem);
             },
             _itemDragStart: function (e) {
-                e.dataTransfer.setData('text/plain', e.model.catalogItem.nodeType);
-                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData("nodeType", e.model.catalogItem.nodeType);
+                e.dataTransfer.effectAllowed = "copy";
             }
         });
     });

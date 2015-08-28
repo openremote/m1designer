@@ -50,6 +50,14 @@ public class Flow extends FlowObject {
         }
     }
 
+    public int getObjectCount() {
+        int count = 1;
+        for (Node node : nodes) {
+            count += node.getObjectCount();
+        }
+        return count;
+    }
+
     public Node[] getNodes() {
         return nodes;
     }
@@ -101,6 +109,10 @@ public class Flow extends FlowObject {
         this.dependencies = new Flow[0];
     }
 
+    public void setDependencies(Flow[] dependencies) {
+        this.dependencies = dependencies;
+    }
+
     public boolean hasDependency(String flowId) {
         for (Flow dependency : dependencies) {
             if (dependency.getId().equals(flowId))
@@ -112,13 +124,13 @@ public class Flow extends FlowObject {
         return false;
     }
 
-    public Flow findOwnerFlowOfSlot(String slotId) {
+    public Flow findOwnerOfSlotInAllFlows(String slotId) {
         Slot slot = findSlot(slotId);
         if (slot != null)
             return this;
 
         for (Flow dependency : getDependencies()) {
-            Flow result = dependency.findOwnerFlowOfSlot(slotId);
+            Flow result = dependency.findOwnerOfSlotInAllFlows(slotId);
             if (result != null)
                 return result;
         }
@@ -126,38 +138,14 @@ public class Flow extends FlowObject {
         return null;
     }
 
-    public String[] findWiredSubflowSlotIds() {
-        Set<String> collection = new HashSet<>();
-        for (Wire wire : getWires()) {
-            Node sourceNode = findOwnerNode(wire.getSourceId());
-            if (sourceNode == null)
-                throw new IllegalStateException(
-                    "Dangling wire, no source node for slot '" + wire.getSourceId() + "' on: " + this
-                );
-            if (sourceNode.isOfType(Node.TYPE_SUBFLOW))
-                collection.add(findSlot(wire.getSourceId()).getPeerId());
+    public Flow findSubflowInAllFlows(Node subflowNode) {
+        if (getId().equals(subflowNode.getSubflowId()))
+            return this;
 
-            Node sinkNode = findOwnerNode(wire.getSinkId());
-            if (sinkNode == null)
-                throw new IllegalStateException(
-                    "Dangling wire, no sink node for slot '" + wire.getSourceId() + "' on: " + this
-                );
-            if (sinkNode.isOfType(Node.TYPE_SUBFLOW))
-                collection.add(findSlot(wire.getSinkId()).getPeerId());
-        }
-        return collection.toArray(new String[collection.size()]);
-    }
-
-    public Flow findSubflow(Node subflowNode) {
-        Slot[] slots = subflowNode.getSlots();
-        // TODO: This assumes that the first slot we find will have the right peer
-        for (Slot slot : slots) {
-            String peerSlotId = slot.getPeerId();
-            if (peerSlotId == null)
-                continue;
-            Flow subflow = findOwnerFlowOfSlot(peerSlotId);
-            if (subflow != null)
-                return subflow;
+        for (Flow dependency : getDependencies()) {
+            Flow result = dependency.findSubflowInAllFlows(subflowNode);
+            if (result != null)
+                return result;
         }
         return null;
     }
@@ -232,7 +220,7 @@ public class Flow extends FlowObject {
     }
 
     public Slot findSlotInAllFlows(String slotId) {
-        Flow ownerFlow = findOwnerFlowOfSlot(slotId);
+        Flow ownerFlow = findOwnerOfSlotInAllFlows(slotId);
         if (ownerFlow != null)
             return ownerFlow.findSlot(slotId);
         return null;
@@ -245,17 +233,6 @@ public class Flow extends FlowObject {
                 return slot;
         }
         return null;
-    }
-
-    public Slot[] findSlotsWithPeer() {
-        Set<Slot> collection = new HashSet<>();
-        for (Node node : getNodes()) {
-            for (Slot slot : node.getSlots()) {
-                if (slot.getPeerId() != null)
-                    collection.add(slot);
-            }
-        }
-        return collection.toArray(new Slot[collection.size()]);
     }
 
     public boolean hasWires(String slotId) {
@@ -292,6 +269,15 @@ public class Flow extends FlowObject {
                 return node;
         }
         return null;
+    }
+
+    public Node[] findSubflowNodes() {
+        Set<Node> collection = new HashSet<>();
+        for (Node node : getNodes()) {
+            if (node.isOfType(Node.TYPE_SUBFLOW))
+                collection.add(node);
+        }
+        return collection.toArray(new Node[collection.size()]);
     }
 
     public Node findNodeInAllFlows(String nodeId) {

@@ -3,6 +3,8 @@ package org.openremote.beta.shared.flow;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.server.route.ConsumerRoute;
+import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class Node extends FlowObject {
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
     public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
+    public String subflowId;
     public Slot[] slots = new Slot[0];
     public boolean clientAccess;
     public boolean clientWidget;
@@ -36,9 +39,28 @@ public class Node extends FlowObject {
         super(label, identifier);
     }
 
-    public Node(String label, Identifier identifier, String properties) {
+    public Node(String label, Identifier identifier, String subflowId) {
         super(label, identifier);
-        this.properties = properties;
+        if (!identifier.getType().equals(TYPE_SUBFLOW)) {
+            throw new IllegalArgumentException(
+                "Node with subflow identifier must be of type: " + TYPE_SUBFLOW
+            );
+        }
+        this.subflowId = subflowId;
+    }
+
+    public int getObjectCount() {
+        int count = 1;
+        count += getSlots().length;
+        return count;
+    }
+
+    public String getSubflowId() {
+        return subflowId;
+    }
+
+    public void setSubflowId(String subflowId) {
+        this.subflowId = subflowId;
     }
 
     public Slot[] getSlots() {
@@ -122,10 +144,14 @@ public class Node extends FlowObject {
         return list.toArray(new Slot[list.size()]);
     }
 
+    public Slot[] findAllConnectableSlots() {
+        return findConnectableSlots(null);
+    }
+
     public Slot[] findConnectableSlots(String type) {
         List<Slot> list = new ArrayList<>();
         for (Slot slot : getSlots()) {
-            if (slot.isOfType(type) && slot.isConnectable())
+            if ((type == null || slot.isOfType(type)) && slot.isConnectable())
                 list.add(slot);
         }
         return list.toArray(new Slot[list.size()]);

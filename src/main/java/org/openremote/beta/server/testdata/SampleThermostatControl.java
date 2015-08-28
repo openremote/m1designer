@@ -64,10 +64,10 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK);
-    public static Slot TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE);
-    public static Slot TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE);
-    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW));
+    public static Slot TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
+    public static Slot TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE, SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
+    public static Slot TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE, SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
+    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), SampleTemperatureProcessor.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -84,10 +84,10 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK);
-    public static Slot SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE);
-    public static Slot SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE);
-    public static Node SETPOINT_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW));
+    public static Slot SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
+    public static Slot SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE, SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
+    public static Slot SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE, SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
+    public static Node SETPOINT_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), SampleTemperatureProcessor.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -181,8 +181,6 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
                 slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
                 slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
-                slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSizePixels"));
-                slots.add(new Slot("Raised", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "raised"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
             }
@@ -217,8 +215,6 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
                 slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
                 slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
-                slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSizePixels"));
-                slots.add(new Slot("Raised", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "raised"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
             }
@@ -237,7 +233,7 @@ public class SampleThermostatControl {
             }
         }.initialize(SETPOINT_MINUS_BUTTON);
         SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionX((double) 20);
-        SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionY((double) 880);
+        SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionY((double) 800);
     }
 
     /* ###################################################################################### */

@@ -4,7 +4,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
-import org.openremote.beta.client.editor.catalog.CatalogSwitchEvent;
+import org.openremote.beta.client.editor.flow.editor.FlowEditorSwitchEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowSavedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
@@ -46,12 +46,12 @@ public class EditorPresenter extends AbstractPresenter {
         );
 
         addEventListener(FlowEditEvent.class, event -> {
-            dispatchEvent("#editorSidebar", new CatalogSwitchEvent(true));
+            dispatchEvent("#editorSidebar", new FlowEditorSwitchEvent(true));
             dispatchEvent("#flowEditor", event);
         });
 
         addEventListener(FlowDeletedEvent.class, event -> {
-            dispatchEvent("#editorSidebar", new CatalogSwitchEvent(true));
+            dispatchEvent("#editorSidebar", new FlowEditorSwitchEvent(false));
             dispatchEvent("#editorSidebar", new InventoryRefreshEvent());
         });
 

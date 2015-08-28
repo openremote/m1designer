@@ -1,18 +1,22 @@
 package org.openremote.beta.server.flow;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.StaticService;
+import org.openremote.beta.server.catalog.CatalogService;
+import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.server.route.ConsumerRoute;
+import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependencyResolver;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +41,11 @@ public class FlowService implements StaticService {
         }
     }
 
+    final protected CamelContext context;
     final protected RouteManagementService routeManagementService;
 
-    public FlowService(RouteManagementService routeManagementService) {
+    public FlowService(CamelContext context, RouteManagementService routeManagementService) {
+        this.context = context;
         this.routeManagementService = routeManagementService;
     }
 
@@ -53,12 +59,8 @@ public class FlowService implements StaticService {
 
             SAMPLE_DEPENDENCY_RESOLVER = new FlowDependencyResolver() {
                 @Override
-                protected Flow findOwnerFlowOfSlot(String slotId) {
-                    for (Flow sampleFlow : SAMPLE_FLOWS.values()) {
-                        if (sampleFlow.findSlot(slotId) != null)
-                            return sampleFlow;
-                    }
-                    return null;
+                protected Flow findFlow(String flowId) {
+                    return SAMPLE_FLOWS.get(flowId);
                 }
             };
         }
@@ -86,7 +88,38 @@ public class FlowService implements StaticService {
 
     public Flow getFlowTemplate() {
         LOG.debug("Getting flow template");
-        return new Flow("My Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId()));
+        return new Flow("My Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+    }
+
+    public Node createSubflowNode(@Header("id") String id) {
+        LOG.debug("Creating subflow node of: " + id);
+        Flow flow = getFlow(id);
+        if (flow == null)
+            return null;
+
+        NodeDescriptor subflowDescriptor = context.getRegistry().lookupByNameAndType(Node.TYPE_SUBFLOW, NodeDescriptor.class);
+        if (subflowDescriptor == null)
+            return null;
+
+        Node subflowNode = subflowDescriptor.createNode();
+        subflowNode.setLabel(flow.getLabel());
+        subflowNode.setSubflowId(flow.getId());
+
+        // Find peer slots in consumers/producers of target flow
+        List<Slot> slots = new ArrayList<>();
+        Node[] consumers = flow.findNodes(ConsumerRoute.NODE_TYPE);
+        for (Node consumer : consumers) {
+            Slot firstSink = consumer.findSlots(Slot.TYPE_SINK)[0];
+            slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSink, consumer.getLabel()));
+        }
+        Node[] producers = flow.findNodes(ProducerRoute.NODE_TYPE);
+        for (Node producer : producers) {
+            Slot firstSource = producer.findSlots(Slot.TYPE_SOURCE)[0];
+            slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSource, producer.getLabel()));
+        }
+        subflowNode.setSlots(slots.toArray(new Slot[slots.size()]));
+
+        return subflowNode;
     }
 
     public Flow getFlow(@Header("id") String id) {
@@ -138,6 +171,17 @@ public class FlowService implements StaticService {
         }
     }
 
+    public Flow getResolvedFlow(Flow flow) {
+        LOG.debug("Resolving dependencies of flow: " + flow);
+        synchronized (SAMPLE_FLOWS) {
+
+            // TODO Handle exceptions in resolution?
+            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow);
+            LOG.info("### RESOLVED: " + Arrays.toString(flow.getDependencies()));
+            return flow;
+        }
+    }
+
     public boolean putFlow(Flow flow) {
         LOG.debug("Putting flow: " + flow);
         synchronized (SAMPLE_FLOWS) {
@@ -147,6 +191,11 @@ public class FlowService implements StaticService {
 
             if (flow.getDependencies().length > 0)
                 throw new IllegalArgumentException("Don't send dependencies when updating a flow");
+
+            // TODO Find out if this flow has any subflow nodes in other flows, then update those dependents?
+            // TODO And then do we redeploy the dependents automatically if they are running?
+            // TODO If we don't redeploy the dependents, how will the user know this still needs to happen? Mark flows?
+            updateSubflowDependencies(flow);
 
             // TODO cleaner solution
             filterNonPersistentProperties(flow);
@@ -186,6 +235,24 @@ public class FlowService implements StaticService {
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    protected void updateSubflowDependencies(Flow flow) {
+        for (Flow sampleFlow : SAMPLE_FLOWS.values()) {
+            Node[] subflowNodes = sampleFlow.findSubflowNodes();
+
+            boolean subflowMatch = false;
+            for (Node subflowNode : subflowNodes) {
+                if (flow.getId().equals(subflowNode.getSubflowId())) {
+                    subflowMatch = true;
+                }
+            }
+
+            if (subflowMatch) {
+                // TODO: This is more difficult...
+            }
+
         }
     }
 

@@ -106,8 +106,19 @@ public abstract class NodeShape extends Group {
             .Q(1, 1, PATCH_CORNER_RADIUS, 0)
             .H(width - PATCH_CORNER_RADIUS)
             .Q(width, 0, width, PATCH_CORNER_RADIUS)
-            .V(headerHeight)
-            .H(0)
+            .V(headerHeight);
+
+        if (node.findAllConnectableSlots().length == 0) {
+            header
+                .Q(width, headerHeight + PATCH_CORNER_RADIUS, width -PATCH_CORNER_RADIUS, headerHeight + PATCH_CORNER_RADIUS)
+                .H(0 + PATCH_CORNER_RADIUS)
+                .Q(0, headerHeight + PATCH_CORNER_RADIUS, 0, headerHeight-PATCH_CORNER_RADIUS);
+
+        } else {
+            header.H(0);
+        }
+
+        header
             .Z();
         header.setFillColor(getPatchColor());
         header.setListening(false);

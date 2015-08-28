@@ -57,10 +57,10 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK);
-    public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK);
-    public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE);
-    public static Node LIVINGROOM_THERMOSTAT = new Node("Livingroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW));
+    public static Slot LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK, SampleThermostatControl.TEMPERATURE_CONSUMER.getLabel());
+    public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK, SampleThermostatControl.SETPOINT_CONSUMER.getLabel());
+    public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE, SampleThermostatControl.SETPOINT_PRODUCER.getLabel());
+    public static Node LIVINGROOM_THERMOSTAT = new Node("Livingroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), SampleThermostatControl.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -137,10 +137,10 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot BEDROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK);
-    public static Slot BEDROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK);
-    public static Slot BEDROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE);
-    public static Node BEDROOM_THERMOSTAT = new Node("Bedroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW));
+    public static Slot BEDROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK, SampleThermostatControl.TEMPERATURE_CONSUMER.getLabel());
+    public static Slot BEDROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK, SampleThermostatControl.SETPOINT_CONSUMER.getLabel());
+    public static Slot BEDROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE, SampleThermostatControl.SETPOINT_PRODUCER.getLabel());
+    public static Node BEDROOM_THERMOSTAT = new Node("Bedroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), SampleThermostatControl.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {

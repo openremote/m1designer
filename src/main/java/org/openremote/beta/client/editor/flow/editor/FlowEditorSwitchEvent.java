@@ -1,15 +1,15 @@
-package org.openremote.beta.client.editor.catalog;
+package org.openremote.beta.client.editor.flow.editor;
 
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.shared.NonBubblingEvent;
 import org.openremote.beta.shared.event.Event;
 
 @JsType
-public class CatalogSwitchEvent extends Event implements NonBubblingEvent{
+public class FlowEditorSwitchEvent extends Event implements NonBubblingEvent{
 
     protected final boolean visible;
 
-    public CatalogSwitchEvent(boolean visible) {
+    public FlowEditorSwitchEvent(boolean visible) {
         this.visible = visible;
     }
 

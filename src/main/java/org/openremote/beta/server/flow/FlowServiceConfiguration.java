@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
+import org.openremote.beta.server.catalog.CatalogService;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.shared.flow.Flow;
@@ -40,10 +41,38 @@ public class FlowServiceConfiguration implements Configuration {
                 .bean(getContext().hasService(FlowService.class), "getFlowTemplate")
                 .endRest()
 
+                .get("/{id}/subflow")
+                .route().id("GET new subflow node by ID")
+                .bean(getContext().hasService(FlowService.class), "createSubflowNode")
+                .to("direct:restStatusNotFound")
+                .endRest()
+
                 .get("{id}")
                 .route().id("GET flow by ID")
                 .bean(getContext().hasService(FlowService.class), "getFlow")
                 .to("direct:restStatusNotFound")
+                .endRest()
+
+                .post("/resolve")
+                .consumes("application/json")
+                .type(Flow.class)
+                .route().id("POST flow to resolve its dependencies")
+                .process(exchange -> {
+                    Flow flow = exchange.getIn().getBody(Flow.class);
+                    try {
+                        if (flow != null) {
+                            exchange.getOut().setBody(
+                                getContext().hasService(FlowService.class).getResolvedFlow(flow)
+                            );
+                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
+                        } else {
+                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
+                        }
+                    } catch (Exception ex) {
+                        LOG.info("Error resolving dependencies of '" + flow + "'", ex);
+                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
+                    }
+                })
                 .endRest()
 
                 .delete("{id}")
@@ -89,6 +118,7 @@ public class FlowServiceConfiguration implements Configuration {
     public void apply(Environment environment, CamelContext context) throws Exception {
 
         FlowService flowService = new FlowService(
+            context,
             context.hasService(RouteManagementService.class)
         );
         context.addService(flowService);

@@ -75,6 +75,8 @@ public abstract class RequestPresenter extends AbstractPresenter {
         public void onFailure(RequestFailure requestFailure) {
             if (notifyUserOnFailure)
                 dispatchEvent(new RequestFailureEvent(requestFailure));
+            else
+                LOG.error(requestFailure.getFailureMessage());
         }
 
         public ResponseCallback<T> setNotifyUserOnSuccess(boolean notifyUserOnSuccess) {

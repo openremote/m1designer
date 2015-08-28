@@ -41,8 +41,6 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
         slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
         slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
         slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
-        slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSize"));
-        slots.add(new Slot("Raised", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "raised"));
         super.addSlots(slots);
     }
 

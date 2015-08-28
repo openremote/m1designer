@@ -1,27 +1,25 @@
 package org.openremote.beta.test;
 
-import org.apache.camel.*;
-import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.Exchange;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.http.HttpMethods;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.DefaultExchange;
-import org.openremote.beta.server.flow.FlowService;
+import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
-import org.openremote.beta.shared.event.FlowDeployEvent;
-import org.openremote.beta.shared.event.FlowStatusEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
-import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
+import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.NodeColor;
+import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
-import static org.openremote.beta.shared.event.FlowDeploymentPhase.DEPLOYED;
-import static org.openremote.beta.shared.event.FlowDeploymentPhase.STARTING;
 
 public class FlowServiceTest extends IntegrationTest {
 
@@ -62,6 +60,7 @@ public class FlowServiceTest extends IntegrationTest {
         );
         assertNotNull(flow.getId());
         assertEquals(flow.getLabel(), "My Flow");
+        assertEquals(flow.getIdentifier().getType(), Flow.TYPE);
 
         flow.setLabel("TEST LABEL");
 
@@ -162,4 +161,56 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getDependencies().length, 1);
         assertEquals(flow.getDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
     }
+
+    @Test
+    public void createSubflowNode() throws Exception {
+        Node subflowNode = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),
+            Node.class
+        );
+        assertNotNull(subflowNode.getId());
+        assertEquals(subflowNode.getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
+        assertEquals(subflowNode.getIdentifier().getType(), Node.TYPE_SUBFLOW);
+        assertEquals(subflowNode.getEditorSettings().getTypeLabel(), Node.TYPE_SUBFLOW_LABEL);
+        assertEquals(subflowNode.getEditorSettings().getComponents(), new String[] {SubflowRoute.EDITOR_COMPONENT});
+        assertEquals(subflowNode.getEditorSettings().getNodeColor(), NodeColor.VIRTUAL);
+
+        assertEquals(subflowNode.getSlots().length, 3);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 1);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 2);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 1);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 2);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getPeerId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId());
+    }
+
+    @Test
+    public void resolveDependencies() throws Exception {
+        Flow flow = new Flow("Test Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+
+        Node subflowNode = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),
+            Node.class
+        );
+
+        flow.addNode(subflowNode);
+
+        Exchange resolveFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", "resolve"),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
+                exchange.getIn().setBody(toJson(flow));
+            }
+        );
+        assertEquals(resolveFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
+        Flow resolvedFlow = fromJson(resolveFlowExchange.getOut().getBody(String.class), Flow.class);
+
+        assertEquals(resolvedFlow.getDependencies().length, 1);
+        assertEquals(resolvedFlow.getDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+    }
+
 }

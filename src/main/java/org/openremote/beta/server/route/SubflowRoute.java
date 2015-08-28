@@ -23,6 +23,7 @@ public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
 
+    public static final String EDITOR_COMPONENT = "or-editor-node-widget";
     public static final String WIDGET_COMPONENT = "or-console-widget-composite";
 
     public static class Descriptor extends VirtualNodeDescriptor {
@@ -57,7 +58,7 @@ public class SubflowRoute extends NodeRoute {
         @Override
         public void addEditorComponents(List<String> editorComponents) {
             super.addEditorComponents(editorComponents);
-            editorComponents.add("or-editor-node-widget");
+            editorComponents.add(EDITOR_COMPONENT);
         }
 
         @Override

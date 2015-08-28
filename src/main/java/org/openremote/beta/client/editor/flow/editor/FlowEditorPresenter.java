@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
 import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
+import org.openremote.beta.client.editor.flow.FlowCodec;
 import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
 import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
@@ -41,6 +42,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowEditorPresenter.class);
 
+    private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
     private static final NodeCodec NODE_CODEC = GWT.create(NodeCodec.class);
 
     public Flow flow;
@@ -143,11 +145,11 @@ public class FlowEditorPresenter extends RequestPresenter {
     }
 
     public void createNode(String nodeType, double positionX, double positionY) {
-        if (flowDesigner == null || flow == null)
+        if (flowDesigner == null || flow == null || nodeType == null)
             return;
 
+        LOG.debug("Creating node in flow designer: " + nodeType);
         String flowId = flow.getId();
-
         sendRequest(
             false, false,
             resource("catalog", "node", nodeType).get(),
@@ -156,27 +158,27 @@ public class FlowEditorPresenter extends RequestPresenter {
                 protected void onResponse(Node node) {
                     // Check if this is still the same flow designer instance as before the request
                     if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
-
-                        flow.addNode(node);
-                        dispatchEvent(new FlowUpdatedEvent(flow));
-
-                        // Calculate the offset with the current transform (zoom, panning)
-                        // TODO If I would know maths, I could probably do this with the transform matrices
-                        Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
-                        double x = (positionX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
-                        double y = (positionY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
-                        node.getEditorSettings().setPositionX(x);
-                        node.getEditorSettings().setPositionY(y);
-
-                        LOG.debug("Adding node shape to flow designer: " + node);
-                        flowDesigner.addNodeShape(node);
-
-                        flowDesigner.selectNodeShape(node);
-                        dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
+                        addNode(node, positionX, positionY);
                     }
                 }
             }
         );
+    }
+
+    public void createSubflowNode(String flowId, double positionX, double positionY) {
+        if (flowDesigner == null || flow == null)
+            return;
+
+        if (flowId != null && flow.getId().equals(flowId)) {
+            return; // Can't add current flow as subflow
+        }
+
+        new CreateSubflowNodeRunnable(
+            flow.getId(),
+            flowId,
+            positionX,
+            positionY
+        ).run();
     }
 
     protected void duplicateNode(Node node) {
@@ -184,100 +186,34 @@ public class FlowEditorPresenter extends RequestPresenter {
             return;
 
         final String flowId = flow.getId();
-        int requiredIds = node.getSlots().length + 1;
+        int requiredIds = node.getObjectCount();
         final List<String> generatedIds = new ArrayList<>();
 
         new IdGeneratorRunnable(
             flowId,
             requiredIds,
             generatedIds,
-            new DuplicationRunnable(generatedIds, node)
+            new DuplicateNodeRunnable(generatedIds, node)
         ).run();
     }
 
-    protected class DuplicationRunnable implements Runnable {
+    protected void addNode(Node node, double positionX, double positionY) {
+        flow.addNode(node);
+        dispatchEvent(new FlowUpdatedEvent(flow));
 
-        final List<String> generatedIds;
-        final protected Node node;
+        // Calculate the offset with the current transform (zoom, panning)
+        // TODO If I would know maths, I could probably do this with the transform matrices
+        Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
+        double x = (positionX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
+        double y = (positionY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
+        node.getEditorSettings().setPositionX(x);
+        node.getEditorSettings().setPositionY(y);
 
-        public DuplicationRunnable(List<String> generatedIds, Node node) {
-            this.generatedIds = generatedIds;
-            this.node = node;
-        }
+        LOG.debug("Adding node shape to flow designer: " + node);
+        flowDesigner.addNodeShape(node);
 
-        @Override
-        public void run() {
-            LOG.debug("Duplicating node: " + node);
-
-            Node dupe = NODE_CODEC.decode(NODE_CODEC.encode(node));
-
-            Iterator<String> it = generatedIds.iterator();
-            for (Slot slot : dupe.getSlots()) {
-                slot.getIdentifier().setId(it.next());
-            }
-            dupe.getIdentifier().setId(it.next());
-
-            if (dupe.getLabel() != null) {
-                dupe.setLabel(dupe.getLabel() + " (Copy)");
-            } else {
-                dupe.setLabel("(Copy)");
-            }
-
-            dupe.getEditorSettings().setPositionX(dupe.getEditorSettings().getPositionX() + 20);
-            dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
-
-            flow.addNode(dupe);
-            dispatchEvent(new FlowUpdatedEvent(flow));
-
-            LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
-            flowDesigner.addNodeShape(dupe);
-
-            flowDesigner.selectNodeShape(dupe);
-            dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
-        }
-    }
-
-    protected class IdGeneratorRunnable implements Runnable {
-
-        final String flowId;
-        final int requiredIds;
-        final List<String> generatedIds;
-        final protected Runnable duplicationRunnable;
-
-        public IdGeneratorRunnable(String flowId, int requiredIds, List<String> generatedIds, Runnable duplicationRunnable) {
-            this.flowId = flowId;
-            this.requiredIds = requiredIds;
-            this.generatedIds = generatedIds;
-            this.duplicationRunnable = duplicationRunnable;
-        }
-
-        @Override
-        public void run() {
-            LOG.debug("Retrieving a batch of GUIDs to duplicate node");
-            sendRequest(
-                false, false,
-                resource("catalog", "guid").get(),
-                new ArrayResponseCallback("Generate batch of GUIDs") {
-                    @Override
-                    protected void onResponse(JSONArray array) {
-                        // Check if this is still the same flow designer instance as before the request
-                        if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
-                            for (int i = 0; i < array.size(); i++) {
-                                generatedIds.add(array.get(i).isString().stringValue());
-                            }
-                            if (generatedIds.size() < requiredIds) {
-                                LOG.debug("Still need more GUIDs: " + (requiredIds - generatedIds.size()));
-                                new IdGeneratorRunnable(
-                                    flowId, requiredIds, generatedIds, duplicationRunnable
-                                ).run();
-                            } else {
-                                duplicationRunnable.run();
-                            }
-                        }
-                    }
-                }
-            );
-        }
+        flowDesigner.selectNodeShape(node);
+        dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
     }
 
     protected void initFlowDesigner() {
@@ -340,10 +276,164 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     protected void onMessageEvent(MessageEvent event) {
         if (flowDesigner != null && flow != null) {
-            Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getSlotId());
+            Flow ownerFlow = flow.findOwnerOfSlotInAllFlows(event.getSlotId());
             if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
                 flowDesigner.receiveMessageEvent(event);
             }
+        }
+    }
+
+    protected class CreateSubflowNodeRunnable implements Runnable {
+
+        final String currentFlowId;
+        final String flowId;
+        final double positionX;
+        final double positionY;
+
+        public CreateSubflowNodeRunnable(String currentFlowId, String flowId, double positionX, double positionY) {
+            this.currentFlowId = currentFlowId;
+            this.flowId = flowId;
+            this.positionX = positionX;
+            this.positionY = positionY;
+        }
+
+        @Override
+        public void run() {
+            LOG.debug("Creating subflow in flow designer: " + flowId);
+            sendRequest(
+                false, true,
+                resource("flow", flowId , "subflow").get(),
+                new ObjectResponseCallback<Node>("Create subflow node", NODE_CODEC) {
+                    @Override
+                    protected void onResponse(Node node) {
+                        new UpdateDependenciesRunnable(currentFlowId, node, positionX, positionY).run();
+                    }
+                }
+            );
+        }
+    }
+
+    protected class UpdateDependenciesRunnable implements Runnable {
+
+        final String currentFlowId;
+        final Node subflowNode;
+        final double positionX;
+        final double positionY;
+
+        public UpdateDependenciesRunnable(String currentFlowId, Node subflowNode, double positionX, double positionY) {
+            this.currentFlowId = currentFlowId;
+            this.subflowNode = subflowNode;
+            this.positionX = positionX;
+            this.positionY = positionY;
+        }
+
+        @Override
+        public void run() {
+            // Add the subflow node to a temporary copy so we don't affect the
+            // flow we are editing until we are done with resolution
+            Flow flowCopy = FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
+            flowCopy.addNode(subflowNode);
+
+            LOG.debug("Resolving and updating dependencies: " + flowCopy);
+            sendRequest(
+                false, true,
+                resource("flow", "resolve").post().json(FLOW_CODEC.encode(flowCopy)),
+                new ObjectResponseCallback<Flow>("Get flow dependencies", FLOW_CODEC) {
+                    @Override
+                    protected void onResponse(Flow resolvedFlow) {
+                        // Check if this is still the same flow designer instance as before the request
+                        if (flowDesigner != null && flow != null && flow.getId().equals(currentFlowId)) {
+                            flow.setDependencies(resolvedFlow.getDependencies());
+                            addNode(subflowNode, positionX, positionY);
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    protected class DuplicateNodeRunnable implements Runnable {
+
+        final List<String> generatedIds;
+        final Node node;
+
+        public DuplicateNodeRunnable(List<String> generatedIds, Node node) {
+            this.generatedIds = generatedIds;
+            this.node = node;
+        }
+
+        @Override
+        public void run() {
+            LOG.debug("Duplicating node: " + node);
+
+            Node dupe = NODE_CODEC.decode(NODE_CODEC.encode(node));
+
+            Iterator<String> it = generatedIds.iterator();
+            for (Slot slot : dupe.getSlots()) {
+                slot.getIdentifier().setId(it.next());
+            }
+            dupe.getIdentifier().setId(it.next());
+
+            if (dupe.getLabel() != null) {
+                dupe.setLabel(dupe.getLabel() + " (Copy)");
+            } else {
+                dupe.setLabel("(Copy)");
+            }
+
+            dupe.getEditorSettings().setPositionX(dupe.getEditorSettings().getPositionX() + 20);
+            dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
+
+            flow.addNode(dupe);
+            dispatchEvent(new FlowUpdatedEvent(flow));
+
+            LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
+            flowDesigner.addNodeShape(dupe);
+
+            flowDesigner.selectNodeShape(dupe);
+            dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
+        }
+    }
+
+    protected class IdGeneratorRunnable implements Runnable {
+
+        final String currentFlowId;
+        final int requiredIds;
+        final List<String> generatedIds;
+        final Runnable duplicationRunnable;
+
+        public IdGeneratorRunnable(String currentFlowId, int requiredIds, List<String> generatedIds, Runnable duplicationRunnable) {
+            this.currentFlowId = currentFlowId;
+            this.requiredIds = requiredIds;
+            this.generatedIds = generatedIds;
+            this.duplicationRunnable = duplicationRunnable;
+        }
+
+        @Override
+        public void run() {
+            LOG.debug("Retrieving a batch of GUIDs to duplicate node");
+            sendRequest(
+                false, false,
+                resource("catalog", "guid").get(),
+                new ArrayResponseCallback("Generate batch of GUIDs") {
+                    @Override
+                    protected void onResponse(JSONArray array) {
+                        // Check if this is still the same flow designer instance as before the request
+                        if (flowDesigner != null && flow != null && flow.getId().equals(currentFlowId)) {
+                            for (int i = 0; i < array.size(); i++) {
+                                generatedIds.add(array.get(i).isString().stringValue());
+                            }
+                            if (generatedIds.size() < requiredIds) {
+                                LOG.debug("Still need more GUIDs: " + (requiredIds - generatedIds.size()));
+                                new IdGeneratorRunnable(
+                                    currentFlowId, requiredIds, generatedIds, duplicationRunnable
+                                ).run();
+                            } else {
+                                duplicationRunnable.run();
+                            }
+                        }
+                    }
+                }
+            );
         }
     }
 }

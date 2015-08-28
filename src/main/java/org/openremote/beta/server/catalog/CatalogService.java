@@ -18,7 +18,7 @@ public class CatalogService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
 
-    public static final int ID_BATCH_SIZE = 100;
+    public static final int ID_MAX_BATCH_SIZE = 10000;
 
     final protected CamelContext context;
     final protected List<CatalogItem> catalogItems = new ArrayList<>();
@@ -67,10 +67,14 @@ public class CatalogService implements StaticService {
         }
     }
 
-    public String[] generateIdBatch() {
-        LOG.debug("Generating " + ID_BATCH_SIZE + " GUIDs...");
+    public String[] generateIdBatch(@Header("size") int size) {
         List<String> ids = new ArrayList<>();
-        for (int i = 0; i < ID_BATCH_SIZE; i++) {
+        if (size > ID_MAX_BATCH_SIZE) {
+            LOG.warn("Requested number of generated GUIDs exceeds maxium batch size " + ID_MAX_BATCH_SIZE + ": " + size);
+            size = ID_MAX_BATCH_SIZE;
+        }
+        LOG.debug("Generating " + size+ " GUIDs...");
+        for (int i = 0; i < size; i++) {
             ids.add(IdentifierUtil.generateGlobalUniqueId());
         }
         return ids.toArray(new String[ids.size()]);
