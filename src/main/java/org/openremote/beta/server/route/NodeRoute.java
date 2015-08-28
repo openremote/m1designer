@@ -256,7 +256,9 @@ public abstract class NodeRoute extends RouteBuilder {
 
                 // Find source slots and get the destination node and sink by examining the wires
                 for (Slot sourceSlot : sourceSlots) {
+                    LOG.debug("Finding wires attached to: " + sourceSlot);
                     Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
+                    LOG.debug("Found wires, sending exchange copy to each: " + Arrays.toString(sourceWires));
                     for (Wire sourceWire : sourceWires) {
                         sendExchangeCopy(sourceWire.getSinkId(), exchange, false);
                     }

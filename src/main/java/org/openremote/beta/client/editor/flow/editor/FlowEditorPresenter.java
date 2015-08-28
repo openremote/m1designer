@@ -170,6 +170,8 @@ public class FlowEditorPresenter extends RequestPresenter {
 
                         LOG.debug("Adding node shape to flow designer: " + node);
                         flowDesigner.addNodeShape(node);
+
+                        flowDesigner.selectNodeShape(node);
                         dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
                     }
                 }
@@ -230,6 +232,7 @@ public class FlowEditorPresenter extends RequestPresenter {
             LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
             flowDesigner.addNodeShape(dupe);
 
+            flowDesigner.selectNodeShape(dupe);
             dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
         }
     }

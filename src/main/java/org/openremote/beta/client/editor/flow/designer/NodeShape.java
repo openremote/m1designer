@@ -48,7 +48,6 @@ public abstract class NodeShape extends Group {
             @Override
             protected void onSelection() {
                 if (NodeShape.this.node != null) {
-                    setSelected(true);
                     selected(NodeShape.this.node);
                 }
             }

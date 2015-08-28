@@ -40,12 +40,7 @@ public abstract class FlowDesigner {
 
         @Override
         protected void selected(Node node) {
-            for (Node n : flow.getNodes()) {
-                if (!n.getId().equals(node.getId())) {
-                    getNodeShape(n.getId()).setSelected(false);
-                }
-            }
-            getLayer().batch();
+            selectNodeShape(node);
             onSelection(node);
         }
 
@@ -222,6 +217,18 @@ public abstract class FlowDesigner {
             }
         }
 
+        getLayer().batch();
+
+        selectNodeShape(null);
+    }
+
+    public void selectNodeShape(Node node) {
+        for (Node n : flow.getNodes()) {
+            NodeShape nodeShape = getNodeShape(n.getId());
+            if (nodeShape == null)
+                continue;
+            nodeShape.setSelected(node != null && n.getId().equals(node.getId()));
+        }
         getLayer().batch();
     }
 
