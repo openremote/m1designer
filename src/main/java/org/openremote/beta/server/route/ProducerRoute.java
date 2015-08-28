@@ -3,16 +3,21 @@ package org.openremote.beta.server.route;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.openremote.beta.server.route.RouteConstants.SLOT_ID;
 
 public class ProducerRoute extends NodeRoute {
 
@@ -46,11 +51,10 @@ public class ProducerRoute extends NodeRoute {
         }
 
         @Override
-        public Slot[] createSlots() {
-            return new Slot[] {
-                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)),
-                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), false),
-            };
+        public void addSlots(List<Slot> slots) {
+            super.addSlots(slots);
+            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
+            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), false));
         }
     }
 
@@ -59,20 +63,29 @@ public class ProducerRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
 
     @Override
-    protected void configureDestination(RouteDefinition routeDefinition) throws Exception {
+    protected void configureDestination(ProcessorDefinition routeDefinition) throws Exception {
         // Many (or no) internal (subflow) consumers receive this message asynchronously
         routeDefinition
             .process(exchange -> {
                 LOG.debug("Handing off exchange to asynchronous queue: " + getNode());
 
-                ProducerTemplate producerTemplate = getContext().createProducerTemplate();
+                Slot[] sourceSlots = new Slot[0];
+                if (isSinkRouting().matches(exchange)) {
+                    // Send message to all source slots
+                    sourceSlots = getNode().findSlots(Slot.TYPE_SOURCE);
+                } else {
+                    // Send message to a single source slot
+                    sourceSlots = new Slot[]{getNode().findSlot(getSlotId(exchange))};
+                }
+                exchange.getIn().removeHeader(SLOT_ID);
+                LOG.debug("Using wires of destination source slots: " + Arrays.toString(sourceSlots));
 
-                Slot[] sourceSlots = getNode().findSlots(Slot.TYPE_SOURCE);
+                ProducerTemplate producerTemplate = getContext().createProducerTemplate();
 
                 for (Slot sourceSlot : sourceSlots) {
                     Exchange exchangeCopy = copyExchange(exchange, false);

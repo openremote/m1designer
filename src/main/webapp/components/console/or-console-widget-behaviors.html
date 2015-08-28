@@ -1,45 +1,7 @@
 <script>
     window.openremote = window.openremote || {};
 
-    window.openremote.ValueAwareWidget = {
-
-        properties: {
-            value: {
-                type: String,
-                observer: "_onValueChange"
-            }
-        },
-        listeners: {
-            "update-value": "_onUpdateValue"
-        },
-        ready: function () {
-            Polymer.dom(this).classList.add("or-console-widget");
-        },
-        _onValueChange: function (newValue, oldValue) {
-            // When the value changes on a widget, we push it up to the parent widget (it's host)
-            var parent = Polymer.dom(this).parentNode;
-            if (parent && parent.host && parent.host.classList.contains("or-console-widget")) {
-                parent.host.setAttribute("value", newValue);
-            }
-        },
-        _onUpdateValue: function (event, detail) {
-            var updatedValue = detail.value;
-            // When a widget fires an update event, we push it down until we hit a sink that sends a message
-            var widgets = this.querySelectorAll(".or-console-widget");
-            for (var i = 0; i < widgets.length; i++) {
-                var widget = widgets[i];
-                this.fire("update-value", detail, {bubbles: false, node: widget});
-            }
-        },
-        updateValue: function (value) {
-            this.fire("update-value", {value: value}, {bubbles: false});
-        },
-        trigger: function () {
-            this.updateValue(1);
-        }
-    };
-
-    window.openremote.PropertiesAwareWidget = {
+    window.openremote.WidgetImpl = {
         properties: {
             _presenter: {
                 type: Object,
@@ -51,6 +13,10 @@
                 type: String,
                 reflectToAttribute: true
             },
+            persistentPropertyPaths: {
+                type: Array,
+                value: []
+            },
             widgetProperties: {
                 type: Object,
                 value: undefined
@@ -61,15 +27,18 @@
         ],
         _onWidgetPropertiesChanged: function (event) {
             if (event.path != "widgetProperties") {
-                this._presenter.widgetPropertiesChanged(this.nodeId, this.widgetProperties);
+                var path = event.path.substring("widgetProperties.".length);
+                this._presenter.widgetPropertiesChanged(
+                        this.nodeId, this.widgetProperties, path, event.value
+                );
             }
             this.onWidgetPropertiesChanged();
         },
-        onWidgetPropertiesChanged: function() {
+        onWidgetPropertiesChanged: function () {
         }
     };
 
-    window.openremote.VisibleWidget = {
+    window.openremote.VisibleWidgetImpl = {
         properties: {
             draggable: {
                 type: Boolean,
@@ -83,17 +52,21 @@
                 control.style.pointerEvents = draggable ? "none" : "";
             }
         },
-        onDragEnd: function(x, y) {
+        onDragEnd: function (x, y) {
             this.set("widgetProperties.positionX", x);
             this.set("widgetProperties.positionY", y);
         },
-        onWidgetPropertiesChanged: function() {
+        onWidgetPropertiesChanged: function () {
             this.style.left = this.widgetProperties.positionX + "px";
             this.style.top = this.widgetProperties.positionY + "px";
+            this.onVisibleWidgetPropertiesChanged();
+        },
+        onVisibleWidgetPropertiesChanged: function() {
+
         }
     };
 
-    window.openremote.Widget = [openremote.ValueAwareWidget, openremote.PropertiesAwareWidget, openremote.VisibleWidget];
-
+    window.openremote.Widget = [openremote.WidgetImpl];
+    window.openremote.VisibleWidget = [openremote.Widget, openremote.VisibleWidgetImpl];
 
 </script>

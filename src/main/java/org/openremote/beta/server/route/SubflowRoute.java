@@ -1,9 +1,11 @@
 package org.openremote.beta.server.route;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
-import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.model.ProcessorDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
-import org.openremote.beta.server.catalog.WidgetProperties;
+import org.openremote.beta.server.catalog.WidgetNodeDescriptor;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -11,10 +13,11 @@ import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
+
+import static org.openremote.beta.server.catalog.WidgetNodeDescriptor.PROPERTY_COMPONENT;
+import static org.openremote.beta.server.catalog.WidgetNodeDescriptor.WIDGET_INITIAL_PROPERTIES;
+import static org.openremote.beta.server.catalog.WidgetNodeDescriptor.WIDGET_PERSISTENT_PROPERTY_PATHS;
 
 public class SubflowRoute extends NodeRoute {
 
@@ -58,8 +61,15 @@ public class SubflowRoute extends NodeRoute {
         }
 
         @Override
-        protected Object getInitialProperties() {
-            return new WidgetProperties(WIDGET_COMPONENT, 0, 0);
+        protected ObjectNode getInitialProperties() {
+            return WIDGET_INITIAL_PROPERTIES.deepCopy()
+                .put(PROPERTY_COMPONENT, WIDGET_COMPONENT);
+        }
+
+        @Override
+        protected void addPersistentPropertyPaths(List<String> propertyPaths) {
+            super.addPersistentPropertyPaths(propertyPaths);
+            propertyPaths.addAll(Arrays.asList(WIDGET_PERSISTENT_PROPERTY_PATHS));
         }
     }
 
@@ -132,27 +142,28 @@ public class SubflowRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
         routeDefinition
             .process(exchange -> {
                 LOG.debug("Processing exchange for subflow: " + getNode());
-                String destinationSinkId = getSinkSlotId(exchange);
+                String destinationSinkId = getSlotId(exchange);
                 Slot destinationSink = getNode().findSlot(destinationSinkId);
                 LOG.debug("Found destination sink: " + destinationSink);
-                if (destinationSink.getPeerIdentifier() != null) {
+                if (destinationSink.getPeerId() != null) {
 
-                    LOG.debug("Found destination peer sink: " + destinationSink.getPeerIdentifier());
+                    LOG.debug("Found destination peer sink: " + destinationSink.getPeerId());
 
                     pushOntoCorrelationStack(exchange.getIn().getHeaders(), getNode().getId());
 
-                    sendExchangeCopy(destinationSink.getPeerIdentifier().getId(), exchange, false);
+                    sendExchangeCopy(destinationSink.getPeerId(), exchange, false);
 
                 } else {
                     LOG.debug("No peer for destination sink slot, stopping exchange: " + destinationSink);
                 }
             })
             .id(getProcessorId("toSubflowPeer"))
+            .log(LoggingLevel.DEBUG, LOG, "<<< Subflow " + getRouteDescription() + " done processing: ${body}")
             .stop()
             .id(getProcessorId("stopSubflow"));
 
@@ -161,16 +172,16 @@ public class SubflowRoute extends NodeRoute {
         for (Slot sourceSlot : getNode().findSlots(Slot.TYPE_SOURCE)) {
 
             LOG.debug("Handling subflow source slot: " + sourceSlot);
-            if (sourceSlot.getPeerIdentifier() == null) {
+            if (sourceSlot.getPeerId() == null) {
                 LOG.debug("No peer for source slot, not registering any asynchronous consumer: " + sourceSlot);
                 continue;
             }
 
-            LOG.debug("Consuming from source peer asynchronous queue: " + sourceSlot.getPeerIdentifier().getId());
-            from("seda:" + sourceSlot.getPeerIdentifier().getId() + "?multipleConsumers=true")
+            LOG.debug("Consuming from source peer asynchronous queue: " + sourceSlot.getPeerId());
+            from("seda:" + sourceSlot.getPeerId() + "?multipleConsumers=true")
                 .routeId(getRouteId(sourceSlot))
                 .process(exchange -> {
-                    LOG.debug("Received message from asynchronous queue: " + sourceSlot.getPeerIdentifier().getId());
+                    LOG.debug("Received message from asynchronous queue: " + sourceSlot.getPeerId());
 
                     if (!hasCorrelationStack(exchange.getIn().getHeaders())) {
                         LOG.warn("No correlation stack in message from asynchronous queue, dropping here: " + getNode());
@@ -198,7 +209,7 @@ public class SubflowRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureDestination(RouteDefinition routeDefinition) throws Exception {
+    protected void configureDestination(ProcessorDefinition routeDefinition) throws Exception {
         // Do nothing, internal wiring of queues!
     }
 }

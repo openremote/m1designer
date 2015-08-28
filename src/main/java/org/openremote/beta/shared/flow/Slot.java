@@ -18,9 +18,11 @@ public class Slot extends FlowObject {
     public static final String TYPE_SOURCE = "urn:org-openremote:flow:slot:source";
 
     public boolean connectable = true;
-    public Identifier peerIdentifier;
+    public String peerId;
+    public String propertyPath;
 
     public Slot() {
+        this(null);
     }
 
     public Slot(Identifier identifier) {
@@ -28,7 +30,11 @@ public class Slot extends FlowObject {
     }
 
     public Slot(String label, Identifier identifier) {
-        super(label, identifier);
+        this(label, identifier, null);
+    }
+
+    public Slot(String label, Identifier identifier, String propertyPath) {
+        this(label, identifier, true, null, propertyPath);
     }
 
     public Slot(Identifier identifier, boolean connectable) {
@@ -36,17 +42,18 @@ public class Slot extends FlowObject {
     }
 
     public Slot(String label, Identifier identifier, boolean connectable) {
-        super(label, identifier);
-        this.connectable = connectable;
-    }
-
-    public Slot(String label, Identifier identifier, Identifier peerIdentifier) {
-        this(label, identifier);
-        this.peerIdentifier = peerIdentifier;
+        this(label, identifier, connectable, null, null);
     }
 
     public Slot(String id, Slot peer) {
-        this(peer.getLabel(), new Identifier(id, peer.getIdentifier().getType()), peer.getIdentifier());
+        this(peer.getLabel(), new Identifier(id, peer.getIdentifier().getType()), true, peer.getId(), null);
+    }
+
+    public Slot(String label, Identifier identifier, boolean connectable, String peerId, String propertyPath) {
+        super(label, identifier);
+        this.connectable = connectable;
+        this.peerId = peerId;
+        this.propertyPath = propertyPath;
     }
 
     public boolean isConnectable() {
@@ -57,12 +64,20 @@ public class Slot extends FlowObject {
         this.connectable = connectable;
     }
 
-    public Identifier getPeerIdentifier() {
-        return peerIdentifier;
+    public String getPeerId() {
+        return peerId;
     }
 
-    public void setPeerIdentifier(Identifier peerIdentifier) {
-        this.peerIdentifier = peerIdentifier;
+    public void setPeerId(String peerId) {
+        this.peerId = peerId;
+    }
+
+    public String getPropertyPath() {
+        return propertyPath;
+    }
+
+    public void setPropertyPath(String propertyPath) {
+        this.propertyPath = propertyPath;
     }
 
     @Override
@@ -71,7 +86,8 @@ public class Slot extends FlowObject {
             "label='" + label + '\'' +
             ", id=" + identifier +
             ", connectable=" + connectable +
-            ", peerIdentifier=" + peerIdentifier +
+            ", peerId=" + peerId +
+            ", propertyPath=" + propertyPath+
             '}';
     }
 }

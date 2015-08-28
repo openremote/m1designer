@@ -3,10 +3,12 @@ package org.openremote.beta.server.catalog;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.openremote.beta.server.route.NodeRoute;
+import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.model.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +31,18 @@ public abstract class NodeDescriptor {
         return NodeColor.DEFAULT;
     }
 
-    public Slot[] createSlots() {
-        return new Slot[0];
+    public Node createNode() {
+        return initialize(
+            new Node(null, new Identifier(IdentifierUtil.generateGlobalUniqueId(), getType()))
+        );
     }
 
     public Node initialize(Node node) {
+
+        List<Slot> slots = new ArrayList<>();
+        addSlots(slots);
+        node.setSlots(slots.toArray(new Slot[slots.size()]));
+
         node.getEditorSettings().setTypeLabel(getTypeLabel());
         node.getEditorSettings().setNodeColor(getColor());
 
@@ -56,18 +65,32 @@ public abstract class NodeDescriptor {
             throw new RuntimeException("Error writing initial properties of: " + getType(), ex);
         }
 
+        List<String> persistentPaths = new ArrayList<>();
+        addPersistentPropertyPaths(persistentPaths);
+        if (persistentPaths.size() > 0) {
+            node.setPersistentPropertyPaths(persistentPaths.toArray(new String[persistentPaths.size()]));
+        }
+
         return node;
     }
 
-    public void addEditorComponents(List<String> editorComponents) {
+    public void addSlots(List<Slot> slots) {
+        // Subclass
     }
 
+    public void addEditorComponents(List<String> editorComponents) {
+        // Subclass
+    }
 
     protected void configureInitialProperties(ObjectNode properties) {
         // Subclass
     }
 
-    protected Object getInitialProperties() {
+    protected void addPersistentPropertyPaths(List<String> propertyPaths) {
+        // Subclass
+    }
+
+    protected ObjectNode getInitialProperties() {
         return null;
     }
 }

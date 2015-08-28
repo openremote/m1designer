@@ -95,13 +95,15 @@ public class WebserverConfiguration implements Configuration {
                         environment.getProperty(WEBSERVER_ALLOW_ORIGIN, WEBSERVER_ALLOW_ORIGIN_DEFAULT)
                     )
 
-                    .bindingMode(RestBindingMode.json)
+                    .bindingMode(RestBindingMode.auto)
                     .dataFormatProperty("json.out.disableFeatures", "WRITE_NULL_MAP_VALUES,WRITE_EMPTY_JSON_ARRAYS")
+                    .dataFormatProperty("json.in.disableFeatures", "FAIL_ON_UNKNOWN_PROPERTIES")
 
                     .endpointProperty("headerFilterStrategy", "customHeaderFilterStrategy")
                     .endpointProperty("handlers", "staticResourcesHandler");
 
                 JettyHttpComponent jettyComponent = (JettyHttpComponent) getContext().getComponent("jetty");
+
                 jettyComponent.setErrorHandler(new CustomErrorHandler());
                 // TODO https://issues.apache.org/jira/browse/CAMEL-9034
 
@@ -172,6 +174,27 @@ public class WebserverConfiguration implements Configuration {
             super.initialize();
             // Why would you not let me set cache control headers? This makes no sense...
             getOutFilter().remove("cache-control");
+
+            // Why is this shit not filtered by default? Why would you ever send this back to an HTTP client?
+            // TODO: What about all the general headers that can appear in requests AND response?!
+            getOutFilter().add("accept");
+            getOutFilter().add("accept");
+            getOutFilter().add("accept-encoding");
+            getOutFilter().add("accept-language");
+            getOutFilter().add("dnt");
+            getOutFilter().add("expect");
+            getOutFilter().add("from");
+            getOutFilter().add("if-match");
+            getOutFilter().add("if-modified-since");
+            getOutFilter().add("if-none-match");
+            getOutFilter().add("if-range");
+            getOutFilter().add("if-unmodified-since");
+            getOutFilter().add("max-forwards");
+            getOutFilter().add("proxy-authorization");
+            getOutFilter().add("referer");
+            getOutFilter().add("user-agent");
+            getOutFilter().add("upgrade-insecure-requests");
+            getOutFilter().add("vary");
         }
     }
 }

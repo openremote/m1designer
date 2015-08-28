@@ -77,11 +77,30 @@
             border-radius: 0.4em;
         }
 
+        .message .icon {
+            text-align: center;
+            color: var(--or-messagelog-item-icon-outgoing-color);
+        }
+
+        .message .icon[incoming] {
+            color: var(--or-messagelog-item-icon-incoming-color);
+        }
+
+        .message .icon iron-icon {
+            height: 32px;
+            width: 32px;
+        }
+
         .message .label {
+            line-height: 1.5em;
         }
 
         .message .label.empty {
             display: none;
+        }
+
+        .message .details {
+            font-size: xx-small;
         }
 
         .message .value {
@@ -92,6 +111,7 @@
             border-left: 1px dashed black;
             margin-left: 0.5em;
             padding-left: 0.5em;
+            align-self: stretch;
         }
     </style>
 
@@ -104,25 +124,33 @@
                 <template is="dom-repeat" items="[[_presenter.log]]" as="logDetail">
                     <div>
                         <div class="message layout horizontal center">
-                            <div class="flex-6 layout vertical">
+                            <div class="icon flex-2" incoming$="[[logDetail.incoming]]">
+                                <template is="dom-if" if="[[logDetail.incoming]]">
+                                    <iron-icon icon="cloud-upload"></iron-icon>
+                                </template>
+                                <template is="dom-if" if="[[!logDetail.incoming]]">
+                                    <iron-icon icon="cloud-download"></iron-icon>
+                                </template>
+                            </div>
+                            <div class="details flex-10 layout vertical">
                                 <div class$="{{_getLabelClass(logDetail.flowLabel)}}">
                                     Flow:&#160;<span class="value">[[logDetail.flowLabel]]</span>
                                 </div>
                                 <div class$="{{_getLabelClass(logDetail.nodeLabel)}}">
                                     Node:&#160;<span class="value">[[logDetail.nodeLabel]]</span>
                                 </div>
-                                <div class$="{{_getLabelClass(logDetail.sinkLabel)}}">
-                                    Sink:&#160;<span class="value">[[logDetail.sinkLabel]]</span>
+                                <div class$="{{_getLabelClass(logDetail.slotLabel)}}">
+                                    Slot:&#160;<span class="value">[[logDetail.slotLabel]]</span>
                                 </div>
                                 <div class$="{{_getLabelClass(logDetail.instanceLabel)}}">
                                     Instance:&#160;<span class="value">[[logDetail.instanceLabel]]</span>
                                 </div>
                             </div>
-                            <div class="flex-5 body">[[logDetail.body]]</div>
+                            <div class="flex-8 body">[[logDetail.body]]</div>
                         </div>
                     </div>
                 </template>
-                <template is="dom-if" if="[[!_messageLog.length]]">
+                <template is="dom-if" if="[[!_presenter.log.length]]">
                     No messages.
                 </template>
             </div>

@@ -129,25 +129,23 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
     public void onMessageEvent(MessageEvent messageEvent) {
         LOG.debug("### On incoming message event: " + messageEvent);
-        Node sinkNode = routeManagementService.getRunningNodeOwnerOfSlot(messageEvent.getSinkSlotId());
-        if (sinkNode == null) {
-            LOG.debug("No running flow/node with sink slot, ignoring: " + messageEvent);
-            return;
-        }
-        // TODO: Should we check flow/node identifiers against message event data?
-
-        if (!sinkNode.isClientAccess()) {
-            LOG.debug("Client access not enabled, dropping received message event for: " + sinkNode);
+        Node node = routeManagementService.getRunningNodeOwnerOfSlot(messageEvent.getSlotId());
+        if (node == null) {
+            LOG.debug("No running flow/node with slot, ignoring: " + messageEvent);
             return;
         }
 
-        LOG.debug("Processing message event with node: " + sinkNode);
+        if (!node.isClientAccess()) {
+            LOG.debug("Client access not enabled, dropping received message event for: " + node);
+            return;
+        }
+
+        LOG.debug("Processing message event with node: " + node);
         Map<String, Object> exchangeHeaders = new HashMap<>(
             messageEvent.hasHeaders() ? messageEvent.getHeaders() : Collections.EMPTY_MAP
         );
 
-
-        exchangeHeaders.put(RouteConstants.SINK_SLOT_ID, messageEvent.getSinkSlotId());
+        exchangeHeaders.put(RouteConstants.SLOT_ID, messageEvent.getSlotId());
 
         if (messageEvent.getInstanceId() != null) {
             LOG.debug("Received instance identifier, pushing onto correlation stack: " + messageEvent.getInstanceId());
@@ -157,13 +155,13 @@ public class EventService implements StaticService, FlowDeploymentListener {
         String body = messageEvent.getBody();
 
         try {
-            producerTemplate.sendBodyAndHeaders(NodeRoute.getConsumerUri(sinkNode), body, exchangeHeaders);
+            producerTemplate.sendBodyAndHeaders(NodeRoute.getConsumerUri(node), body, exchangeHeaders);
         } catch (Exception ex) {
             LOG.warn("Handling message event failed: " + messageEvent, ex);
         }
     }
 
-    public void sendMessageEvent(Node node, Slot sink, String body, Map<String, Object> headers) {
+    public void sendMessageEvent(Node node, Slot slot, String body, Map<String, Object> headers) {
         LOG.debug("Preparing outgoing message event for: " + node);
 
         if (!node.isClientAccess()) {
@@ -176,7 +174,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
         String instanceId = SubflowRoute.peekCorrelationStack(messageHeaders, true, true);
 
-        MessageEvent messageEvent = new MessageEvent(sink, instanceId, body);
+        MessageEvent messageEvent = new MessageEvent(slot, instanceId, body);
         if (messageHeaders.size() > 0)
             messageEvent.setHeaders(messageHeaders);
 

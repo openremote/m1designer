@@ -6,9 +6,11 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
@@ -20,11 +22,18 @@ import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediato
 import org.openremote.beta.client.editor.flow.node.*;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.message.MessageSendEvent;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
+import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @JsExport
 @JsType
@@ -92,24 +101,30 @@ public class FlowEditorPresenter extends RequestPresenter {
             }
         });
 
-        addEventListener(MessageReceivedEvent.class, event -> {
-            if (flowDesigner != null && flow != null) {
-                Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getMessageEvent().getSinkSlotId());
-                if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
-                    flowDesigner.receiveMessageEvent(event.getMessageEvent());
-                }
+        addEventListener(NodeDuplicateEvent.class, event -> {
+            if (flowDesigner != null && flow != null && flow.getId().equals(event.getFlow().getId())) {
+                duplicateNode(event.getNode());
             }
+        });
+
+        addEventListener(MessageReceivedEvent.class, event -> {
+            onMessageEvent(event.getMessageEvent());
+        });
+
+        addEventListener(MessageSendEvent.class, event -> {
+            onMessageEvent(event.getMessageEvent());
+        });
+
+        addEventListener(ConsoleMessageSendEvent.class, event -> {
+            onMessageEvent(event.getMessageEvent());
         });
 
         addEventListener(ConsoleWidgetUpdatedEvent.class, event -> {
             if (flow != null && flowDesigner != null) {
                 Node node = flow.findNode(event.getNodeId());
                 if (node != null) {
-                    LOG.debug("Received console widget update: " + node);
+                    LOG.debug("Received console widget update, persistent state modified of: " + node);
                     node.setProperties(event.getProperties());
-
-                    LOG.debug("Updating flow designer node shape with properties: " + node.getProperties());
-                    flowDesigner.updateNodeShape(node);
 
                     // Careful, this should not bounce back to the console!
                     dispatchEvent("#flowControl", new FlowUpdatedEvent(flow));
@@ -160,6 +175,106 @@ public class FlowEditorPresenter extends RequestPresenter {
                 }
             }
         );
+    }
+
+    protected void duplicateNode(Node node) {
+        if (flowDesigner == null || flow == null)
+            return;
+
+        final String flowId = flow.getId();
+        int requiredIds = node.getSlots().length + 1;
+        final List<String> generatedIds = new ArrayList<>();
+
+        new IdGeneratorRunnable(
+            flowId,
+            requiredIds,
+            generatedIds,
+            new DuplicationRunnable(generatedIds, node)
+        ).run();
+    }
+
+    protected class DuplicationRunnable implements Runnable {
+
+        final List<String> generatedIds;
+        final protected Node node;
+
+        public DuplicationRunnable(List<String> generatedIds, Node node) {
+            this.generatedIds = generatedIds;
+            this.node = node;
+        }
+
+        @Override
+        public void run() {
+            LOG.debug("Duplicating node: " + node);
+
+            Node dupe = NODE_CODEC.decode(NODE_CODEC.encode(node));
+
+            Iterator<String> it = generatedIds.iterator();
+            for (Slot slot : dupe.getSlots()) {
+                slot.getIdentifier().setId(it.next());
+            }
+            dupe.getIdentifier().setId(it.next());
+
+            if (dupe.getLabel() != null) {
+                dupe.setLabel(dupe.getLabel() + " (Copy)");
+            } else {
+                dupe.setLabel("(Copy)");
+            }
+
+            dupe.getEditorSettings().setPositionX(dupe.getEditorSettings().getPositionX() + 20);
+            dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
+
+            flow.addNode(dupe);
+            dispatchEvent(new FlowUpdatedEvent(flow));
+
+            LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
+            flowDesigner.addNodeShape(dupe);
+
+            dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
+        }
+    }
+
+    protected class IdGeneratorRunnable implements Runnable {
+
+        final String flowId;
+        final int requiredIds;
+        final List<String> generatedIds;
+        final protected Runnable duplicationRunnable;
+
+        public IdGeneratorRunnable(String flowId, int requiredIds, List<String> generatedIds, Runnable duplicationRunnable) {
+            this.flowId = flowId;
+            this.requiredIds = requiredIds;
+            this.generatedIds = generatedIds;
+            this.duplicationRunnable = duplicationRunnable;
+        }
+
+        @Override
+        public void run() {
+            LOG.debug("Retrieving a batch of GUIDs to duplicate node");
+            sendRequest(
+                false, false,
+                resource("catalog", "guid").get(),
+                new ArrayResponseCallback("Generate batch of GUIDs") {
+                    @Override
+                    protected void onResponse(JSONArray array) {
+                        // Check if this is still the same flow designer instance as before the request
+                        if (flowDesigner != null && flow != null && flow.getId().equals(flowId)) {
+                            for (int i = 0; i < array.size(); i++) {
+                                generatedIds.add(array.get(i).isString().stringValue());
+                            }
+                            if (generatedIds.size() < requiredIds) {
+                                LOG.debug("Still need more GUIDs: " + (requiredIds - generatedIds.size()));
+                                new IdGeneratorRunnable(
+                                    flowId, requiredIds, generatedIds, duplicationRunnable
+                                ).run();
+                            } else {
+                                duplicationRunnable.run();
+                            }
+                        }
+                    }
+                }
+            );
+        }
     }
 
     protected void initFlowDesigner() {
@@ -218,5 +333,14 @@ public class FlowEditorPresenter extends RequestPresenter {
     protected void stopFlowDesigner() {
         flowDesignerPanel.getScene().removeAll();
         flowDesigner = null;
+    }
+
+    protected void onMessageEvent(MessageEvent event) {
+        if (flowDesigner != null && flow != null) {
+            Flow ownerFlow = flow.findOwnerFlowOfSlot(event.getSlotId());
+            if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
+                flowDesigner.receiveMessageEvent(event);
+            }
+        }
     }
 }

@@ -1,10 +1,12 @@
 package org.openremote.beta.client.editor.flow.node;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
+import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
@@ -27,6 +29,8 @@ import static org.openremote.beta.client.shared.Timeout.debounce;
 public class FlowNodePresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowNodePresenter.class);
+
+    private static final NodeCodec NODE_CODEC = GWT.create(NodeCodec.class);
 
     public Flow flow;
     public Node node;
@@ -90,6 +94,12 @@ public class FlowNodePresenter extends AbstractPresenter {
         flow.removeNode(node);
         dispatchEvent(new NodeDeletedEvent(flow, node));
         dispatchEvent(new FlowNodeCloseEvent());
+    }
+
+    public void duplicateNode() {
+        if (flow == null || node == null)
+            return;
+        dispatchEvent(new NodeDuplicateEvent(flow, node));
     }
 
     public String getSinkLabel(Slot sink) {
@@ -173,7 +183,7 @@ public class FlowNodePresenter extends AbstractPresenter {
         if (node == null)
             return;
         if (node.isClientAccess()) {
-            sinks = node.findSlots(Slot.TYPE_SINK);
+            sinks = node.findNonPropertySlots(Slot.TYPE_SINK);
             notifyPath("sinks", sinks);
             hasMultipleSinks = sinks.length > 1;
             notifyPath("hasMultipleSinks", hasMultipleSinks);
@@ -193,7 +203,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     protected void setFlowNodeTitle() {
         if (node != null) {
             flowNodeTitle = node.getLabel() != null
-                ? node.getLabel() + " (" + node.getEditorSettings().getTypeLabel() + ")"
+                ? node.getLabel()
                 : node.getEditorSettings().getTypeLabel();
         } else {
             flowNodeTitle = "No node selected";

@@ -7,6 +7,13 @@
 
     <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
+    <script>
+        /* Enabble real Shadow DOM on Chrome... breaks the console queries that work across shady DOMs
+        window.Polymer = window.Polymer || {};
+        window.Polymer.dom = 'shadow';
+         */
+    </script>
+
     <!-- TODO The GWT loader doesn't work within imported files on Chrome https://code.google.com/p/google-web-toolkit/issues/detail?id=9179 -->
     <meta name="Client::gwt:property" content="baseUrl=gwt/Client/">
 

@@ -103,6 +103,18 @@ public class FlowModelTest {
     }
 
     @Test
+    public void findNodeInAllFlows() {
+        assertEquals(
+            sampleEnvironmentWidget.findNodeInAllFlows(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()).getId(),
+            SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()
+        );
+        assertEquals(
+            sampleEnvironmentWidget.findNodeInAllFlows(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId()).getId(),
+            SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId()
+        );
+    }
+
+    @Test
     public void findWidgetNodes() {
         assertEquals(
             sampleThermostatControl.findClientWidgetNodes().length,

@@ -27,6 +27,7 @@ public class Node extends FlowObject {
     public String postEndpoint;
     public EditorSettings editorSettings = new EditorSettings();
     public String properties;
+    public String[] persistentPropertyPaths;
 
     public Node() {
     }
@@ -35,19 +36,17 @@ public class Node extends FlowObject {
         super(label, identifier);
     }
 
-    public Node(String label, Identifier identifier, Slot... slots) {
+    public Node(String label, Identifier identifier, String properties) {
         super(label, identifier);
-        this.slots = slots;
-    }
-
-    public Node(String label, Identifier identifier, Slot[] slots, String properties) {
-        super(label, identifier);
-        this.slots = slots;
         this.properties = properties;
     }
 
     public Slot[] getSlots() {
         return slots;
+    }
+
+    public void setSlots(Slot[] slots) {
+        this.slots = slots;
     }
 
     public boolean isClientAccess() {
@@ -98,6 +97,14 @@ public class Node extends FlowObject {
         this.properties = properties;
     }
 
+    public String[] getPersistentPropertyPaths() {
+        return persistentPropertyPaths;
+    }
+
+    public void setPersistentPropertyPaths(String[] persistentPropertyPaths) {
+        this.persistentPropertyPaths = persistentPropertyPaths;
+    }
+
     public Slot findSlot(String slotId) {
         for (Slot slot : getSlots()) {
             if (slot.getId().equals(slotId))
@@ -119,6 +126,24 @@ public class Node extends FlowObject {
         List<Slot> list = new ArrayList<>();
         for (Slot slot : getSlots()) {
             if (slot.isOfType(type) && slot.isConnectable())
+                list.add(slot);
+        }
+        return list.toArray(new Slot[list.size()]);
+    }
+
+    public Slot[] findNonPropertySlots(String type) {
+        List<Slot> list = new ArrayList<>();
+        for (Slot slot : getSlots()) {
+            if (slot.isOfType(type) && slot.getPropertyPath() == null)
+                list.add(slot);
+        }
+        return list.toArray(new Slot[list.size()]);
+    }
+
+    public Slot[] findPropertySlots() {
+        List<Slot> list = new ArrayList<>();
+        for (Slot slot : getSlots()) {
+            if (slot.getPropertyPath() != null)
                 list.add(slot);
         }
         return list.toArray(new Slot[list.size()]);

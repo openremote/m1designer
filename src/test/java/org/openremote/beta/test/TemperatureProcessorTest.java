@@ -8,8 +8,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
-import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.shared.event.*;
+import org.openremote.beta.shared.event.FlowDeployEvent;
+import org.openremote.beta.shared.event.FlowStatusEvent;
+import org.openremote.beta.shared.event.FlowStopEvent;
+import org.openremote.beta.shared.event.MessageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -71,8 +73,8 @@ public class TemperatureProcessorTest extends IntegrationTest {
         MockEndpoint mockProducerLabel = context().getEndpoint("mock:producerLabel", MockEndpoint.class);
 
         mockTemperatureDatabase.expectedBodiesReceived(75);
-        mockProducerCelcius.expectedBodiesReceived("23");
-        mockProducerLabel.expectedBodiesReceived("23 C");
+        mockProducerCelcius.expectedBodiesReceived("24");
+        mockProducerLabel.expectedBodiesReceived("24 \u00B0C");
 
         messageEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new MessageEvent(
@@ -81,11 +83,11 @@ public class TemperatureProcessorTest extends IntegrationTest {
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
-                "23"
+                "24"
             )),
             toJson(new MessageEvent(
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
-                "23 C"
+                "24 \u00B0C"
             ))
         );
 

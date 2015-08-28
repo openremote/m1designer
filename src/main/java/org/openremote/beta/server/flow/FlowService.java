@@ -1,5 +1,7 @@
 package org.openremote.beta.server.flow;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.beta.server.route.RouteManagementService;
@@ -7,15 +9,16 @@ import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
+import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependencyResolver;
+import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.openremote.beta.server.util.JsonUtil.JSON;
 
@@ -145,9 +148,44 @@ public class FlowService implements StaticService {
             if (flow.getDependencies().length > 0)
                 throw new IllegalArgumentException("Don't send dependencies when updating a flow");
 
+            // TODO cleaner solution
+            filterNonPersistentProperties(flow);
+
             SAMPLE_FLOWS.put(flow.getId(), flow);
 
             return true;
+        }
+    }
+
+    protected void filterNonPersistentProperties(Flow flow) {
+        try {
+            for (Node node : flow.getNodes()) {
+                if (node.getProperties() != null && node.getProperties() != null) {
+
+                    List<String> persistentPaths = node.getPersistentPropertyPaths() != null
+                        ? Arrays.asList(node.getPersistentPropertyPaths())
+                        : Collections.EMPTY_LIST;
+
+                    List<String> nonPersistentPaths = new ArrayList<>();
+
+                    ObjectNode propertiesNode = JSON.readValue(node.getProperties(), ObjectNode.class);
+
+                    Iterator<String> it = propertiesNode.fieldNames();
+                    while (it.hasNext()) {
+                        String path = it.next();
+                        if (!persistentPaths.contains(path))
+                            nonPersistentPaths.add(path);
+                    }
+
+                    for (String nonPersistentPath : nonPersistentPaths) {
+                        propertiesNode.remove(nonPersistentPath);
+                    }
+
+                    node.setProperties(JSON.writeValueAsString(propertiesNode));
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

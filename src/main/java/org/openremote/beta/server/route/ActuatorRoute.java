@@ -1,6 +1,7 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.NodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
@@ -9,6 +10,8 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
+
+import java.util.List;
 
 public class ActuatorRoute extends NodeRoute {
 
@@ -50,10 +53,9 @@ public class ActuatorRoute extends NodeRoute {
         }
 
         @Override
-        public Slot[] createSlots() {
-            return new Slot[] {
-                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK))
-            };
+        public void addSlots(List<Slot> slots) {
+            super.addSlots(slots);
+            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
         }
     }
 
@@ -62,7 +64,7 @@ public class ActuatorRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
 }

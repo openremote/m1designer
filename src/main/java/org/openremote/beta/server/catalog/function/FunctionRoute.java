@@ -2,7 +2,7 @@ package org.openremote.beta.server.catalog.function;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.script.ScriptBuilder;
-import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.model.ProcessorDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
@@ -13,17 +13,15 @@ import java.util.Map;
 
 import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
 
-public class FunctionRoute extends NodeRoute<FunctionProperties> {
+public class FunctionRoute extends NodeRoute {
 
     public FunctionRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node, FunctionProperties.class);
+        super(context, flow, node);
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
-        if (getNodeProperties() != null
-            && getNodeProperties().getJavascript() != null
-            && getNodeProperties().getJavascript().length() > 0) {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
+        if (getNodeProperties().has("javascript")) {
             routeDefinition
                 .process(exchange -> {
                     Map<String, Object> arguments = new HashMap<>();
@@ -37,13 +35,13 @@ public class FunctionRoute extends NodeRoute<FunctionProperties> {
                     exchange.getIn().setHeader(ScriptBuilder.ARGUMENTS, arguments);
                 })
                 .id(getProcessorId("prepareJavascript"))
-                .transform(javaScript(getNodeProperties().getJavascript()))
+                .transform(javaScript(getNodeProperties().get("javascript").asText()))
                 .id(getProcessorId("executeJavascript"))
                 .process(exchange -> {
                     Map<String, Object> arguments = (Map<String, Object>) exchange.getIn().getHeader(ScriptBuilder.ARGUMENTS);
                     Map<String, Object> output = (Map<String, Object>) arguments.get("output");
                     // TODO Output type conversion dynamically
-                    exchange.getIn().setBody(output.get("value"), Integer.class);
+                    exchange.getIn().setBody(output.get("value"), String.class);
                 })
                 .id(getProcessorId("resultJavascript"))
                 .removeHeader(ScriptBuilder.ARGUMENTS)

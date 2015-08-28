@@ -30,8 +30,6 @@ public class IntegrationTest extends CamelTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTest.class);
 
-    protected ObjectMapper jsonMapper;
-
     protected Server server;
     protected Environment environment;
     protected String webServerEphemeralPort;
@@ -55,8 +53,6 @@ public class IntegrationTest extends CamelTestSupport {
 
         environment = new Environment(context, false, properties);
         server = new Server(environment, context, configurations);
-
-        jsonMapper = createJsonMapper();
 
         return context;
     }
@@ -156,11 +152,11 @@ public class IntegrationTest extends CamelTestSupport {
     }
 
     protected <T> T fromJson(String json, Class<T> type) throws Exception {
-        return jsonMapper.readValue(json, type);
+        return JsonUtil.JSON.readValue(json, type);
     }
 
     protected String toJson(Object o) throws Exception {
-        return jsonMapper.writeValueAsString(o);
+        return JsonUtil.JSON.writeValueAsString(o);
     }
 
     protected void logExchangeHistory(Exchange exchange) {

@@ -13,6 +13,11 @@ public class JsUtil {
         console.dir(o);
     }-*/;
 
+    public static native int floor(double x) /*-{
+        return ~~x;
+    }-*/;
+
+
     public native static String randomUUID() /*-{
         var s = [];
         for (var i = 0; i < 36; i++) s.push(Math.floor(Math.random() * 10));
@@ -38,4 +43,9 @@ public class JsUtil {
     static public native Component.DOM domRoot(Element e) /*-{
         return $wnd.Polymer.dom(e.root);
     }-*/;
+
+    static public native Component host(Node n) /*-{
+        return n.host;
+    }-*/;
+
 }

@@ -21,18 +21,19 @@ public interface FlowDesignerConstants {
     double PATCH_TITLE_FONT_SIZE = 10;
     double PATCH_CORNER_RADIUS = 5;
     IColor PATCH_COLOR = new Color(69, 90, 100);
+    IColor PATCH_SELECTED_COLOR = new Color(192, 214, 46);
+    IColor PATCH_SELECTED_TEXT_COLOR = new Color(69, 90, 100);
     IColor PATCH_SENSOR_ACTUATOR_COLOR = new Color(102, 0, 146);
     IColor PATCH_VIRTUAL_COLOR = new Color(145, 145, 148);
     IColor PATCH_CLIENT_COLOR = new Color(25, 118, 210);
-    IColor PATCH_TITLE_TEXT_COLOR = WHITE;
-    IColor PATCH_LABEL_TEXT_COLOR = WHITE;
+    IColor PATCH_HEADER_TEXT_COLOR = WHITE;
 
     String SLOT_SINK_LABEL = "INPUT";
     String SLOT_SOURCE_LABEL = "OUTPUT";
     int SLOT_VALUE_MAX_LENGTH = 7;
     double SLOT_RADIUS = 15;
     double SLOT_PADDING = 3;
-    double SLOT_FONT_SIZE = 10;
+    double SLOT_FONT_SIZE = 9;
     double SLOT_VALUE_FONT_SIZE = 8;
     IColor SLOT_SINK_COLOR = new Color(240, 240, 240);
     IColor SLOT_SINK_TEXT_COLOR = BLACK;

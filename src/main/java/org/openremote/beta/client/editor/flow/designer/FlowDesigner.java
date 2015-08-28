@@ -40,6 +40,12 @@ public abstract class FlowDesigner {
 
         @Override
         protected void selected(Node node) {
+            for (Node n : flow.getNodes()) {
+                if (!n.getId().equals(node.getId())) {
+                    getNodeShape(n.getId()).setSelected(false);
+                }
+            }
+            getLayer().batch();
             onSelection(node);
         }
 
@@ -185,7 +191,7 @@ public abstract class FlowDesigner {
     }
 
     public void receiveMessageEvent(MessageEvent event) {
-        SlotShape slotShape = getSlotShape(event.getSinkSlotId());
+        SlotShape slotShape = getSlotShape(event.getSlotId());
         if (slotShape != null) {
             slotShape.setSlotValue(event.getBody());
             getLayer().batch();

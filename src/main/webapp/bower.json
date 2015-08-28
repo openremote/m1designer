@@ -31,6 +31,7 @@
     "paper-toggle-button": "PolymerElements/paper-toggle-button#~1.0.6",
     "paper-input": "PolymerElements/paper-input#~1.0.10",
     "paper-tabs": "PolymerElements/paper-tabs#~1.0.1",
-    "draggabilly": "~1.2.4"
+    "draggabilly": "~1.2.4",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#~1.0.2"
   }
 }

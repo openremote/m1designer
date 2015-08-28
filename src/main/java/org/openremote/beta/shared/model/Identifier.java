@@ -2,7 +2,6 @@ package org.openremote.beta.shared.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
@@ -31,6 +30,10 @@ public class Identifier {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getType() {

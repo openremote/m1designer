@@ -9,20 +9,25 @@
             display: block;
             position: absolute;
         }
-
-        #container {
-            background: lightgreen;
-            color: black;
-        }
-
     </style>
     <template>
-        <div id="container">TextLabel: <span>[[value]]</span></div>
+        <div id="container">
+            <template is="dom-if" if="[[widgetProperties.text]]">
+                <span>[[widgetProperties.text]]</span>
+            </template>
+            <template is="dom-if" if="[[!widgetProperties.text]]">
+                <span>[[widgetProperties.emptyValue]]</span>
+            </template>
+        </div>
     </template>
     <script>
         Polymer({
             is: "or-console-widget-textlabel",
-            behaviors: [openremote.Widget]
+            behaviors: [openremote.VisibleWidget],
+            onVisibleWidgetPropertiesChanged: function () {
+                this.$.container.style.color = this.widgetProperties.textColor || "grey";
+                this.$.container.style.fontSize = (this.widgetProperties.fontSizePixels || "5") + "px";
+            }
         });
     </script>
 </dom-module>

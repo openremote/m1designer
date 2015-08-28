@@ -2,11 +2,13 @@ package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.message.MessageSendEvent;
 import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -19,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class MessageLogPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageLogPresenter.class);
+
+    public static final int MAX_LOG = 1000;
 
     public Flow flow;
     public String messageLogTitle = "Message Log";
@@ -59,26 +63,11 @@ public class MessageLogPresenter extends AbstractPresenter {
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-            MessageEvent msgEvent = event.getMessageEvent();
+            updateMessageLog(true, event.getMessageEvent());
+        });
 
-            Flow msgFlow = null;
-            Node msgNode = null;
-            Slot msgSlot = null;
-            if (flow != null) {
-                msgFlow = flow.findOwnerFlowOfSlot(msgEvent.getSinkSlotId());
-                if (msgFlow != null)
-                    msgNode = msgFlow.findOwnerNode(msgEvent.getSinkSlotId());
-                if (msgNode != null)
-                    msgSlot = msgNode.findSlot(msgEvent.getSinkSlotId());
-            }
-
-            if (watchAllFlows || msgFlow != null) {
-                MessageLogDetail detail = new MessageLogDetail(
-                    msgEvent, msgFlow, msgNode, msgSlot
-                );
-                pushArray("log", detail);
-            }
-            setMessageLogTitle();
+        addEventListener(MessageSendEvent.class, event -> {
+            updateMessageLog(false, event.getMessageEvent());
         });
     }
 
@@ -93,5 +82,32 @@ public class MessageLogPresenter extends AbstractPresenter {
     public void clearMessageLog() {
         this.log = new MessageLogDetail[0];
         notifyPath("log", log);
+        setMessageLogTitle();
+    }
+
+    protected void updateMessageLog(boolean incoming, MessageEvent event) {
+        if (log.length >= MAX_LOG) {
+            clearMessageLog();
+        }
+
+        Flow msgFlow = null;
+        Node msgNode = null;
+        Slot msgSlot = null;
+        if (flow != null) {
+            msgFlow = flow.findOwnerFlowOfSlot(event.getSlotId());
+            if (msgFlow != null)
+                msgNode = msgFlow.findOwnerNode(event.getSlotId());
+            if (msgNode != null)
+                msgSlot = msgNode.findSlot(event.getSlotId());
+        }
+
+        if (watchAllFlows || msgFlow != null) {
+            MessageLogDetail detail = new MessageLogDetail(
+                incoming, event, flow, msgFlow, msgNode, msgSlot
+            );
+            pushArray("log", detail);
+        }
+        setMessageLogTitle();
+
     }
 }

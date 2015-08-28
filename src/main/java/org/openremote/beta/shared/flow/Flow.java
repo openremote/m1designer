@@ -20,7 +20,6 @@ public class Flow extends FlowObject {
 
     private static final Logger LOG = LoggerFactory.getLogger(Flow.class);
 
-
     public static final String TYPE = "urn:org-openremote:flow";
 
     public Node[] nodes = new Node[0];
@@ -136,7 +135,7 @@ public class Flow extends FlowObject {
                     "Dangling wire, no source node for slot '" + wire.getSourceId() + "' on: " + this
                 );
             if (sourceNode.isOfType(Node.TYPE_SUBFLOW))
-                collection.add(findSlot(wire.getSourceId()).getPeerIdentifier().getId());
+                collection.add(findSlot(wire.getSourceId()).getPeerId());
 
             Node sinkNode = findOwnerNode(wire.getSinkId());
             if (sinkNode == null)
@@ -144,7 +143,7 @@ public class Flow extends FlowObject {
                     "Dangling wire, no sink node for slot '" + wire.getSourceId() + "' on: " + this
                 );
             if (sinkNode.isOfType(Node.TYPE_SUBFLOW))
-                collection.add(findSlot(wire.getSinkId()).getPeerIdentifier().getId());
+                collection.add(findSlot(wire.getSinkId()).getPeerId());
         }
         return collection.toArray(new String[collection.size()]);
     }
@@ -153,7 +152,7 @@ public class Flow extends FlowObject {
         Slot[] slots = subflowNode.getSlots();
         // TODO: This assumes that the first slot we find will have the right peer
         for (Slot slot : slots) {
-            String peerSlotId = slot.getPeerIdentifier().getId();
+            String peerSlotId = slot.getPeerId();
             if (peerSlotId == null)
                 continue;
             Flow subflow = findOwnerFlowOfSlot(peerSlotId);
@@ -252,7 +251,7 @@ public class Flow extends FlowObject {
         Set<Slot> collection = new HashSet<>();
         for (Node node : getNodes()) {
             for (Slot slot : node.getSlots()) {
-                if (slot.getPeerIdentifier() != null)
+                if (slot.getPeerId() != null)
                     collection.add(slot);
             }
         }
@@ -292,6 +291,20 @@ public class Flow extends FlowObject {
             if (node.getId().equals(nodeId))
                 return node;
         }
+        return null;
+    }
+
+    public Node findNodeInAllFlows(String nodeId) {
+        Node node = findNode(nodeId);
+        if (node != null)
+            return node;
+
+        for (Flow dependency : getDependencies()) {
+            Node result = dependency.findNodeInAllFlows(nodeId);
+            if (result != null)
+                return result;
+        }
+
         return null;
     }
 

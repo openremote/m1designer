@@ -38,6 +38,9 @@ public class FlowsPresenter extends RequestPresenter {
                 protected void onResponse(List<Flow> flows) {
                     FlowsPresenter.this.flows = flows.toArray(new Flow[flows.size()]);
                     notifyPath("flows", FlowsPresenter.this.flows);
+
+                    // TODO: REMOVE THIS FOR PRODUCTION
+                    //loadFlow(flows.get(1).getId());
                 }
 
                 @Override

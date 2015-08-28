@@ -32,16 +32,22 @@ public class ChangeNodeDescriptor extends NodeDescriptor {
     }
 
     @Override
-    public Slot[] createSlots() {
-        return new Slot[]{
-            new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)),
-            new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE))
-        };
+    public void addSlots(List<Slot> slots) {
+        super.addSlots(slots);
+        slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
+        slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE)));
     }
 
     @Override
     public void addEditorComponents(List<String> editorComponents) {
         super.addEditorComponents(editorComponents);
         editorComponents.add("or-editor-node-change");
+    }
+
+    @Override
+    protected void addPersistentPropertyPaths(List<String> propertyPaths) {
+        super.addPersistentPropertyPaths(propertyPaths);
+        propertyPaths.add("prepend");
+        propertyPaths.add("append");
     }
 }

@@ -9,6 +9,8 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
 
+import java.util.List;
+
 public class StorageNodeDescriptor extends NodeDescriptor {
 
     public static final String TYPE = "urn:org-openremote:flow:node:storage";
@@ -30,10 +32,9 @@ public class StorageNodeDescriptor extends NodeDescriptor {
     }
 
     @Override
-    public Slot[] createSlots() {
-        return new Slot[] {
-            new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK))
-        };
+    public void addSlots(List<Slot> slots) {
+        super.addSlots(slots);
+        slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
     }
 
 }

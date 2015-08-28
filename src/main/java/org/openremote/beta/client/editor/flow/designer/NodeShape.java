@@ -24,6 +24,11 @@ public abstract class NodeShape extends Group {
 
     protected Node node;
     protected Map<String, SlotShape> slotShapes = new HashMap<>();
+    protected MultiPath outline;
+    protected MultiPath header;
+    protected Text patchLabel;
+    protected Text patchTypeLabel;
+    protected boolean selected;
 
     public NodeShape(Node node) {
 
@@ -42,8 +47,10 @@ public abstract class NodeShape extends Group {
         new SelectionEventHandler(this) {
             @Override
             protected void onSelection() {
-                if (NodeShape.this.node != null)
+                if (NodeShape.this.node != null) {
+                    setSelected(true);
                     selected(NodeShape.this.node);
+                }
             }
         };
 
@@ -67,13 +74,22 @@ public abstract class NodeShape extends Group {
         updateShape();
     }
 
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        updateSelectedState();
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
     protected void updateShape() {
         removeAll();
 
         double width = calculateWidth();
         double headerHeight = PATCH_LABEL_FONT_SIZE + PATCH_TITLE_FONT_SIZE + PATCH_PADDING * 2;
 
-        MultiPath outline = new MultiPath();
+        outline = new MultiPath();
         outline.M(0, headerHeight)
             .V(PATCH_CORNER_RADIUS)
             .Q(0, 0, PATCH_CORNER_RADIUS, 0)
@@ -86,7 +102,7 @@ public abstract class NodeShape extends Group {
         outline.setFillColor(ColorName.WHITE);
         add(outline);
 
-        MultiPath header = new MultiPath();
+        header = new MultiPath();
         header.M(0, PATCH_CORNER_RADIUS)
             .Q(1, 1, PATCH_CORNER_RADIUS, 0)
             .H(width - PATCH_CORNER_RADIUS)
@@ -101,17 +117,17 @@ public abstract class NodeShape extends Group {
         boolean haveNodeLabel = node.getLabel() != null && node.getLabel().length() > 0;
 
         if (haveNodeLabel) {
-            Text patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
-            patchLabel.setFillColor(PATCH_LABEL_TEXT_COLOR);
+            patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
+            patchLabel.setFillColor(PATCH_HEADER_TEXT_COLOR);
             patchLabel.setX(header.getBoundingBox().getWidth() / 2 - patchLabel.getBoundingBox().getWidth() / 2);
             patchLabel.setY(headerHeight / 2 + patchLabel.getBoundingBox().getHeight() / 2 + PATCH_TITLE_FONT_SIZE / 2);
             patchLabel.setListening(false);
             add(patchLabel);
         }
 
-        Text patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
+        patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
         patchTypeLabel.setFontStyle("italic");
-        patchTypeLabel.setFillColor(PATCH_TITLE_TEXT_COLOR);
+        patchTypeLabel.setFillColor(PATCH_HEADER_TEXT_COLOR);
         patchTypeLabel.setX(header.getBoundingBox().getWidth() / 2 - patchTypeLabel.getBoundingBox().getWidth() / 2);
         if (haveNodeLabel) {
             patchTypeLabel.setY(PATCH_PADDING);
@@ -123,37 +139,49 @@ public abstract class NodeShape extends Group {
         add(patchTypeLabel);
 
         moveToBottom(outline);
+
+        updateSelectedState();
     }
 
     protected double calculateWidth() {
         // Width depends on the node label and the combined width of widest sink and source slot labels
-        double width = PATCH_MIN_WIDTH;
+        int width = (int) PATCH_MIN_WIDTH;
         Text patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
-        width = Math.max(width, patchLabel.getBoundingBox().getWidth());
+        width = (int) Math.max(width, patchLabel.getBoundingBox().getWidth());
         Text patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
         if (node.getLabel() == null || node.getLabel().length() == 0) {
             patchTypeLabel.setFontSize(PATCH_LABEL_FONT_SIZE);
         }
-        width = Math.max(width, patchTypeLabel.getBoundingBox().getWidth());
+        width = (int) Math.max(width, patchTypeLabel.getBoundingBox().getWidth());
 
-        double largestSource = 0;
+        int largestSource = 0;
         for (Slot source : node.findConnectableSlots(Slot.TYPE_SOURCE)) {
-            Text slotLabel = new Text(source.getLabel(), FONT_FAMILY, SLOT_FONT_SIZE);
+            Text slotLabel = new Text(
+                source.getLabel() != null && source.getLabel().length() > 0 ? source.getLabel() : SLOT_SOURCE_LABEL,
+                FONT_FAMILY,
+                SLOT_FONT_SIZE
+            );
             if (slotLabel.getBoundingBox().getWidth() > largestSource)
-                largestSource = slotLabel.getBoundingBox().getWidth();
+                largestSource = (int) slotLabel.getBoundingBox().getWidth();
         }
 
-        double largestSink = 0;
+
+        int largestSink = 0;
         for (Slot sink : node.findConnectableSlots(Slot.TYPE_SINK)) {
-            Text slotLabel = new Text(sink.getLabel(), FONT_FAMILY, SLOT_FONT_SIZE);
-            if (slotLabel.getBoundingBox().getWidth() > largestSource)
-                largestSink = slotLabel.getBoundingBox().getWidth();
+            Text slotLabel = new Text(
+                sink.getLabel() != null && sink.getLabel().length() > 0 ? sink.getLabel() : SLOT_SINK_LABEL,
+                FONT_FAMILY,
+                SLOT_FONT_SIZE
+            );
+            if (slotLabel.getBoundingBox().getWidth() > largestSink)
+                largestSink = (int) slotLabel.getBoundingBox().getWidth();
         }
 
-        double maxSlotSpace = largestSource + largestSink + PATCH_PADDING * 2;
+        int maxSlotSpace = largestSink + largestSource + ((int) PATCH_PADDING * 2);
+
         width = Math.max(width, maxSlotSpace);
         width += PATCH_PADDING * 2;
-        return width > 0 ? width: PATCH_MIN_WIDTH;
+        return width > 0 ? width : PATCH_MIN_WIDTH;
     }
 
     protected IColor getPatchColor() {
@@ -173,7 +201,7 @@ public abstract class NodeShape extends Group {
         Slot[] sources = node.findConnectableSlots(Slot.TYPE_SOURCE);
         Slot[] sinks = node.findConnectableSlots(Slot.TYPE_SINK);
 
-        double slotHeight = (SLOT_RADIUS + SLOT_PADDING) * 2;
+        double slotHeight = (SLOT_RADIUS * 2) + (SLOT_PADDING * 4);
 
         for (Slot source : sources) {
             SlotShape slotShape = slotShapes.get(source.getId());
@@ -185,7 +213,7 @@ public abstract class NodeShape extends Group {
         }
 
         if (sinks.length > sources.length) {
-            double diff = ((sinks.length - sources.length) * slotHeight + (SLOT_PADDING * 2));
+            double diff = ((sinks.length - sources.length) * slotHeight);
             outline.V(y + diff);
             y += diff;
         }
@@ -193,7 +221,7 @@ public abstract class NodeShape extends Group {
         outline.H(0);
 
         if (sources.length > sinks.length) {
-            double diff = ((sources.length - sinks.length) * slotHeight + (SLOT_PADDING * 2));
+            double diff = ((sources.length - sinks.length) * slotHeight);
             outline.V(y - diff);
             y -= diff;
         }
@@ -240,6 +268,17 @@ public abstract class NodeShape extends Group {
         y = isSource ? y + SLOT_PADDING : y - SLOT_PADDING;
 
         return y;
+    }
+
+    protected void updateSelectedState() {
+        if (outline != null)
+            outline.setShadow(isSelected() ? new Shadow(ColorName.DIMGRAY, 5, 1, 2) : new Shadow(ColorName.DARKGRAY, 8, 1, 2));
+        if (header != null)
+            header.setFillColor(isSelected() ? PATCH_SELECTED_COLOR : getPatchColor());
+        if (patchLabel != null)
+            patchLabel.setFillColor(isSelected() ? PATCH_SELECTED_TEXT_COLOR : PATCH_HEADER_TEXT_COLOR);
+        if (patchTypeLabel != null)
+            patchTypeLabel.setFillColor(isSelected() ? PATCH_SELECTED_TEXT_COLOR : PATCH_HEADER_TEXT_COLOR);
     }
 
     public abstract WireShape createWireShape(double x1, double y1, double x2, double y2, Slot source, Slot sink);

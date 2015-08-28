@@ -1,4 +1,15 @@
 <link rel="import" href="or-console-widget-behaviors.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
 
 <dom-module id="or-console-widget-pushbutton">
 
@@ -9,22 +20,74 @@
             display: block;
             position: absolute;
         }
-        #container {
-            background: lightblue;
-            color: black;
-        }
 
-        button {
+        #button {
+            --paper-button: {
+                min-width: 0;
+            }
         }
-
     </style>
     <template>
-        <div id="container">PushButton: <button class="control" on-tap="trigger">CLICK</button></div>
+        <paper-button id="button"
+                      class="control"
+                      raised$="[[widgetProperties.raised]]"
+                      on-down="_onDown" on-up="_onUp">
+            <div style$="[[_getWrapperStyle(widgetProperties)]]">
+                <template is="dom-if" if="[[widgetProperties.icon]]">
+                    <iron-icon icon="[[widgetProperties.icon]]"
+                               style$="[[_getIconStyle(widgetProperties)]]"></iron-icon>
+                </template>
+                <template is="dom-if" if="[[widgetProperties.text]]">
+                    <div style$="[[_getTextStyle(widgetProperties)]]">[[widgetProperties.text]]</div>
+                </template>
+            </div>
+        </paper-button>
     </template>
     <script>
         Polymer({
             is: "or-console-widget-pushbutton",
-            behaviors: [openremote.Widget]
+            behaviors: [openremote.VisibleWidget],
+            onVisibleWidgetPropertiesChanged: function () {
+                this.$.button.style.color = this.widgetProperties.color || "grey";
+                this.$.button.style.backgroundColor = this.widgetProperties.backgroundColor || "black";
+                this.$.button.style.fontSize = (this.widgetProperties.fontSizePixels || "5") + "px";
+            },
+            _onDown: function () {
+                this.set("widgetProperties.click", this.widgetProperties.downValue || "1");
+            },
+            _onUp: function () {
+                this.set("widgetProperties.click", this.widgetProperties.upValue || "0");
+            },
+            _getWrapperStyle: function(widgetProperties) {
+                switch (widgetProperties.iconPosition) {
+                    case "top":
+                    case "bottom":
+                            return "display: flex; flex-direction: column; align-items:center;";
+                        break;
+                    default:
+                        return "display: flex; flex-direction: row; align-items:center;";
+                }
+            },
+            _getIconStyle: function(widgetProperties) {
+                switch (widgetProperties.iconPosition) {
+                    case "bottom":
+                    case "right":
+                        return "order: 2; width: " + widgetProperties.fontSizePixels + "px; height: " + widgetProperties.fontSizePixels + "px;";
+                        break;
+                    default:
+                        return "order: 1; width: " + widgetProperties.fontSizePixels + "px; height: " + widgetProperties.fontSizePixels + "px;";
+                }
+            },
+            _getTextStyle: function(widgetProperties) {
+                switch (widgetProperties.iconPosition) {
+                    case "bottom":
+                    case "right":
+                        return "flex: 1; order: 1";
+                        break;
+                    default:
+                        return "flex: 1; order: 2";
+                }
+            }
         });
     </script>
 </dom-module>

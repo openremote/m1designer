@@ -17,7 +17,7 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class MessageEvent extends Event {
 
-    public String sinkSlotId;
+    public String slotId;
     public String instanceId;
     public Map<String, Object> headers;
     public String body;
@@ -28,28 +28,28 @@ public class MessageEvent extends Event {
     }
 
     @JsNoExport
-    public MessageEvent(Slot sinkSlot, String body) {
-        this(sinkSlot.getId(), null, body, null);
+    public MessageEvent(Slot slot, String body) {
+        this(slot.getId(), null, body, null);
     }
 
     @JsNoExport
-    public MessageEvent(Slot sinkSlot, String instanceId, String body) {
-        this(sinkSlot.getId(), instanceId, body, null);
+    public MessageEvent(Slot slot, String instanceId, String body) {
+        this(slot.getId(), instanceId, body, null);
     }
 
-    public MessageEvent(String sinkSlotId, String instanceId, String body, Map<String, Object> headers) {
-        this.sinkSlotId = sinkSlotId;
+    public MessageEvent(String slotId, String instanceId, String body, Map<String, Object> headers) {
+        this.slotId = slotId;
         this.instanceId = instanceId;
         this.body = body;
         this.headers = headers;
     }
 
-    public String getSinkSlotId() {
-        return sinkSlotId;
+    public String getSlotId() {
+        return slotId;
     }
 
-    public void setSinkSlotId(String sinkSlotId) {
-        this.sinkSlotId = sinkSlotId;
+    public void setSlotId(String slotId) {
+        this.slotId = slotId;
     }
 
     public String getInstanceId() {
@@ -83,7 +83,7 @@ public class MessageEvent extends Event {
     @Override
     public String toString() {
         return "MessageEvent{" +
-            "sinkSlotId='" + sinkSlotId + '\'' +
+            "slotId='" + slotId + '\'' +
             ", instanceId='" + instanceId + '\'' +
             ", headers=" + headers +
             ", body='" + body + '\'' +

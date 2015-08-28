@@ -115,7 +115,7 @@ public class RouteManagementService implements StaticService {
     }
 
     synchronized public Node getRunningNodeOwnerOfSlot(String slotId) {
-        // Used in routing, we have a wire connected to a sink slot, and we need to find the (running) node behind it
+        // Used in routing, when a message arrives with a slot identifier, we need to find the (running) node behind it
         for (FlowRoutes flowRoutes : runningFlows.values()) {
             Node node = flowRoutes.getFlow().findOwnerNode(slotId);
             if (node != null)

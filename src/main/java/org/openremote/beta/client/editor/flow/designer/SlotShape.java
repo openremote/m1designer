@@ -135,7 +135,7 @@ public class SlotShape {
                 getHandle().setStrokeColor(ColorName.TRANSPARENT);
                 getHandle().setStrokeWidth(0);
             },
-            1000
+            500
         );
 
         updateSlotText();

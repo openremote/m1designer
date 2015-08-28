@@ -1,29 +1,29 @@
 package org.openremote.beta.server.catalog.change;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.model.ProcessorDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
-public class ChangeRoute extends NodeRoute<ChangeProperties> {
+public class ChangeRoute extends NodeRoute {
 
     public ChangeRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node, ChangeProperties.class);
+        super(context, flow, node);
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
-        if (getNodeProperties() != null && getNodeProperties().getPrepend() != null) {
+        if (getNodeProperties().has("prepend")) {
             routeDefinition
-                .transform(body().prepend(getNodeProperties().getPrepend()))
+                .transform(body().prepend(getNodeProperties().get("prepend").asText()))
                 .id(getProcessorId("doPrepend"));
         }
 
-        if (getNodeProperties() != null && getNodeProperties().getAppend() != null) {
+        if (getNodeProperties().has("append")) {
             routeDefinition
-                .transform(body().append(getNodeProperties().getAppend()))
+                .transform(body().append(getNodeProperties().get("append").asText()))
                 .id(getProcessorId("doAppend"));
         }
     }

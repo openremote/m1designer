@@ -1,6 +1,5 @@
 package org.openremote.beta.shared.flow;
 
-import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +33,7 @@ public abstract class FlowDependencyResolver {
 
     protected void populatePeerLabels(Flow flow) {
         for (Slot slot : flow.findSlotsWithPeer()) {
-            String peerSlotId = slot.getPeerIdentifier().getId();
+            String peerSlotId = slot.getPeerId();
             Flow ownerFlow = flow.findOwnerFlowOfSlot(peerSlotId);
             Node ownerNode = ownerFlow.findOwnerNode(peerSlotId);
             slot.setLabel(ownerNode.getLabel());

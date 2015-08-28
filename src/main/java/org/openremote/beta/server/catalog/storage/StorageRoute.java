@@ -1,6 +1,7 @@
 package org.openremote.beta.server.catalog.storage;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.shared.flow.Flow;
@@ -13,7 +14,7 @@ public class StorageRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
 }

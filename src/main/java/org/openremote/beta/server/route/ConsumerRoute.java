@@ -1,14 +1,16 @@
 package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.NodeColor;
 import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.model.Identifier;
+
+import java.util.List;
 
 public class ConsumerRoute extends NodeRoute {
 
@@ -40,11 +42,10 @@ public class ConsumerRoute extends NodeRoute {
         }
 
         @Override
-        public Slot[] createSlots() {
-            return new Slot[] {
-                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), false),
-                new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE))
-            };
+        public void addSlots(List<Slot> slots) {
+            super.addSlots(slots);
+            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), false));
+            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE)));
         }
     }
 
@@ -53,7 +54,7 @@ public class ConsumerRoute extends NodeRoute {
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
         // Nothing to do
     }
 }

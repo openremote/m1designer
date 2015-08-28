@@ -6,7 +6,7 @@
 <link rel="import" href="../shared/or-component-behaviors.html">
 
 <link rel="import" href="or-console-widget-composite.html"/>
-<link rel="import" href="or-console-widget-sink.html"/>
+<link rel="import" href="or-console-widget-slot.html"/>
 
 <link rel="import" href="or-console-widget-textlabel.html"/>
 <link rel="import" href="or-console-widget-pushbutton.html"/>
@@ -77,6 +77,8 @@
                     if (this.$$("#draggingSwitch") && this.$$("#draggingSwitch").checked) {
                         this._disableDragging();
                         this._enableDragging();
+                    } else {
+                        this._disableDragging();
                     }
                 });
             },
@@ -116,6 +118,7 @@
             height: 100%;
             width: 100%;
             background-color: var(--or-console-background-color);
+            color: var(--or-console-color);
         }
 
         #draggingSwitch {

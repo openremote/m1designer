@@ -7,7 +7,6 @@ import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.catalog.CatalogCategory;
 import org.openremote.beta.shared.catalog.CatalogItem;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +17,8 @@ import java.util.Set;
 public class CatalogService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
+
+    public static final int ID_BATCH_SIZE = 100;
 
     final protected CamelContext context;
     final protected List<CatalogItem> catalogItems = new ArrayList<>();
@@ -66,6 +67,15 @@ public class CatalogService implements StaticService {
         }
     }
 
+    public String[] generateIdBatch() {
+        LOG.debug("Generating " + ID_BATCH_SIZE + " GUIDs...");
+        List<String> ids = new ArrayList<>();
+        for (int i = 0; i < ID_BATCH_SIZE; i++) {
+            ids.add(IdentifierUtil.generateGlobalUniqueId());
+        }
+        return ids.toArray(new String[ids.size()]);
+    }
+
     public CatalogItem[] getItems() {
         LOG.debug("Getting catalog items");
         synchronized (catalogItems) {
@@ -75,18 +85,10 @@ public class CatalogService implements StaticService {
 
     public Node getNewNode(@Header("type") String nodeType) {
         LOG.debug("Getting new node of type: " + nodeType);
-
         NodeDescriptor nodeDescriptor = context.getRegistry().lookupByNameAndType(nodeType, NodeDescriptor.class);
         if (nodeDescriptor == null)
             return null;
-
-        Node node = new Node(
-            null,
-            new Identifier(IdentifierUtil.generateGlobalUniqueId(), nodeType),
-            nodeDescriptor.createSlots()
-        );
-
-        return nodeDescriptor.initialize(node);
+        return nodeDescriptor.createNode();
     }
 
 }

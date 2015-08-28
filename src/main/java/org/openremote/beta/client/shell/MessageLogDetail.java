@@ -5,17 +5,27 @@ import org.openremote.beta.shared.event.MessageEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.SLOT_SINK_LABEL;
+import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.SLOT_SOURCE_LABEL;
 
 @JsType
 public class MessageLogDetail {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MessageLogDetail.class);
+
+    public boolean incoming;
     public String flowLabel;
     public String nodeLabel;
-    public String sinkLabel;
+    public String slotLabel;
     public String instanceLabel;
     public String body;
 
-    public MessageLogDetail(MessageEvent event, Flow flow, Node node, Slot slot) {
+    public MessageLogDetail(boolean incoming, MessageEvent event, Flow rootFlow, Flow flow, Node node, Slot slot) {
+        this.incoming = incoming;
+
         this.flowLabel = flow != null ? flow.getLabel() : null;
 
         if (node != null) {
@@ -25,9 +35,25 @@ public class MessageLogDetail {
         }
 
         if (node == null || slot == null || !node.getLabel().equals(slot.getLabel())) {
-            this.sinkLabel = slot != null ? slot.getLabel() : event.getSinkSlotId();
+            if (slot != null) {
+                if (slot.getLabel() != null) {
+                    this.slotLabel = slot.getLabel() + (slot.isOfType(Slot.TYPE_SINK) ? " (Sink)" : " (Source)");
+                } else {
+                    this.slotLabel = slot.isOfType(Slot.TYPE_SINK) ? SLOT_SINK_LABEL : SLOT_SOURCE_LABEL;
+                }
+            } else {
+                this.slotLabel = event.getSlotId();
+            }
         }
         this.instanceLabel = event.getInstanceId();
+
+        if (rootFlow != null && event.getInstanceId() != null) {
+            Node instanceNode = rootFlow.findNodeInAllFlows(event.getInstanceId());
+            if (instanceNode != null && instanceNode.getLabel() != null) {
+                this.instanceLabel = instanceNode.getLabel();
+            }
+        }
+
         this.body = event.getBody() != null && event.getBody().length() > 0 ? event.getBody() : "(EMPTY MESSAGE)";
     }
 

@@ -4,6 +4,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.html.IFrameElement;
+import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleReadyEvent;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
@@ -11,6 +12,7 @@ import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
 import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
 import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.message.MessageSendEvent;
 import org.openremote.beta.client.shared.session.message.MessageServerConnectEvent;
 import org.openremote.beta.client.shared.session.message.MessageSessionPresenter;
 import org.slf4j.Logger;
@@ -36,6 +38,23 @@ public class ShellPresenter extends MessageSessionPresenter {
                 }
                 if (isConsoleViewAvailable()) {
                     dispatchEvent(getConsoleView(), event);
+                }
+            }
+        );
+
+        addEventListener(
+            MessageSendEvent.class,
+            event -> {
+                dispatchEvent("#messageLog", event);
+            }
+        );
+
+        addEventListener(
+            ConsoleMessageSendEvent.class,
+            event -> {
+                dispatchEvent(new MessageSendEvent(event.getMessageEvent()));
+                if (isEditorViewAvailable()) {
+                    dispatchEvent(getEditorView(), event);
                 }
             }
         );

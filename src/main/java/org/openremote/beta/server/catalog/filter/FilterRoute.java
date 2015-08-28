@@ -1,6 +1,7 @@
 package org.openremote.beta.server.catalog.filter;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.route.predicate.SinkSlotPosition;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FilterRoute extends NodeRoute<FilterProperties> {
+public class FilterRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterRoute.class);
 
@@ -21,11 +22,11 @@ public class FilterRoute extends NodeRoute<FilterProperties> {
     final protected Map<String, Object> instanceValues = new HashMap<>();
 
     public FilterRoute(CamelContext context, Flow flow, Node node) {
-        super(context, flow, node, FilterProperties.class);
+        super(context, flow, node);
     }
 
     @Override
-    protected void configureProcessing(RouteDefinition routeDefinition) throws Exception {
+    protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
         routeDefinition
             .choice()
@@ -44,22 +45,39 @@ public class FilterRoute extends NodeRoute<FilterProperties> {
                 .id(getProcessorId("assumeFilterPass"))
                 .choice()
                     .id(getProcessorId("applyRules"))
-                        .when(method(getNodeProperties(), "isWaitForTrigger"))
+                        .when(isNodePropertyTrue("waitForTrigger"))
                             .setHeader(FILTER_PASS, constant(false))
                             .id(getProcessorId("applyWaitForTrigger"))
                         // TODO: Other filter rules
-                .end()
-            .endChoice()
+                .endChoice()
             .when(new SinkSlotPosition(getNode(), 1))
                 .process(exchange -> {
                     log.debug("Filter received trigger on: " + node);
+
+                    // The trigger value must be '1' to continue
+                    // TODO: Make configurable, we should accept other trigger values
+                    String triggerValue = exchange.getIn().getBody(String.class);
+                    try {
+                        if (!Integer.valueOf(triggerValue).equals(1)) {
+                            LOG.debug("Filter trigger value was not 1, skipping: " + triggerValue);
+                            exchange.getIn().setHeader(FILTER_PASS, false);
+                            return;
+                        }
+                    } catch (Exception ex) {
+                        LOG.debug("Filter trigger value was not an integer, skipping: " + triggerValue);
+                        exchange.getIn().setHeader(FILTER_PASS, false);
+                        return;
+                    }
+
                     synchronized (instanceValues) {
                         String instanceId = getInstanceId(exchange);
                         if (instanceValues.containsKey(instanceId)) {
+                            // TODO: Should be able to optionally override with trigger value instead
                             log.debug("Filter has data for instance: " + instanceId);
                             exchange.getIn().setBody(instanceValues.get(instanceId));
                             exchange.getIn().setHeader(FILTER_PASS, true);
                         } else {
+                            // TODO: Should be able to optionally forward trigger value instead
                             LOG.debug("Filter received trigger but has no data for instance: " + instanceId);
                             exchange.getIn().setHeader(FILTER_PASS, false);
                         }
@@ -67,7 +85,6 @@ public class FilterRoute extends NodeRoute<FilterProperties> {
                 })
                 .id(getProcessorId("receiveTrigger"))
             .endChoice()
-            .end()
             .choice()
                 .id(getProcessorId("checkFilterPass"))
                 .when(header(FILTER_PASS).isEqualTo(false))
@@ -78,8 +95,7 @@ public class FilterRoute extends NodeRoute<FilterProperties> {
                     .id(getProcessorId("filterClear"))
                     .stop()
                     .id(getProcessorId("filterStop"))
-                    .endChoice()
-                .end()
+            .endChoice()
             .removeHeader(FILTER_PASS)
             .id(getProcessorId("filterPass"));
     }

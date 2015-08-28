@@ -19,7 +19,7 @@ public class SinkSlotPosition extends NodePredicate{
         Slot sink = getNode().findSlotByPosition(position, Slot.TYPE_SINK);
         if (sink == null)
             return false;
-        String sinkSlotId = exchange.getIn().getHeader(RouteConstants.SINK_SLOT_ID, String.class);
-        return sinkSlotId != null && sinkSlotId.equals(sink.getId());
+        String exchangeSlotId = exchange.getIn().getHeader(RouteConstants.SLOT_ID, String.class);
+        return exchangeSlotId != null && exchangeSlotId.equals(sink.getId());
     }
 }

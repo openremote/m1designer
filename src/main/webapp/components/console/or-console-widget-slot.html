@@ -1,0 +1,39 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<dom-module id="or-console-widget-slot">
+    <script>
+        Polymer({
+            is: "or-console-widget-slot",
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.console.ConsoleWidgetSlotPresenter(this);
+                    }
+                },
+                label: {
+                    type: String,
+                    reflectToAttribute: true
+                },
+                type: {
+                    type: String,
+                    reflectToAttribute: true
+                },
+                slotId: {
+                    type: String,
+                    reflectToAttribute: true
+                },
+                instanceId: {
+                    type: String,
+                    reflectToAttribute: true
+                },
+                propertyPath: {
+                    type: String,
+                    reflectToAttribute: true
+                }
+            }
+        });
+    </script>
+</dom-module>
+
+

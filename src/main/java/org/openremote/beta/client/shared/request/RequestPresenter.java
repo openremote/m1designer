@@ -165,6 +165,30 @@ public abstract class RequestPresenter extends AbstractPresenter {
         protected abstract void onResponse(List<T> data);
     }
 
+    protected abstract class ArrayResponseCallback extends ResponseCallback {
+
+        public ArrayResponseCallback(String requestText) {
+            super(requestText, null);
+        }
+
+        @Override
+        public void onSuccess(Method method, JSONValue response) {
+            super.onSuccess(method, response);
+            JSONArray responseArray = response.isArray();
+            try {
+                if (responseArray == null) {
+                    throw new IllegalArgumentException("Response isn't a JSON array: " + response);
+                } else {
+                    onResponse(responseArray);
+                }
+            } catch (Exception ex) {
+                onFailure(method, ex);
+            }
+        }
+
+        protected abstract void onResponse(JSONArray arra);
+    }
+
     protected Resource resource(String base, String... pathElement) {
         Resource resource = new Resource(GWT.getHostPageBaseURL() + base);
         if (pathElement != null) {

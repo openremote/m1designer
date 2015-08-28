@@ -1,0 +1,34 @@
+<link rel="import" href="or-editor-node-behaviors.html">
+
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<dom-module id="or-editor-node-filter">
+
+    <style>
+    </style>
+    <template>
+        <div class="form">
+
+            <div class="formItem">
+                <div class="formValue">
+                    <div class="flex layout horizontal center">
+                        <paper-toggle-button
+                                class="flex-1"
+                                checked="{{nodeProperties.waitForTrigger}}"></paper-toggle-button>
+                        <span class="flex-5">WAIT FOR TRIGGER MESSAGE</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-editor-node-filter",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+
