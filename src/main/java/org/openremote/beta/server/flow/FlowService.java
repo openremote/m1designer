@@ -206,6 +206,20 @@ public class FlowService implements StaticService {
         }
     }
 
+    public void resetCopy(Node node) {
+        node.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+
+        for (Slot slot : node.getSlots()) {
+            slot.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+        }
+
+        if (node.getLabel() != null) {
+            node.setLabel(node.getLabel() + " (Copy)");
+        } else {
+            node.setLabel("(Copy)");
+        }
+    }
+
     protected void filterNonPersistentProperties(Flow flow) {
         try {
             for (Node node : flow.getNodes()) {

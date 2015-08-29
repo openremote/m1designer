@@ -11,16 +11,13 @@ import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
-import org.openremote.beta.client.shared.JsUtil;
-import org.openremote.beta.client.shared.session.message.MessageSendEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.client.shared.session.event.MessageSendEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
 
 import static org.openremote.beta.client.shared.Timeout.debounce;
 
@@ -66,9 +63,9 @@ public class FlowNodePresenter extends AbstractPresenter {
 
         addEventListener(FlowNodeCloseEvent.class, event -> {
             this.flow = null;
-            this.notifyPath("flow");
+            notifyPath("flow");
             this.node = null;
-            this.notifyPath("node");
+            notifyPath("node");
             setFlowNodeDirty(false);
             setFlowNodeTitle();
             removeEditorComponents();
@@ -131,8 +128,8 @@ public class FlowNodePresenter extends AbstractPresenter {
             instanceId = flow.getId();
         }
 
-        MessageEvent messageEvent = new MessageEvent(sink, instanceId, body);
-        dispatchEvent(new MessageSendEvent(messageEvent));
+        Message message = new Message(sink, instanceId, body);
+        dispatchEvent(new MessageSendEvent(message));
     }
 
     protected DOM getEditorComponentContainer() {

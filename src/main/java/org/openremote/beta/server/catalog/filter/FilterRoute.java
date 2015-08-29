@@ -2,7 +2,6 @@ package org.openremote.beta.server.catalog.filter;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.route.NodeRoute;
 import org.openremote.beta.server.route.predicate.SinkSlotPosition;
 import org.openremote.beta.shared.flow.Flow;

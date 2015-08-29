@@ -1,6 +1,5 @@
 package org.openremote.beta.client.editor.catalog;
 
-import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.catalog.CatalogCategory;
 import org.openremote.beta.shared.catalog.CatalogItem;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@JsExport
 @JsType
 public class CategorizedItem {
 

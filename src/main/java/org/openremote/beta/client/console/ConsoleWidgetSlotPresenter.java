@@ -6,8 +6,7 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +21,10 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
     public ConsoleWidgetSlotPresenter(com.google.gwt.dom.client.Element gwtView) {
         super(gwtView);
 
-        addEventListener(MessageReceivedEvent.class, event -> {
-            onMessage(event.getMessageEvent());
-        });
+        addEventListener(Message.class, this::onMessage);
     }
 
-    protected void onMessage(MessageEvent event) {
+    protected void onMessage(Message event) {
         String propertyPath = (String) getViewComponent().get("propertyPath");
         if (propertyPath == null || propertyPath.length() == 0) {
             LOG.debug("Slot without property path, don't know how to handle message: " + getView().getOuterHTML());

@@ -35,35 +35,15 @@ public class EventServiceConfiguration implements Configuration {
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from(EventService.INCOMING_FLOW_EVENT_QUEUE)
-                    .routeId("Handle incoming flow events")
+                from(EventService.INCOMING_EVENT_QUEUE)
+                    .routeId("Handle incoming events")
                     .doTry()
-                    .bean(getContext().hasService(EventService.class), "onFlowEvent")
+                    .bean(getContext().hasService(EventService.class), "onEvent")
                     .doCatch(AmbiguousMethodCallException.class) // No overloaded method for given event subtype
                     .log(LoggingLevel.DEBUG, LOG, "Ignoring unhandled event: ${body}")
                     .stop()
                     .endDoTry()
                 ;
-                from(EventService.INCOMING_MESSAGE_EVENT_QUEUE)
-                    .routeId("Handle incoming message events")
-                    .bean(getContext().hasService(EventService.class), "onMessageEvent")
-                ;
-
-                // TODO Test data
-/*
-                from("timer://pushTestMessages?fixedRate=true&period=3000")
-                    .process(exchange -> {
-                        exchange.getIn().setBody(new MessageEvent(
-                            SampleEnvironmentWidget.FLOW,
-                            SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR,
-                            SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SINK,
-                            Long.toString(new java.util.Date().getTime())
-                        ));
-                    })
-                    .log(LoggingLevel.INFO, LOG, "Sending test message event: ${body}")
-                    .to(EventService.OUTGOING_MESSAGE_EVENT_QUEUE);
-*/
-
             }
         });
     }

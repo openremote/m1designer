@@ -67,19 +67,6 @@ public class CatalogService implements StaticService {
         }
     }
 
-    public String[] generateIdBatch(@Header("size") int size) {
-        List<String> ids = new ArrayList<>();
-        if (size > ID_MAX_BATCH_SIZE) {
-            LOG.warn("Requested number of generated GUIDs exceeds maxium batch size " + ID_MAX_BATCH_SIZE + ": " + size);
-            size = ID_MAX_BATCH_SIZE;
-        }
-        LOG.debug("Generating " + size+ " GUIDs...");
-        for (int i = 0; i < size; i++) {
-            ids.add(IdentifierUtil.generateGlobalUniqueId());
-        }
-        return ids.toArray(new String[ids.size()]);
-    }
-
     public CatalogItem[] getItems() {
         LOG.debug("Getting catalog items");
         synchronized (catalogItems) {

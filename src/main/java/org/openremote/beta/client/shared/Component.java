@@ -165,10 +165,6 @@ public interface Component {
 
     boolean notifyPath(String path, Object value, boolean fromAbove);
 
-    boolean notifyPath(String path, boolean b);
-
-    boolean notifyPath(String path, boolean b, boolean fromAbove);
-
     Object pop(String path);
 
     int push(String path, Object item);

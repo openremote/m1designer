@@ -8,7 +8,7 @@ import org.openremote.beta.shared.flow.Node;
 @JsType
 public class NodeDuplicateEvent extends FlowEvent {
 
-    final protected Node node;
+    final public Node node;
 
     public NodeDuplicateEvent(Flow flow, Node node) {
         super(flow);

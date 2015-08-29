@@ -7,7 +7,7 @@ import org.openremote.beta.shared.flow.Node;
 @JsType
 public class FlowDesignerNodeSelectedEvent extends Event {
 
-    final protected Node node;
+    final public Node node;
 
     public FlowDesignerNodeSelectedEvent(Node node) {
         this.node = node;

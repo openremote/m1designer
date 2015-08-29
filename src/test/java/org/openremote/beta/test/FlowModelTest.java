@@ -3,6 +3,7 @@ package org.openremote.beta.test;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
+import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class FlowModelTest {
 
     @Test
     public void duplicateWires() throws Exception {
-        Flow flow = new Flow();
+        Flow flow = new Flow("Test Flow", new Identifier("123"));
         flow.addWire(new Wire("a", "b"));
         flow.addWire(new Wire("a", "b"));
         assertEquals(flow.getWires().length, 1);

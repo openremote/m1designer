@@ -8,19 +8,16 @@ import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleReadyEvent;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
-import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
-import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
-import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
-import org.openremote.beta.client.shared.session.message.MessageSendEvent;
-import org.openremote.beta.client.shared.session.message.MessageServerConnectEvent;
-import org.openremote.beta.client.shared.session.message.MessageSessionPresenter;
+import org.openremote.beta.client.editor.flow.FlowDeletedEvent;
+import org.openremote.beta.client.editor.flow.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.FlowUpdatedEvent;
+import org.openremote.beta.client.shared.session.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @JsExport
 @JsType
-public class ShellPresenter extends MessageSessionPresenter {
+public class ShellPresenter extends EventSessionPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShellPresenter.class);
 
@@ -30,11 +27,10 @@ public class ShellPresenter extends MessageSessionPresenter {
         super(view);
 
         addEventListener(
-            MessageReceivedEvent.class,
+            ServerReceivedEvent.class,
             event -> {
                 if (isEditorViewAvailable()) {
                     dispatchEvent(getEditorView(), event);
-                    dispatchEvent("#messageLog", event);
                 }
                 if (isConsoleViewAvailable()) {
                     dispatchEvent(getConsoleView(), event);
@@ -42,17 +38,24 @@ public class ShellPresenter extends MessageSessionPresenter {
             }
         );
 
-        addEventListener(
-            MessageSendEvent.class,
-            event -> {
-                dispatchEvent("#messageLog", event);
+        addEventListener(MessageReceivedEvent.class, event -> {
+            dispatchEvent("#messageLog", event);
+            if (isEditorViewAvailable()) {
+                dispatchEvent(getEditorView(), event);
             }
-        );
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(getConsoleView(), event);
+            }
+        });
+
+        addEventListener(MessageSendEvent.class,event -> {
+            dispatchEvent("#messageLog", event);
+        });
 
         addEventListener(
             ConsoleMessageSendEvent.class,
             event -> {
-                dispatchEvent(new MessageSendEvent(event.getMessageEvent()));
+                dispatchEvent(new MessageSendEvent(event.getMessage()));
                 if (isEditorViewAvailable()) {
                     dispatchEvent(getEditorView(), event);
                 }
@@ -130,7 +133,7 @@ public class ShellPresenter extends MessageSessionPresenter {
     @Override
     public void attached() {
         super.attached();
-        dispatchEvent(new MessageServerConnectEvent());
+        dispatchEvent(new EventSessionConnectEvent());
     }
 
     public void toggleEditor() {

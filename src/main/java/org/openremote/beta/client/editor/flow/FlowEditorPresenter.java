@@ -1,4 +1,4 @@
-package org.openremote.beta.client.editor.flow.editor;
+package org.openremote.beta.client.editor.flow;
 
 import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
@@ -12,19 +12,17 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
 import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
-import org.openremote.beta.client.editor.flow.FlowCodec;
-import org.openremote.beta.client.editor.flow.NodeCodec;
 import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
 import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
-import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
 import org.openremote.beta.client.editor.flow.node.*;
 import org.openremote.beta.client.shared.request.RequestPresenter;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
-import org.openremote.beta.client.shared.session.message.MessageSendEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.event.MessageSendEvent;
+import org.openremote.beta.client.shared.session.event.ServerReceivedEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -73,7 +71,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
         addEventListener(FlowDeletedEvent.class, event -> {
             this.flow = null;
-            this.notifyPathNull("flow");
+            notifyPathNull("flow");
             dispatchEvent("#flowControl", new FlowControlStopEvent());
 
             dispatchEvent("#flowNode", new FlowNodeCloseEvent());
@@ -109,16 +107,20 @@ public class FlowEditorPresenter extends RequestPresenter {
             }
         });
 
+        addEventListener(ServerReceivedEvent.class, event -> {
+            dispatchEvent("#flowControl", event.getEvent());
+        });
+
         addEventListener(MessageReceivedEvent.class, event -> {
-            onMessageEvent(event.getMessageEvent());
+            onMessage(event.getMessage());
         });
 
         addEventListener(MessageSendEvent.class, event -> {
-            onMessageEvent(event.getMessageEvent());
+            onMessage(event.getMessage());
         });
 
         addEventListener(ConsoleMessageSendEvent.class, event -> {
-            onMessageEvent(event.getMessageEvent());
+            onMessage(event.getMessage());
         });
 
         addEventListener(ConsoleWidgetUpdatedEvent.class, event -> {
@@ -151,7 +153,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         LOG.debug("Creating node in flow designer: " + nodeType);
         String flowId = flow.getId();
         sendRequest(
-            false, false,
+            false, true,
             resource("catalog", "node", nodeType).get(),
             new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {
                 @Override
@@ -186,15 +188,30 @@ public class FlowEditorPresenter extends RequestPresenter {
             return;
 
         final String flowId = flow.getId();
-        int requiredIds = node.getObjectCount();
-        final List<String> generatedIds = new ArrayList<>();
 
-        new IdGeneratorRunnable(
-            flowId,
-            requiredIds,
-            generatedIds,
-            new DuplicateNodeRunnable(generatedIds, node)
-        ).run();
+        sendRequest(
+            false, true,
+            resource("flow", "duplicate", "node").post().json(NODE_CODEC.encode(node)),
+            new ObjectResponseCallback<Node>("Duplicate node", NODE_CODEC) {
+                @Override
+                protected void onResponse(Node dupe) {
+                    if (flow != null && flow.getId().equals(flowId)) {
+                        dupe.getEditorSettings().setPositionX(dupe.getEditorSettings().getPositionX() + 20);
+                        dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
+
+                        flow.addNode(dupe);
+                        dispatchEvent(new FlowUpdatedEvent(flow));
+
+                        LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
+                        flowDesigner.addNodeShape(dupe);
+
+                        flowDesigner.selectNodeShape(dupe);
+                        dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
+                    }
+                }
+            }
+        );
+
     }
 
     protected void addNode(Node node, double positionX, double positionY) {
@@ -274,11 +291,11 @@ public class FlowEditorPresenter extends RequestPresenter {
         flowDesigner = null;
     }
 
-    protected void onMessageEvent(MessageEvent event) {
+    protected void onMessage(Message message) {
         if (flowDesigner != null && flow != null) {
-            Flow ownerFlow = flow.findOwnerOfSlotInAllFlows(event.getSlotId());
+            Flow ownerFlow = flow.findOwnerOfSlotInAllFlows(message.getSlotId());
             if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
-                flowDesigner.receiveMessageEvent(event);
+                flowDesigner.handleMessage(message);
             }
         }
     }
@@ -302,7 +319,7 @@ public class FlowEditorPresenter extends RequestPresenter {
             LOG.debug("Creating subflow in flow designer: " + flowId);
             sendRequest(
                 false, true,
-                resource("flow", flowId , "subflow").get(),
+                resource("flow", flowId, "subflow").get(),
                 new ObjectResponseCallback<Node>("Create subflow node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node node) {
@@ -345,91 +362,6 @@ public class FlowEditorPresenter extends RequestPresenter {
                         if (flowDesigner != null && flow != null && flow.getId().equals(currentFlowId)) {
                             flow.setDependencies(resolvedFlow.getDependencies());
                             addNode(subflowNode, positionX, positionY);
-                        }
-                    }
-                }
-            );
-        }
-    }
-
-    protected class DuplicateNodeRunnable implements Runnable {
-
-        final List<String> generatedIds;
-        final Node node;
-
-        public DuplicateNodeRunnable(List<String> generatedIds, Node node) {
-            this.generatedIds = generatedIds;
-            this.node = node;
-        }
-
-        @Override
-        public void run() {
-            LOG.debug("Duplicating node: " + node);
-
-            Node dupe = NODE_CODEC.decode(NODE_CODEC.encode(node));
-
-            Iterator<String> it = generatedIds.iterator();
-            for (Slot slot : dupe.getSlots()) {
-                slot.getIdentifier().setId(it.next());
-            }
-            dupe.getIdentifier().setId(it.next());
-
-            if (dupe.getLabel() != null) {
-                dupe.setLabel(dupe.getLabel() + " (Copy)");
-            } else {
-                dupe.setLabel("(Copy)");
-            }
-
-            dupe.getEditorSettings().setPositionX(dupe.getEditorSettings().getPositionX() + 20);
-            dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
-
-            flow.addNode(dupe);
-            dispatchEvent(new FlowUpdatedEvent(flow));
-
-            LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
-            flowDesigner.addNodeShape(dupe);
-
-            flowDesigner.selectNodeShape(dupe);
-            dispatchEvent(new FlowDesignerNodeSelectedEvent(dupe));
-        }
-    }
-
-    protected class IdGeneratorRunnable implements Runnable {
-
-        final String currentFlowId;
-        final int requiredIds;
-        final List<String> generatedIds;
-        final Runnable duplicationRunnable;
-
-        public IdGeneratorRunnable(String currentFlowId, int requiredIds, List<String> generatedIds, Runnable duplicationRunnable) {
-            this.currentFlowId = currentFlowId;
-            this.requiredIds = requiredIds;
-            this.generatedIds = generatedIds;
-            this.duplicationRunnable = duplicationRunnable;
-        }
-
-        @Override
-        public void run() {
-            LOG.debug("Retrieving a batch of GUIDs to duplicate node");
-            sendRequest(
-                false, false,
-                resource("catalog", "guid").get(),
-                new ArrayResponseCallback("Generate batch of GUIDs") {
-                    @Override
-                    protected void onResponse(JSONArray array) {
-                        // Check if this is still the same flow designer instance as before the request
-                        if (flowDesigner != null && flow != null && flow.getId().equals(currentFlowId)) {
-                            for (int i = 0; i < array.size(); i++) {
-                                generatedIds.add(array.get(i).isString().stringValue());
-                            }
-                            if (generatedIds.size() < requiredIds) {
-                                LOG.debug("Still need more GUIDs: " + (requiredIds - generatedIds.size()));
-                                new IdGeneratorRunnable(
-                                    currentFlowId, requiredIds, generatedIds, duplicationRunnable
-                                ).run();
-                            } else {
-                                duplicationRunnable.run();
-                            }
                         }
                     }
                 }

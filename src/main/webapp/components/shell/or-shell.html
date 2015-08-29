@@ -152,10 +152,10 @@
                 this._consoleWidth = width;
             },
             _onShowInfo: function (ce, event) {
-                this.$.toast.show(false, event.getMessage(), 3000);
+                this.$.toast.show(false, event.text, 3000);
             },
             _onShowFailure: function (ce, event) {
-                this.$.toast.show(true, event.getMessage(), event.getDurationMillis());
+                this.$.toast.show(true, event.text, event.durationMillis);
             }
         });
 

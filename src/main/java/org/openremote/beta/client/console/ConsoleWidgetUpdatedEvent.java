@@ -6,8 +6,8 @@ import org.openremote.beta.shared.event.Event;
 @JsType
 public class ConsoleWidgetUpdatedEvent extends Event {
 
-    protected final String nodeId;
-    protected final String properties;
+    final public String nodeId;
+    final public String properties;
 
     public ConsoleWidgetUpdatedEvent(String nodeId, String properties) {
         this.nodeId = nodeId;

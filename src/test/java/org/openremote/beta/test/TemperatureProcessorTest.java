@@ -11,7 +11,7 @@ import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.shared.event.FlowDeployEvent;
 import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.openremote.beta.shared.event.FlowStopEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -25,11 +25,8 @@ public class TemperatureProcessorTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    @EndpointInject(uri = "mock:flowEventReceiver")
-    MockEndpoint flowEventReceiver;
-
-    @EndpointInject(uri = "mock:messageEventReceiver")
-    MockEndpoint messageEventReceiver;
+    @EndpointInject(uri = "mock:eventReceiver")
+    MockEndpoint eventReceiver;
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -37,19 +34,12 @@ public class TemperatureProcessorTest extends IntegrationTest {
             @Override
             public void configure() throws Exception {
 
-                from("direct:sendFlowEvent")
-                    .to(createWebSocketUri("flow"));
+                from("direct:sendEvent")
+                    .to(createWebSocketUri("events"));
 
-                from("direct:sendMessageEvent")
-                    .to(createWebSocketUri("message"));
-
-                from(createWebSocketUri("flow"))
-                    .to("log:FLOW_EVENT_RECEIVED: ${body}")
-                    .to("mock:flowEventReceiver");
-
-                from(createWebSocketUri("message"))
-                    .to("log:MESSAGE_EVENT_RECEIVED: ${body}")
-                    .to("mock:messageEventReceiver");
+                from(createWebSocketUri("events"))
+                    .to("log:EVENT_RECEIVED: ${body}")
+                    .to("mock:eventReceiver");
             }
         };
     }
@@ -57,14 +47,14 @@ public class TemperatureProcessorTest extends IntegrationTest {
     @Test
     public void execute() throws Exception {
 
-        flowEventReceiver.reset();
-        flowEventReceiver.expectedBodiesReceived(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
-        flowEventReceiver.assertIsSatisfied();
+        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
+        eventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
@@ -76,41 +66,42 @@ public class TemperatureProcessorTest extends IntegrationTest {
         mockProducerCelcius.expectedBodiesReceived("24");
         mockProducerLabel.expectedBodiesReceived("24 \u00B0C");
 
-        messageEventReceiver.expectedBodiesReceivedInAnyOrder(
-            toJson(new MessageEvent(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceivedInAnyOrder(
+            toJson(new Message(
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 "75"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
                 "24"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
                 "24 \u00B0C"
             ))
         );
 
         Exchange exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, "75"));
-        producerTemplate.send("direct:sendMessageEvent", exchange);
+        exchange.getIn().setBody(new Message(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, "75"));
+        producerTemplate.send("direct:sendEvent", exchange);
 
         mockTemperatureDatabase.assertIsSatisfied();
         mockProducerCelcius.assertIsSatisfied();
         mockProducerLabel.assertIsSatisfied();
 
-        messageEventReceiver.assertIsSatisfied();
+        eventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
-        flowEventReceiver.reset();
-        flowEventReceiver.expectedBodiesReceived(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPING)),
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
         );
         FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody("direct:sendFlowEvent", flowStopEvent);
-        flowEventReceiver.assertIsSatisfied();
+        producerTemplate.sendBody("direct:sendEvent", flowStopEvent);
+        eventReceiver.assertIsSatisfied();
     }
 
 }

@@ -4,15 +4,12 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
 import elemental.events.CloseEvent;
-import elemental.events.MessageEvent;
 import elemental.html.MetaElement;
 import elemental.html.WebSocket;
-import org.fusesource.restygwt.client.JsonEncoderDecoder;
-import org.openremote.beta.client.shared.session.SessionClosedErrorEvent.Error;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.client.shared.request.RequestPresenter;
-import org.openremote.beta.shared.event.Event;
+import org.openremote.beta.client.shared.session.SessionClosedErrorEvent.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,10 +66,10 @@ public abstract class SessionPresenter extends RequestPresenter {
                 }
             });
             webSocket.setOnmessage(evt -> {
-                MessageEvent messageEvent = (MessageEvent) evt;
+                elemental.events.MessageEvent messageEvent = (elemental.events.MessageEvent) evt;
                 String data = messageEvent.getData().toString();
                 LOG.debug("Received data on WebSocket '" + webSocket.getUrl() + "': " + data);
-                onMessageReceived(data);
+                onDataReceived(data);
             });
         });
 
@@ -111,17 +108,13 @@ public abstract class SessionPresenter extends RequestPresenter {
 
     }
 
-    protected void sendMessage(String data) {
+    protected void sendData(String data) {
         if (webSocket != null && webSocket.getReadyState() == WebSocket.OPEN) {
             LOG.debug("Sending data on WebSocket '" + webSocket.getUrl() + "': " + data);
             webSocket.send(data);
         } else {
             LOG.debug("WebSocket not connected, discarding: " + data);
         }
-    }
-
-    protected <E extends Event> void sendMessage(JsonEncoderDecoder<E> encoderDecoder, E event) {
-        sendMessage(encoderDecoder.encode(event).toString());
     }
 
     protected static String getWebSocketPort() {
@@ -143,5 +136,5 @@ public abstract class SessionPresenter extends RequestPresenter {
         return sb.toString();
     }
 
-    protected abstract void onMessageReceived(String data);
+    protected abstract void onDataReceived(String data);
 }

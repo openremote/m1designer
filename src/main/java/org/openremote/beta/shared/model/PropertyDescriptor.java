@@ -1,13 +1,7 @@
 package org.openremote.beta.shared.model;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
 
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PropertyDescriptor.StringType.class, name = "STRING"),
@@ -21,8 +15,6 @@ import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.
     include = JsonTypeInfo.As.PROPERTY,
     property = "type"
 )
-@JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public abstract class PropertyDescriptor<T> {
 
     public static final PropertyDescriptor<String> TYPE_STRING = new StringType();

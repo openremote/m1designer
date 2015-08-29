@@ -3,7 +3,6 @@ package org.openremote.beta.test;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.openremote.beta.server.catalog.CatalogService;
 import org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.beta.shared.catalog.CatalogItem;
 import org.openremote.beta.shared.flow.Node;
@@ -20,26 +19,6 @@ public class CatalogServiceTest extends IntegrationTest {
 
     @Produce
     ProducerTemplate producerTemplate;
-
-    @Test
-    public void generateIdBatch() throws Exception {
-
-        String[] idBatch = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "guid", "50"), null, String.class),
-            String[].class
-        );
-
-        assertEquals(idBatch.length, 50);
-        assertNotNull(idBatch[0]);
-
-        String[] idBatch2 = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "guid", "99999999"), null, String.class),
-            String[].class
-        );
-
-        assertEquals(idBatch2.length, CatalogService.ID_MAX_BATCH_SIZE);
-        assertNotEquals(idBatch[0], idBatch2[0]);
-    }
 
     @Test
     public void getItemsCreateNode() throws Exception {

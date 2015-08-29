@@ -4,16 +4,13 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
-import org.openremote.beta.client.editor.flow.FlowCodec;
-import org.openremote.beta.client.editor.flow.FlowIdEventCodec;
-import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
-import org.openremote.beta.client.editor.flow.crud.FlowSavedEvent;
-import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
+import org.openremote.beta.client.editor.flow.*;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestFailureEvent;
-import org.openremote.beta.client.shared.session.*;
+import org.openremote.beta.client.shared.request.RequestPresenter;
+import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
 import org.slf4j.Logger;
@@ -23,12 +20,11 @@ import static org.openremote.beta.client.shared.Timeout.debounce;
 
 @JsExport
 @JsType
-public class FlowControlPresenter extends SessionPresenter {
+public class FlowControlPresenter extends RequestPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowControlPresenter.class);
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
-    private static final FlowIdEventCodec FLOW_EVENT_CODEC = GWT.create(FlowIdEventCodec.class);
 
     public Flow flow;
     public boolean unsaved;
@@ -37,61 +33,34 @@ public class FlowControlPresenter extends SessionPresenter {
     public FlowStatusDetail flowStatusDetail;
 
     public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
-        super(view, getWebSocketUrl("flow"));
+        super(view);
 
         addEventListener(FlowControlStartEvent.class, event -> {
-            if (flow != null) {
-                // Already controlling, set the flow and reset connection
-                flow = event.getFlow();
-                notifyPath("flow");
-                unsaved = event.isUnsaved();
-                notifyPath("unsaved", unsaved);
-                dispatchEvent(new SessionCloseEvent());
-            } else {
-                // Not controlling, set the flow and create a new durable connection
-                flow = event.getFlow();
-                notifyPath("flow");
-                unsaved = event.isUnsaved();
-                notifyPath("unsaved", unsaved);
-                setFlowStatusDetail(new FlowStatusDetail("CONNECTING TO SERVER..."));
-                dispatchEvent(new SessionConnectEvent());
-            }
+            flow = event.getFlow();
+            notifyPath("flow");
+            unsaved = event.isUnsaved();
+            notifyPath("unsaved", unsaved);
+
             setFlowControlDirty(unsaved);
+            setFlowStatusDetail(new FlowStatusDetail("REQUESTING FLOW STATUS..."));
+            dispatchEvent(false, new FlowRequestStatusEvent(flow.getId()));
         });
 
         addEventListener(FlowControlStopEvent.class, event -> {
             flow = null;
             notifyPath("flow");
-            dispatchEvent(new SessionCloseEvent());
-        });
-
-        addEventListener(SessionOpenedEvent.class, event -> {
-            setFlowStatusDetail(new FlowStatusDetail("REQUESTING FLOW STATUS..."));
-            dispatchEvent(false, new FlowRequestStatusEvent(flow.getId()));
-        });
-
-        addEventListener(SessionClosedCleanEvent.class, event -> {
-            // Try to reconnect, continue/start editing the current flow
-            if (flow != null) {
-                setFlowStatusDetail(new FlowStatusDetail("CONNECTING TO SERVER..."));
-                dispatchEvent(new SessionConnectEvent());
-            }
-        });
-
-        addEventListener(SessionClosedErrorEvent.class, event -> {
-            setFlowStatusDetail(new FlowStatusDetail(FlowStatusDetail.MARK_PROBLEM, "ERROR CONNECTING TO SERVER"));
         });
 
         addEventListener(FlowRequestStatusEvent.class, event -> {
-            sendMessage(FLOW_EVENT_CODEC, event);
+            dispatchEvent(new ServerSendEvent(event));
         });
 
         addEventListener(FlowDeployEvent.class, event -> {
-            sendMessage(FLOW_EVENT_CODEC, event);
+            dispatchEvent(new ServerSendEvent(event));
         });
 
         addEventListener(FlowStopEvent.class, event -> {
-            sendMessage(FLOW_EVENT_CODEC, event);
+            dispatchEvent(new ServerSendEvent(event));
         });
 
         addEventListener(FlowStatusEvent.class, event -> {
@@ -133,11 +102,6 @@ public class FlowControlPresenter extends SessionPresenter {
                 dispatchEvent(new FlowUpdatedEvent(flow));
             }
         }, 500);
-    }
-
-    @Override
-    protected void onMessageReceived(String data) {
-        dispatchEvent(false, FLOW_EVENT_CODEC.decode(data));
     }
 
     protected boolean isConsumable(FlowIdEvent flowIdEvent) {

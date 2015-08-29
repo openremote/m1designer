@@ -13,18 +13,18 @@
                 _presenter: {
                     type: Object,
                     value: function () {
-                        return new openremote.editor.flow.crud.FlowsPresenter(this);
+                        return new openremote.editor.flow.FlowsPresenter(this);
                     }
                 }
             },
             _flowSelected: function (e) {
-                this._presenter.loadFlow(e.model.flow.getId());
+                this._presenter.loadFlow(e.model.flowItem.flow.getId());
             },
             _createFlow: function () {
                 this._presenter.createFlow();
             },
             _flowDragStart: function (e) {
-                e.dataTransfer.setData("flowId", e.model.flow.getId());
+                e.dataTransfer.setData("flowId", e.model.flowItem.flow.getId());
                 e.dataTransfer.effectAllowed = 'link';
             }
         });
@@ -81,6 +81,31 @@
         .flow .label.unlabeled {
             font-style: italic;
         }
+
+        .flow .status {
+            display: inline-block;
+            line-height: 0;
+            vertical-align: middle;
+            color: var(--or-editor-mark-default-color, black);
+        }
+
+        .flow .status:before {
+            content: ' \25CF';
+            font-size: 25px;
+        }
+
+        .flow .status.deployed {
+            color: var(--or-editor-mark-deployed-color, green);
+        }
+
+        .flow .status.deploying {
+            color: var(--or-editor-mark-deploying-color, yellow);
+        }
+
+        .flow .status.problem {
+            color: var(--or-editor-mark-problem-color, red);
+        }
+
     </style>
 
     <template>
@@ -113,21 +138,22 @@
         </div>
 
         <div id="list">
-            <template is="dom-if" if="{{!_presenter.flows.length}}">
+            <template is="dom-if" if="{{!_presenter.flowItems.length}}">
                 <div id="empty">No flows found.</div>
             </template>
-            <template is="dom-repeat" items="[[_presenter.flows]]" as="flow">
+            <template is="dom-repeat" items="[[_presenter.flowItems]]" as="flowItem">
                 <div class="flow"
                      on-tap="_flowSelected"
                      draggable="[[_presenter.flowEditorVisible]]"
                      on-dragstart="_flowDragStart">
                     <div>
-                        <template is="dom-if" if="[[flow.label]]">
-                            <span class="label">[[flow.label]]</span>
+                        <template is="dom-if" if="[[flowItem.flow.label]]">
+                            <span class="label">[[flowItem.flow.label]]</span>
                         </template>
-                        <template is="dom-if" if="[[!flow.label]]">
+                        <template is="dom-if" if="[[!flowItem.flow.label]]">
                             <span class="label unlabeled">Unlabeled Flow</span>
                         </template>
+                        <span class$="[[flowItem.statusClass]]"></span>
                     </div>
                 </div>
             </template>

@@ -1,8 +1,8 @@
 package org.openremote.beta.client.shared.request;
 
-import com.google.gwt.core.client.js.JsExport;
+import com.google.gwt.core.client.js.JsType;
 
-@JsExport
+@JsType
 public class RequestFailure {
 
     public final String requestText;

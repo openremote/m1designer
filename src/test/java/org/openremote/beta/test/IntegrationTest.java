@@ -13,6 +13,7 @@ import org.openremote.beta.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.beta.server.event.EventServiceConfiguration;
 import org.openremote.beta.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.beta.server.flow.FlowServiceConfiguration;
+import org.openremote.beta.server.inventory.discovery.DiscoveryServiceConfiguration;
 import org.openremote.beta.server.route.RouteManagementServiceConfiguration;
 import org.openremote.beta.server.util.JsonUtil;
 import org.slf4j.Logger;

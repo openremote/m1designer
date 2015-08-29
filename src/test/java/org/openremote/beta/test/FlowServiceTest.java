@@ -163,6 +163,33 @@ public class FlowServiceTest extends IntegrationTest {
     }
 
     @Test
+    public void duplicateNode() throws Exception {
+        Node node = SampleTemperatureProcessor.FAHRENHEIT_CONVERTER;
+
+        Exchange duplicateNodeExchange = producerTemplate.request(
+            createWebClientUri("flow", "duplicate", "node"),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
+                exchange.getIn().setBody(toJson(node));
+            }
+        );
+        assertEquals(duplicateNodeExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
+        Node dupe = fromJson(duplicateNodeExchange.getOut().getBody(String.class), Node.class);
+
+        assertNotEquals(node.getId(), dupe.getId());
+        assertNotEquals(node.getLabel(), dupe.getLabel());
+
+        assertEquals(node.getEditorSettings().getNodeColor(), dupe.getEditorSettings().getNodeColor());
+        assertEquals(node.getEditorSettings().getTypeLabel(), dupe.getEditorSettings().getTypeLabel());
+
+        for (int i = 0; i < node.getSlots().length; i++) {
+            assertNotEquals(node.getSlots()[i].getId(), dupe.getSlots()[i].getId());
+            assertEquals(node.getSlots()[i].getPeerId(), dupe.getSlots()[i].getPeerId());
+            assertEquals(node.getSlots()[i].getPropertyPath(), dupe.getSlots()[i].getPropertyPath());
+        }
+    }
+
+    @Test
     public void createSubflowNode() throws Exception {
         Node subflowNode = fromJson(
             producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),

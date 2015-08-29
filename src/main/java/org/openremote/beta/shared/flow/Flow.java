@@ -1,7 +1,5 @@
 package org.openremote.beta.shared.flow;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
@@ -9,13 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-
 @JsType
-@JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Flow extends FlowObject {
 
     private static final Logger LOG = LoggerFactory.getLogger(Flow.class);
@@ -26,7 +18,7 @@ public class Flow extends FlowObject {
     public Wire[] wires = new Wire[0];
     public Flow[] dependencies = new Flow[0];
 
-    public Flow() {
+    protected Flow() {
     }
 
     public Flow(String label, Identifier identifier) {

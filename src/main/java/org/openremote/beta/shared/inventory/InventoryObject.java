@@ -1,17 +1,10 @@
 package org.openremote.beta.shared.inventory;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.openremote.beta.shared.model.Identifier;
 import org.openremote.beta.shared.model.Property;
 
 import java.util.*;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-
-@JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class InventoryObject {
 
     public String label;

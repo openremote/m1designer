@@ -15,9 +15,9 @@ import org.testng.annotations.Test;
 
 import static org.openremote.beta.shared.event.FlowDeploymentPhase.*;
 
-public class EventTest extends IntegrationTest {
+public class EventServiceTest extends IntegrationTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EventTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventServiceTest.class);
 
     @Produce
     ProducerTemplate producerTemplate;
@@ -32,10 +32,10 @@ public class EventTest extends IntegrationTest {
             public void configure() throws Exception {
 
                 from("direct:sendFlowEvent")
-                    .to(createWebSocketUri("flow"));
+                    .to(createWebSocketUri("events"));
 
-                from(createWebSocketUri("flow"))
-                    .to("log:FLOW_EVENT_RECEIVED: ${body}")
+                from(createWebSocketUri("events"))
+                    .to("log:EVENT_RECEIVED: ${body}")
                     .to("mock:eventReceiver");
 
             }
@@ -51,7 +51,7 @@ public class EventTest extends IntegrationTest {
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody(createWebSocketUri("flow"), flowDeployEvent);
+        producerTemplate.sendBody(createWebSocketUri("events"), flowDeployEvent);
         mockEventReceiver.assertIsSatisfied();
 
         mockEventReceiver.reset();
@@ -60,7 +60,7 @@ public class EventTest extends IntegrationTest {
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
         );
         FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody(createWebSocketUri("flow"), flowStopEvent);
+        producerTemplate.sendBody(createWebSocketUri("events"), flowStopEvent);
         mockEventReceiver.assertIsSatisfied();
     }
 

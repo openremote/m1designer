@@ -1,22 +1,14 @@
 package org.openremote.beta.shared.flow;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-
 @JsType
-@JsonSerialize(include= NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Wire {
 
     public String sourceId;
     public String sinkId;
 
-    public Wire() {
+    protected Wire() {
     }
 
     public Wire(Slot source, Slot sink) {

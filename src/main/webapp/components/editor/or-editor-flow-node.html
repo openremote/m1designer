@@ -30,18 +30,18 @@
                 }
             },
             listeners: {
-                'flow-node-open': "_nodeOpen",
-                'flow-node-close': "_nodeClose"
+                "flow-node-open": "_onFlowNodeOpen",
+                "flow-node-close": "_onFlowNodeClose"
             },
             observers: [
                 "_nodeChanged(_presenter.node.label)",
                 "_nodeChanged(_presenter.node.clientAccess)"
             ],
-            _nodeOpen: function (ce, event) {
+            _onFlowNodeOpen: function () {
                 this.toggleAttribute("hidden", false, this.$.panel);
                 this.$.panel.open();
             },
-            _nodeClose: function () {
+            _onFlowNodeClose: function () {
                 this.toggleAttribute("hidden", true, this.$.panel);
             },
             _nodeChanged: function (e) {

@@ -5,7 +5,7 @@ import com.ait.lienzo.client.core.shape.Layer;
 import com.ait.lienzo.client.core.shape.Scene;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.shape.guides.ToolTip;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -185,7 +185,7 @@ public abstract class FlowDesigner {
         toolTip.hide();
     }
 
-    public void receiveMessageEvent(MessageEvent event) {
+    public void handleMessage(Message event) {
         SlotShape slotShape = getSlotShape(event.getSlotId());
         if (slotShape != null) {
             slotShape.setSlotValue(event.getBody());

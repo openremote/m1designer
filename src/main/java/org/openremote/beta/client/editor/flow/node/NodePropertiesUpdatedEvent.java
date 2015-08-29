@@ -6,8 +6,8 @@ import org.openremote.beta.shared.event.Event;
 @JsType
 public class NodePropertiesUpdatedEvent extends Event {
 
-    protected final String nodeId;
-    protected final String nodeProperties;
+    final public String nodeId;
+    final public String nodeProperties;
 
     public NodePropertiesUpdatedEvent(String nodeId, String nodeProperties) {
         this.nodeId = nodeId;

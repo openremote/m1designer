@@ -5,7 +5,6 @@ import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.PropertyPlaceholderDelegateRegistry;
 import org.apache.camel.impl.SimpleRegistry;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 /**

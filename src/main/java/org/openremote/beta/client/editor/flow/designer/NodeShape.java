@@ -95,8 +95,18 @@ public abstract class NodeShape extends Group {
             .H(width - PATCH_CORNER_RADIUS)
             .Q(width, 0, width, PATCH_CORNER_RADIUS)
             .V(headerHeight);
+
         updateSlots(outline, width, headerHeight);
+
+        if (node.findAllConnectableSlots().length == 0) {
+            outline
+                .Q(width, headerHeight + PATCH_CORNER_RADIUS, width -PATCH_CORNER_RADIUS, headerHeight + PATCH_CORNER_RADIUS)
+                .H(0 + PATCH_CORNER_RADIUS)
+                .Q(0, headerHeight + PATCH_CORNER_RADIUS, 0, headerHeight-PATCH_CORNER_RADIUS);
+        }
+
         outline.Z();
+
         outline.setShadow(new Shadow(ColorName.DARKGRAY, 8, 1, 2));
         outline.setFillColor(ColorName.WHITE);
         add(outline);
@@ -118,8 +128,8 @@ public abstract class NodeShape extends Group {
             header.H(0);
         }
 
-        header
-            .Z();
+        header.Z();
+
         header.setFillColor(getPatchColor());
         header.setListening(false);
         add(header);
@@ -228,7 +238,9 @@ public abstract class NodeShape extends Group {
             y += diff;
         }
 
-        outline.H(0);
+        if (sources.length > 0 || sinks.length > 0) {
+            outline.H(0);
+        }
 
         if (sources.length > sinks.length) {
             double diff = ((sources.length - sinks.length) * slotHeight);

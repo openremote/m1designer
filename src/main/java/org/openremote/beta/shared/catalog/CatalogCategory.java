@@ -1,10 +1,5 @@
 package org.openremote.beta.shared.catalog;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
-
-@JsType
-@JsExport
 public enum CatalogCategory {
 
     WIDGETS("Widgets"),

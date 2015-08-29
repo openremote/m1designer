@@ -1,4 +1,4 @@
-package org.openremote.beta.client.editor.flow.control;
+package org.openremote.beta.client.editor.flow;
 
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.event.FlowDeploymentFailureEvent;
@@ -20,10 +20,6 @@ public class FlowStatusDetail {
 
     public FlowStatusDetail(String text) {
         this(null, false, false, text);
-    }
-
-    public FlowStatusDetail(String mark, String text) {
-        this(mark, false, false, text);
     }
 
     public FlowStatusDetail(String mark, boolean canStart, boolean canStop, String text) {
@@ -79,4 +75,10 @@ public class FlowStatusDetail {
         this(failureEvent.getPhase());
     }
 
+    @Override
+    public String toString() {
+        return "FlowStatusDetail{" +
+            "text='" + text + '\'' +
+            '}';
+    }
 }

@@ -1,22 +1,12 @@
 package org.openremote.beta.shared.flow;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.server.route.ConsumerRoute;
-import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-
 @JsType
-@JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Node extends FlowObject {
 
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
@@ -32,7 +22,7 @@ public class Node extends FlowObject {
     public String properties;
     public String[] persistentPropertyPaths;
 
-    public Node() {
+    protected Node() {
     }
 
     public Node(String label, Identifier identifier) {

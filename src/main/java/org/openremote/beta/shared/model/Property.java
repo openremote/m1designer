@@ -1,20 +1,11 @@
 package org.openremote.beta.shared.model;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion.NON_NULL;
-
-@JsonSerialize(include = NON_NULL)
-@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE, isGetterVisibility = NONE)
 public class Property<T> {
 
     public PropertyDescriptor<T> descriptor;
     public T value;
 
-    public Property() {
+    protected Property() {
     }
 
     public Property(PropertyDescriptor<T> descriptor, T value) {

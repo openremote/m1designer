@@ -1,16 +1,27 @@
 package org.openremote.beta.shared.event;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @JsType
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = FlowDeployEvent.class),
+    @JsonSubTypes.Type(value = FlowDeploymentFailureEvent.class),
+    @JsonSubTypes.Type(value = FlowRequestStatusEvent.class),
+    @JsonSubTypes.Type(value = FlowStatusEvent.class),
+    @JsonSubTypes.Type(value = FlowStopEvent.class),
+    @JsonSubTypes.Type(value = Message.class),
+})
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "event"
+)
 public abstract class Event {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Event.class);
-
-    public static String getType(String simpleClassName) {
+  public static String getType(String simpleClassName) {
         String type = Util.toLowerCaseDash(simpleClassName);
 
         if (type.length() > 6 && type.substring(type.length()-6).equals("-event"))

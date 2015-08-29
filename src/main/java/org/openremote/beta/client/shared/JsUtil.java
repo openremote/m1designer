@@ -1,5 +1,6 @@
 package org.openremote.beta.client.shared;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import org.slf4j.Logger;
@@ -13,28 +14,9 @@ public class JsUtil {
         console.dir(o);
     }-*/;
 
-    public static native int floor(double x) /*-{
-        return ~~x;
-    }-*/;
-
-
-    public native static String randomUUID() /*-{
-        var s = [];
-        for (var i = 0; i < 36; i++) s.push(Math.floor(Math.random() * 10));
-        return s.join('');
-    }-*/;
-
-    public native static void wait(int millis, Runnable r) /*-{
-        var runnable = function () {
-            r.@java.lang.Runnable::run(*)();
-        };
-        setTimeout(runnable, millis);
-    }-*/;
-
     public native static int compare(String a, String b) /*-{
         return a.localeCompare(b);
     }-*/;
-
 
     static public native Component.DOM dom(Node n) /*-{
         return $wnd.Polymer.dom(n);
@@ -47,5 +29,10 @@ public class JsUtil {
     static public native Component host(Node n) /*-{
         return n.host;
     }-*/;
+
+    static public native void pushArray(String array, Object obj) /*-{
+        this.@AbstractPresenter::view.push("_presenter." + array, obj);
+    }-*/;
+
 
 }

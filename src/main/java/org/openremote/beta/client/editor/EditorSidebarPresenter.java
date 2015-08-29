@@ -2,8 +2,9 @@ package org.openremote.beta.client.editor;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.editor.flow.editor.FlowEditorSwitchEvent;
+import org.openremote.beta.client.editor.flow.FlowEditorSwitchEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
+import org.openremote.beta.client.shared.session.event.ServerReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,9 @@ public class EditorSidebarPresenter extends AbstractPresenter {
         addEventListener(InventoryRefreshEvent.class, event -> {
             dispatchEvent("#flows", event);
         });
+
+        addEventListener(ServerReceivedEvent.class, event ->
+        dispatchEvent("#flows", event.getEvent()));
     }
 
 }

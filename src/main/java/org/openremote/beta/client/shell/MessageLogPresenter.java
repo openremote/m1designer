@@ -2,18 +2,20 @@ package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.editor.flow.crud.FlowDeletedEvent;
-import org.openremote.beta.client.editor.flow.editor.FlowEditEvent;
-import org.openremote.beta.client.editor.flow.editor.FlowUpdatedEvent;
+import org.openremote.beta.client.editor.flow.FlowEditEvent;
+import org.openremote.beta.client.editor.flow.FlowUpdatedEvent;
+import org.openremote.beta.client.editor.flow.FlowDeletedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
-import org.openremote.beta.client.shared.session.message.MessageSendEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.event.MessageSendEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.openremote.beta.client.shared.JsUtil.pushArray;
 
 @JsExport
 @JsType
@@ -62,11 +64,11 @@ public class MessageLogPresenter extends AbstractPresenter {
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-            updateMessageLog(true, event.getMessageEvent());
+            updateMessageLog(true, event.getMessage());
         });
 
         addEventListener(MessageSendEvent.class, event -> {
-            updateMessageLog(false, event.getMessageEvent());
+            updateMessageLog(false, event.getMessage());
         });
     }
 
@@ -84,7 +86,7 @@ public class MessageLogPresenter extends AbstractPresenter {
         setMessageLogTitle();
     }
 
-    protected void updateMessageLog(boolean incoming, MessageEvent event) {
+    protected void updateMessageLog(boolean incoming, Message event) {
         if (log.length >= MAX_LOG) {
             clearMessageLog();
         }

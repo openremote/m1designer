@@ -11,7 +11,7 @@ import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.event.FlowDeployEvent;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +27,8 @@ public class ThermostatControlTest extends IntegrationTest {
     @Produce
     ProducerTemplate producerTemplate;
 
-    @EndpointInject(uri = "mock:flowEventReceiver")
-    MockEndpoint flowEventReceiver;
-
-    @EndpointInject(uri = "mock:messageEventReceiver")
-    MockEndpoint messageEventReceiver;
+    @EndpointInject(uri = "mock:eventReceiver")
+    MockEndpoint eventReceiver;
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -39,19 +36,12 @@ public class ThermostatControlTest extends IntegrationTest {
             @Override
             public void configure() throws Exception {
 
-                from("direct:sendFlowEvent")
-                    .to(createWebSocketUri("flow"));
+                from("direct:sendEvent")
+                    .to(createWebSocketUri("events"));
 
-                from("direct:sendMessageEvent")
-                    .to(createWebSocketUri("message"));
-
-                from(createWebSocketUri("flow"))
-                    .to("log:FLOW_EVENT_RECEIVED: ${body}")
-                    .to("mock:flowEventReceiver");
-
-                from(createWebSocketUri("message"))
-                    .to("log:MESSAGE_EVENT_RECEIVED: ${body}")
-                    .to("mock:messageEventReceiver");
+                from(createWebSocketUri("events"))
+                    .to("log:EVENT_RECEIVED: ${body}")
+                    .to("mock:eventReceiver");
             }
         };
     }
@@ -59,23 +49,23 @@ public class ThermostatControlTest extends IntegrationTest {
     @Test
     public void execute() throws Exception {
 
-        flowEventReceiver.reset();
-        flowEventReceiver.expectedBodiesReceived(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
-        flowEventReceiver.assertIsSatisfied();
+        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
+        eventReceiver.assertIsSatisfied();
 
-        flowEventReceiver.reset();
-        flowEventReceiver.expectedBodiesReceived(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), STARTING)),
             toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), DEPLOYED))
         );
         flowDeployEvent = new FlowDeployEvent(SampleThermostatControl.FLOW.getId());
-        producerTemplate.sendBody("direct:sendFlowEvent", flowDeployEvent);
-        flowEventReceiver.assertIsSatisfied();
+        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
+        eventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
@@ -87,53 +77,54 @@ public class ThermostatControlTest extends IntegrationTest {
 
         final String INSTANCE_ID = IdentifierUtil.generateGlobalUniqueId();
 
-        messageEventReceiver.expectedBodiesReceivedInAnyOrder(
-            toJson(new MessageEvent(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceivedInAnyOrder(
+            toJson(new Message(
                 SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
                 INSTANCE_ID,
                 "75"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "75"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
                 INSTANCE_ID,
                 "24"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
                 INSTANCE_ID,
                 "24 \u00B0C"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleThermostatControl.TEMPERATURE_LABEL_SINK,
                 INSTANCE_ID,
                 "24 \u00B0C"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleThermostatControl.SETPOINT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "70"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "70"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.CELCIUS_PRODUCER_SINK,
                 INSTANCE_ID,
                 "21"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleTemperatureProcessor.LABEL_PRODUCER_SINK,
                 INSTANCE_ID,
                 "21 \u00B0C"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleThermostatControl.SETPOINT_LABEL_SINK,
                 INSTANCE_ID,
                 "21 \u00B0C"
@@ -141,26 +132,26 @@ public class ThermostatControlTest extends IntegrationTest {
         );
 
         Exchange exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
+        exchange.getIn().setBody(new Message(
             SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
             INSTANCE_ID,
             "75"
         ));
-        producerTemplate.send("direct:sendMessageEvent", exchange);
+        producerTemplate.send("direct:sendEvent", exchange);
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(
+        exchange.getIn().setBody(new Message(
             SampleThermostatControl.SETPOINT_CONSUMER_SINK,
             INSTANCE_ID,
             "70"
         ));
-        producerTemplate.send("direct:sendMessageEvent", exchange);
+        producerTemplate.send("direct:sendEvent", exchange);
 
         LOG.info("##########################################################################");
 
         mockLabelTemperature.assertIsSatisfied();
         mockLabelSetpoint.assertIsSatisfied();
-        messageEventReceiver.assertIsSatisfied();
+        eventReceiver.assertIsSatisfied();
 
         Thread.sleep(500);
 
@@ -169,14 +160,14 @@ public class ThermostatControlTest extends IntegrationTest {
         MockEndpoint mockProducerSetpoint = context().getEndpoint("mock:producerSetpoint", MockEndpoint.class);
         mockProducerSetpoint.expectedBodiesReceived("69", "69");
 
-        messageEventReceiver.reset();
-        messageEventReceiver.expectedBodiesReceivedInAnyOrder(
-            toJson(new MessageEvent(
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceivedInAnyOrder(
+            toJson(new Message(
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 INSTANCE_ID,
                 "69"
             )),
-            toJson(new MessageEvent(
+            toJson(new Message(
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 INSTANCE_ID,
                 "69"
@@ -184,17 +175,17 @@ public class ThermostatControlTest extends IntegrationTest {
         );
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SOURCE, INSTANCE_ID, "1"));
-        producerTemplate.send("direct:sendMessageEvent", exchange);
+        exchange.getIn().setBody(new Message(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SOURCE, INSTANCE_ID, "1"));
+        producerTemplate.send("direct:sendEvent", exchange);
 
         exchange = new DefaultExchange(context());
-        exchange.getIn().setBody(new MessageEvent(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SOURCE, INSTANCE_ID, "1"));
-        producerTemplate.send("direct:sendMessageEvent", exchange);
+        exchange.getIn().setBody(new Message(SampleThermostatControl.SETPOINT_MINUS_BUTTON_SOURCE, INSTANCE_ID, "1"));
+        producerTemplate.send("direct:sendEvent", exchange);
 
         LOG.info("##########################################################################");
 
         mockProducerSetpoint.assertIsSatisfied();
-        messageEventReceiver.assertIsSatisfied();
+        eventReceiver.assertIsSatisfied();
     }
 
 }

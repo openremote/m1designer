@@ -8,7 +8,7 @@ import org.openremote.beta.shared.flow.Flow;
 @JsType
 public class FlowControlStartEvent extends FlowEvent implements NonBubblingEvent{
 
-    final protected boolean unsaved;
+    final public boolean unsaved;
 
     public FlowControlStartEvent(Flow flow, boolean unsaved) {
         super(flow);

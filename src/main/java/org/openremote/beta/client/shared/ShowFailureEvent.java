@@ -8,16 +8,16 @@ public class ShowFailureEvent extends Event {
 
     public static final int DURABLE = 9999999; // 7 days...
 
-    final protected String message;
-    final protected int durationMillis;
+    final public String text;
+    final public int durationMillis;
 
-    public ShowFailureEvent(String message, int durationMillis) {
-        this.message = message;
+    public ShowFailureEvent(String text, int durationMillis) {
+        this.text = text;
         this.durationMillis = durationMillis;
     }
 
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return text;
     }
 
     public int getDurationMillis() {

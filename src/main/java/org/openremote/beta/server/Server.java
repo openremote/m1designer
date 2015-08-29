@@ -1,9 +1,6 @@
 package org.openremote.beta.server;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.spi.Registry;
 import org.openremote.beta.server.event.EventService;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
@@ -58,9 +55,10 @@ public class Server {
         LOG.info("Server ready");
 
         // TODO sample data
-        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
-        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
-        context.createProducerTemplate().sendBody(EventService.INCOMING_FLOW_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+
+        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
+        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
+        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
 
     }
 }

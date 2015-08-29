@@ -55,7 +55,7 @@
                 this.toggleAttribute("hidden", true, this.$.controls);
                 this._disableDragging();
             },
-            _onConsoleRefreshed: function (ce, event) {
+            _onConsoleRefreshed: function () {
                 var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
 
                 this.set("_haveWidgets", widgets.length);

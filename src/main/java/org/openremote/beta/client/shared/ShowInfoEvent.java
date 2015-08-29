@@ -6,13 +6,13 @@ import org.openremote.beta.shared.event.Event;
 @JsType
 public class ShowInfoEvent extends Event {
 
-    protected final String message;
+    final public String text;
 
-    public ShowInfoEvent(String message) {
-        this.message = message;
+    public ShowInfoEvent(String text) {
+        this.text = text;
     }
 
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return text;
     }
 }

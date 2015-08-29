@@ -6,7 +6,7 @@ import org.openremote.beta.shared.event.Event;
 @JsType
 public class RequestCompleteEvent extends Event {
 
-    final protected String message;
+    final public String message;
 
     public RequestCompleteEvent(String message) {
         this.message = message;

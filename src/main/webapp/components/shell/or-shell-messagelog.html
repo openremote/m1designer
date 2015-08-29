@@ -36,7 +36,7 @@
                 this._presenter.clearMessageLog();
             },
             _onMessageLogUpdate: function () {
-                this.debounce("LogScrollDelay", function() {
+                this.debounce("LogScrollDelay", function () {
                     this.$.panel.scrollToBottom();
                 }, 1);
             },

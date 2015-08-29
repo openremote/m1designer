@@ -1,13 +1,13 @@
-package org.openremote.beta.client.editor.flow.crud;
+package org.openremote.beta.client.editor.flow;
 
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.FlowEvent;
 import org.openremote.beta.shared.flow.Flow;
 
 @JsType
-public class FlowSavedEvent extends FlowEvent {
+public class FlowDeletedEvent extends FlowEvent {
 
-    public FlowSavedEvent(Flow flow) {
+    public FlowDeletedEvent(Flow flow) {
         super(flow);
     }
 }

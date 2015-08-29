@@ -9,6 +9,7 @@ import elemental.dom.Node;
 import elemental.dom.TimeoutHandler;
 import elemental.events.CustomEvent;
 import elemental.events.EventRemover;
+import elemental.json.JsonBoolean;
 import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,32 +58,33 @@ public abstract class AbstractPresenter {
         LOG.debug("Attached: " + getView().getLocalName());
     }
 
-    protected native void notifyPath(String path, String s) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, s);
+    protected native boolean notifyPath(String path, String s) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, s);
     }-*/;
 
-    protected native void notifyPath(String path, int i) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, i);
+    protected native boolean notifyPath(String path, int i) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, i);
     }-*/;
 
-    protected native void notifyPath(String path, boolean b) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, b);
+    protected native boolean notifyPath(String path, boolean b) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, b);
     }-*/;
 
-    protected native void notifyPath(String path, Object[] array) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, array);
+    protected native boolean notifyPath(String path, Object[] array) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, array);
     }-*/;
 
-    protected native void notifyPath(String path, JavaScriptObject jso) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, jso);
+    protected native boolean notifyPath(String path, JavaScriptObject jso) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, jso);
     }-*/;
 
-    protected native void notifyPathNull(String path) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, null);
+    protected native boolean notifyPathNull(String path) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, null);
     }-*/;
 
-    protected native void notifyPath(String path) /*-{
-        this.@AbstractPresenter::view.notifyPath("_presenter." + path, Math.random()); // Always trigger an update inside Polymer!
+    // TODO: This is dangerous, not sure if that always works, sometimes Polymer uses this value
+    protected native boolean notifyPath(String path) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, Math.random()); // Always trigger an update inside Polymer!
     }-*/;
 
     protected native void pushArray(String array, Object obj) /*-{

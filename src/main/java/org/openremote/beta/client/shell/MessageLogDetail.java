@@ -1,7 +1,7 @@
 package org.openremote.beta.client.shell;
 
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -23,7 +23,7 @@ public class MessageLogDetail {
     public String instanceLabel;
     public String body;
 
-    public MessageLogDetail(boolean incoming, MessageEvent event, Flow rootFlow, Flow flow, Node node, Slot slot) {
+    public MessageLogDetail(boolean incoming, Message event, Flow rootFlow, Flow flow, Node node, Slot slot) {
         this.incoming = incoming;
 
         this.flowLabel = flow != null ? flow.getLabel() : null;

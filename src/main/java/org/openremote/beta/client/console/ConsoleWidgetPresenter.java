@@ -7,7 +7,7 @@ import com.google.gwt.json.client.JSONObject;
 import elemental.dom.NodeList;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
-import org.openremote.beta.shared.event.MessageEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +49,13 @@ public class ConsoleWidgetPresenter extends AbstractPresenter {
             Component slotComponent = (Component) sourceNodes.item(i);
             String slotId = (String) slotComponent.get("slotId");
             String instanceId = (String) slotComponent.get("instanceId");
-            MessageEvent messageEvent = new MessageEvent(
+            Message message = new Message(
                 slotId,
                 instanceId,
                 value != null ? value.toString() : null,
                 null
             );
-            dispatchEvent(new ConsoleMessageSendEvent(messageEvent));
+            dispatchEvent(new ConsoleMessageSendEvent(message));
         }
     }
 

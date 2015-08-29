@@ -1,6 +1,9 @@
 package org.openremote.beta.server;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,7 +13,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http.HttpHeaderFilterStrategy;
+import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.jetty.JettyHttpComponent;
+import org.apache.camel.model.DataFormatDefinition;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.http.HttpStatus;
@@ -20,6 +25,7 @@ import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.ByteArrayISO8859Writer;
 import org.eclipse.jetty.util.resource.Resource;
+import org.openremote.beta.server.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +101,7 @@ public class WebserverConfiguration implements Configuration {
                         environment.getProperty(WEBSERVER_ALLOW_ORIGIN, WEBSERVER_ALLOW_ORIGIN_DEFAULT)
                     )
 
-                    .bindingMode(RestBindingMode.auto)
-                    .dataFormatProperty("json.out.disableFeatures", "WRITE_NULL_MAP_VALUES,WRITE_EMPTY_JSON_ARRAYS")
-                    .dataFormatProperty("json.in.disableFeatures", "FAIL_ON_UNKNOWN_PROPERTIES")
+                    .bindingMode(RestBindingMode.json)
 
                     .endpointProperty("headerFilterStrategy", "customHeaderFilterStrategy")
                     .endpointProperty("handlers", "staticResourcesHandler");

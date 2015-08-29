@@ -23,15 +23,15 @@
                 }
             },
             listeners: {
-                'session-connect': "_sessionConnect",
-                'flow-control-stop': "_onFlowControlStop"
+                "flow-control-start": "_onFlowControlStart",
+                "flow-control-stop": "_onFlowControlStop"
             },
             observers: [
                 "_flowStatusDetailUpdated(_presenter.flowStatusDetail)",
                 "_flowUnsavedUpdated(_presenter.unsaved)",
                 "_flowPropertyChanged(_presenter.flow.label)"
             ],
-            _sessionConnect: function () {
+            _onFlowControlStart: function () {
                 this.toggleAttribute("hidden", false, this.$.panel);
             },
             _onFlowControlStop: function () {
@@ -95,16 +95,20 @@
             font-weight: bold;
         }
 
+        #flowStatus {
+            color: var(--or-editor-mark-default-color, black);
+        }
+
         #flowStatus .deployed {
-            color: var(--or-editor-text-green-color, green);
+            color: var(--or-editor-mark-deployed-color, green);
         }
 
         #flowStatus .deploying {
-            color: var(--or-editor-text-yellow-color, yellow);
+            color: var(--or-editor-mark-deploying-color, yellow);
         }
 
-        #flowStatus .warn {
-            color: var(--or-editor-text-red-color, red);
+        #flowStatus .problem {
+            color: var(--or-editor-mark-problem-color, red);
         }
     </style>
 

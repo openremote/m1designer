@@ -10,7 +10,8 @@ import elemental.js.util.JsMapFromStringTo;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
-import org.openremote.beta.client.shared.session.message.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -43,8 +44,8 @@ public class ConsolePresenter extends AbstractPresenter {
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-            LOG.debug("Message event received from server: " + event.getMessageEvent());
-            messageReceived(event);
+            LOG.debug("Message received from server: " + event.getMessage());
+            onMessage(event.getMessage());
         });
     }
 
@@ -58,9 +59,9 @@ public class ConsolePresenter extends AbstractPresenter {
         return getRequiredElement("#widgetComponentContainer");
     }
 
-    protected void messageReceived(MessageReceivedEvent event) {
-        String instanceId = event.getMessageEvent().getInstanceId();
-        String slotId = event.getMessageEvent().getSlotId();
+    protected void onMessage(Message message) {
+        String instanceId = message.getInstanceId();
+        String slotId = message.getSlotId();
 
         String sinkSelector = "or-console-widget-slot[type='" + Slot.TYPE_SINK + "'][slot-id='" + slotId + "']";
         if (instanceId != null) {
@@ -73,7 +74,7 @@ public class ConsolePresenter extends AbstractPresenter {
         LOG.debug("Found sink slots: " + sinkNodes.getLength());
         for (int i = 0; i < sinkNodes.getLength(); i++) {
             Element slotElement = (Element) sinkNodes.item(i);
-            dispatchEvent(slotElement, event);
+            dispatchEvent(slotElement, message);
         }
     }
 

@@ -4,10 +4,9 @@ import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
-import org.openremote.beta.server.catalog.CatalogService;
 import org.openremote.beta.server.route.RouteManagementService;
-import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +50,27 @@ public class FlowServiceConfiguration implements Configuration {
                 .route().id("GET flow by ID")
                 .bean(getContext().hasService(FlowService.class), "getFlow")
                 .to("direct:restStatusNotFound")
+                .endRest()
+
+                .post("/duplicate/node")
+                .consumes("application/json")
+                .type(Node.class)
+                .route().id("POST node to duplicate")
+                .process(exchange -> {
+                    Node node = exchange.getIn().getBody(Node.class);
+                    try {
+                        if (node != null) {
+                            getContext().hasService(FlowService.class).resetCopy(node);
+                            exchange.getOut().setBody(node);
+                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
+                        } else {
+                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
+                        }
+                    } catch (Exception ex) {
+                        LOG.info("Error duplicating node '" + node + "'", ex);
+                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
+                    }
+                })
                 .endRest()
 
                 .post("/resolve")
