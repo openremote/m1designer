@@ -81,7 +81,7 @@
         }
 
         #panel {
-            --or-panel-width: 300px;
+            --or-panel-width: 320px;
             --or-panel-max-height: 100px;
         }
 
@@ -89,27 +89,40 @@
             padding: 0 0.4em;
         }
 
-        #flowStatus .deploying,
-        #flowStatus .deployed,
-        #flowStatus .problem {
+        .flowStatus .deploying,
+        .flowStatus .deployed,
+        .flowStatus .problem {
             font-weight: bold;
         }
 
-        #flowStatus {
+        .flowStatus {
             color: var(--or-editor-mark-default-color, black);
         }
 
-        #flowStatus .deployed {
+        .flowStatus .deployed {
             color: var(--or-editor-mark-deployed-color, green);
         }
 
-        #flowStatus .deploying {
+        .flowStatus .deploying {
             color: var(--or-editor-mark-deploying-color, yellow);
         }
 
-        #flowStatus .problem {
+        .flowStatus .problem {
             color: var(--or-editor-mark-problem-color, red);
         }
+
+        .flowStatus.indicator {
+            display: inline-block;
+            line-height: 0;
+            vertical-align: middle;
+            color: var(--or-editor-mark-default-color, black);
+        }
+
+        .flowStatus.indicator > span:before {
+            content: ' \25CF';
+            font-size: 25px;
+        }
+
     </style>
 
     <template>
@@ -119,8 +132,17 @@
                   dirty="[[_presenter.flowControlDirty]]"
                   hidden>
 
-            <div class="toolbar">
-                <paper-button id="redeployButton" on-tap="_redeployFlow">
+            <div class="titleToolbar">
+                <div class="flowStatus indicator">
+                    <span class$="[[_presenter.flowStatusDetail.mark]]"></span>
+                </div>
+                <paper-button on-tap="_redeployFlow">
+                    <iron-icon icon="refresh"></iron-icon>
+                </paper-button>
+            </div>
+
+            <div class="topToolbar">
+                <paper-button on-tap="_redeployFlow">
                     <iron-icon icon="refresh"></iron-icon>
                     Redeploy
                 </paper-button>
@@ -172,7 +194,7 @@
 
             <div class="content">
                 <div class="form">
-                    <div  id="flowStatus" class="formItem">
+                    <div class="formItem flowStatus">
                         <div class="formLabel" >Status:</div>
                         <div class="formValue">
                             <span class$="[[_presenter.flowStatusDetail.mark]]">[[_presenter.flowStatusDetail.text]]</span>

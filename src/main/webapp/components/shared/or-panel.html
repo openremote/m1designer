@@ -48,6 +48,24 @@ Custom property | Description | Default
             order: 2;
         }
 
+        #switchTitleToolbar{
+            order: 3;
+        }
+
+        #switchTitleToolbar /deep/ paper-button,
+        #switchTitleToolbar /deep/ paper-button .content,
+        #titleToolbar /deep/ paper-button,
+        #titleToolbar /deep/ paper-button .content {
+            padding: 2px;
+            min-width: 2.5em;
+        }
+
+        #switchTitleToolbar /deep/ paper-button,
+        #titleToolbar /deep/ paper-button {
+            background-color: var(--or-panel-title-toolbar-background-color);
+            color: var(--or-panel-title-toolbar-button-color);
+        }
+
         #panel,
         #switchableTitlePanel,
         #regularTitlePanel {
@@ -92,12 +110,15 @@ Custom property | Description | Default
         }
 
         /* TODO Mixins don't work with content distribution? */
-        #panel .buttons /deep/ .toolbar {
+        #panel .buttons /deep/ .topToolbar,
+        #panel .buttons /deep/ .bottomToolbar {
             padding: 0.2em 0;
         }
+
         #panel .buttons /deep/ paper-menu-button {
             padding: 0;
         }
+
         #panel .buttons /deep/ paper-menu .iron-selected {
             font-weight: inherit;
         }
@@ -111,34 +132,47 @@ Custom property | Description | Default
 
         <div id="title">
             <template is="dom-if" if="[[switchable]]">
-                <div id="switchableTitlePanel" class="layout horizontal ">
-                    <paper-icon-button id="switchButton" on-tap="toggle" icon="menu"></paper-icon-button>
+                <div id="switchableTitlePanel" class="layout horizontal center">
+                    <paper-icon-button id="switchButton"
+                                       on-tap="toggle"
+                                       icon="menu"></paper-icon-button>
                     <template is="dom-if" if="[[title]]">
                         <div id="switchTitle" class="flex layout horizontal self-center" on-tap="toggle">
                             <paper-ripple center></paper-ripple>
                             <span>[[title]]</span>
                         </div>
                     </template>
+                    <template is="dom-if" if="[[!title]]">
+                        <div id="switchTitle" class="flex"></div>
+                    </template>
+                    <div id="switchTitleToolbar">
+                        <content select=".titleToolbar"></content>
+                    </div>
                 </div>
             </template>
             <template is="dom-if" if="[[!switchable]]">
                 <template is="dom-if" if="[[title]]">
-                    <div id="regularTitlePanel" class="layout horizontal flex center-justified">
-                        <div id="regularTitle">[[title]]</div>
+                    <div class="layout horizontal center">
+                        <div id="regularTitlePanel" class="layout horizontal flex center-justified">
+                            <div id="regularTitle">[[title]]</div>
+                        </div>
+                        <div id="titleToolbar">
+                            <content select=".titleToolbar"></content>
+                        </div>
                     </div>
                 </template>
             </template>
         </div>
 
-        <paper-dialog id="panel">
+        <paper-dialog id="panel" modal="[[modal]]">
             <div class="buttons">
-                <content select=".toolbar:first-of-type"></content>
+                <content select=".topToolbar"></content>
             </div>
             <paper-dialog-scrollable id="panelScrollable">
                 <content select=".content"></content>
             </paper-dialog-scrollable>
             <div class="buttons">
-                <content select=".toolbar:last-of-type"></content>
+                <content select=".bottomToolbar"></content>
             </div>
         </paper-dialog>
 
@@ -160,6 +194,10 @@ Custom property | Description | Default
                     value: false,
                     reflectToAttribute: true,
                     observer: "_onDirtyChange"
+                },
+                modal: {
+                    type: Boolean,
+                    value: false
                 }
             },
             attached: function () {
@@ -170,6 +208,9 @@ Custom property | Description | Default
                         }
                         if (this.$$("#switchButton")) {
                             this.$$("#switchButton").style.order = "3";
+                        }
+                        if (this.$$("#switchTitleToolbar")) {
+                            this.$$("#switchTitleToolbar").style.order = "0";
                         }
                     }
                     this.$.panel.noCancelOnEscKey = true;
@@ -190,11 +231,11 @@ Custom property | Description | Default
             opened: function () {
                 return this.$.panel.opened;
             },
-            scrollToBottom: function() {
+            scrollToBottom: function () {
                 var scrollable = this.$.panelScrollable.querySelector("#scrollable");
                 scrollable.scrollTop = scrollable.scrollHeight;
             },
-            _onDirtyChange: function(dirty) {
+            _onDirtyChange: function (dirty) {
                 this.toggleClass("dirty", dirty, this.$.title);
             }
         });

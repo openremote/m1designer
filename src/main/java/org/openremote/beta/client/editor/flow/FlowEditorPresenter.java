@@ -6,7 +6,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
@@ -18,6 +17,7 @@ import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
 import org.openremote.beta.client.editor.flow.node.*;
+import org.openremote.beta.client.shared.Function;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
@@ -25,14 +25,9 @@ import org.openremote.beta.client.shared.session.event.ServerReceivedEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Slot;
 import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 @JsExport
 @JsType
@@ -180,7 +175,7 @@ public class FlowEditorPresenter extends RequestPresenter {
             flowId,
             positionX,
             positionY
-        ).run();
+        ).call();
     }
 
     protected void duplicateNode(Node node) {
@@ -300,7 +295,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         }
     }
 
-    protected class CreateSubflowNodeRunnable implements Runnable {
+    protected class CreateSubflowNodeRunnable implements Function {
 
         final String currentFlowId;
         final String flowId;
@@ -315,7 +310,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         }
 
         @Override
-        public void run() {
+        public void call() {
             LOG.debug("Creating subflow in flow designer: " + flowId);
             sendRequest(
                 false, true,
@@ -323,14 +318,14 @@ public class FlowEditorPresenter extends RequestPresenter {
                 new ObjectResponseCallback<Node>("Create subflow node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node node) {
-                        new UpdateDependenciesRunnable(currentFlowId, node, positionX, positionY).run();
+                        new UpdateDependenciesRunnable(currentFlowId, node, positionX, positionY).call();
                     }
                 }
             );
         }
     }
 
-    protected class UpdateDependenciesRunnable implements Runnable {
+    protected class UpdateDependenciesRunnable implements Function {
 
         final String currentFlowId;
         final Node subflowNode;
@@ -345,7 +340,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         }
 
         @Override
-        public void run() {
+        public void call() {
             // Add the subflow node to a temporary copy so we don't affect the
             // flow we are editing until we are done with resolution
             Flow flowCopy = FLOW_CODEC.decode(FLOW_CODEC.encode(flow));

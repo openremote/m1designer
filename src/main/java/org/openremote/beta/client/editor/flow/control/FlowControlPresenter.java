@@ -3,7 +3,6 @@ package org.openremote.beta.client.editor.flow.control;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.client.Browser;
 import org.openremote.beta.client.editor.flow.*;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
@@ -139,34 +138,38 @@ public class FlowControlPresenter extends RequestPresenter {
     public void deleteFlow() {
         if (flow == null)
             return;
-        boolean result =
-            Browser.getWindow().confirm("Are you sure you want to delete flow '" + flow.getLabel() + "'?");
-        if (!result)
-            return;
-        sendRequest(
-            false,
-            false,
-            resource("flow", flow.getId()).delete(),
-            new StatusResponseCallback("Delete flow", 204) {
-                @Override
-                protected void onResponse() {
-                    dispatchEvent(new FlowDeletedEvent(flow));
-                }
+        dispatchEvent(new ConfirmationEvent(
+            "Remove Flow",
+            flow.getLabel() != null && flow.getLabel().length() > 0
+                ? "Are you sure you want to delete flow '" + flow.getLabel() + "'?"
+                : "Are you sure you want to delete this flow?",
+            () -> {
+                sendRequest(
+                    false,
+                    false,
+                    resource("flow", flow.getId()).delete(),
+                    new StatusResponseCallback("Delete flow", 204) {
+                        @Override
+                        protected void onResponse() {
+                            dispatchEvent(new FlowDeletedEvent(flow));
+                        }
 
-                @Override
-                public void onFailure(RequestFailure requestFailure) {
-                    super.onFailure(requestFailure);
-                    if (requestFailure.statusCode == 409) {
-                        dispatchEvent(new ShowFailureEvent(
-                            "Flow '" + flow.getLabel() + "' can't be deleted, stopping it failed or it's in use by other flows.",
-                            5000
-                        ));
-                    } else {
-                        dispatchEvent(new RequestFailureEvent(requestFailure));
+                        @Override
+                        public void onFailure(RequestFailure requestFailure) {
+                            super.onFailure(requestFailure);
+                            if (requestFailure.statusCode == 409) {
+                                dispatchEvent(new ShowFailureEvent(
+                                    "Flow '" + flow.getLabel() + "' can't be deleted, stopping it failed or it's in use by other flows.",
+                                    5000
+                                ));
+                            } else {
+                                dispatchEvent(new RequestFailureEvent(requestFailure));
+                            }
+                        }
                     }
-                }
+                );
             }
-        );
+        ));
     }
 
     public String exportFlow() {
@@ -190,10 +193,6 @@ public class FlowControlPresenter extends RequestPresenter {
 
             if (unsaved) {
                 flowControlTitle = flow.getLabel() + " (New)";
-            } else if (flowControlDirty) {
-                flowControlTitle = flow.getLabel() + " (Modified)";
-            } else if (flowStatusDetail.mark.equals(FlowStatusDetail.MARK_DEPLOYED)) {
-                flowControlTitle = flow.getLabel() + " (Deployed)";
             } else {
                 flowControlTitle = flow.getLabel();
             }

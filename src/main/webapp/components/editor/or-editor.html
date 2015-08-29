@@ -5,6 +5,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../shared/or-component-behaviors.html">
 
+<link rel="import" href="../shared/or-panel.html">
+
 <link rel="import" href="or-editor-sidebar.html">
 <link rel="import" href="or-editor-flow-editor.html">
 
@@ -27,7 +29,58 @@
                     value: function () {
                         return new openremote.editor.EditorPresenter(this);
                     }
+                },
+                _confirmationTitle: {
+                    type: String,
+                    value: "Confirmation"
+                },
+                _confirmationText: {
+                    type: String
+                },
+                _confirmAction: {
+                    type: Function
+                },
+                _cancelAction: {
+                    type: Function
                 }
+            },
+            listeners: {
+                "confirmation": "_onConfirmation"
+            },
+            _onConfirmation: function(ce, event) {
+                this.set("_confirmationTitle", event.title);
+                this.set("_confirmationText", event.text);
+                this._confirmAction = event.confirmAction;
+                this._cancelAction = event.cancelAction;
+                this._openConfirmation();
+            },
+            _confirm: function() {
+                this._closeConfirmation();
+                if (this._confirmAction) {
+                    this._confirmAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _cancel: function() {
+                this._closeConfirmation();
+                if (this._cancelAction) {
+                    this._cancelAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _openConfirmation: function() {
+                this.toggleAttribute("hidden", false, this.$.confirmationPanel);
+                this.$.confirmationPanel.open();
+            },
+            _closeConfirmation: function() {
+                this.toggleAttribute("hidden", true, this.$.confirmationPanel);
+                this.$.confirmationPanel.close();
+            },
+            _clearConfirmation: function() {
+                this.set("_confirmationTitle", "Confirmation");
+                this.set("_confirmationText", undefined);
+                this._confirmAction = undefined;
+                this._cancelAction = undefined;
             }
         });
     });
@@ -65,6 +118,27 @@
             overflow: hidden;
         }
 
+        #confirmationPanel {
+            position: fixed;
+            left: 40vw;
+            top: 25vh;
+            z-index: 1000;
+            --or-panel-width: 280px;
+            --or-panel-max-height: 100px;
+        }
+
+        #confirmationPanel .confirmationText {
+            padding: 1em;
+        }
+
+        #confirmationPanel .confirm {
+            background-color: var(--or-editor-confirm-color);
+        }
+
+        #confirmationPanel .cancel {
+            background-color: var(--or-editor-cancel-color);
+        }
+
         @media all and (max-width: 640px) {
 
             #container {
@@ -81,10 +155,18 @@
             #container > #main {
                 height: 60vh;
             }
+
+            #confirmationPanel {
+                position: fixed;
+                left: 10px;
+                top: 10px;
+            }
+
         }
 
     </style>
     <template>
+
         <div id="container">
             <div id="sidebar">
                 <or-editor-sidebar id="editorSidebar"></or-editor-sidebar>
@@ -93,6 +175,28 @@
                 <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>
             </div>
         </div>
+
+        <or-panel id="confirmationPanel"
+                  title="[[_confirmationTitle]]"
+                  modal
+                  hidden>
+            <div class="content">
+                <div class="confirmationText">
+                    <span>[[_confirmationText]]</span>
+                </div>
+            </div>
+            <div class="bottomToolbar layout horizontal center">
+                <paper-button class="cancel" on-tap="_cancel">
+                    <iron-icon icon="icons:close"></iron-icon>
+                    Cancel
+                </paper-button>
+                <paper-button class="confirm" on-tap="_confirm">
+                    <iron-icon icon="icons:check"></iron-icon>
+                    OK
+                </paper-button>
+            </div>
+        </or-panel>
+
     </template>
 </dom-module>
 

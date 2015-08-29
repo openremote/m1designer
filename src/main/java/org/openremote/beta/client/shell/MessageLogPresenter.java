@@ -75,8 +75,8 @@ public class MessageLogPresenter extends AbstractPresenter {
     public void setMessageLogTitle() {
         messageLogTitle = "Message Log (";
         if (flow != null && flow.getLabel() != null && flow.getLabel().length() > 0)
-            messageLogTitle += "Flow: " + flow.getLabel() + ", ";
-        messageLogTitle += "Received: " + log.length + ")";
+            messageLogTitle += flow.getLabel() + ", ";
+        messageLogTitle += log.length + ")";
         notifyPath("messageLogTitle", messageLogTitle);
     }
 
