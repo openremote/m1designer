@@ -49,6 +49,18 @@
                     return;
                 this._presenter.flowPropertyChanged();
             },
+            _getSuperFlowDependencyStyle: function (level) {
+                return "margin-left: " + (level * 20) + "px;";
+            },
+            _getCurrentFlowDependencyStyle: function (level) {
+                return "font-weight: bold;";
+            },
+            _getSubFlowDependencyStyle: function (level) {
+                return "margin-left: " + (level * 20) + "px;";
+            },
+            _editFlowDependency: function (event) {
+                this._presenter.editFlowDependency(event.model.flowDependency);
+            },
             _redeployFlow: function () {
                 this._presenter.redeployFlow();
             },
@@ -81,7 +93,7 @@
         }
 
         #panel {
-            --or-panel-width: 320px;
+            --or-panel-width: 400px;
             --or-panel-max-height: 100px;
         }
 
@@ -89,13 +101,8 @@
             padding: 0 0.4em;
         }
 
-        .flowStatus .deploying,
-        .flowStatus .deployed,
-        .flowStatus .problem {
-            font-weight: bold;
-        }
-
         .flowStatus {
+            font-weight: bold;
             color: var(--or-editor-mark-default-color, black);
         }
 
@@ -120,8 +127,39 @@
 
         .flowStatus.indicator > span:before {
             content: ' \25CF';
-            font-size: 25px;
+            font-size: 30px;
+            vertical-align: sub;
         }
+
+        #dependencyTree .superDependency,
+        #dependencyTree .subDependency {
+        }
+
+        #dependencyTree .superDependency:before {
+            content: ' \2197';
+            font-size: 0.5em;
+            vertical-align: bottom;
+            font-weight: bold;
+            margin: 0 0.8em;
+            color: var(--or-editor-flow-item-background-color);
+        }
+
+        #dependencyTree .subDependency:before {
+            content: ' \2198';
+            font-size: 0.5em;
+            vertical-align: top;
+            font-weight: bold;
+            margin: 0 0.8em;
+            color: var(--or-editor-flow-item-background-color);
+        }
+
+        #dependencyTree .superDependency.empty,
+        #dependencyTree .subDependency.empty {
+            font-style: italic;
+            text-transform: initial;
+            color: var(--or-editor-flow-item-background-color);
+        }
+
 
     </style>
 
@@ -133,47 +171,84 @@
                   hidden>
 
             <div class="titleToolbar">
+
                 <div class="flowStatus indicator">
                     <span class$="[[_presenter.flowStatusDetail.mark]]"></span>
                 </div>
+
                 <paper-button on-tap="_redeployFlow">
                     <iron-icon icon="refresh"></iron-icon>
                 </paper-button>
+
+                <paper-menu-button no-animations horizontal-align="right" vertical-align="top" vertical-offset="20">
+                    <paper-button class="dropdown-trigger">
+                        <iron-icon icon="arrow-drop-down-circle"></iron-icon>
+                    </paper-button>
+                    <paper-menu id="dependencyTree" class="dropdown-content">
+                        <template is="dom-repeat" items="[[_presenter.flowSuperDependencies]]" as="flowDependency">
+                            <div>
+                                <paper-button on-tap="_editFlowDependency"
+                                              style$="[[_getSuperFlowDependencyStyle(flowDependency.level)]]">
+                                    <span class="superDependency">
+                                        <span>[[flowDependency.label]]</span>
+                                        <template is="dom-if" if="[[flowDependency.wired]]">
+                                            <span>&#160;(WIRED)</span>
+                                        </template>
+                                    </span>
+                                </paper-button>
+                            </div>
+                        </template>
+                        <template is="dom-if" if="[[!_presenter.flowSuperDependencies.length]]">
+                            <paper-button style$="[[_getSuperFlowDependencyStyle(0)]]">
+                                <span class="superDependency empty">Not included in other flows</span>
+                            </paper-button>
+                        </template>
+                        <div>
+                            <paper-button
+                                    style$="[[_getCurrentFlowDependencyStyle()]]">
+                                <span class="currentFlow">[[_presenter.flow.label]]</span>
+                            </paper-button>
+                        </div>
+                        <template is="dom-if" if="[[!_presenter.flowSubDependencies.length]]">
+                            <paper-button style$="[[_getSubFlowDependencyStyle(0)]]">
+                                <span class="subDependency empty">No included flows</span>
+                            </paper-button>
+                        </template>
+                        <template is="dom-repeat" items="[[_presenter.flowSubDependencies]]" as="flowDependency">
+                            <div>
+                                <paper-button on-tap="_editFlowDependency"
+                                              style$="[[_getSubFlowDependencyStyle(flowDependency.level)]]">
+                                    <span class="subDependency">[[flowDependency.label]]</span>
+                                </paper-button>
+                            </div>
+                        </template>
+                    </paper-menu>
+                </paper-menu-button>
             </div>
 
             <div class="topToolbar">
-                <paper-button on-tap="_redeployFlow">
-                    <iron-icon icon="refresh"></iron-icon>
-                    Redeploy
+                <paper-button disabled id="startButton" on-tap="_startFlow">
+                    <iron-icon icon="av:play-arrow"></iron-icon>
+                    Start
                 </paper-button>
-                <paper-menu-button no-animations horizontal-align="right" vertical-align="top">
+                <paper-button id="stopButton" on-tap="_stopFlow">
+                    <iron-icon icon="av:stop"></iron-icon>
+                    Stop
+                </paper-button>
+                <paper-button id="deleteButton" on-tap="_deleteFlow">
+                    <iron-icon icon="icons:delete"></iron-icon>
+                    Remove
+                </paper-button>
+                <paper-menu-button no-animations horizontal-align="right" vertical-align="top" horizontal-offset="20"
+                                   vertical-offset="20">
                     <paper-button class="dropdown-trigger">
                         <iron-icon icon="menu"></iron-icon>
-                        Manage
                     </paper-button>
                     <paper-menu class="dropdown-content">
-                        <div>
-                            <paper-button disabled id="startButton" on-tap="_startFlow">
-                                <iron-icon icon="av:play-arrow"></iron-icon>
-                                Start
-                            </paper-button>
-                        </div>
-                        <div>
-                            <paper-button id="stopButton" on-tap="_stopFlow">
-                                <iron-icon icon="av:stop"></iron-icon>
-                                Stop
-                            </paper-button>
-                        </div>
                         <div>
                             <paper-button on-tap="_saveFlow">
                                 <iron-icon icon="icons:save"></iron-icon>
                                 Save
-                            </paper-button>
-                        </div>
-                        <div>
-                            <paper-button id="deleteButton" on-tap="_deleteFlow">
-                                <iron-icon icon="icons:delete"></iron-icon>
-                                Remove
                             </paper-button>
                         </div>
                         <div>
@@ -194,10 +269,12 @@
 
             <div class="content">
                 <div class="form">
-                    <div class="formItem flowStatus">
-                        <div class="formLabel" >Status:</div>
+                    <div class="formItem">
+                        <div class="formLabel">Status:</div>
                         <div class="formValue">
-                            <span class$="[[_presenter.flowStatusDetail.mark]]">[[_presenter.flowStatusDetail.text]]</span>
+                            <div class="flowStatus">
+                                <span class$="[[_presenter.flowStatusDetail.mark]]">[[_presenter.flowStatusDetail.text]]</span>
+                            </div>
                         </div>
                     </div>
                     <div class="formItem">

@@ -3,7 +3,7 @@ package org.openremote.beta.client.shell;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.editor.flow.FlowEditEvent;
-import org.openremote.beta.client.editor.flow.FlowUpdatedEvent;
+import org.openremote.beta.client.editor.flow.FlowModifiedEvent;
 import org.openremote.beta.client.editor.flow.FlowDeletedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
@@ -14,8 +14,6 @@ import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.openremote.beta.client.shared.JsUtil.pushArray;
 
 @JsExport
 @JsType
@@ -47,7 +45,7 @@ public class MessageLogPresenter extends AbstractPresenter {
             setMessageLogTitle();
         });
 
-        addEventListener(FlowUpdatedEvent.class, event -> {
+        addEventListener(FlowModifiedEvent.class, event -> {
             if (this.flow != null && this.flow.getId().equals(event.getFlow().getId())) {
                 this.flow = event.getFlow();
                 notifyPath("flow");
@@ -91,20 +89,17 @@ public class MessageLogPresenter extends AbstractPresenter {
             clearMessageLog();
         }
 
-        Flow msgFlow = null;
-        Node msgNode = null;
-        Slot msgSlot = null;
+        Node node = null;
+        Slot slot = null;
         if (flow != null) {
-            msgFlow = flow.findOwnerOfSlotInAllFlows(event.getSlotId());
-            if (msgFlow != null)
-                msgNode = msgFlow.findOwnerNode(event.getSlotId());
-            if (msgNode != null)
-                msgSlot = msgNode.findSlot(event.getSlotId());
+            node = flow.findOwnerNode(event.getSlotId());
+            if (node != null)
+                slot = node.findSlot(event.getSlotId());
         }
 
-        if (watchAllFlows || msgFlow != null) {
+        if (watchAllFlows || node != null) {
             MessageLogDetail detail = new MessageLogDetail(
-                incoming, event, flow, msgFlow, msgNode, msgSlot
+                incoming, event, node != null ? flow : null, node, slot
             );
             pushArray("log", detail);
         }

@@ -10,7 +10,7 @@ import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.FlowDeletedEvent;
 import org.openremote.beta.client.editor.flow.FlowEditEvent;
-import org.openremote.beta.client.editor.flow.FlowUpdatedEvent;
+import org.openremote.beta.client.editor.flow.FlowModifiedEvent;
 import org.openremote.beta.client.shared.session.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,22 +100,24 @@ public class ShellPresenter extends EventSessionPresenter {
         );
 
         addEventListener(
-            FlowEditEvent.class,
-            event -> {
-                dispatchEvent("#messageLog", event);
+            ConsoleRefreshEvent.class, event -> {
                 if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
+                    dispatchEvent(getConsoleView(), event);
                 }
             }
         );
 
         addEventListener(
-            FlowUpdatedEvent.class,
+            FlowEditEvent.class,
             event -> {
                 dispatchEvent("#messageLog", event);
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(event.getFlow()));
-                }
+            }
+        );
+
+        addEventListener(
+            FlowModifiedEvent.class,
+            event -> {
+                dispatchEvent("#messageLog", event);
             }
         );
 
@@ -123,9 +125,6 @@ public class ShellPresenter extends EventSessionPresenter {
             FlowDeletedEvent.class,
             event -> {
                 dispatchEvent("#messageLog", event);
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), new ConsoleRefreshEvent(null));
-                }
             }
         );
     }

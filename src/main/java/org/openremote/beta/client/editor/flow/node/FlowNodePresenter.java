@@ -6,11 +6,15 @@ import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
+import org.openremote.beta.client.editor.flow.ConfirmationEvent;
+import org.openremote.beta.client.editor.flow.FlowLoadEvent;
 import org.openremote.beta.client.editor.flow.NodeCodec;
+import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
+import org.openremote.beta.client.shared.Function;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
@@ -47,7 +51,7 @@ public class FlowNodePresenter extends AbstractPresenter {
             node = event.getNode();
             notifyPath("node");
 
-            isSubflow = node.isOfType(Node.TYPE_SUBFLOW);
+            isSubflow = node.isOfTypeSubflow();
             notifyPath("isSubflow", isSubflow);
 
             createEditorComponents(node.getEditorSettings().getComponents());
@@ -85,12 +89,33 @@ public class FlowNodePresenter extends AbstractPresenter {
         });
     }
 
+    public void editSubflow() {
+        if (flow == null || node == null || !isSubflow)
+            return;
+        dispatchEvent(new FlowLoadEvent(node.getSubflowId()));
+    }
+
     public void deleteNode() {
         if (flow == null || node == null)
             return;
-        flow.removeNode(node);
-        dispatchEvent(new NodeDeletedEvent(flow, node));
-        dispatchEvent(new FlowNodeCloseEvent());
+        Function removeNodeAction = () -> {
+            flow.removeNode(node);
+            dispatchEvent(new NodeDeletedEvent(flow, node));
+            dispatchEvent(new FlowNodeCloseEvent());
+        };
+        if (node.isOfTypeConsumerOrProducer() && flow.hasWiredSuperDependency()) {
+            String dependentFlowLabel = flow.getSuperDependencies()[0].getLabel();
+            StringBuilder sb = new StringBuilder();
+            if (dependentFlowLabel != null && dependentFlowLabel.length() > 0) {
+                sb.append("This node might be wired in '").append(dependentFlowLabel).append("'. ");
+            } else {
+                sb.append("This node might be wired and included in another flow. ");
+            }
+            sb.append("If you save/redeploy, that flow will be stopped and modified. Continue?");
+            dispatchEvent(new ConfirmationEvent("Delete Wired Node", sb.toString(), removeNodeAction));
+        } else {
+            removeNodeAction.call();
+        }
     }
 
     public void duplicateNode() {
@@ -124,7 +149,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     public void sendSinkMessage(Slot sink, String body) {
         String instanceId = null;
 
-        if (node.isOfType(Node.TYPE_SUBFLOW)) {
+        if (node.isOfTypeSubflow()) {
             instanceId = flow.getId();
         }
 

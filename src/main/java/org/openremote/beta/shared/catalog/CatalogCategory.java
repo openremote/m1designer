@@ -1,5 +1,8 @@
 package org.openremote.beta.shared.catalog;
 
+import com.google.gwt.core.client.js.JsType;
+
+@JsType
 public enum CatalogCategory {
 
     WIDGETS("Widgets"),
@@ -14,5 +17,12 @@ public enum CatalogCategory {
 
     public String getLabel() {
         return label;
+    }
+
+    @Override
+    public String toString() {
+        return "CatalogCategory{" +
+            "label='" + label + '\'' +
+            "} " + super.toString();
     }
 }

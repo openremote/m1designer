@@ -13,19 +13,16 @@ import java.util.List;
 
 public class ConsumerRoute extends NodeRoute {
 
-    public static final String NODE_TYPE = "urn:org-openremote:flow:node:consumer";
-    public static final String NODE_TYPE_LABEL = "Sink";
-
     public static class Descriptor extends VirtualNodeDescriptor {
 
         @Override
         public String getType() {
-            return NODE_TYPE;
+            return Node.TYPE_CONSUMER;
         }
 
         @Override
         public String getTypeLabel() {
-            return NODE_TYPE_LABEL;
+            return Node.TYPE_CONSUMER_LABEL;
         }
 
         @Override

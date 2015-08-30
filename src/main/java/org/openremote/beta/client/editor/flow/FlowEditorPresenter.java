@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
 import org.openremote.beta.client.console.ConsoleMessageSendEvent;
+import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.control.FlowControlStartEvent;
 import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
@@ -58,21 +59,29 @@ public class FlowEditorPresenter extends RequestPresenter {
             isFlowNodeOpen = false;
 
             startFlowDesigner();
+
+            sendConsoleRefresh(event.getFlow());
         });
 
-        addEventListener(FlowUpdatedEvent.class, event -> {
+        addEventListener(FlowModifiedEvent.class, event -> {
             dispatchEvent("#flowControl", event);
+            if (event.isNotifyConsole()) {
+                sendConsoleRefresh(event.getFlow());
+            }
         });
 
         addEventListener(FlowDeletedEvent.class, event -> {
             this.flow = null;
             notifyPathNull("flow");
+
             dispatchEvent("#flowControl", new FlowControlStopEvent());
 
             dispatchEvent("#flowNode", new FlowNodeCloseEvent());
             isFlowNodeOpen = false;
 
             stopFlowDesigner();
+
+            sendConsoleRefresh(event.getFlow());
         });
 
         addEventListener(FlowDesignerNodeSelectedEvent.class, event -> {
@@ -83,7 +92,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         addEventListener(NodeUpdatedEvent.class, event -> {
             if (flowDesigner != null && flow != null && flow.getId().equals(event.getFlow().getId())) {
                 flowDesigner.updateNodeShape(event.getNode());
-                dispatchEvent(new FlowUpdatedEvent(flow));
+                dispatchEvent(new FlowModifiedEvent(flow, true));
             }
         });
 
@@ -92,7 +101,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                 Node node = event.getNode();
                 LOG.debug("Removing node shape from flow designer: " + node);
                 flowDesigner.deleteNodeShape(node);
-                dispatchEvent(new FlowUpdatedEvent(flow));
+                dispatchEvent(new FlowModifiedEvent(flow, true));
             }
         });
 
@@ -125,8 +134,8 @@ public class FlowEditorPresenter extends RequestPresenter {
                     LOG.debug("Received console widget update, persistent state modified of: " + node);
                     node.setProperties(event.getProperties());
 
-                    // Careful, this should not bounce back to the console!
-                    dispatchEvent("#flowControl", new FlowUpdatedEvent(flow));
+                    dispatchEvent(new FlowModifiedEvent(flow, false));
+
                     if (isFlowNodeOpen) {
                         dispatchEvent("#flowNode", new NodePropertiesRefreshEvent(node.getId()));
                     }
@@ -195,7 +204,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                         dupe.getEditorSettings().setPositionY(dupe.getEditorSettings().getPositionY() + 20);
 
                         flow.addNode(dupe);
-                        dispatchEvent(new FlowUpdatedEvent(flow));
+                        dispatchEvent(new FlowModifiedEvent(flow, true));
 
                         LOG.debug("Adding duplicated node shape to flow designer: " + dupe);
                         flowDesigner.addNodeShape(dupe);
@@ -211,7 +220,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     protected void addNode(Node node, double positionX, double positionY) {
         flow.addNode(node);
-        dispatchEvent(new FlowUpdatedEvent(flow));
+        dispatchEvent(new FlowModifiedEvent(flow, true));
 
         // Calculate the offset with the current transform (zoom, panning)
         // TODO If I would know maths, I could probably do this with the transform matrices
@@ -265,17 +274,17 @@ public class FlowEditorPresenter extends RequestPresenter {
 
             @Override
             protected void onMoved(Node node) {
-                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+                dispatchEvent(new FlowModifiedEvent(flowDesigner.getFlow(), true));
             }
 
             @Override
             protected void onAddition(Wire wire) {
-                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+                dispatchEvent(new FlowModifiedEvent(flowDesigner.getFlow(), true));
             }
 
             @Override
             protected void onRemoval(Wire wire) {
-                dispatchEvent(new FlowUpdatedEvent(flowDesigner.getFlow()));
+                dispatchEvent(new FlowModifiedEvent(flowDesigner.getFlow(), true));
             }
         };
         flowDesignerPanel.draw();
@@ -287,12 +296,28 @@ public class FlowEditorPresenter extends RequestPresenter {
     }
 
     protected void onMessage(Message message) {
-        if (flowDesigner != null && flow != null) {
-            Flow ownerFlow = flow.findOwnerOfSlotInAllFlows(message.getSlotId());
-            if (ownerFlow != null && ownerFlow.getId().equals(flow.getId())) {
-                flowDesigner.handleMessage(message);
-            }
+        if (flowDesigner != null && flow != null && flow.findSlot(message.getSlotId()) != null) {
+            flowDesigner.handleMessage(message);
         }
+    }
+
+    protected void sendConsoleRefresh(Flow flow) {
+        if (flow == null) {
+            dispatchEvent(new ConsoleRefreshEvent(null));
+            return;
+        }
+
+        // Must fully hydrate the flow and all its sub-dependencies so the console can show it
+        sendRequest(
+            false, true,
+            resource("flow", "resolve").addQueryParam("hydrateSubs", "true").post().json(FLOW_CODEC.encode(flow)),
+            new ObjectResponseCallback<Flow>("Hydrating flow dependencies", FLOW_CODEC) {
+                @Override
+                protected void onResponse(Flow resolvedFlow) {
+                    dispatchEvent(new ConsoleRefreshEvent(resolvedFlow));
+                }
+            }
+        );
     }
 
     protected class CreateSubflowNodeRunnable implements Function {
@@ -318,21 +343,21 @@ public class FlowEditorPresenter extends RequestPresenter {
                 new ObjectResponseCallback<Node>("Create subflow node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node node) {
-                        new UpdateDependenciesRunnable(currentFlowId, node, positionX, positionY).call();
+                        new UpdateDependencies(currentFlowId, node, positionX, positionY).call();
                     }
                 }
             );
         }
     }
 
-    protected class UpdateDependenciesRunnable implements Function {
+    protected class UpdateDependencies implements Function {
 
         final String currentFlowId;
         final Node subflowNode;
         final double positionX;
         final double positionY;
 
-        public UpdateDependenciesRunnable(String currentFlowId, Node subflowNode, double positionX, double positionY) {
+        public UpdateDependencies(String currentFlowId, Node subflowNode, double positionX, double positionY) {
             this.currentFlowId = currentFlowId;
             this.subflowNode = subflowNode;
             this.positionX = positionX;
@@ -355,7 +380,8 @@ public class FlowEditorPresenter extends RequestPresenter {
                     protected void onResponse(Flow resolvedFlow) {
                         // Check if this is still the same flow designer instance as before the request
                         if (flowDesigner != null && flow != null && flow.getId().equals(currentFlowId)) {
-                            flow.setDependencies(resolvedFlow.getDependencies());
+                            flow.setSubDependencies(resolvedFlow.getSubDependencies());
+                            flow.setSuperDependencies(resolvedFlow.getSuperDependencies());
                             addNode(subflowNode, positionX, positionY);
                         }
                     }

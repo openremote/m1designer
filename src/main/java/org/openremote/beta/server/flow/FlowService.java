@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.StaticService;
-import org.openremote.beta.server.catalog.CatalogService;
 import org.openremote.beta.server.catalog.NodeDescriptor;
-import org.openremote.beta.server.route.ConsumerRoute;
-import org.openremote.beta.server.route.ProducerRoute;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
@@ -31,7 +28,36 @@ public class FlowService implements StaticService {
     private static final Logger LOG = LoggerFactory.getLogger(FlowService.class);
 
     final static protected Map<String, Flow> SAMPLE_FLOWS = new LinkedHashMap<>();
-    static protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER;
+    final static protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER = new MapFlowDependencyResolver(SAMPLE_FLOWS);
+
+    public static class MapFlowDependencyResolver extends FlowDependencyResolver {
+
+        final Map<String, Flow> flows;
+
+        public MapFlowDependencyResolver(Map<String, Flow> flows) {
+            this.flows = flows;
+        }
+
+        @Override
+        protected Flow findFlow(String flowId) {
+            return flows.get(flowId);
+        }
+
+        @Override
+        protected Flow[] findSubflowDependents(String flowId) {
+            List<Flow> list = new ArrayList<>();
+            for (Flow flow : flows.values()) {
+                Node[] subflowNodes= flow.findSubflowNodes();
+                for (Node subflowNode : subflowNodes) {
+                    if (flowId.equals(subflowNode.getSubflowId())) {
+                        list.add(flow);
+                        break;
+                    }
+                }
+            }
+            return list.toArray(new Flow[list.size()]);
+        }
+    }
 
     public static Flow getCopy(Flow flow) {
         try {
@@ -56,13 +82,6 @@ public class FlowService implements StaticService {
             SAMPLE_FLOWS.put(SampleEnvironmentWidget.FLOW.getId(), SampleEnvironmentWidget.getCopy());
             SAMPLE_FLOWS.put(SampleThermostatControl.FLOW.getId(), SampleThermostatControl.getCopy());
             SAMPLE_FLOWS.put(SampleTemperatureProcessor.FLOW.getId(), SampleTemperatureProcessor.getCopy());
-
-            SAMPLE_DEPENDENCY_RESOLVER = new FlowDependencyResolver() {
-                @Override
-                protected Flow findFlow(String flowId) {
-                    return SAMPLE_FLOWS.get(flowId);
-                }
-            };
         }
     }
 
@@ -107,12 +126,12 @@ public class FlowService implements StaticService {
 
         // Find peer slots in consumers/producers of target flow
         List<Slot> slots = new ArrayList<>();
-        Node[] consumers = flow.findNodes(ConsumerRoute.NODE_TYPE);
+        Node[] consumers = flow.findNodes(Node.TYPE_CONSUMER);
         for (Node consumer : consumers) {
             Slot firstSink = consumer.findSlots(Slot.TYPE_SINK)[0];
             slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSink, consumer.getLabel()));
         }
-        Node[] producers = flow.findNodes(ProducerRoute.NODE_TYPE);
+        Node[] producers = flow.findNodes(Node.TYPE_PRODUCER);
         for (Node producer : producers) {
             Slot firstSource = producer.findSlots(Slot.TYPE_SOURCE)[0];
             slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSource, producer.getLabel()));
@@ -130,14 +149,7 @@ public class FlowService implements StaticService {
             if (flow == null)
                 return null;
 
-            // TODO Dependency resolution occurs when a flow is loaded?!
-            // TODO Handle exceptions in resolution?
-            try {
-                SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow);
-            } catch (IllegalStateException ex) {
-                LOG.warn("Exception during flow resolution: " + ex.getMessage(), ex);
-                return null;
-            }
+            resolveDependencies(flow, false);
 
             return flow;
         }
@@ -146,21 +158,22 @@ public class FlowService implements StaticService {
     public void deleteFlow(String id) throws Exception {
         LOG.debug("Delete flow: " + id);
         synchronized (SAMPLE_FLOWS) {
-            Flow flow = getFlow(id);
 
-            // TODO: We must prevent deletion of a flow that is used as a dependency in other flows, this is a hack
-            for (String otherFlowId : SAMPLE_FLOWS.keySet()) {
-                Flow otherFlow = getFlow(otherFlowId);
-                if (otherFlow.hasDependency(id)) {
-                    throw new IllegalStateException("Can't delete flow '" + id + "', is a dependency of : " + otherFlow);
-                }
+            Flow flow = getCopy(SAMPLE_FLOWS.get(id));
+            if (flow == null)
+                return;
+
+            resolveDependencies(flow, false);
+
+            if (flow.getSuperDependencies().length > 0) {
+                throw new IllegalStateException(
+                    "Can't delete flow '" + id + "', is a dependency of " + flow.getSuperDependencies().length  + " other flows."
+                );
             }
 
-            if (flow != null) {
-                // TODO: Exception handling
-                routeManagementService.stopFlowRoutes(flow);
-                SAMPLE_FLOWS.remove(id);
-            }
+            // TODO: Exception handling
+            routeManagementService.stopFlowRoutes(flow);
+            SAMPLE_FLOWS.remove(id);
         }
     }
 
@@ -171,17 +184,6 @@ public class FlowService implements StaticService {
         }
     }
 
-    public Flow getResolvedFlow(Flow flow) {
-        LOG.debug("Resolving dependencies of flow: " + flow);
-        synchronized (SAMPLE_FLOWS) {
-
-            // TODO Handle exceptions in resolution?
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow);
-            LOG.info("### RESOLVED: " + Arrays.toString(flow.getDependencies()));
-            return flow;
-        }
-    }
-
     public boolean putFlow(Flow flow) {
         LOG.debug("Putting flow: " + flow);
         synchronized (SAMPLE_FLOWS) {
@@ -189,7 +191,7 @@ public class FlowService implements StaticService {
             if (!SAMPLE_FLOWS.containsKey(flow.getId()))
                 return false;
 
-            if (flow.getDependencies().length > 0)
+            if (flow.getSuperDependencies().length > 0 || flow.getSubDependencies().length > 0)
                 throw new IllegalArgumentException("Don't send dependencies when updating a flow");
 
             // TODO Find out if this flow has any subflow nodes in other flows, then update those dependents?
@@ -203,6 +205,14 @@ public class FlowService implements StaticService {
             SAMPLE_FLOWS.put(flow.getId(), flow);
 
             return true;
+        }
+    }
+
+    public Flow getResolvedFlow(Flow flow, boolean hydrateSubs) {
+        LOG.debug("Resolving dependencies of flow: " + flow);
+        synchronized (SAMPLE_FLOWS) {
+            resolveDependencies(flow, hydrateSubs);
+            return flow;
         }
     }
 
@@ -249,6 +259,17 @@ public class FlowService implements StaticService {
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    protected void resolveDependencies(Flow flow, boolean hydrateSubs) {
+        try {
+            flow.clearDependencies();
+            SAMPLE_DEPENDENCY_RESOLVER.populateSuperDependencies(flow);
+            SAMPLE_DEPENDENCY_RESOLVER.populateSubDependencies(flow, hydrateSubs);
+        } catch (IllegalStateException ex) {
+            LOG.warn("Error in flow dependency resolution: " + flow, ex);
+            throw ex;
         }
     }
 

@@ -24,4 +24,12 @@ public class CategorizedItem {
         list.add(catalogItem);
         catalogItems = list.toArray(new CatalogItem[list.size()]);
     }
+
+    @Override
+    public String toString() {
+        return "CategorizedItem{" +
+            "category=" + category +
+            ", catalogItems=" + Arrays.toString(catalogItems) +
+            '}';
+    }
 }

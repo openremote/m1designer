@@ -12,6 +12,12 @@ public class Node extends FlowObject {
     public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
     public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
+    public static final String TYPE_CONSUMER = "urn:org-openremote:flow:node:consumer";
+    public static final String TYPE_CONSUMER_LABEL = "Sink";
+
+    public static final String TYPE_PRODUCER = "urn:org-openremote:flow:node:producer";
+    public static final String TYPE_PRODUCER_LABEL = "Source";
+
     public String subflowId;
     public Slot[] slots = new Slot[0];
     public boolean clientAccess;
@@ -39,10 +45,12 @@ public class Node extends FlowObject {
         this.subflowId = subflowId;
     }
 
-    public int getObjectCount() {
-        int count = 1;
-        count += getSlots().length;
-        return count;
+    public boolean isOfTypeSubflow() {
+        return isOfType(TYPE_SUBFLOW);
+    }
+
+    public boolean isOfTypeConsumerOrProducer() {
+        return isOfType(TYPE_CONSUMER) || isOfType(TYPE_PRODUCER);
     }
 
     public String getSubflowId() {

@@ -81,8 +81,11 @@ public class FlowServiceConfiguration implements Configuration {
                     Flow flow = exchange.getIn().getBody(Flow.class);
                     try {
                         if (flow != null) {
+
+                            boolean hydrateSubs = exchange.getIn().getHeader("hydrateSubs", false, Boolean.class);
+
                             exchange.getOut().setBody(
-                                getContext().hasService(FlowService.class).getResolvedFlow(flow)
+                                getContext().hasService(FlowService.class).getResolvedFlow(flow, hydrateSubs)
                             );
                             exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
                         } else {

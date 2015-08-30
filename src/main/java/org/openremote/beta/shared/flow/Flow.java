@@ -16,7 +16,8 @@ public class Flow extends FlowObject {
 
     public Node[] nodes = new Node[0];
     public Wire[] wires = new Wire[0];
-    public Flow[] dependencies = new Flow[0];
+    public FlowDependency[] superDependencies = new FlowDependency[0];
+    public FlowDependency[] subDependencies = new FlowDependency[0];
 
     protected Flow() {
     }
@@ -40,14 +41,6 @@ public class Flow extends FlowObject {
             if (wireSet.size() != wires.length)
                 throw new IllegalArgumentException("Duplicate wires: " + Arrays.toString(wires));
         }
-    }
-
-    public int getObjectCount() {
-        int count = 1;
-        for (Node node : nodes) {
-            count += node.getObjectCount();
-        }
-        return count;
     }
 
     public Node[] getNodes() {
@@ -87,59 +80,39 @@ public class Flow extends FlowObject {
         return removeWiresOf(node);
     }
 
-    public Flow[] getDependencies() {
-        return dependencies;
-    }
-
-    public void addDependency(Flow flow) {
-        Set<Flow> collection = new HashSet<>(Arrays.asList(getDependencies()));
-        collection.add(flow);
-        this.dependencies = collection.toArray(new Flow[collection.size()]);
-    }
-
     public void clearDependencies() {
-        this.dependencies = new Flow[0];
+        setSuperDependencies(new FlowDependency[0]);
+        setSubDependencies(new FlowDependency[0]);
     }
 
-    public void setDependencies(Flow[] dependencies) {
-        this.dependencies = dependencies;
+    public FlowDependency[] getSuperDependencies() {
+        return superDependencies;
     }
 
-    public boolean hasDependency(String flowId) {
-        for (Flow dependency : dependencies) {
-            if (dependency.getId().equals(flowId))
-                return true;
-            boolean hasDependency = dependency.hasDependency(flowId);
-            if (hasDependency)
-                return true;
-        }
-        return false;
+    public void setSuperDependencies(FlowDependency[] superDependencies) {
+        this.superDependencies = superDependencies;
     }
 
-    public Flow findOwnerOfSlotInAllFlows(String slotId) {
-        Slot slot = findSlot(slotId);
-        if (slot != null)
-            return this;
-
-        for (Flow dependency : getDependencies()) {
-            Flow result = dependency.findOwnerOfSlotInAllFlows(slotId);
-            if (result != null)
-                return result;
-        }
-
-        return null;
+    public FlowDependency[] getSubDependencies() {
+        return subDependencies;
     }
 
-    public Flow findSubflowInAllFlows(Node subflowNode) {
-        if (getId().equals(subflowNode.getSubflowId()))
-            return this;
+    public void setSubDependencies(FlowDependency[] subDependencies) {
+        this.subDependencies = subDependencies;
+    }
 
-        for (Flow dependency : getDependencies()) {
-            Flow result = dependency.findSubflowInAllFlows(subflowNode);
-            if (result != null)
-                return result;
+    public FlowDependency findSubDependency(Node subflowNode) {
+        for (FlowDependency subDependency : getSubDependencies()) {
+            if (subDependency.getId().equals(subflowNode.getSubflowId()))
+                return subDependency;
         }
         return null;
+    }
+
+    public boolean hasWiredSuperDependency() {
+        return getSuperDependencies() != null
+            && getSuperDependencies().length > 0
+            && getSuperDependencies()[0].isWired();
     }
 
     public Wire[] getWires() {
@@ -211,13 +184,6 @@ public class Flow extends FlowObject {
         return collection.toArray(new Wire[collection.size()]);
     }
 
-    public Slot findSlotInAllFlows(String slotId) {
-        Flow ownerFlow = findOwnerOfSlotInAllFlows(slotId);
-        if (ownerFlow != null)
-            return ownerFlow.findSlot(slotId);
-        return null;
-    }
-
     public Slot findSlot(String slotId) {
         for (Node node : getNodes()) {
             Slot slot = node.findSlot(slotId);
@@ -270,20 +236,6 @@ public class Flow extends FlowObject {
                 collection.add(node);
         }
         return collection.toArray(new Node[collection.size()]);
-    }
-
-    public Node findNodeInAllFlows(String nodeId) {
-        Node node = findNode(nodeId);
-        if (node != null)
-            return node;
-
-        for (Flow dependency : getDependencies()) {
-            Node result = dependency.findNodeInAllFlows(nodeId);
-            if (result != null)
-                return result;
-        }
-
-        return null;
     }
 
     public Node[] findWiredNodesOf(Node node) {

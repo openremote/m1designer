@@ -31,8 +31,8 @@ public interface FlowDesignerConstants {
     String SLOT_SINK_LABEL = "INPUT";
     String SLOT_SOURCE_LABEL = "OUTPUT";
     int SLOT_VALUE_MAX_LENGTH = 7;
-    double SLOT_RADIUS = 15;
-    double SLOT_PADDING = 3;
+    double SLOT_RADIUS = 13;
+    double SLOT_PADDING = 2;
     double SLOT_FONT_SIZE = 9;
     double SLOT_VALUE_FONT_SIZE = 8;
     IColor SLOT_SINK_COLOR = new Color(240, 240, 240);
@@ -49,7 +49,7 @@ public interface FlowDesignerConstants {
     double WIRE_CUBE_DISTANCE = 50;
     double WIRE_WIDTH = 8;
     int WIRE_DELETE_DISTANCE = 50;
-    IColor WIRE_COLOR = new Color(192, 214, 46);
+    IColor WIRE_COLOR = new Color(192, 214, 46, 0.7);
     IColor WIRE_HANDLE_COLOR = new Color(251, 192, 45);
     IColor WIRE_HANDLE_ATTACH_COLOR = BLACK;
     IColor WIRE_HANDLE_ATTACH_VETO_COLOR = new Color(230, 74, 25);

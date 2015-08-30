@@ -55,6 +55,11 @@ public abstract class FlowDesigner {
                 attachedWireShape.finalizeRemove();
             }
         }
+
+        @Override
+        public WireShape[] getAttachedWireShapes(String slotId) {
+            return FlowDesigner.this.getAttachedWireShapes(slotId);
+        }
     }
 
     class WireShapeImpl extends WireShape {

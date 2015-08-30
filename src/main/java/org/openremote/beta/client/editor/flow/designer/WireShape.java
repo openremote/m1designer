@@ -125,12 +125,12 @@ public abstract class WireShape extends Group {
     }
 
     protected static Point2DArray calculateCurve(double x1, double y1, double x2, double y2) {
-        // The plus/minus one is to avoid bleeding of the anti-aliased background
+        // The plus/minus one avoids edge bleed
         return new Point2DArray(
-            new Point2D(x1 - SLOT_PADDING, y1),
+            new Point2D(x1 - SLOT_PADDING + 1, y1),
             new Point2D(x1 + WIRE_CUBE_DISTANCE, y1),
             new Point2D(x2 - WIRE_CUBE_DISTANCE, y2),
-            new Point2D(x2 + SLOT_PADDING, y2)
+            new Point2D(x2 + SLOT_PADDING - 1, y2)
         );
     }
 
@@ -239,7 +239,6 @@ public abstract class WireShape extends Group {
     }
 
     public void startRemove() {
-        curve.getDashArray();
         curve.setDashArray(WIRE_WIDTH);
         moveToTop();
     }
@@ -286,6 +285,14 @@ public abstract class WireShape extends Group {
         });
         curve.addNodeMouseExitHandler(event -> toolTip.hide());
         curve.addNodeDragStartHandler(event -> toolTip.hide());
+    }
+
+    public void setPulse(boolean pulse) {
+        if (pulse) {
+            curve.setStrokeWidth(WIRE_WIDTH * 1.5);
+        } else {
+            curve.setStrokeWidth(WIRE_WIDTH);
+        }
     }
 
     protected void layout() {

@@ -23,7 +23,7 @@ public class MessageLogDetail {
     public String instanceLabel;
     public String body;
 
-    public MessageLogDetail(boolean incoming, Message event, Flow rootFlow, Flow flow, Node node, Slot slot) {
+    public MessageLogDetail(boolean incoming, Message event, Flow flow, Node node, Slot slot) {
         this.incoming = incoming;
 
         this.flowLabel = flow != null ? flow.getLabel() : null;
@@ -47,8 +47,8 @@ public class MessageLogDetail {
         }
         this.instanceLabel = event.getInstanceId();
 
-        if (rootFlow != null && event.getInstanceId() != null) {
-            Node instanceNode = rootFlow.findNodeInAllFlows(event.getInstanceId());
+        if (flow != null && event.getInstanceId() != null) {
+            Node instanceNode = flow.findNode(event.getInstanceId());
             if (instanceNode != null && instanceNode.getLabel() != null) {
                 this.instanceLabel = instanceNode.getLabel();
             }

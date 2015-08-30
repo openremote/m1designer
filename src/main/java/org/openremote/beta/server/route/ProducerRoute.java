@@ -4,7 +4,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.VirtualNodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
@@ -23,19 +22,16 @@ public class ProducerRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProducerRoute.class);
 
-    public static final String NODE_TYPE = "urn:org-openremote:flow:node:producer";
-    public static final String NODE_TYPE_LABEL = "Source";
-
     public static class Descriptor extends VirtualNodeDescriptor {
 
         @Override
         public String getType() {
-            return NODE_TYPE;
+            return Node.TYPE_PRODUCER;
         }
 
         @Override
         public String getTypeLabel() {
-            return NODE_TYPE_LABEL;
+            return Node.TYPE_PRODUCER_LABEL;
         }
 
         @Override

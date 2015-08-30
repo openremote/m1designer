@@ -12,6 +12,7 @@ import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.FlowDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,8 @@ public class FlowControlPresenter extends RequestPresenter {
     public String flowControlTitle;
     public boolean flowControlDirty = false;
     public FlowStatusDetail flowStatusDetail;
+    public FlowDependency[] flowSuperDependencies;
+    public FlowDependency[] flowSubDependencies;
 
     public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -37,8 +40,14 @@ public class FlowControlPresenter extends RequestPresenter {
         addEventListener(FlowControlStartEvent.class, event -> {
             flow = event.getFlow();
             notifyPath("flow");
+
             unsaved = event.isUnsaved();
             notifyPath("unsaved", unsaved);
+
+            flowSuperDependencies = flow.getSuperDependencies();
+            notifyPath("flowSuperDependencies", flowSuperDependencies);
+            flowSubDependencies = flow.getSubDependencies();
+            notifyPath("flowSubDependencies", flowSubDependencies);
 
             setFlowControlDirty(unsaved);
             setFlowStatusDetail(new FlowStatusDetail("REQUESTING FLOW STATUS..."));
@@ -47,7 +56,12 @@ public class FlowControlPresenter extends RequestPresenter {
 
         addEventListener(FlowControlStopEvent.class, event -> {
             flow = null;
-            notifyPath("flow");
+            notifyPathNull("flow");
+
+            flowSuperDependencies = null;
+            notifyPathNull("flowSuperDependencies");
+            flowSubDependencies = null;
+            notifyPathNull("flowSubDependencies");
         });
 
         addEventListener(FlowRequestStatusEvent.class, event -> {
@@ -74,10 +88,16 @@ public class FlowControlPresenter extends RequestPresenter {
             }
         });
 
-        addEventListener(FlowUpdatedEvent.class, event -> {
+        addEventListener(FlowModifiedEvent.class, event -> {
             setFlowControlDirty(true);
+
             if (flowStatusDetail != null)
                 setFlowStatusDetail(flowStatusDetail);
+
+            flowSuperDependencies = flow.getSuperDependencies();
+            notifyPath("flowSuperDependencies", flowSuperDependencies);
+            flowSubDependencies = flow.getSubDependencies();
+            notifyPath("flowSubDependencies", flowSubDependencies);
         });
 
         addEventListener(FlowSavedEvent.class, event -> {
@@ -98,13 +118,17 @@ public class FlowControlPresenter extends RequestPresenter {
         flowControlDirty = true; // Assume this is dirty, now other listeners might run
         debounce("FlowPropertyChange", () -> {
             if (flowControlDirty) { // If it's still dirty (after other listeners executed), tell the user
-                dispatchEvent(new FlowUpdatedEvent(flow));
+                dispatchEvent(new FlowModifiedEvent(flow, false));
             }
         }, 500);
     }
 
     protected boolean isConsumable(FlowIdEvent flowIdEvent) {
         return flow != null && flow.getId().equals(flowIdEvent.getFlowId());
+    }
+
+    public void editFlowDependency(Flow dependency) {
+        dispatchEvent(new FlowLoadEvent(dependency.getId()));
     }
 
     public void redeployFlow() {
@@ -143,32 +167,30 @@ public class FlowControlPresenter extends RequestPresenter {
             flow.getLabel() != null && flow.getLabel().length() > 0
                 ? "Are you sure you want to delete flow '" + flow.getLabel() + "'?"
                 : "Are you sure you want to delete this flow?",
-            () -> {
-                sendRequest(
-                    false,
-                    false,
-                    resource("flow", flow.getId()).delete(),
-                    new StatusResponseCallback("Delete flow", 204) {
-                        @Override
-                        protected void onResponse() {
-                            dispatchEvent(new FlowDeletedEvent(flow));
-                        }
+            () -> sendRequest(
+                false,
+                false,
+                resource("flow", flow.getId()).delete(),
+                new StatusResponseCallback("Delete flow", 204) {
+                    @Override
+                    protected void onResponse() {
+                        dispatchEvent(new FlowDeletedEvent(flow));
+                    }
 
-                        @Override
-                        public void onFailure(RequestFailure requestFailure) {
-                            super.onFailure(requestFailure);
-                            if (requestFailure.statusCode == 409) {
-                                dispatchEvent(new ShowFailureEvent(
-                                    "Flow '" + flow.getLabel() + "' can't be deleted, stopping it failed or it's in use by other flows.",
-                                    5000
-                                ));
-                            } else {
-                                dispatchEvent(new RequestFailureEvent(requestFailure));
-                            }
+                    @Override
+                    public void onFailure(RequestFailure requestFailure) {
+                        super.onFailure(requestFailure);
+                        if (requestFailure.statusCode == 409) {
+                            dispatchEvent(new ShowFailureEvent(
+                                "Flow '" + flow.getLabel() + "' can't be deleted, stopping it failed or it's in use by other flows.",
+                                5000
+                            ));
+                        } else {
+                            dispatchEvent(new RequestFailureEvent(requestFailure));
                         }
                     }
-                );
-            }
+                }
+            )
         ));
     }
 

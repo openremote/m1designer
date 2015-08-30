@@ -305,6 +305,8 @@ public abstract class NodeShape extends Group {
 
     public abstract WireShape createWireShape(double x1, double y1, double x2, double y2, Slot source, Slot sink);
 
+    public abstract WireShape[] getAttachedWireShapes(String slotId);
+
     protected abstract void selected(Node node);
 
     protected abstract void moved(Node node);

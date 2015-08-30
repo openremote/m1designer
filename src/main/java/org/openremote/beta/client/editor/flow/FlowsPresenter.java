@@ -38,6 +38,8 @@ public class FlowsPresenter extends RequestPresenter {
             notifyPath("flowEditorVisible", flowEditorVisible);
         });
 
+        addEventListener(FlowLoadEvent.class, event -> loadFlow(event.getFlowId()));
+
         addEventListener(FlowStatusEvent.class, event -> {
             updateFlowStatus(event.getFlowId(), new FlowStatusDetail(event.getPhase()));
         });

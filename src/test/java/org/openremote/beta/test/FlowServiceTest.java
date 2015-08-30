@@ -4,6 +4,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.http.HttpMethods;
+import org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.beta.server.route.SubflowRoute;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
@@ -39,17 +40,16 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flows[0].getLabel(), SampleEnvironmentWidget.FLOW.getLabel());
         assertEquals(flows[0].getNodes().length, 0);
         assertEquals(flows[0].getWires().length, 0);
-        assertEquals(flows[0].getDependencies().length, 0);
+        assertEquals(flows[0].getSuperDependencies().length, 0);
+        assertEquals(flows[0].getSubDependencies().length, 0);
         assertEquals(flows[1].getId(), SampleThermostatControl.FLOW.getId());
         assertEquals(flows[1].getLabel(), SampleThermostatControl.FLOW.getLabel());
         assertEquals(flows[1].getNodes().length, 0);
         assertEquals(flows[1].getWires().length, 0);
-        assertEquals(flows[1].getDependencies().length, 0);
         assertEquals(flows[2].getId(), SampleTemperatureProcessor.FLOW.getId());
         assertEquals(flows[2].getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
         assertEquals(flows[2].getNodes().length, 0);
         assertEquals(flows[2].getWires().length, 0);
-        assertEquals(flows[2].getDependencies().length, 0);
     }
 
     @Test
@@ -82,7 +82,8 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getLabel(), "TEST LABEL");
         assertEquals(flow.getNodes().length, 0);
         assertEquals(flow.getWires().length, 0);
-        assertEquals(flow.getDependencies().length, 0);
+        assertEquals(flow.getSuperDependencies().length, 0);
+        assertEquals(flow.getSubDependencies().length, 0);
 
         Exchange deleteFlowExchange = producerTemplate.request(
             createWebClientUri("flow", flow.getId()),
@@ -122,7 +123,8 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
         assertEquals(flow.getNodes().length, 6);
         assertEquals(flow.getWires().length, 5);
-        assertEquals(flow.getDependencies().length, 0);
+        assertEquals(flow.getSuperDependencies().length, 2);
+        assertEquals(flow.getSubDependencies().length, 0);
 
         flow = fromJson(
             producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
@@ -132,13 +134,15 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getLabel(), SampleThermostatControl.FLOW.getLabel());
         assertEquals(flow.getNodes().length, 13);
         assertEquals(flow.getWires().length, 12);
-        assertEquals(flow.getDependencies().length, 1);
-        assertEquals(flow.getDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertEquals(flow.getSuperDependencies().length, 1);
+        assertEquals(flow.getSuperDependencies()[0].getId(), SampleEnvironmentWidget.FLOW.getId());
+        assertEquals(flow.getSubDependencies().length, 1);
+        assertEquals(flow.getSubDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
 
         final Flow updateFlow = flow;
         updateFlow.setLabel("New Label");
 
-        // We except that the client will NOT calculate dependencies and put an empty array
+        // We except that the client will NOT calculate dependencies
         updateFlow.clearDependencies();
 
         Exchange putFlowExchange = producerTemplate.request(
@@ -158,8 +162,10 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getLabel(), "New Label");
         assertEquals(flow.getNodes().length, 13);
         assertEquals(flow.getWires().length, 12);
-        assertEquals(flow.getDependencies().length, 1);
-        assertEquals(flow.getDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertEquals(flow.getSuperDependencies().length, 1);
+        assertEquals(flow.getSuperDependencies()[0].getId(), SampleEnvironmentWidget.FLOW.getId());
+        assertEquals(flow.getSubDependencies().length, 1);
+        assertEquals(flow.getSubDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
     }
 
     @Test
@@ -217,10 +223,11 @@ public class FlowServiceTest extends IntegrationTest {
 
     @Test
     public void resolveDependencies() throws Exception {
+
         Flow flow = new Flow("Test Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
 
         Node subflowNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId(), "subflow"), null, String.class),
             Node.class
         );
 
@@ -236,8 +243,65 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(resolveFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
         Flow resolvedFlow = fromJson(resolveFlowExchange.getOut().getBody(String.class), Flow.class);
 
-        assertEquals(resolvedFlow.getDependencies().length, 1);
-        assertEquals(resolvedFlow.getDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertEquals(resolvedFlow.getSuperDependencies().length, 0);
+        assertEquals(resolvedFlow.getSubDependencies().length, 2);
+        assertEquals(resolvedFlow.getSubDependencies()[0].getId(), SampleThermostatControl.FLOW.getId());
+        assertNull(resolvedFlow.getSubDependencies()[0].getFlow());
+        assertEquals(resolvedFlow.getSubDependencies()[1].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertNull(resolvedFlow.getSubDependencies()[1].getFlow());
+
+        // Again but hydrate sub dependencies
+        resolveFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", "resolve"),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
+                exchange.getIn().setHeader("hydrateSubs", true);
+                exchange.getIn().setBody(toJson(flow));
+            }
+        );
+        assertEquals(resolveFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
+        resolvedFlow = fromJson(resolveFlowExchange.getOut().getBody(String.class), Flow.class);
+
+        assertEquals(resolvedFlow.getSubDependencies()[0].getFlow().getIdentifier(), SampleThermostatControl.FLOW.getIdentifier());
+        assertEquals(resolvedFlow.getSubDependencies()[1].getFlow().getIdentifier(), SampleTemperatureProcessor.FLOW.getIdentifier());
+
+        // Now attach a wire to test hard super-dependencies
+
+        Node textLabelNode = fromJson(
+            producerTemplate.requestBody(createWebClientUri("catalog", "node", TextLabelNodeDescriptor.TYPE), null, String.class),
+            Node.class
+        );
+        flow.addNode(textLabelNode);
+        Slot textSink = textLabelNode.getSlots()[0];
+        Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[0];
+        LOG.info("### WIRING: " + setpointSource  + " => " + textSink);
+        flow.addWireBetweenSlots(setpointSource, textSink);
+
+        // Must save this flow first
+        Exchange postFlowExchange = producerTemplate.request(
+            createWebClientUri("flow"),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
+                exchange.getIn().setBody(toJson(flow));
+            }
+        );
+        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
+
+        // This guy should now a new hard super-dependency
+        Flow sampleThermostatControl = SampleThermostatControl.getCopy();
+        resolveFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", "resolve"),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
+                exchange.getIn().setBody(toJson(sampleThermostatControl));
+            }
+        );
+        assertEquals(resolveFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
+        resolvedFlow = fromJson(resolveFlowExchange.getOut().getBody(String.class), Flow.class);
+
+        assertEquals(resolvedFlow.getSuperDependencies().length, 2);
+        assertTrue(resolvedFlow.getSuperDependencies()[0].isWired());
+        assertTrue(resolvedFlow.getSuperDependencies()[1].isWired());
     }
 
 }

@@ -42,45 +42,62 @@
                 },
                 _cancelAction: {
                     type: Function
+                },
+                _otherActionText: {
+                    type: String
+                },
+                _otherAction: {
+                    type: Function
                 }
             },
             listeners: {
                 "confirmation": "_onConfirmation"
             },
-            _onConfirmation: function(ce, event) {
+            _onConfirmation: function (ce, event) {
                 this.set("_confirmationTitle", event.title);
                 this.set("_confirmationText", event.text);
                 this._confirmAction = event.confirmAction;
                 this._cancelAction = event.cancelAction;
+                this._otherActionText = event.otherActionText;
+                this._otherAction = event.otherAction;
                 this._openConfirmation();
             },
-            _confirm: function() {
+            _confirm: function () {
                 this._closeConfirmation();
                 if (this._confirmAction) {
                     this._confirmAction.call();
                 }
                 this._clearConfirmation();
             },
-            _cancel: function() {
+            _cancel: function () {
                 this._closeConfirmation();
                 if (this._cancelAction) {
                     this._cancelAction.call();
                 }
                 this._clearConfirmation();
             },
-            _openConfirmation: function() {
+            _other: function () {
+                this._closeConfirmation();
+                if (this._otherAction) {
+                    this._otherAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _openConfirmation: function () {
                 this.toggleAttribute("hidden", false, this.$.confirmationPanel);
                 this.$.confirmationPanel.open();
             },
-            _closeConfirmation: function() {
+            _closeConfirmation: function () {
                 this.toggleAttribute("hidden", true, this.$.confirmationPanel);
                 this.$.confirmationPanel.close();
             },
-            _clearConfirmation: function() {
+            _clearConfirmation: function () {
                 this.set("_confirmationTitle", "Confirmation");
                 this.set("_confirmationText", undefined);
                 this._confirmAction = undefined;
                 this._cancelAction = undefined;
+                this._otherActionText = undefined;
+                this._otherAction = undefined;
             }
         });
     });
@@ -121,10 +138,10 @@
         #confirmationPanel {
             position: fixed;
             left: 40vw;
-            top: 25vh;
+            top: 20vh;
             z-index: 1000;
-            --or-panel-width: 280px;
-            --or-panel-max-height: 100px;
+            --or-panel-width: 420px;
+            --or-panel-max-height: 200px;
         }
 
         #confirmationPanel .confirmationText {
@@ -137,6 +154,10 @@
 
         #confirmationPanel .cancel {
             background-color: var(--or-editor-cancel-color);
+        }
+
+        #confirmationPanel .other {
+            background-color: var(--or-editor-other-color);
         }
 
         @media all and (max-width: 640px) {
@@ -172,7 +193,8 @@
                 <or-editor-sidebar id="editorSidebar"></or-editor-sidebar>
             </div>
             <div id="main">
-                <or-editor-flow-editor id="flowEditor"></or-editor-flow-editor>
+                <or-editor-flow-editor id="flowEditor"
+                                       dirty="{{_presenter.flowEditorDirty}}"></or-editor-flow-editor>
             </div>
         </div>
 
@@ -190,6 +212,12 @@
                     <iron-icon icon="icons:close"></iron-icon>
                     Cancel
                 </paper-button>
+                <template is="dom-if" if="[[_otherAction]]">
+                    <paper-button class="other" on-tap="_other">
+                        <iron-icon icon="icons:done-all"></iron-icon>
+                        <span>[[_otherActionText]]</span>
+                    </paper-button>
+                </template>
                 <paper-button class="confirm" on-tap="_confirm">
                     <iron-icon icon="icons:check"></iron-icon>
                     OK

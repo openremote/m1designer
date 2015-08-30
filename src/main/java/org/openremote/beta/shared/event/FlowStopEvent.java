@@ -1,7 +1,6 @@
 package org.openremote.beta.shared.event;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.gwt.core.client.js.JsNoExport;
 import com.google.gwt.core.client.js.JsType;
 
 @JsType

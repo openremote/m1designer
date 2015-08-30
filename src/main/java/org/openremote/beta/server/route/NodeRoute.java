@@ -114,9 +114,6 @@ public abstract class NodeRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        if (!isServerRoutingEnabled()) {
-            LOG.debug("Node is not routing, skipping: " + getNode());
-        }
         LOG.debug("Configure routes: " + getNode());
 
         RouteDefinition routeDefinition = from("direct:" + node.getId())
@@ -228,10 +225,6 @@ public abstract class NodeRoute extends RouteBuilder {
 
         // Send the cleaned exchange through the wires to the next node(s)
         configureDestination(finalizeDefinition);
-    }
-
-    protected boolean isServerRoutingEnabled() {
-        return true;
     }
 
     // This can then be selectively enabled in the event service with clientAccess property

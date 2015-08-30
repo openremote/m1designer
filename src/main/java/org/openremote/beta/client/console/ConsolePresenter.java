@@ -13,6 +13,7 @@ import org.openremote.beta.client.shared.Component.DOM;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.FlowDependency;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
@@ -96,11 +97,12 @@ public class ConsolePresenter extends AbstractPresenter {
 
         for (Node subflowNode : subflowNodes) {
 
-            Flow subflow = rootFlow.findSubflowInAllFlows(subflowNode);
-            if (subflow == null) {
-                LOG.warn("Illegal subflow node, can't find referenced peer: " + subflowNode);
+            FlowDependency subflowDependency = rootFlow.findSubDependency(subflowNode);
+            if (subflowDependency == null || subflowDependency.getFlow() == null) {
+                LOG.warn("Illegal subflow node, can't find hydrated sub-dependency: " + subflowNode);
                 continue;
             }
+            Flow subflow = subflowDependency.getFlow();
 
             DOM compositeWidget = addWidget(subflowNode, container, instanceId);
             updateWidgets(rootFlow, subflow, compositeWidget, instanceId != null ? instanceId : subflowNode.getId());
@@ -112,7 +114,7 @@ public class ConsolePresenter extends AbstractPresenter {
         LOG.debug("Adding widgets '" + flow + "': " + widgetNodes.length);
         for (Node node : widgetNodes) {
 
-            if (node.isOfType(Node.TYPE_SUBFLOW))
+            if (node.isOfTypeSubflow())
                 continue;
 
             addWidget(node, container, instanceId);
@@ -156,7 +158,7 @@ public class ConsolePresenter extends AbstractPresenter {
         // Continue manipulating the local DOM of the widget!
         DOM widgetDOM = getDOMRoot((Element) widget);
 
-        if (!node.isOfType(Node.TYPE_SUBFLOW)) {
+        if (!node.isOfTypeSubflow()) {
             for (Slot slot : node.findPropertySlots()) {
                 widgetDOM.appendChild(createWidgetSlot(slot, instanceId));
             }

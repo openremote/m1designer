@@ -4,9 +4,7 @@ import com.ait.lienzo.client.core.shape.Circle;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.shape.Text;
 import com.ait.lienzo.client.core.types.Shadow;
-import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.ColorName;
-import org.openremote.beta.client.shared.Timeout;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,6 @@ public class SlotShape {
     final protected Handle handle;
     final protected Text slotLabelText;
     final protected Text slotValueText;
-
 
     public SlotShape(NodeShape nodeShape, Slot slot) {
         this.nodeShape = nodeShape;
@@ -126,6 +123,14 @@ public class SlotShape {
         slotValueText.setFillColor(SLOT_VALUE_TEXT_HIGHLIGHT_COLOR);
         getHandle().setStrokeColor(SLOT_HANDLE_HIGHLIGHT_OUTLINE_COLOR);
         getHandle().setStrokeWidth(SLOT_PADDING);
+
+        if (slot.isOfType(Slot.TYPE_SOURCE)) {
+            WireShape[] wireShapes = getNodeShape().getAttachedWireShapes(slot.getId());
+            for (WireShape wireShape : wireShapes) {
+                wireShape.setPulse(true);
+            }
+        }
+
         debounce(
             "HighlightSlot" + getSlot().getId(),
             () -> {
@@ -134,8 +139,15 @@ public class SlotShape {
                 getNodeShape().getLayer().batch();
                 getHandle().setStrokeColor(ColorName.TRANSPARENT);
                 getHandle().setStrokeWidth(0);
+
+                if (slot.isOfType(Slot.TYPE_SOURCE)) {
+                    WireShape[] wireShapes = getNodeShape().getAttachedWireShapes(slot.getId());
+                    for (WireShape wireShape : wireShapes) {
+                        wireShape.setPulse(false);
+                    }
+                }
             },
-            500
+            250
         );
 
         updateSlotText();
