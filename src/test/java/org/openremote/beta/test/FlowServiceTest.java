@@ -274,7 +274,6 @@ public class FlowServiceTest extends IntegrationTest {
         flow.addNode(textLabelNode);
         Slot textSink = textLabelNode.getSlots()[0];
         Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[0];
-        LOG.info("### WIRING: " + setpointSource  + " => " + textSink);
         flow.addWireBetweenSlots(setpointSource, textSink);
 
         // Must save this flow first
@@ -287,7 +286,7 @@ public class FlowServiceTest extends IntegrationTest {
         );
         assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
 
-        // This guy should now a new hard super-dependency
+        // This guy should now have a new hard super-dependency
         Flow sampleThermostatControl = SampleThermostatControl.getCopy();
         resolveFlowExchange = producerTemplate.request(
             createWebClientUri("flow", "resolve"),
@@ -301,7 +300,11 @@ public class FlowServiceTest extends IntegrationTest {
 
         assertEquals(resolvedFlow.getSuperDependencies().length, 2);
         assertTrue(resolvedFlow.getSuperDependencies()[0].isWired());
+        assertFalse(resolvedFlow.getSuperDependencies()[0].isPeersInvalid());
         assertTrue(resolvedFlow.getSuperDependencies()[1].isWired());
+        assertFalse(resolvedFlow.getSuperDependencies()[1].isPeersInvalid());
+
+        assertEquals(resolvedFlow.getDirectSuperDependencies().length, 2);
     }
 
 }

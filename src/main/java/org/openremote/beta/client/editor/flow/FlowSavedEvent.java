@@ -1,7 +1,6 @@
 package org.openremote.beta.client.editor.flow;
 
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.editor.flow.FlowEvent;
 import org.openremote.beta.shared.flow.Flow;
 
 @JsType

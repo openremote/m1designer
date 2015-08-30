@@ -1,7 +1,7 @@
 package org.openremote.beta.client.editor.flow;
 
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.shared.Function;
+import org.openremote.beta.client.shared.Callback;
 import org.openremote.beta.shared.event.Event;
 
 @JsType
@@ -9,24 +9,24 @@ public class ConfirmationEvent extends Event {
 
     final public String title;
     final public String text;
-    final public Function confirmAction;
-    final public Function cancelAction;
+    final public Callback confirmAction;
+    final public Callback cancelAction;
     final public String otherActionText;
-    final public Function otherAction;
+    final public Callback otherAction;
 
-    public ConfirmationEvent(String title, String text, Function confirmAction) {
+    public ConfirmationEvent(String title, String text, Callback confirmAction) {
         this(title, text, confirmAction, null);
     }
 
-    public ConfirmationEvent(String title, String text, Function confirmAction, String otherActionText, Function otherAction) {
+    public ConfirmationEvent(String title, String text, Callback confirmAction, String otherActionText, Callback otherAction) {
         this(title, text, confirmAction, null, otherActionText, otherAction);
     }
 
-    public ConfirmationEvent(String title, String text, Function confirmAction, Function cancelAction) {
+    public ConfirmationEvent(String title, String text, Callback confirmAction, Callback cancelAction) {
         this(title, text, confirmAction, cancelAction, null, null);
     }
 
-    public ConfirmationEvent(String title, String text, Function confirmAction, Function cancelAction, String otherActionText, Function otherAction) {
+    public ConfirmationEvent(String title, String text, Callback confirmAction, Callback cancelAction, String otherActionText, Callback otherAction) {
         this.title = title;
         this.text = text;
         this.confirmAction = confirmAction;
@@ -43,11 +43,11 @@ public class ConfirmationEvent extends Event {
         return text;
     }
 
-    public Function getConfirmAction() {
+    public Callback getConfirmAction() {
         return confirmAction;
     }
 
-    public Function getCancelAction() {
+    public Callback getCancelAction() {
         return cancelAction;
     }
 
@@ -55,7 +55,7 @@ public class ConfirmationEvent extends Event {
         return otherActionText;
     }
 
-    public Function getOtherAction() {
+    public Callback getOtherAction() {
         return otherAction;
     }
 }

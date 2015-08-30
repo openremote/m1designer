@@ -109,7 +109,7 @@ public interface Component {
 
     <T> T[] arrayDelete(String path, T item);
 
-    int async(Function function, int waitTime);
+    int async(Callback callback, int waitTime);
 
     void attributeFollows(String name, Element toElement, Element fromElement);
 
@@ -121,7 +121,7 @@ public interface Component {
 
     Element create(String tag, Object props);
 
-    void debounce(String jobName, Function callback, int wait);
+    void debounce(String jobName, Callback callback, int wait);
 
     void distributeContent(boolean updateInsertionPoints);
 

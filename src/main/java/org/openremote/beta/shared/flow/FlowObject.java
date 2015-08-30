@@ -18,6 +18,14 @@ public class FlowObject {
         this.identifier = identifier;
     }
 
+    public boolean isLabelEmpty() {
+        return getLabel() == null || getLabel().length() == 0;
+    }
+
+    public String getDefaultedLabel() {
+        return isLabelEmpty() ? "Unnamed " + getClass().getSimpleName(): getLabel();
+    }
+
     public String getLabel() {
         return label;
     }

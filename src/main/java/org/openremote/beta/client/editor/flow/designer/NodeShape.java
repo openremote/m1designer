@@ -134,9 +134,7 @@ public abstract class NodeShape extends Group {
         header.setListening(false);
         add(header);
 
-        boolean haveNodeLabel = node.getLabel() != null && node.getLabel().length() > 0;
-
-        if (haveNodeLabel) {
+        if (!node.isLabelEmpty()) {
             patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
             patchLabel.setFillColor(PATCH_HEADER_TEXT_COLOR);
             patchLabel.setX(header.getBoundingBox().getWidth() / 2 - patchLabel.getBoundingBox().getWidth() / 2);
@@ -149,7 +147,7 @@ public abstract class NodeShape extends Group {
         patchTypeLabel.setFontStyle("italic");
         patchTypeLabel.setFillColor(PATCH_HEADER_TEXT_COLOR);
         patchTypeLabel.setX(header.getBoundingBox().getWidth() / 2 - patchTypeLabel.getBoundingBox().getWidth() / 2);
-        if (haveNodeLabel) {
+        if (!node.isLabelEmpty()) {
             patchTypeLabel.setY(PATCH_PADDING);
         } else {
             patchTypeLabel.setFontSize(PATCH_LABEL_FONT_SIZE);
@@ -166,10 +164,10 @@ public abstract class NodeShape extends Group {
     protected double calculateWidth() {
         // Width depends on the node label and the combined width of widest sink and source slot labels
         int width = (int) PATCH_MIN_WIDTH;
-        Text patchLabel = new Text(node.getLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
+        Text patchLabel = new Text(node.getDefaultedLabel(), FONT_FAMILY, PATCH_LABEL_FONT_SIZE);
         width = (int) Math.max(width, patchLabel.getBoundingBox().getWidth());
         Text patchTypeLabel = new Text(node.getEditorSettings().getTypeLabel(), FONT_FAMILY, PATCH_TITLE_FONT_SIZE);
-        if (node.getLabel() == null || node.getLabel().length() == 0) {
+        if (!node.isLabelEmpty()) {
             patchTypeLabel.setFontSize(PATCH_LABEL_FONT_SIZE);
         }
         width = (int) Math.max(width, patchTypeLabel.getBoundingBox().getWidth());
@@ -177,7 +175,7 @@ public abstract class NodeShape extends Group {
         int largestSource = 0;
         for (Slot source : node.findConnectableSlots(Slot.TYPE_SOURCE)) {
             Text slotLabel = new Text(
-                source.getLabel() != null && source.getLabel().length() > 0 ? source.getLabel() : SLOT_SOURCE_LABEL,
+                !source.isLabelEmpty() ? source.getLabel() : SLOT_SOURCE_LABEL,
                 FONT_FAMILY,
                 SLOT_FONT_SIZE
             );
@@ -189,7 +187,7 @@ public abstract class NodeShape extends Group {
         int largestSink = 0;
         for (Slot sink : node.findConnectableSlots(Slot.TYPE_SINK)) {
             Text slotLabel = new Text(
-                sink.getLabel() != null && sink.getLabel().length() > 0 ? sink.getLabel() : SLOT_SINK_LABEL,
+                !sink.isLabelEmpty() ? sink.getLabel() : SLOT_SINK_LABEL,
                 FONT_FAMILY,
                 SLOT_FONT_SIZE
             );

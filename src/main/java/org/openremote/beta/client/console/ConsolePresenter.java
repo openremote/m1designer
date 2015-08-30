@@ -169,7 +169,7 @@ public class ConsolePresenter extends AbstractPresenter {
 
     protected Element createWidgetSlot(Slot slot, String instanceId) {
         Component component = (Component) getView().getOwnerDocument().createElement("or-console-widget-slot");
-        if (slot.getLabel() != null)
+        if (!slot.isLabelEmpty())
             component.set("label", slot.getLabel());
         component.set("type", slot.getIdentifier().getType());
         component.set("slotId", slot.getId());

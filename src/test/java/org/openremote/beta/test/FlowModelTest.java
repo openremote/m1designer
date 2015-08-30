@@ -58,22 +58,44 @@ public class FlowModelTest {
 
         flowDependencyResolver.populateSuperDependencies(sampleTemperatureProcessor);
 
+        assertTrue(sampleTemperatureProcessor.hasDirectWiredSuperDependencies());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
-
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLabel(), sampleEnvironmentWidget.getLabel());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getIdentifier(), sampleEnvironmentWidget.getIdentifier());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[0].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLevel(), 1);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[0].isWired());
+        assertFalse(sampleTemperatureProcessor.getSuperDependencies()[0].isPeersInvalid());
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLabel(), sampleThermostatControl.getLabel());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getIdentifier(), sampleThermostatControl.getIdentifier());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[1].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLevel(), 0);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[1].isWired());
+        assertFalse(sampleTemperatureProcessor.getSuperDependencies()[1].isPeersInvalid());
 
-        assertTrue(sampleTemperatureProcessor.hasWiredSuperDependency());
+        // This will break the last (direct) super-dependency, we remove a consumer node
+        sampleTemperatureProcessor.removeNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER);
+
+        flowDependencyResolver.populateSuperDependencies(sampleTemperatureProcessor);
+
+        assertTrue(sampleTemperatureProcessor.hasDirectWiredSuperDependencies());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
+
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLabel(), sampleEnvironmentWidget.getLabel());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getIdentifier(), sampleEnvironmentWidget.getIdentifier());
+        assertNull(sampleTemperatureProcessor.getSuperDependencies()[0].getFlow());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLevel(), 1);
+        assertTrue(sampleTemperatureProcessor.getSuperDependencies()[0].isWired());
+        assertFalse(sampleTemperatureProcessor.getSuperDependencies()[0].isPeersInvalid());
+
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLabel(), sampleThermostatControl.getLabel());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getIdentifier(), sampleThermostatControl.getIdentifier());
+        assertNull(sampleTemperatureProcessor.getSuperDependencies()[1].getFlow());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLevel(), 0);
+        assertTrue(sampleTemperatureProcessor.getSuperDependencies()[1].isWired());
+        assertTrue(sampleTemperatureProcessor.getSuperDependencies()[1].isPeersInvalid()); // Now broken!
     }
 
     @Test

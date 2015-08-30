@@ -154,7 +154,7 @@ public class SlotShape {
     }
 
     protected void updateSlotText() {
-        boolean haveSlotLabel = slot.getLabel() != null && slot.getLabel().length() > 0;
+        boolean haveSlotLabel = !slot.isLabelEmpty();
         boolean haveSlotValue = slotValueText.getText().length() > 0;
 
         String slotLabel = haveSlotLabel ? slot.getLabel() : (isSource ? SLOT_SOURCE_LABEL : SLOT_SINK_LABEL);

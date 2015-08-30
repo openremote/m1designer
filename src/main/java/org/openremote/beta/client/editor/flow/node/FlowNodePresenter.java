@@ -1,20 +1,15 @@
 package org.openremote.beta.client.editor.flow.node;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
-import org.openremote.beta.client.editor.flow.ConfirmationEvent;
 import org.openremote.beta.client.editor.flow.FlowLoadEvent;
-import org.openremote.beta.client.editor.flow.NodeCodec;
-import org.openremote.beta.client.editor.flow.control.FlowControlStopEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
-import org.openremote.beta.client.shared.Function;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
@@ -30,8 +25,6 @@ import static org.openremote.beta.client.shared.Timeout.debounce;
 public class FlowNodePresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowNodePresenter.class);
-
-    private static final NodeCodec NODE_CODEC = GWT.create(NodeCodec.class);
 
     public Flow flow;
     public Node node;
@@ -98,24 +91,8 @@ public class FlowNodePresenter extends AbstractPresenter {
     public void deleteNode() {
         if (flow == null || node == null)
             return;
-        Function removeNodeAction = () -> {
-            flow.removeNode(node);
-            dispatchEvent(new NodeDeletedEvent(flow, node));
-            dispatchEvent(new FlowNodeCloseEvent());
-        };
-        if (node.isOfTypeConsumerOrProducer() && flow.hasWiredSuperDependency()) {
-            String dependentFlowLabel = flow.getSuperDependencies()[0].getLabel();
-            StringBuilder sb = new StringBuilder();
-            if (dependentFlowLabel != null && dependentFlowLabel.length() > 0) {
-                sb.append("This node might be wired in '").append(dependentFlowLabel).append("'. ");
-            } else {
-                sb.append("This node might be wired and included in another flow. ");
-            }
-            sb.append("If you save/redeploy, that flow will be stopped and modified. Continue?");
-            dispatchEvent(new ConfirmationEvent("Delete Wired Node", sb.toString(), removeNodeAction));
-        } else {
-            removeNodeAction.call();
-        }
+
+        dispatchEvent(new NodeDeleteEvent(flow, node));
     }
 
     public void duplicateNode() {
@@ -125,7 +102,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     public String getSinkLabel(Slot sink) {
-        return sink.getLabel() != null && sink.getLabel().length() > 0
+        return !sink.isLabelEmpty()
             ? sink.getLabel() + " Slot"
             : FlowDesignerConstants.SLOT_SINK_LABEL + " Slot";
     }
@@ -224,7 +201,7 @@ public class FlowNodePresenter extends AbstractPresenter {
 
     protected void setFlowNodeTitle() {
         if (node != null) {
-            flowNodeTitle = node.getLabel() != null
+            flowNodeTitle = !node.isLabelEmpty()
                 ? node.getLabel()
                 : node.getEditorSettings().getTypeLabel();
         } else {

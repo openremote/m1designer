@@ -58,6 +58,15 @@ public class Flow extends FlowObject {
         return collection.toArray(new Node[collection.size()]);
     }
 
+    public Node[] findConsumerProducerNodes() {
+        Set<Node> collection = new HashSet<>();
+        for (Node node : getNodes()) {
+            if (node.isOfTypeConsumerOrProducer())
+                collection.add(node);
+        }
+        return collection.toArray(new Node[collection.size()]);
+    }
+
     public Node[] findClientWidgetNodes() {
         Set<Node> collection = new HashSet<>();
         for (Node node : getNodes()) {
@@ -109,10 +118,21 @@ public class Flow extends FlowObject {
         return null;
     }
 
-    public boolean hasWiredSuperDependency() {
-        return getSuperDependencies() != null
-            && getSuperDependencies().length > 0
-            && getSuperDependencies()[0].isWired();
+    public FlowDependency[] getDirectSuperDependencies() {
+        List<FlowDependency> list = new ArrayList<>();
+        for (FlowDependency flowDependency : getSuperDependencies()) {
+            if (flowDependency.getLevel() == 0)
+                list.add(flowDependency);
+        }
+        return list.toArray(new FlowDependency[list.size()]);
+    }
+
+    public boolean hasDirectWiredSuperDependencies() {
+        for (FlowDependency superDependency : getDirectSuperDependencies()) {
+            if (superDependency.isWired())
+                return true;
+        }
+        return false;
     }
 
     public Wire[] getWires() {
@@ -167,18 +187,9 @@ public class Flow extends FlowObject {
     public Wire[] removeWiresOf(Node node) {
         Set<Wire> collection = new HashSet<>();
         for (Slot slot : node.getSlots()) {
-            if (!hasWires(slot.getId()))
-                continue;
-            if (slot.isOfType(Slot.TYPE_SINK)) {
-                Wire[] wires = findWiresForSink(slot.getId());
-                for (Wire wire : wires) {
-                    collection.add(removeWire(wire));
-                }
-            } else if (slot.isOfType(Slot.TYPE_SOURCE)) {
-                Wire[] wires = findWiresForSource(slot.getId());
-                for (Wire wire : wires) {
-                    collection.add(removeWire(wire));
-                }
+            Wire[] wires = findWiresFor(slot.getId());
+            for (Wire wire : wires) {
+                collection.add(removeWire(wire));
             }
         }
         return collection.toArray(new Wire[collection.size()]);
@@ -201,6 +212,15 @@ public class Flow extends FlowObject {
                 return true;
         }
         return false;
+    }
+
+    public Wire[] findWiresFor(String slotId) {
+        List<Wire> list = new ArrayList<>();
+        for (Wire wire : getWires()) {
+            if (wire.getSourceId().equals(slotId) || wire.getSinkId().equals(slotId))
+                list.add(wire);
+        }
+        return list.toArray(new Wire[list.size()]);
     }
 
     public Wire[] findWiresForSource(String slotId) {
@@ -236,6 +256,32 @@ public class Flow extends FlowObject {
                 collection.add(node);
         }
         return collection.toArray(new Node[collection.size()]);
+    }
+
+    public Slot[] findSlotsWithoutPeer(Node subflowNode, Flow flow) {
+        if (!subflowNode.isOfTypeSubflow() || !flow.getId().equals(subflowNode.getSubflowId()))
+            throw new IllegalArgumentException(
+                "Node '" + subflowNode + "' is not a subflow node using: " + flow
+            );
+        List<Slot> list = new ArrayList<>();
+
+        Slot[] slots = subflowNode.getSlots();
+        for (Slot slot : slots) {
+            // Is there a wire attached?
+            boolean wireAttachedToSlot = findWiresFor(slot.getId()).length > 0;
+            if (!wireAttachedToSlot) {
+                // Not going to be a problem, this slot can be removed or updated silently
+                continue;
+            }
+
+            // Do we still have the peer linked to the slot in the given flow?
+            boolean peerMissing = flow.findSlot(slot.getPeerId()) == null;
+
+            // If we no longer have its peer, then the slot and all its attached wires are broken
+            if (peerMissing)
+                list.add(slot);
+        }
+        return list.toArray(new Slot[list.size()]);
     }
 
     public Node[] findWiredNodesOf(Node node) {

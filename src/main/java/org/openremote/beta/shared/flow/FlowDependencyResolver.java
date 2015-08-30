@@ -28,22 +28,34 @@ public abstract class FlowDependencyResolver {
 
         for (Flow subflowDependent : subflowDependents) {
 
-            // Only a hard dependency if it has a subflow node with a wire attached to this flow
-            boolean hasWiresAttached = false;
+            // Is this dependency breakable (wires attached?) or already broken (invalid peers?)
+            boolean flowHasWiresAttached = false;
+            boolean flowHasInvalidPeers = false;
+
             Node[] subflowNodes = subflowDependent.findSubflowNodes();
+
             for (Node subflowNode : subflowNodes) {
                 if (!subflowNode.getSubflowId().equals(flow.getId()))
                     continue;
-                hasWiresAttached = subflowDependent.findWiredNodesOf(subflowNode).length > 0;
-                if (hasWiresAttached)
-                    break;
+
+                // Is the subflow node attached to any other node or does nobody care if we replace it silently?
+                boolean nodeHasWires = subflowDependent.findWiredNodesOf(subflowNode).length > 0;
+
+                // Are any of its slot peers no longer in the current flow?
+                boolean nodeHasMissingPeers = false;
+                if (nodeHasWires) {
+                    nodeHasMissingPeers = subflowDependent.findSlotsWithoutPeer(subflowNode, flow).length > 0;
+                }
+
+                flowHasWiresAttached = flowHasWiresAttached || nodeHasWires;
+                flowHasInvalidPeers = flowHasInvalidPeers || nodeHasMissingPeers;
             }
 
             dependencyList.add(
-                new FlowDependency(subflowDependent.getLabel(), subflowDependent.getIdentifier(), level, hasWiresAttached)
+                new FlowDependency(subflowDependent.getLabel(), subflowDependent.getIdentifier(), level, flowHasWiresAttached, flowHasInvalidPeers)
             );
 
-            populateSuperDependencies(subflowDependent, ++level, dependencyList);
+            populateSuperDependencies(subflowDependent, level+1, dependencyList);
         }
     }
 

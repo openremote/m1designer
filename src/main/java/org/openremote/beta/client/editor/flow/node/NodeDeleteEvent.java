@@ -6,11 +6,11 @@ import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 
 @JsType
-public class NodeDeletedEvent extends FlowEvent {
+public class NodeDeleteEvent extends FlowEvent {
 
     final public Node node;
 
-    public NodeDeletedEvent(Flow flow, Node node) {
+    public NodeDeleteEvent(Flow flow, Node node) {
         super(flow);
         this.node = node;
     }
