@@ -10,10 +10,7 @@ import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.NodeColor;
-import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,17 +100,6 @@ public class FlowServiceTest extends IntegrationTest {
     }
 
     @Test
-    public void deleteUsedFlow() {
-        Exchange deleteFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE);
-            }
-        );
-        assertEquals(deleteFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409); // Conflict
-    }
-
-    @Test
     public void readWriteFlow() throws Exception {
         Flow flow = fromJson(
             producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
@@ -166,6 +152,18 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getSuperDependencies()[0].getId(), SampleEnvironmentWidget.FLOW.getId());
         assertEquals(flow.getSubDependencies().length, 1);
         assertEquals(flow.getSubDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+
+        // The label of the subflow nodes in the super flow should be unchanged
+        flow = fromJson(
+            template.requestBody(createWebClientUri("flow", SampleEnvironmentWidget.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+        assertEquals(flow.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()).getLabel(), SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getLabel());
+        assertEquals(flow.findNode(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getId()).getLabel(), SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getLabel());
+
+        // All wires should still be present
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).length, 3);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getId())).length, 3);
     }
 
     @Test
@@ -307,4 +305,146 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(resolvedFlow.getDirectSuperDependencies().length, 2);
     }
 
+    @Test
+    public void readWriteDependenciesRemoveFlow() throws Exception {
+        Exchange deleteFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE);
+            }
+        );
+
+        assertEquals(deleteFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
+
+        Flow flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
+        Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
+        Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
+        assertNull(temperatureSubflowNode);
+        assertEquals(flow.findWiresAttachedToNode(temperatureConsumer).length, 0);
+        assertEquals(flow.findWiresAttachedToNode(temperatureLabel).length, 0);
+    }
+
+    @Test
+    public void readWriteDependenciesRemoveConsumer() throws Exception {
+        Flow flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        final Flow updateFlow = flow;
+
+        // This is a node others depend on
+        Node fahrenheitConsumer = updateFlow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId());
+        updateFlow.removeNode(fahrenheitConsumer);
+
+        updateFlow.clearDependencies();
+
+        Exchange putFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", flow.getId()),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
+                exchange.getIn().setBody(toJson(updateFlow));
+            }
+        );
+        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
+
+        flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
+        Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
+        Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
+        assertEquals(temperatureSubflowNode.getSlots().length, 2);
+        assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 1);
+        assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 0);
+        assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
+    }
+
+    @Test
+    public void readWriteDependenciesRenameConsumer() throws Exception {
+        Flow flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        final Flow updateFlow = flow;
+
+        // This is a node others depend on
+        Node fahrenheitConsumer = updateFlow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId());
+        fahrenheitConsumer.setLabel("New Consumer Name");
+
+        updateFlow.clearDependencies();
+
+        Exchange putFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", flow.getId()),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
+                exchange.getIn().setBody(toJson(updateFlow));
+            }
+        );
+        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
+
+        flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
+        Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
+        Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
+        assertEquals(temperatureSubflowNode.findSlot(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK.getId()).getLabel(), "New Consumer Name");
+        assertEquals(temperatureSubflowNode.getSlots().length, 3);
+        assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 2);
+        assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 1);
+        assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
+    }
+
+    @Test
+    public void readWriteDependenciesAddConsumer() throws Exception {
+        Flow flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        final Flow updateFlow = flow;
+
+        Node newConsumer = fromJson(
+            producerTemplate.requestBody(createWebClientUri("catalog", "node", Node.TYPE_CONSUMER), null, String.class),
+            Node.class
+        );
+        newConsumer.setLabel("New Consumer");
+        updateFlow.addNode(newConsumer);
+
+        updateFlow.clearDependencies();
+
+        Exchange putFlowExchange = producerTemplate.request(
+            createWebClientUri("flow", flow.getId()),
+            exchange -> {
+                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
+                exchange.getIn().setBody(toJson(updateFlow));
+            }
+        );
+        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
+
+        flow = fromJson(
+            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
+        Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
+        Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
+        assertEquals(temperatureSubflowNode.findSlotWithPeer(newConsumer.findSlots(Slot.TYPE_SINK)[0].getId()).getLabel(), "New Consumer");
+        assertEquals(temperatureSubflowNode.getSlots().length, 4);
+        assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 2);
+        assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 1);
+        assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
+    }
 }

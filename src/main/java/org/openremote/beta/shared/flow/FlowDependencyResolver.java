@@ -1,5 +1,6 @@
 package org.openremote.beta.shared.flow;
 
+import org.openremote.beta.server.util.IdentifierUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,81 @@ public abstract class FlowDependencyResolver {
         flow.setSubDependencies(dependencyList.toArray(new FlowDependency[dependencyList.size()]));
     }
 
+    public void updateDependencies(Flow flow, boolean flowWillBeDeleted) {
+        if (flowWillBeDeleted)
+            flow.removeProducerConsumerNodes();
+
+        flow.clearDependencies();
+        populateSuperDependencies(flow);
+        populateSubDependencies(flow, false);
+
+        for (FlowDependency superDependency : flow.getDirectSuperDependencies()) {
+            Flow superFlow = findFlow(superDependency.getId());
+
+            boolean superFlowModified = false;
+            boolean superFlowShouldBeStopped= false;
+
+            for (Node subflowNode : superFlow.findSubflowNodes()) {
+                if (!subflowNode.getSubflowId().equals(flow.getId()))
+                    continue;
+
+                if (flowWillBeDeleted) {
+                    // Easy case, the flow will be deleted, so delete subflow node and all its wires
+                    superFlow.removeNode(subflowNode);
+                    superFlowModified = true;
+                    superFlowShouldBeStopped = true;
+                } else {
+
+                    // Find slots we no longer have and delete them and their wires
+                    Slot[] slotsWithoutPeer = superFlow.findSlotsWithoutPeer(subflowNode, flow);
+                    for (Slot slotWithoutPeer : slotsWithoutPeer) {
+                        if (superFlow.removeSlot(subflowNode, slotWithoutPeer.getId())) {
+                            superFlowModified = true;
+                            superFlowShouldBeStopped = true;
+                        }
+                    }
+
+                    // All other slots which are still valid, update the label
+                    for (Slot subflowSlot : subflowNode.getSlots()) {
+                        Node peerNode = flow.findOwnerNode(subflowSlot.getPeerId());
+                        if (peerNode.getLabel() != null && !peerNode.getLabel().equals(subflowSlot.getLabel())) {
+                            subflowSlot.setLabel(peerNode.getLabel());
+                            superFlowModified = true;
+                            superFlowShouldBeStopped = false;
+                        }
+                    }
+
+                    // Add new slots for any new consumers/producers
+                    List<Slot> newSlots = new ArrayList<>();
+                    Node[] consumers = flow.findNodes(Node.TYPE_CONSUMER);
+                    for (Node consumer : consumers) {
+                        Slot firstSink = consumer.findSlots(Slot.TYPE_SINK)[0];
+                        if (subflowNode.findSlotWithPeer(firstSink.getId()) == null)
+                            newSlots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSink, consumer.getLabel()));
+                    }
+                    Node[] producers = flow.findNodes(Node.TYPE_PRODUCER);
+                    for (Node producer : producers) {
+                        Slot firstSource = producer.findSlots(Slot.TYPE_SOURCE)[0];
+                        if (subflowNode.findSlotWithPeer(firstSource.getId()) == null)
+                            newSlots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSource, producer.getLabel()));
+                    }
+                    if (newSlots.size() > 0) {
+                        subflowNode.addSlots(newSlots.toArray(new Slot[newSlots.size()]));
+                        superFlowModified = true;
+                        superFlowShouldBeStopped = false;
+                    }
+                }
+            }
+
+            if (superFlowModified) {
+                superFlow.clearDependencies();
+                if (superFlowShouldBeStopped)
+                    stopFlowIfRunning(superFlow);
+                storeFlow(superFlow);
+            }
+        }
+    }
+
     protected void populateSuperDependencies(Flow flow, int level, List<FlowDependency> dependencyList) {
 
         Flow[] subflowDependents = findSubflowDependents(flow.getId());
@@ -39,7 +115,7 @@ public abstract class FlowDependencyResolver {
                     continue;
 
                 // Is the subflow node attached to any other node or does nobody care if we replace it silently?
-                boolean nodeHasWires = subflowDependent.findWiredNodesOf(subflowNode).length > 0;
+                boolean nodeHasWires = subflowDependent.findWiresAttachedToNode(subflowNode).length > 0;
 
                 // Are any of its slot peers no longer in the current flow?
                 boolean nodeHasMissingPeers = false;
@@ -85,5 +161,9 @@ public abstract class FlowDependencyResolver {
     protected abstract Flow findFlow(String flowId);
 
     protected abstract Flow[] findSubflowDependents(String flowId);
+
+    protected abstract void stopFlowIfRunning(Flow flow);
+
+    protected abstract void storeFlow(Flow flow);
 
 }

@@ -6,14 +6,12 @@ import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.beta.server.catalog.NodeDescriptor;
 import org.openremote.beta.server.route.RouteManagementService;
+import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
 import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
-import org.openremote.beta.shared.flow.Flow;
-import org.openremote.beta.shared.flow.FlowDependencyResolver;
-import org.openremote.beta.shared.flow.Node;
-import org.openremote.beta.shared.flow.Slot;
+import org.openremote.beta.shared.flow.*;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +26,21 @@ public class FlowService implements StaticService {
     private static final Logger LOG = LoggerFactory.getLogger(FlowService.class);
 
     final static protected Map<String, Flow> SAMPLE_FLOWS = new LinkedHashMap<>();
-    final static protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER = new MapFlowDependencyResolver(SAMPLE_FLOWS);
+    final protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER = new MapFlowDependencyResolver(SAMPLE_FLOWS) {
+        @Override
+        protected void stopFlowIfRunning(Flow flow) {
+            if (FlowService.this.routeManagementService.isRunning(flow)) {
+                LOG.debug("Stopping super flow after updating its subflow nodes");
+                try {
+                    routeManagementService.stopFlowRoutes(flow);
+                } catch (FlowProcedureException ex) {
+                    LOG.error("TODO: Error stopping flow, we must continue though...");
+                }
+            }
+        }
+    };
 
-    public static class MapFlowDependencyResolver extends FlowDependencyResolver {
+    public static abstract class MapFlowDependencyResolver extends FlowDependencyResolver {
 
         final Map<String, Flow> flows;
 
@@ -40,22 +50,33 @@ public class FlowService implements StaticService {
 
         @Override
         protected Flow findFlow(String flowId) {
-            return flows.get(flowId);
+            synchronized (flows) {
+                return flows.get(flowId);
+            }
         }
 
         @Override
         protected Flow[] findSubflowDependents(String flowId) {
-            List<Flow> list = new ArrayList<>();
-            for (Flow flow : flows.values()) {
-                Node[] subflowNodes= flow.findSubflowNodes();
-                for (Node subflowNode : subflowNodes) {
-                    if (flowId.equals(subflowNode.getSubflowId())) {
-                        list.add(flow);
-                        break;
+            synchronized (flows) {
+                List<Flow> list = new ArrayList<>();
+                for (Flow flow : flows.values()) {
+                    Node[] subflowNodes = flow.findSubflowNodes();
+                    for (Node subflowNode : subflowNodes) {
+                        if (flowId.equals(subflowNode.getSubflowId())) {
+                            list.add(flow);
+                            break;
+                        }
                     }
                 }
+                return list.toArray(new Flow[list.size()]);
             }
-            return list.toArray(new Flow[list.size()]);
+        }
+
+        @Override
+        protected void storeFlow(Flow flow) {
+            synchronized (flows) {
+                flows.put(flow.getId(), flow);
+            }
         }
     }
 
@@ -159,20 +180,15 @@ public class FlowService implements StaticService {
         LOG.debug("Delete flow: " + id);
         synchronized (SAMPLE_FLOWS) {
 
-            Flow flow = getCopy(SAMPLE_FLOWS.get(id));
+            Flow flow = getFlow(id);
             if (flow == null)
                 return;
 
-            resolveDependencies(flow, false);
-
-            if (flow.getSuperDependencies().length > 0) {
-                throw new IllegalStateException(
-                    "Can't delete flow '" + id + "', is a dependency of " + flow.getSuperDependencies().length  + " other flows."
-                );
-            }
+            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, true);
 
             // TODO: Exception handling
             routeManagementService.stopFlowRoutes(flow);
+
             SAMPLE_FLOWS.remove(id);
         }
     }
@@ -194,10 +210,7 @@ public class FlowService implements StaticService {
             if (flow.getSuperDependencies().length > 0 || flow.getSubDependencies().length > 0)
                 throw new IllegalArgumentException("Don't send dependencies when updating a flow");
 
-            // TODO Find out if this flow has any subflow nodes in other flows, then update those dependents?
-            // TODO And then do we redeploy the dependents automatically if they are running?
-            // TODO If we don't redeploy the dependents, how will the user know this still needs to happen? Mark flows?
-            updateSubflowDependencies(flow);
+            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, false);
 
             // TODO cleaner solution
             filterNonPersistentProperties(flow);
@@ -272,23 +285,4 @@ public class FlowService implements StaticService {
             throw ex;
         }
     }
-
-    protected void updateSubflowDependencies(Flow flow) {
-        for (Flow sampleFlow : SAMPLE_FLOWS.values()) {
-            Node[] subflowNodes = sampleFlow.findSubflowNodes();
-
-            boolean subflowMatch = false;
-            for (Node subflowNode : subflowNodes) {
-                if (flow.getId().equals(subflowNode.getSubflowId())) {
-                    subflowMatch = true;
-                }
-            }
-
-            if (subflowMatch) {
-                // TODO: This is more difficult...
-            }
-
-        }
-    }
-
 }

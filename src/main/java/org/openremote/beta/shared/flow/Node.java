@@ -4,6 +4,7 @@ import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @JsType
@@ -125,6 +126,13 @@ public class Node extends FlowObject {
         this.persistentPropertyPaths = persistentPropertyPaths;
     }
 
+    public void addSlots(Slot[] newSlots) {
+        List<Slot> list = new ArrayList<>();
+        list.addAll(Arrays.asList(getSlots()));
+        list.addAll(Arrays.asList(newSlots));
+        setSlots(list.toArray(new Slot[list.size()]));
+    }
+
     public Slot findSlot(String slotId) {
         for (Slot slot : getSlots()) {
             if (slot.getId().equals(slotId))
@@ -140,6 +148,14 @@ public class Node extends FlowObject {
                 list.add(slot);
         }
         return list.toArray(new Slot[list.size()]);
+    }
+
+    public Slot findSlotWithPeer(String peerId) {
+        for (Slot slot : getSlots()) {
+            if (slot.getPeerId() != null && slot.getPeerId().equals(peerId))
+                return slot;
+        }
+        return null;
     }
 
     public Slot[] findAllConnectableSlots() {

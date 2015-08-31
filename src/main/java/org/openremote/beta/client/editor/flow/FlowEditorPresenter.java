@@ -477,10 +477,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                 .append("'?");
 
             // Remove all the consumers and producers to test what dependencies will be broken
-            Node[] consumersProducers = flowToDelete.findConsumerProducerNodes();
-            for (Node consumersProducer : consumersProducers) {
-                flowToDelete.removeNode(consumersProducer);
-            }
+            flowToDelete.removeProducerConsumerNodes();
 
             new CheckDependencies(flowToDelete, affectedFlows -> {
 

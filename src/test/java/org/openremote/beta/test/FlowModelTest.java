@@ -37,7 +37,12 @@ public class FlowModelTest {
         sampleTemperatureProcessor = SampleTemperatureProcessor.getCopy();
         sampleFlows.put(sampleTemperatureProcessor.getId(), sampleTemperatureProcessor);
 
-        flowDependencyResolver = new FlowService.MapFlowDependencyResolver(sampleFlows);
+        flowDependencyResolver = new FlowService.MapFlowDependencyResolver(sampleFlows) {
+            @Override
+            protected void stopFlowIfRunning(Flow flow) {
+                // NOOP, no server running
+            }
+        };
     }
 
     @Test
@@ -149,6 +154,10 @@ public class FlowModelTest {
 
     @Test
     public void removeWire() {
+        assertTrue(sampleEnvironmentWidget.hasWires(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SOURCE.getId()));
+
+        assertEquals(sampleEnvironmentWidget.findWiresForSink(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK.getId()).length, 1);
+
         assertEquals(sampleEnvironmentWidget.findWiresBetween(SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR, SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).length, 1);
         sampleEnvironmentWidget.removeWireBetweenSlots(
             SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SOURCE,

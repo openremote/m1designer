@@ -1,5 +1,6 @@
 package org.openremote.beta.shared.flow;
 
+import com.google.gwt.core.client.js.JsNoExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.shared.model.Identifier;
 import org.slf4j.Logger;
@@ -87,6 +88,15 @@ public class Flow extends FlowObject {
         collection.remove(node);
         this.nodes = collection.toArray(new Node[collection.size()]);
         return removeWiresOf(node);
+    }
+
+    public Node[] removeProducerConsumerNodes() {
+        Set<Node> collection = new HashSet<>(Arrays.asList(getNodes()));
+        Node[] consumersProducers = findConsumerProducerNodes();
+        for (Node consumersProducer : consumersProducers) {
+            removeNode(consumersProducer);
+        }
+        return collection.toArray(new Node[collection.size()]);
     }
 
     public void clearDependencies() {
@@ -187,7 +197,7 @@ public class Flow extends FlowObject {
     public Wire[] removeWiresOf(Node node) {
         Set<Wire> collection = new HashSet<>();
         for (Slot slot : node.getSlots()) {
-            Wire[] wires = findWiresFor(slot.getId());
+            Wire[] wires = findWiresAttachedToSlot(slot.getId());
             for (Wire wire : wires) {
                 collection.add(removeWire(wire));
             }
@@ -204,6 +214,32 @@ public class Flow extends FlowObject {
         return null;
     }
 
+    public boolean removeSlot(Node node, String slotId) {
+        if (findNode(node.getId()) == null)
+            throw new IllegalStateException("Node not in flow: " + node);
+        Slot slot = node.findSlot(slotId);
+        if (slot == null)
+            return false;
+        List<Slot> collection = new ArrayList<>();
+        collection.addAll(Arrays.asList(node.getSlots()));
+        Iterator<Slot> it = collection.iterator();
+        boolean removed = false;
+        while (it.hasNext()) {
+            Slot next = it.next();
+            if (next.getId().equals(slotId)) {
+                removed = true;
+                it.remove();
+                Wire[] wires = findWiresAttachedToSlot(next.getId());
+                for (Wire wire : wires) {
+                    removeWire(wire);
+                }
+                break;
+            }
+        }
+        node.setSlots(collection.toArray(new Slot[collection.size()]));
+        return removed;
+    }
+
     public boolean hasWires(String slotId) {
         for (Wire wire : getWires()) {
             if (wire.getSourceId().equals(slotId))
@@ -214,7 +250,7 @@ public class Flow extends FlowObject {
         return false;
     }
 
-    public Wire[] findWiresFor(String slotId) {
+    public Wire[] findWiresAttachedToSlot(String slotId) {
         List<Wire> list = new ArrayList<>();
         for (Wire wire : getWires()) {
             if (wire.getSourceId().equals(slotId) || wire.getSinkId().equals(slotId))
@@ -268,7 +304,7 @@ public class Flow extends FlowObject {
         Slot[] slots = subflowNode.getSlots();
         for (Slot slot : slots) {
             // Is there a wire attached?
-            boolean wireAttachedToSlot = findWiresFor(slot.getId()).length > 0;
+            boolean wireAttachedToSlot = findWiresAttachedToSlot(slot.getId()).length > 0;
             if (!wireAttachedToSlot) {
                 // Not going to be a problem, this slot can be removed or updated silently
                 continue;
@@ -284,21 +320,12 @@ public class Flow extends FlowObject {
         return list.toArray(new Slot[list.size()]);
     }
 
-    public Node[] findWiredNodesOf(Node node) {
-        Set<Node> collection = new HashSet<>();
-        for (Slot source : node.findSlots(Slot.TYPE_SOURCE)) {
-            Wire[] wires = findWiresForSource(source.getId());
-            for (Wire wire : wires) {
-                collection.add(findOwnerNode(wire.getSinkId()));
-            }
+    public Wire[] findWiresAttachedToNode(Node node) {
+        Set<Wire> collection = new HashSet<>();
+        for (Slot slot : node.getSlots()) {
+            collection.addAll(Arrays.asList(findWiresAttachedToSlot(slot.getId())));
         }
-        for (Slot sink : node.findSlots(Slot.TYPE_SINK)) {
-            Wire[] wires = findWiresForSink(sink.getId());
-            for (Wire wire : wires) {
-                collection.add(findOwnerNode(wire.getSourceId()));
-            }
-        }
-        return collection.toArray(new Node[collection.size()]);
+        return collection.toArray(new Wire[collection.size()]);
     }
 
     public Wire[] findWiresBetween(Node a, Node b) {
@@ -321,5 +348,27 @@ public class Flow extends FlowObject {
                 return node;
         }
         return null;
+    }
+
+    @JsNoExport
+    public void printWires(StringBuilder sb) {
+        sb.append("\n").append("Wires of ").append(this).append(" => ").append(getWires().length).append("\n");
+        printWires(sb, getWires());
+    }
+
+    @JsNoExport
+    public void printWires(StringBuilder sb, Wire[] wires) {
+        for (Wire wire : wires) {
+            sb.append("--------------------------------------------------------------------------------------------");
+            sb.append("\n");
+            Node sourceNode = findOwnerNode(wire.getSourceId());
+            Node sinkNode = findOwnerNode(wire.getSinkId());
+            sb.append(sourceNode).append(" => ").append(sinkNode);
+            sb.append("\n");
+            Slot sourceSlot = findSlot(wire.getSourceId());
+            Slot sinkSlot = findSlot(wire.getSinkId());
+            sb.append(sourceSlot).append(" => ").append(sinkSlot);
+            sb.append("\n");
+        }
     }
 }
