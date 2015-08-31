@@ -69,7 +69,7 @@
             _onSliderValueChange: function (newValue, oldValue) {
                 if (oldValue !== undefined) {
                     this.debounce("Slider Update Buffer", function () {
-                        this.set("widgetProperties.value", newValue);
+                        this.set("widgetProperties.value", ''+newValue);
                     }, 50);
                 }
             },

@@ -112,6 +112,21 @@ public abstract class NodeRoute extends RouteBuilder {
         return new NodePropertyIsTrue(getNode(), getNodeProperties(), propertyPath);
     }
 
+    // Null == Empty String!
+    public String getInput(Exchange exchange) {
+        if (exchange.getIn().getBody() == null)
+            return "";
+        return exchange.getIn().getBody(String.class);
+    }
+
+    // Null == Empty String!
+    public void setInput(Exchange exchange, Object body) {
+        if (body == null)
+            exchange.getIn().setBody("");
+        else
+            exchange.getIn().setBody(body.toString());
+    }
+
     @Override
     public void configure() throws Exception {
         LOG.debug("Configure routes: " + getNode());
@@ -119,8 +134,15 @@ public abstract class NodeRoute extends RouteBuilder {
         RouteDefinition routeDefinition = from("direct:" + node.getId())
             .routeId(getRouteId())
             .routeDescription(getRouteDescription())
-            .autoStartup(false)
-            .log(LoggingLevel.DEBUG, LOG, ">>> " + getRouteDescription() + " starts processing: ${body}");
+            .autoStartup(false);
+
+        // If someone managed to send us an empty body, turn it into an empty string
+        routeDefinition.process(exchange -> {
+            setInput(exchange, getInput(exchange));
+        }).id(getProcessorId("preventNullBody"));
+
+        routeDefinition
+            .log(LoggingLevel.DEBUG, LOG, ">>> " + getRouteDescription() + " starts processing: '${body}'");
 
         routeDefinition
             .process(exchange -> {
@@ -158,7 +180,7 @@ public abstract class NodeRoute extends RouteBuilder {
                 .choice()
                 .id(getProcessorId("isSinkRouting"))
                 .when(isSinkRouting())
-                .log(LoggingLevel.DEBUG, LOG, "# Sink routing, node is processing: ${body}");
+                .log(LoggingLevel.DEBUG, LOG, "# Sink routing, node is processing: '${body}'");
 
         // ###################### SINK ROUTING BEGIN ######################
 
@@ -172,7 +194,7 @@ public abstract class NodeRoute extends RouteBuilder {
                     // Cleanup the copy of the map
                     headers.remove(RouteConstants.SLOT_ID);
                     headers.remove(RouteConstants.INSTANCE_ID);
-                    String body = exchange.getIn().getBody(String.class);
+                    String body = getInput(exchange);
                     getContext().hasService(EventService.class).sendMessageEvent(
                         getNode(), slot, body, headers
                     );
@@ -196,7 +218,7 @@ public abstract class NodeRoute extends RouteBuilder {
         }
 
         sinkProcessingDefinition
-            .log(LoggingLevel.DEBUG, LOG, "<<< " + getRouteDescription() + " done processing: ${body}");
+            .log(LoggingLevel.DEBUG, LOG, "<<< " + getRouteDescription() + " done processing: '${body}'");
 
         // If this is a sink slot that's mapped to a node property, we don't continue routing the
         // message to destination wires. Later we might implement servers-side dynamic properties
@@ -217,7 +239,7 @@ public abstract class NodeRoute extends RouteBuilder {
         ProcessorDefinition finalizeDefinition =
             sinkProcessingDefinition
                 .otherwise()
-                .log(LoggingLevel.DEBUG, LOG, "# Source routing, node is forwarding : ${body}")
+                .log(LoggingLevel.DEBUG, LOG, "# Source routing, node is forwarding : '${body}'")
                 .end();
 
         finalizeDefinition.removeHeader(INSTANCE_ID)

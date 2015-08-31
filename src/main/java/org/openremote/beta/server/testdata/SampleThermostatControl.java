@@ -305,7 +305,7 @@ public class SampleThermostatControl {
             @Override
             protected ObjectNode getInitialProperties() {
                 return FUNCTION_INITIAL_PROPERTIES.deepCopy()
-                    .put("javascript", "output.value = (input + 1).toFixed(0)");
+                    .put("javascript", "result = input ? (parseInt(input) + 1).toFixed(0) : null");
             }
         }.initialize(SETPOINT_INCREMENT_FUNCTION);
         SETPOINT_INCREMENT_FUNCTION.getEditorSettings().setPositionX((double) 730);
@@ -329,7 +329,7 @@ public class SampleThermostatControl {
             @Override
             protected ObjectNode getInitialProperties() {
                 return FUNCTION_INITIAL_PROPERTIES.deepCopy()
-                    .put("javascript", "output.value = (input - 1).toFixed(0)");
+                    .put("javascript", "result = input ? (parseInt(input) - 1).toFixed(0) : null");
             }
         }.initialize(SETPOINT_DECREMENT_FUNCTION);
         SETPOINT_DECREMENT_FUNCTION.getEditorSettings().setPositionX((double) 730);

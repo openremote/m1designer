@@ -55,7 +55,7 @@ public class SampleTemperatureProcessor {
             @Override
             protected ObjectNode getInitialProperties() {
                 return FunctionNodeDescriptor.FUNCTION_INITIAL_PROPERTIES.deepCopy()
-                    .put("javascript", "output.value = (((input - 32)*5)/9).toFixed(0)");
+                    .put("javascript", "result = input ? (((parseInt(input) - 32)*5)/9).toFixed(0) : null");
             }
         }.initialize(FAHRENHEIT_CONVERTER);
         FAHRENHEIT_CONVERTER.getEditorSettings().setPositionX((double) 300);

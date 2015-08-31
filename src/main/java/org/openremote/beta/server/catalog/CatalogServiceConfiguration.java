@@ -1,7 +1,6 @@
 package org.openremote.beta.server.catalog;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;

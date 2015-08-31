@@ -164,7 +164,7 @@ public class SubflowRoute extends NodeRoute {
                 }
             })
             .id(getProcessorId("toSubflowPeer"))
-            .log(LoggingLevel.DEBUG, LOG, "<<< Subflow " + getRouteDescription() + " done processing: ${body}")
+            .log(LoggingLevel.DEBUG, LOG, "<<< Subflow " + getRouteDescription() + " done processing: '${body}'")
             .stop()
             .id(getProcessorId("stopSubflow"));
 

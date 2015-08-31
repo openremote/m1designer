@@ -1,0 +1,120 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
+
+<dom-module id="or-console-widget-togglebutton">
+
+    <link rel="import" type="css" href="../../styles/console-widget-style.css">
+
+    <style>
+        :host {
+            display: block;
+            position: absolute;
+        }
+
+        #button {
+            --paper-toggle-button-checked-bar-color: var(--or-console-widget-togglebutton-on-color);
+            --paper-toggle-button-checked-button-color: var(--or-console-widget-togglebutton-on-color);
+            --paper-toggle-button-checked-ink-color: var(--or-console-widget-togglebutton-on-color);
+            --paper-toggle-button-unchecked-bar-color: var(--or-console-widget-togglebutton-off-color);
+            --paper-toggle-button-unchecked-button-color: var(--or-console-widget-togglebutton-off-color);
+            --paper-toggle-button-unchecked-ink-color: var(--or-console-widget-togglebutton-off-color);
+        }
+
+        .icon {
+            width: var(--or-console-widget-togglebutton-width);
+            height: var(--or-console-widget-togglebutton-height);
+            color: var(--or-console-widget-togglebutton-icon-color);
+            background-color: var(--or-console-widget-togglebutton-background-color);
+        }
+
+    </style>
+    <template>
+        <template is="dom-if" if="[[!useIcon]]">
+            <paper-toggle-button id="button"
+                                 class="control"
+                                 checked="{{buttonState}}"></paper-toggle-button>
+        </template>
+        <template is="dom-if" if="[[useIcon]]">
+            <template is="dom-if" if="[[buttonState]]">
+                <iron-icon class="icon control"
+                           icon="[[widgetProperties.onIcon]]"
+                           on-tap="_onClicked"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[!buttonState]]">
+                <iron-icon class="icon control"
+                           icon="[[widgetProperties.offIcon]]"
+                           on-tap="_offClicked"></iron-icon>
+            </template>
+        </template>
+    </template>
+    <script>
+        Polymer({
+            is: "or-console-widget-togglebutton",
+            behaviors: [openremote.VisibleWidget],
+            properties: {
+                buttonState: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_onButtonStateChange"
+                },
+                useIcon: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            _onButtonStateChange: function (newValue, oldValue) {
+                if (oldValue !== undefined) {
+                    this._setValue(newValue ? "1" : "0");
+                }
+            },
+            _setValue: function(value) {
+                this.debounce("ToggleButton Update Buffer", function () {
+                    this.set("widgetProperties.value", value);
+                }, 50);
+            },
+            _onClicked: function () {
+                this._setValue("0");
+            },
+            _offClicked: function () {
+                this._setValue("1");
+            },
+            onVisibleWidgetPropertiesChanged: function () {
+
+                var value = this._isNumber(this.widgetProperties.value) ? parseInt(this.widgetProperties.value) : 0;
+                this.set("buttonState", value == 1);
+
+                if (this.widgetProperties.onIcon && this.widgetProperties.offIcon) {
+                    this.set("useIcon", true);
+
+                    var iconSize = this._isNumber(this.widgetProperties.iconSizePixels) ? parseInt(this.widgetProperties.iconSizePixels) + "px" : "15px";
+                    this.customStyle["--or-console-widget-togglebutton-width"] = iconSize;
+                    this.customStyle["--or-console-widget-togglebutton-height"] = iconSize;
+                    this.customStyle["--or-console-widget-togglebutton-background-color"] = (this.widgetProperties.iconBackgroundColor || "transparent");
+                }
+
+                if (this.get("buttonState")) {
+                    this.customStyle["--or-console-widget-togglebutton-icon-color"] = (this.widgetProperties.onColor || "white");
+                } else {
+                    this.customStyle["--or-console-widget-togglebutton-icon-color"] = (this.widgetProperties.offColor || "grey");
+                }
+
+                this.customStyle["--or-console-widget-togglebutton-on-color"] = (this.widgetProperties.onColor || "white");
+                this.customStyle["--or-console-widget-togglebutton-off-color"] = (this.widgetProperties.offColor || "grey");
+
+                this.updateStyles();
+            }
+        });
+    </script>
+</dom-module>
+
+

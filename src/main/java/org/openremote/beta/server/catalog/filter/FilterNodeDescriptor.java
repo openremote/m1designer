@@ -19,8 +19,9 @@ public class FilterNodeDescriptor extends NodeDescriptor {
     public static final String TYPE = "urn:org-openremote:flow:node:filter";
     public static final String TYPE_LABEL = "Filter";
 
-    public static final ObjectNode FILTER_INITIAL_PROPERTIES  = JSON.createObjectNode()
-        .put("waitForTrigger", false);
+    public static final ObjectNode FILTER_INITIAL_PROPERTIES = JSON.createObjectNode()
+        .put("waitForTrigger", false)
+        .put("dropEmpty", false);
 
     @Override
     public String getType() {
@@ -60,6 +61,7 @@ public class FilterNodeDescriptor extends NodeDescriptor {
     protected void addPersistentPropertyPaths(List<String> propertyPaths) {
         super.addPersistentPropertyPaths(propertyPaths);
         propertyPaths.add("waitForTrigger");
+        propertyPaths.add("dropEmpty");
     }
 
 }

@@ -28,26 +28,31 @@ public class FilterRoute extends NodeRoute {
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
         routeDefinition
+            .setHeader(FILTER_PASS, constant(true))
+            .id(getProcessorId("assumeFilterPass"))
             .choice()
             .id(getProcessorId("selectInputSlot"))
             .when(new SinkSlotPosition(getNode(), 0))
                 .process(exchange -> {
                     LOG.debug("Filter received data on: " + node);
-                    synchronized (instanceValues) {
-                        String instanceId = getInstanceId(exchange);
-                        LOG.debug("Filter stores data for instance: " + instanceId);
-                        instanceValues.put(instanceId, exchange.getIn().getBody());
+                    if (isNodePropertyTrue("dropEmpty").matches(exchange) && getInput(exchange).length() == 0) {
+                        LOG.debug("Dropping empty message, skipping...");
+                        exchange.getIn().setHeader(FILTER_PASS, false);
+                    } else {
+                        synchronized (instanceValues) {
+                            String instanceId = getInstanceId(exchange);
+                            LOG.debug("Filter stores data for instance: " + instanceId);
+                            instanceValues.put(instanceId, getInput(exchange));
+                        }
                     }
                 })
                 .id(getProcessorId("storeInstanceValue"))
-                .setHeader(FILTER_PASS, constant(true))
-                .id(getProcessorId("assumeFilterPass"))
                 .choice()
                     .id(getProcessorId("applyRules"))
                         .when(isNodePropertyTrue("waitForTrigger"))
                             .setHeader(FILTER_PASS, constant(false))
                             .id(getProcessorId("applyWaitForTrigger"))
-                        // TODO: Other filter rules
+                // TODO: Other filter rules
                 .endChoice()
             .when(new SinkSlotPosition(getNode(), 1))
                 .process(exchange -> {
@@ -55,15 +60,15 @@ public class FilterRoute extends NodeRoute {
 
                     // The trigger value must be '1' to continue
                     // TODO: Make configurable, we should accept other trigger values
-                    String triggerValue = exchange.getIn().getBody(String.class);
+                    String triggerValue = getInput(exchange);
                     try {
                         if (!Integer.valueOf(triggerValue).equals(1)) {
-                            LOG.debug("Filter trigger value was not 1, skipping: " + triggerValue);
+                            LOG.debug("Filter trigger value was not '1', skipping: " + triggerValue);
                             exchange.getIn().setHeader(FILTER_PASS, false);
                             return;
                         }
                     } catch (Exception ex) {
-                        LOG.debug("Filter trigger value was not an integer, skipping: " + triggerValue);
+                        LOG.debug("Filter trigger value was not '1', skipping: " + triggerValue);
                         exchange.getIn().setHeader(FILTER_PASS, false);
                         return;
                     }
@@ -73,7 +78,7 @@ public class FilterRoute extends NodeRoute {
                         if (instanceValues.containsKey(instanceId)) {
                             // TODO: Should be able to optionally override with trigger value instead
                             log.debug("Filter has data for instance: " + instanceId);
-                            exchange.getIn().setBody(instanceValues.get(instanceId));
+                            setInput(exchange, instanceValues.get(instanceId));
                             exchange.getIn().setHeader(FILTER_PASS, true);
                         } else {
                             // TODO: Should be able to optionally forward trigger value instead
@@ -88,7 +93,7 @@ public class FilterRoute extends NodeRoute {
                 .id(getProcessorId("checkFilterPass"))
                 .when(header(FILTER_PASS).isEqualTo(false))
                     .process(exchange -> {
-                        exchange.getIn().setBody(null);
+                        setInput(exchange, null);
                         exchange.getIn().removeHeader(FILTER_PASS);
                     })
                     .id(getProcessorId("filterClear"))

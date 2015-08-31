@@ -112,7 +112,10 @@ public class SlotShape {
 
     public void setSlotValue(String value) {
         if (value == null || value.length() == 0) {
-            value = "";
+            value = "EMPTY";
+            slotValueText.setFontStyle("italic");
+        } else {
+            slotValueText.setFontStyle("normal");
         }
         if (value.length() > SLOT_VALUE_MAX_LENGTH) {
             value = value.substring(0, SLOT_VALUE_MAX_LENGTH - 3) + "...";

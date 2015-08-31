@@ -1,0 +1,66 @@
+<link rel="import" href="or-editor-node-behaviors.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<dom-module id="or-editor-node-togglebutton">
+
+    <style>
+    </style>
+    <template>
+        <div class="form">
+            <div class="formItem">
+                <div class="formValue">
+                    <div class="flex layout horizontal center">
+                        <paper-input
+                                class="flex"
+                                label="On Color"
+                                value="{{nodeProperties.onColor}}"></paper-input>
+                        <div class="formDivider"></div>
+                        <paper-input
+                                class="flex"
+                                label="Off Color"
+                                value="{{nodeProperties.offColor}}"></paper-input>
+                    </div>
+                </div>
+            </div>            <div class="formItem">
+                <div class="formValue">
+                    <div class="flex layout horizontal center">
+                        <paper-input
+                                label="On Icon"
+                                value="{{nodeProperties.onIcon}}"></paper-input>
+                        <div class="formDivider"></div>
+                        <paper-input
+                                label="Off Icon"
+                                value="{{nodeProperties.offIcon}}"></paper-input>
+                    </div>
+                </div>
+            </div>
+            <div class="formItem">
+                <div class="formValue">
+                    <div class="flex layout horizontal center">
+                        <paper-input
+                                class="flex"
+                                label="Icon Size (px)"
+                                preventInvalidInput="true"
+                                type="number" min="5" max="5000"
+                                value="{{nodeProperties.iconSizePixels}}"></paper-input>
+                        <div class="formDivider"></div>
+                        <paper-input
+                                class="flex"
+                                label="Icon Background"
+                                value="{{nodeProperties.iconBackgroundColor}}"></paper-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-editor-node-togglebutton",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

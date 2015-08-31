@@ -113,6 +113,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         });
 
         addEventListener(FlowModifiedEvent.class, event -> {
+            setFlowStatusDetail(flowStatusDetail);
             setFlowDirty(true);
             if (event.isNotifyConsole()) {
                 sendConsoleRefresh(event.getFlow());

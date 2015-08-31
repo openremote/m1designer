@@ -20,7 +20,7 @@ public class FunctionNodeDescriptor extends NodeDescriptor {
     public static final String TYPE_LABEL = "Function";
 
     public static final ObjectNode FUNCTION_INITIAL_PROPERTIES  = JSON.createObjectNode()
-        .put("javascript", "output.value = input");
+        .put("javascript", "result = input");
 
     @Override
     public String getType() {

@@ -53,10 +53,10 @@
                 this.$.button.style.fontSize = (this.widgetProperties.fontSizePixels || "5") + "px";
             },
             _onDown: function () {
-                this.set("widgetProperties.click", this.widgetProperties.downValue || "1");
+                this.set("widgetProperties.click", ''+this.widgetProperties.downValue || "1");
             },
             _onUp: function () {
-                this.set("widgetProperties.click", this.widgetProperties.upValue || "0");
+                this.set("widgetProperties.click", ''+this.widgetProperties.upValue || "0");
             },
             _getWrapperStyle: function(widgetProperties) {
                 switch (widgetProperties.iconPosition) {

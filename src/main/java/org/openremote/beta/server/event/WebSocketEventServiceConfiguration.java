@@ -45,7 +45,7 @@ public class WebSocketEventServiceConfiguration implements Configuration {
                 // Receive events on the local bus and publish them on the websocket
                 from(EventService.OUTGOING_EVENT_QUEUE)
                     .routeId("Send outgoing events to WebSocket")
-                    .log(LoggingLevel.DEBUG, LOG, "Sending to all websocket clients: ${body}")
+                    .log(LoggingLevel.DEBUG, LOG, "Sending to all websocket clients: '${body}'")
                     .to("websocket://" + WEBSOCKET_EVENTS + "?sendToAll=true");
             }
         });
