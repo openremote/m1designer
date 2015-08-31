@@ -1,6 +1,5 @@
 package org.openremote.beta.client.shared;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import org.slf4j.Logger;

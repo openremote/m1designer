@@ -104,7 +104,7 @@ public class ConsolePresenter extends AbstractPresenter {
             }
             Flow subflow = subflowDependency.getFlow();
 
-            DOM compositeWidget = addWidget(subflowNode, container, instanceId);
+            DOM compositeWidget = addWidget(currentFlow, subflowNode, container, instanceId);
             updateWidgets(rootFlow, subflow, compositeWidget, instanceId != null ? instanceId : subflowNode.getId());
         }
     }
@@ -117,11 +117,11 @@ public class ConsolePresenter extends AbstractPresenter {
             if (node.isOfTypeSubflow())
                 continue;
 
-            addWidget(node, container, instanceId);
+            addWidget(flow, node, container, instanceId);
         }
     }
 
-    protected DOM addWidget(Node node, DOM container, String instanceId) {
+    protected DOM addWidget(Flow flow, Node node, DOM container, String instanceId) {
         LOG.debug("Adding widget: " + node);
         if (node.getProperties() == null) {
             LOG.debug("Node has no properties, skipping...");
@@ -160,6 +160,9 @@ public class ConsolePresenter extends AbstractPresenter {
 
         if (!node.isOfTypeSubflow()) {
             for (Slot slot : node.findPropertySlots()) {
+                // If this is a source slot without any wires attached, we don't need to add it
+                if (slot.isOfType(Slot.TYPE_SOURCE) && flow.findWiresAttachedToSlot(slot.getId()).length == 0)
+                    continue;
                 widgetDOM.appendChild(createWidgetSlot(slot, instanceId));
             }
         }

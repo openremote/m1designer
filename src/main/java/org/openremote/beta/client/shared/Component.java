@@ -201,6 +201,6 @@ public interface Component {
 
     int unshift(String path, Object item);
 
-    void updateStyles(Object properties);
+    void updateStyles();
 
 }

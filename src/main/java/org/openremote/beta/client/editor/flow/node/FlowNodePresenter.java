@@ -10,6 +10,7 @@ import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
+import org.openremote.beta.client.shared.JsUtil;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
@@ -83,21 +84,16 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     public void editSubflow() {
-        if (flow == null || node == null || !isSubflow)
+        if (!isSubflow)
             return;
         dispatchEvent(new FlowLoadEvent(node.getSubflowId()));
     }
 
     public void deleteNode() {
-        if (flow == null || node == null)
-            return;
-
         dispatchEvent(new NodeDeleteEvent(flow, node));
     }
 
     public void duplicateNode() {
-        if (flow == null || node == null)
-            return;
         dispatchEvent(new NodeDuplicateEvent(flow, node));
     }
 
@@ -139,10 +135,7 @@ public class FlowNodePresenter extends AbstractPresenter {
     }
 
     protected void createEditorComponents(String[] editorComponents) {
-        DOM container = getEditorComponentContainer();
-        while (container.getLastChild() != null) {
-            container.removeChild(container.getLastChild());
-        }
+        DOM container = removeEditorComponents();
 
         if (editorComponents == null)
             return;
@@ -171,16 +164,15 @@ public class FlowNodePresenter extends AbstractPresenter {
         }
     }
 
-    protected void removeEditorComponents() {
+    protected DOM removeEditorComponents() {
         DOM container = getEditorComponentContainer();
         while (container.getLastChild() != null) {
             container.removeChild(container.getLastChild());
         }
+        return container;
     }
 
     protected void setSinkSlots() {
-        if (node == null)
-            return;
         if (node.isClientAccess()) {
             sinks = node.findNonPropertySlots(Slot.TYPE_SINK);
             notifyPath("sinks", sinks);

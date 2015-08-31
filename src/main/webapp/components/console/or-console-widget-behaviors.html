@@ -35,6 +35,9 @@
             this.onWidgetPropertiesChanged();
         },
         onWidgetPropertiesChanged: function () {
+        },
+        _isNumber: function(n) {
+            return n !== undefined && n !== null && !isNaN(parseFloat(n)) && isFinite(n);
         }
     };
 

@@ -9,14 +9,14 @@ public class Timeout {
 
     static protected final Map<String, Integer> TIMEOUTS = new HashMap<>();
 
-    static public void debounce(String name, Runnable runnable, int delayMillis) {
+    static public void debounce(String name, Callback callback, int delayMillis) {
         synchronized (TIMEOUTS) {
             if (TIMEOUTS.containsKey(name)) {
                 Browser.getWindow().clearTimeout(TIMEOUTS.get(name));
             }
             TIMEOUTS.put(name, Browser.getWindow().setTimeout(() -> {
                 try {
-                    runnable.run();
+                    callback.call();
                 } finally {
                     synchronized (TIMEOUTS) {
                         TIMEOUTS.remove(name);

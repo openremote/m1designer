@@ -8,7 +8,8 @@ org.openremote.beta.server.catalog.change.ChangeNodeDescriptor
 org.openremote.beta.server.catalog.filter.FilterNodeDescriptor
 org.openremote.beta.server.catalog.function.FunctionNodeDescriptor
 org.openremote.beta.server.catalog.storage.StorageNodeDescriptor
+
 org.openremote.beta.server.catalog.widget.TextLabelNodeDescriptor
 org.openremote.beta.server.catalog.widget.PushButtonNodeDescriptor
-
+org.openremote.beta.server.catalog.widget.SliderNodeDescriptor
 

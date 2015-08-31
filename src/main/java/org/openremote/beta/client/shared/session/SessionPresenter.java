@@ -89,7 +89,7 @@ public abstract class SessionPresenter extends RequestPresenter {
         });
 
         addEventListener(SessionClosedErrorEvent.class, event -> {
-            dispatchEvent(new ShowFailureEvent("Failed server connection, will try a few more times to reach: " + serviceUrl, 3000));
+            dispatchEvent(new ShowFailureEvent("Dropped server connection, will try a few more times to reach: " + serviceUrl, 3000));
             LOG.debug("Session closed with error, incrementing failure count: " + failureCount);
             failureCount++;
             if (failureCount < MAX_ATTEMPTS) {

@@ -1,0 +1,107 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<dom-module id="or-console-widget-slider">
+
+    <link rel="import" type="css" href="../../styles/console-widget-style.css">
+
+    <style>
+        :host {
+            display: block;
+            position: absolute;
+        }
+
+        #slider {
+            width: 250px;
+            --paper-progress-container-color: var(--or-console-widget-slider-color, #919194);
+            --paper-slider-active-color: var(--or-console-widget-slider-progress-color, #c1d72f);
+            --paper-slider-knob-color: var(--or-console-widget-slider-knob-color, #c1d72f);
+            --paper-slider-knob-start-border-color: var(--or-console-widget-slider-knob-color, #c1d72f);
+            --paper-slider-pin-color: var(--or-console-widget-slider-pin-color, #c1d72f);
+            --paper-slider-pin-start-color: var(--or-console-widget-slider-pin-color, #c1d72f);
+            --paper-slider-font-color: var(--or-console-widget-slider-pin-text-color, #455a64);
+
+            --paper-input-container-color: var(--or-console-widget-slider-color, #919194);
+            --paper-input-container-input-color: var(--or-console-widget-slider-color, #c1d72f);
+            --paper-input-container-underline-focus: var(--or-console-widget-slider-color, #c1d72f);
+            --paper-input-container: {
+                padding: 15px 0 0 0;
+            };
+            --paper-input-container-underline: {
+                display: none;
+            };
+            --paper-font-caption: {
+                display: none;
+            }
+
+        }
+    </style>
+    <template>
+        <paper-slider
+                id="slider"
+                class="control"
+                editable$="[[widgetProperties.editable]]"
+                pin$="[[widgetProperties.pin]]"
+                min="[[sliderMinValue]]"
+                max="[[sliderMaxValue]]"
+                value="{{sliderValue}}"></paper-slider>
+    </template>
+    <script>
+        Polymer({
+            is: "or-console-widget-slider",
+            behaviors: [openremote.VisibleWidget],
+            properties: {
+                sliderValue: {
+                    type: Number,
+                    value: 0,
+                    observer: "_onSliderValueChange"
+                },
+                sliderMinValue: {
+                    type: Number,
+                    value: 0
+                },
+                sliderMaxValue: {
+                    type: Number,
+                    value: 99
+                }
+            },
+            _onSliderValueChange: function (newValue, oldValue) {
+                if (oldValue !== undefined) {
+                    this.debounce("Slider Update Buffer", function () {
+                        this.set("widgetProperties.value", newValue);
+                    }, 50);
+                }
+            },
+            onVisibleWidgetPropertiesChanged: function () {
+
+                var minValue = this._isNumber(this.widgetProperties.minValue) ? parseInt(this.widgetProperties.minValue) : 0;
+                minValue = minValue >= 0 ? minValue : 0;
+                this.set("sliderMinValue", minValue);
+
+                var maxValue = this._isNumber(this.widgetProperties.maxValue) ? parseInt(this.widgetProperties.maxValue) : 99;
+                maxValue = maxValue >= 0 ? maxValue : 99;
+                this.set("sliderMaxValue", maxValue);
+
+                var value = this._isNumber(this.widgetProperties.value) ? parseInt(this.widgetProperties.value) : 0;
+                value = value >= minValue ? value : minValue;
+                value = value <= maxValue ? value : maxValue;
+                this.set("sliderValue", value);
+
+                if (this._isNumber(this.widgetProperties.widthPixels)) {
+                    this.$.slider.style.width = parseInt(this.widgetProperties.widthPixels) + "px";
+                }
+
+                // TODO color string validation
+                this.customStyle["--or-console-widget-slider-color"] = this.widgetProperties.color;
+                this.customStyle["--or-console-widget-slider-progress-color"] = this.widgetProperties.progressColor;
+                this.customStyle["--or-console-widget-slider-knob-color"] = this.widgetProperties.knobColor;
+                this.customStyle["--or-console-widget-slider-pin-color"] = this.widgetProperties.pinColor;
+                this.customStyle["--or-console-widget-slider-pin-text-color"] = this.widgetProperties.pinTextColor;
+                this.updateStyles();
+            }
+        });
+    </script>
+</dom-module>
+
+
