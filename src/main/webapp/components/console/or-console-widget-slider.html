@@ -13,7 +13,8 @@
         }
 
         #slider {
-            width: 250px;
+            width: var(--or-console-widget-slider-width, 250px);
+
             --paper-progress-container-color: var(--or-console-widget-slider-color, #919194);
             --paper-slider-active-color: var(--or-console-widget-slider-progress-color, #c1d72f);
             --paper-slider-knob-color: var(--or-console-widget-slider-knob-color, #c1d72f);
@@ -41,8 +42,8 @@
         <paper-slider
                 id="slider"
                 class="control"
-                editable$="[[widgetProperties.editable]]"
-                pin$="[[widgetProperties.pin]]"
+                editable$="[[isTrue(widgetProperties.editable)]]"
+                pin$="[[isTrue(widgetProperties.pin)]]"
                 min="[[sliderMinValue]]"
                 max="[[sliderMaxValue]]"
                 value="{{sliderValue}}"></paper-slider>
@@ -69,35 +70,35 @@
             _onSliderValueChange: function (newValue, oldValue) {
                 if (oldValue !== undefined) {
                     this.debounce("Slider Update Buffer", function () {
-                        this.set("widgetProperties.value", ''+newValue);
+                        this.set("widgetProperties.value", this.getString(newValue));
                     }, 50);
                 }
             },
             onVisibleWidgetPropertiesChanged: function () {
 
-                var minValue = this._isNumber(this.widgetProperties.minValue) ? parseInt(this.widgetProperties.minValue) : 0;
+                var minValue = this.isNumber(this.widgetProperties.minValue) ? this.getInteger(this.widgetProperties.minValue) : 0;
                 minValue = minValue >= 0 ? minValue : 0;
                 this.set("sliderMinValue", minValue);
 
-                var maxValue = this._isNumber(this.widgetProperties.maxValue) ? parseInt(this.widgetProperties.maxValue) : 99;
+                var maxValue = this.isNumber(this.widgetProperties.maxValue) ? this.getInteger(this.widgetProperties.maxValue) : 99;
                 maxValue = maxValue >= 0 ? maxValue : 99;
                 this.set("sliderMaxValue", maxValue);
 
-                var value = this._isNumber(this.widgetProperties.value) ? parseInt(this.widgetProperties.value) : 0;
-                value = value >= minValue ? value : minValue;
-                value = value <= maxValue ? value : maxValue;
-                this.set("sliderValue", value);
-
-                if (this._isNumber(this.widgetProperties.widthPixels)) {
-                    this.$.slider.style.width = parseInt(this.widgetProperties.widthPixels) + "px";
+                if (!this.isEmpty(this.widgetProperties.value)) {
+                    var value = this.isNumber(this.widgetProperties.value) ? this.getInteger(this.widgetProperties.value) : 0;
+                    value = value >= minValue ? value : minValue;
+                    value = value <= maxValue ? value : maxValue;
+                    this.set("sliderValue", value);
                 }
 
-                // TODO color string validation
-                this.customStyle["--or-console-widget-slider-color"] = this.widgetProperties.color;
-                this.customStyle["--or-console-widget-slider-progress-color"] = this.widgetProperties.progressColor;
-                this.customStyle["--or-console-widget-slider-knob-color"] = this.widgetProperties.knobColor;
-                this.customStyle["--or-console-widget-slider-pin-color"] = this.widgetProperties.pinColor;
-                this.customStyle["--or-console-widget-slider-pin-text-color"] = this.widgetProperties.pinTextColor;
+                if (this.isNumber(this.widgetProperties.widthPixels) && this.getInteger(this.widgetProperties.widthPixels) >= 50) {
+                    this.setStyleVar("--or-console-widget-slider-width", "widthPixels", "px");
+                }
+                this.setStyleVar("--or-console-widget-slider-color", "color");
+                this.setStyleVar("--or-console-widget-slider-progress-color", "progressColor");
+                this.setStyleVar("--or-console-widget-slider-knob-color", "knobColor");
+                this.setStyleVar("--or-console-widget-slider-pin-color", "pinColor");
+                this.setStyleVar("--or-console-widget-slider-pin-text-color", "pinTextColor");
                 this.updateStyles();
             }
         });

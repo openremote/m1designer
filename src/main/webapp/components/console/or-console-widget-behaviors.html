@@ -36,8 +36,25 @@
         },
         onWidgetPropertiesChanged: function () {
         },
-        _isNumber: function(n) {
-            return n !== undefined && n !== null && !isNaN(parseFloat(n)) && isFinite(n);
+        isNumber: function(n) {
+            return !isNaN(parseFloat(n)) && isFinite(n);
+        },
+        isEmpty: function(value) {
+            return !value || String(value).length == 0;
+        },
+        getInteger: function(value) {
+            return parseInt(value);
+        },
+        getFloat: function(value) {
+            return parseFloat(value);
+        },
+        getString: function(value) {
+            return String(value);
+        },
+        isTrue: function(value) {
+            return typeof(value) == "boolean"
+                    ? value
+                    : !!(this.getString(value).toLowerCase() === "true" || this.getString(value) == "1");
         }
     };
 
@@ -66,6 +83,11 @@
         },
         onVisibleWidgetPropertiesChanged: function() {
 
+        },
+        setStyleVar: function(name, property, suffix) {
+            if (!this.isEmpty(this.widgetProperties[property])) {
+                this.customStyle[name] = this.getString(this.widgetProperties[property]) + (suffix || "");
+            }
         }
     };
 

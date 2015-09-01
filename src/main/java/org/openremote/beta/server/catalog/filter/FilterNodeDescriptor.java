@@ -21,7 +21,8 @@ public class FilterNodeDescriptor extends NodeDescriptor {
 
     public static final ObjectNode FILTER_INITIAL_PROPERTIES = JSON.createObjectNode()
         .put("waitForTrigger", false)
-        .put("dropEmpty", false);
+        .put("dropEmpty", false)
+        .put("dropFalse", false);
 
     @Override
     public String getType() {
@@ -62,6 +63,7 @@ public class FilterNodeDescriptor extends NodeDescriptor {
         super.addPersistentPropertyPaths(propertyPaths);
         propertyPaths.add("waitForTrigger");
         propertyPaths.add("dropEmpty");
+        propertyPaths.add("dropFalse");
     }
 
 }

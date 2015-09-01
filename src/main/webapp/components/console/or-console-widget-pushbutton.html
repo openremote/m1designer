@@ -22,6 +22,9 @@
         }
 
         #button {
+            color: var(--or-console-widget-pushbutton-color, black);
+            background-color: var(--or-console-widget-pushbutton-background-color, lightgrey);
+            font-size: var(--or-console-widget-pushbutton-font-size, 10px);
             --paper-button: {
                 min-width: 0;
             }
@@ -30,14 +33,14 @@
     <template>
         <paper-button id="button"
                       class="control"
-                      raised$="[[widgetProperties.raised]]"
+                      raised$="[[isTrue(widgetProperties.raised)]]"
                       on-down="_onDown" on-up="_onUp">
             <div style$="[[_getWrapperStyle(widgetProperties)]]">
-                <template is="dom-if" if="[[widgetProperties.icon]]">
+                <template is="dom-if" if="[[!isEmpty(widgetProperties.icon)]]">
                     <iron-icon icon="[[widgetProperties.icon]]"
                                style$="[[_getIconStyle(widgetProperties)]]"></iron-icon>
                 </template>
-                <template is="dom-if" if="[[widgetProperties.text]]">
+                <template is="dom-if" if="[[!isEmpty(widgetProperties.text)]]">
                     <div style$="[[_getTextStyle(widgetProperties)]]">[[widgetProperties.text]]</div>
                 </template>
             </div>
@@ -48,15 +51,16 @@
             is: "or-console-widget-pushbutton",
             behaviors: [openremote.VisibleWidget],
             onVisibleWidgetPropertiesChanged: function () {
-                this.$.button.style.color = this.widgetProperties.color || "grey";
-                this.$.button.style.backgroundColor = this.widgetProperties.backgroundColor || "black";
-                this.$.button.style.fontSize = (this.widgetProperties.fontSizePixels || "5") + "px";
+                this.setStyleVar("--or-console-widget-pushbutton-color", "color");
+                this.setStyleVar("--or-console-widget-pushbutton-background-color", "backgroundColor");
+                this.setStyleVar("--or-console-widget-pushbutton-font-size", "fontSizePixels", "px");
+                this.updateStyles();
             },
             _onDown: function () {
-                this.set("widgetProperties.click", ''+this.widgetProperties.downValue || "1");
+                this.set("widgetProperties.click", "1");
             },
             _onUp: function () {
-                this.set("widgetProperties.click", ''+this.widgetProperties.upValue || "0");
+                this.set("widgetProperties.click", "0");
             },
             _getWrapperStyle: function(widgetProperties) {
                 switch (widgetProperties.iconPosition) {

@@ -15,4 +15,5 @@ public abstract class NodePredicate implements Predicate {
     public Node getNode() {
         return node;
     }
+
 }

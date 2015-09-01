@@ -17,8 +17,6 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
 
     public static final ObjectNode PUSH_BUTTON_INITIAL_PROPERTIES = WIDGET_INITIAL_PROPERTIES.deepCopy()
         .put(PROPERTY_COMPONENT, COMPONENT)
-        .put("downValue", "1")
-        .put("upValue", "0")
         .put("text", "CLICK")
         .put("backgroundColor", "#ddd")
         .put("color", "black")
@@ -58,8 +56,6 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
     @Override
     protected void addPersistentPropertyPaths(List<String> propertyPaths) {
         super.addPersistentPropertyPaths(propertyPaths);
-        propertyPaths.add("downValue");
-        propertyPaths.add("upValue");
         propertyPaths.add("text");
         propertyPaths.add("backgroundColor");
         propertyPaths.add("color");

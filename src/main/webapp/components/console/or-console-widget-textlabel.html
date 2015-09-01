@@ -9,13 +9,18 @@
             display: block;
             position: absolute;
         }
+
+        #text {
+            color: var(--or-console-widget-textlabel-color, grey);
+            font-size: var(--or-console-widget-textlabel-font-size, 10px);
+        }
     </style>
     <template>
-        <div id="container">
-            <template is="dom-if" if="[[widgetProperties.text]]">
+        <div id="text">
+            <template is="dom-if" if="[[!isEmpty(widgetProperties.text)]]">
                 <span>[[widgetProperties.text]]</span>
             </template>
-            <template is="dom-if" if="[[!widgetProperties.text]]">
+            <template is="dom-if" if="[[isEmpty(widgetProperties.text)]]">
                 <span>[[widgetProperties.emptyValue]]</span>
             </template>
         </div>
@@ -25,8 +30,9 @@
             is: "or-console-widget-textlabel",
             behaviors: [openremote.VisibleWidget],
             onVisibleWidgetPropertiesChanged: function () {
-                this.$.container.style.color = this.widgetProperties.textColor || "grey";
-                this.$.container.style.fontSize = (this.widgetProperties.fontSizePixels || "5") + "px";
+                this.setStyleVar("--or-console-widget-textlabel-color", "textColor");
+                this.setStyleVar("--or-console-widget-textlabel-font-size", "fontSizePixels", "px");
+                this.updateStyles();
             }
         });
     </script>

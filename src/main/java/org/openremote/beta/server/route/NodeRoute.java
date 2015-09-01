@@ -7,6 +7,9 @@ import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.event.EventService;
+import org.openremote.beta.server.route.predicate.InputIsEmpty;
+import org.openremote.beta.server.route.predicate.InputIsFalse;
+import org.openremote.beta.server.route.predicate.InputIsTrue;
 import org.openremote.beta.server.route.predicate.NodePropertyIsTrue;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -112,19 +115,24 @@ public abstract class NodeRoute extends RouteBuilder {
         return new NodePropertyIsTrue(getNode(), getNodeProperties(), propertyPath);
     }
 
-    // Null == Empty String!
-    public String getInput(Exchange exchange) {
-        if (exchange.getIn().getBody() == null)
-            return "";
-        return exchange.getIn().getBody(String.class);
+    public Predicate isInputEmpty() {
+        return new InputIsEmpty();
     }
 
-    // Null == Empty String!
+    public Predicate isInputFalse() {
+        return new InputIsFalse();
+    }
+
+    public Predicate isInputTrue() {
+        return new InputIsTrue();
+    }
+
+    public String getInput(Exchange exchange) {
+        return InputValue.getInput(exchange);
+    }
+
     public void setInput(Exchange exchange, Object body) {
-        if (body == null)
-            exchange.getIn().setBody("");
-        else
-            exchange.getIn().setBody(body.toString());
+        InputValue.setInput(exchange, body);
     }
 
     @Override

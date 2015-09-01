@@ -5,7 +5,7 @@ import org.openremote.beta.server.route.RouteConstants;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
 
-public class SinkSlotPosition extends NodePredicate{
+public class SinkSlotPosition extends NodePredicate {
 
     final protected int position;
 

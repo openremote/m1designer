@@ -13,6 +13,7 @@ import org.openremote.beta.client.console.ConsoleMessageSendEvent;
 import org.openremote.beta.client.console.ConsoleRefreshEvent;
 import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
+import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
 import org.openremote.beta.client.editor.flow.node.*;
@@ -37,6 +38,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
+import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.PATCH_LABEL_FONT_SIZE;
+import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.PATCH_PADDING;
+import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants.PATCH_TITLE_FONT_SIZE;
 import static org.openremote.beta.client.shared.Timeout.debounce;
 
 @JsExport
@@ -441,8 +445,8 @@ public class FlowEditorPresenter extends RequestPresenter {
                 } else {
                     String confirmationText =
                         "Are you sure you want to save changes to flow '" +
-                        flowToSave.getDefaultedLabel() +
-                        "'? " + affectedFlows;
+                            flowToSave.getDefaultedLabel() +
+                            "'? " + affectedFlows;
                     dispatchEvent(
                         new ConfirmationEvent("Save Breaking Changes", confirmationText, saveCallback)
                     );
@@ -560,11 +564,16 @@ public class FlowEditorPresenter extends RequestPresenter {
 
             if (flowDesigner != null) {
                 if (transformPosition) {
+
+                    // Correct the position so it feels like you are dropping in the middle of the patch header
+                    double correctedX = Math.max(0, positionX - FlowDesignerConstants.PATCH_MIN_WIDTH / 2);
+                    double correctedY = Math.max(0, positionY - (PATCH_LABEL_FONT_SIZE + PATCH_TITLE_FONT_SIZE + PATCH_PADDING * 2) / 2);
+
                     // Calculate the offset with the current transform (zoom, panning)
                     // TODO If I would know maths, I could probably do this with the transform matrices
                     Transform currentTransform = flowDesignerPanel.getViewport().getAbsoluteTransform();
-                    double x = (positionX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
-                    double y = (positionY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
+                    double x = (correctedX - currentTransform.getTranslateX()) * currentTransform.getInverse().getScaleX();
+                    double y = (correctedY - currentTransform.getTranslateY()) * currentTransform.getInverse().getScaleY();
                     node.getEditorSettings().setPositionX(x);
                     node.getEditorSettings().setPositionY(y);
                 }

@@ -22,19 +22,19 @@
         }
 
         #button {
-            --paper-toggle-button-checked-bar-color: var(--or-console-widget-togglebutton-on-color);
-            --paper-toggle-button-checked-button-color: var(--or-console-widget-togglebutton-on-color);
-            --paper-toggle-button-checked-ink-color: var(--or-console-widget-togglebutton-on-color);
-            --paper-toggle-button-unchecked-bar-color: var(--or-console-widget-togglebutton-off-color);
-            --paper-toggle-button-unchecked-button-color: var(--or-console-widget-togglebutton-off-color);
-            --paper-toggle-button-unchecked-ink-color: var(--or-console-widget-togglebutton-off-color);
+            --paper-toggle-button-checked-bar-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+            --paper-toggle-button-checked-button-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+            --paper-toggle-button-checked-ink-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+            --paper-toggle-button-unchecked-bar-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
+            --paper-toggle-button-unchecked-button-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
+            --paper-toggle-button-unchecked-ink-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
         }
 
         .icon {
-            width: var(--or-console-widget-togglebutton-width);
-            height: var(--or-console-widget-togglebutton-height);
-            color: var(--or-console-widget-togglebutton-icon-color);
-            background-color: var(--or-console-widget-togglebutton-background-color);
+            width: var(--or-console-widget-togglebutton-width, 38px);
+            height: var(--or-console-widget-togglebutton-height, 38px);
+            color: var(--or-console-widget-togglebutton-icon-color, #c1d72f);
+            background-color: var(--or-console-widget-togglebutton-background-color, transparent);
         }
 
     </style>
@@ -74,42 +74,47 @@
             },
             _onButtonStateChange: function (newValue, oldValue) {
                 if (oldValue !== undefined) {
-                    this._setValue(newValue ? "1" : "0");
+                    if (newValue) {
+                        this._setChecked("1");
+                    } else {
+                        this._setChecked("0");
+                    }
                 }
             },
-            _setValue: function(value) {
+            _setChecked: function (value) {
                 this.debounce("ToggleButton Update Buffer", function () {
-                    this.set("widgetProperties.value", value);
+                    this.set("widgetProperties.checked", value);
                 }, 50);
             },
             _onClicked: function () {
-                this._setValue("0");
+                this.set("buttonState", false);
             },
             _offClicked: function () {
-                this._setValue("1");
+                this.set("buttonState", true);
             },
             onVisibleWidgetPropertiesChanged: function () {
 
-                var value = this._isNumber(this.widgetProperties.value) ? parseInt(this.widgetProperties.value) : 0;
-                this.set("buttonState", value == 1);
+                if (!this.isEmpty(this.widgetProperties.checked)) {
+                    this.set("buttonState", this.isTrue(this.widgetProperties.checked));
+                }
 
-                if (this.widgetProperties.onIcon && this.widgetProperties.offIcon) {
+                if (!this.isEmpty(this.widgetProperties.onIcon) && !this.isEmpty(this.widgetProperties.offIcon)) {
                     this.set("useIcon", true);
-
-                    var iconSize = this._isNumber(this.widgetProperties.iconSizePixels) ? parseInt(this.widgetProperties.iconSizePixels) + "px" : "15px";
-                    this.customStyle["--or-console-widget-togglebutton-width"] = iconSize;
-                    this.customStyle["--or-console-widget-togglebutton-height"] = iconSize;
-                    this.customStyle["--or-console-widget-togglebutton-background-color"] = (this.widgetProperties.iconBackgroundColor || "transparent");
+                    if (this.isNumber(this.widgetProperties.iconSizePixels)) {
+                        this.setStyleVar("--or-console-widget-togglebutton-width", "iconSizePixels", "px");
+                        this.setStyleVar("--or-console-widget-togglebutton-height", "iconSizePixels", "px");
+                    }
+                    this.setStyleVar("--or-console-widget-togglebutton-background-color", "iconBackgroundColor");
                 }
 
                 if (this.get("buttonState")) {
-                    this.customStyle["--or-console-widget-togglebutton-icon-color"] = (this.widgetProperties.onColor || "white");
+                    this.setStyleVar("--or-console-widget-togglebutton-icon-color", "onColor");
                 } else {
-                    this.customStyle["--or-console-widget-togglebutton-icon-color"] = (this.widgetProperties.offColor || "grey");
+                    this.setStyleVar("--or-console-widget-togglebutton-icon-color", "offColor");
                 }
 
-                this.customStyle["--or-console-widget-togglebutton-on-color"] = (this.widgetProperties.onColor || "white");
-                this.customStyle["--or-console-widget-togglebutton-off-color"] = (this.widgetProperties.offColor || "grey");
+                this.setStyleVar("--or-console-widget-togglebutton-on-color", "onColor");
+                this.setStyleVar("--or-console-widget-togglebutton-off-color", "offColor");
 
                 this.updateStyles();
             }

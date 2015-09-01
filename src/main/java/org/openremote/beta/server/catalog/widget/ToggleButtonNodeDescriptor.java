@@ -22,7 +22,7 @@ public class ToggleButtonNodeDescriptor extends WidgetNodeDescriptor {
         .put("offIcon", "check-box-outline-blank")
         .put("iconSizePixels", 40)
         .put("onColor", "#c1d72f")
-        .put("offColor", "#c1d72f")
+        .put("offColor", "#cccccc")
         .put("iconBackgroundColor", "transparent");
 
     @Override
@@ -37,8 +37,8 @@ public class ToggleButtonNodeDescriptor extends WidgetNodeDescriptor {
 
     @Override
     public void addSlots(List<Slot> slots) {
-        slots.add(new Slot("Value", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "value"));
-        slots.add(new Slot("Value", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "value"));
+        slots.add(new Slot("Checked", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "checked"));
+        slots.add(new Slot("Checked", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "checked"));
         super.addSlots(slots);
     }
 

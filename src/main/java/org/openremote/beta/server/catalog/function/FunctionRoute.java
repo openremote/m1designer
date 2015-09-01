@@ -3,7 +3,9 @@ package org.openremote.beta.server.catalog.function;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.script.ScriptBuilder;
 import org.apache.camel.model.ProcessorDefinition;
+import org.openremote.beta.server.route.InputValue;
 import org.openremote.beta.server.route.NodeRoute;
+import org.openremote.beta.server.route.predicate.InputPredicate;
 import org.openremote.beta.server.util.JsonUtil;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -15,6 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.apache.camel.builder.script.ScriptBuilder.javaScript;
+import static org.openremote.beta.server.route.InputValue.getBooleanInput;
 import static org.openremote.beta.server.util.JsonUtil.JSON;
 
 public class FunctionRoute extends NodeRoute {
@@ -45,24 +48,9 @@ public class FunctionRoute extends NodeRoute {
                             LOG.debug("Not valid JSON: '" + input + "'");
                         }
 
-                        if (input.toLowerCase(Locale.ROOT).equals("true")) {
-                            arguments.put("inputBoolean", true);
-                        } else if (input.toLowerCase(Locale.ROOT).equals("false")) {
-                            arguments.put("inputBoolean", false);
-                        } else {
-                            LOG.debug("Not a boolean string: '" + input + "'");
-                            try {
-                                int inputInt = Integer.valueOf(input);
-                                if (inputInt == 0) {
-                                    arguments.put("inputBoolean", false);
-                                } else if (inputInt == 1) {
-                                    arguments.put("inputBoolean", true);
-                                } else {
-                                    LOG.debug("Not 0/1: '" + input + "'");
-                                }
-                            } catch (Exception ex) {
-                                LOG.debug("Not a number: '" + input + "'");
-                            }
+                        Boolean booleanInput = getBooleanInput(exchange);
+                        if (booleanInput != null) {
+                            arguments.put("inputBoolean", booleanInput);
                         }
 
                     } else {
