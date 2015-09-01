@@ -103,7 +103,6 @@ public class FilterRouteTest extends IntegrationTest {
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(flow.getId());
         producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
         eventReceiver.assertIsSatisfied();
-
     }
 
     @Test

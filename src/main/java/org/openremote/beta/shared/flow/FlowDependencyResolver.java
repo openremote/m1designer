@@ -10,17 +10,17 @@ public abstract class FlowDependencyResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowDependencyResolver.class);
 
-    public void populateSuperDependencies(Flow flow) {
-        List<FlowDependency> dependencyList = new ArrayList<>();
-        populateSuperDependencies(flow, 0, dependencyList);
-        Collections.reverse(dependencyList);
-        flow.setSuperDependencies(dependencyList.toArray(new FlowDependency[dependencyList.size()]));
-    }
+    public void populateDependencies(Flow flow, boolean hydrate) {
+        flow.clearDependencies();
 
-    public void populateSubDependencies(Flow flow, boolean hydrate) {
-        List<FlowDependency> dependencyList = new ArrayList<>();
-        populateSubDependencies(flow, hydrate, 0, dependencyList);
-        flow.setSubDependencies(dependencyList.toArray(new FlowDependency[dependencyList.size()]));
+        List<FlowDependency> superDependencies = new ArrayList<>();
+        populateSuperDependencies(flow, 0, superDependencies);
+        Collections.reverse(superDependencies);
+        flow.setSuperDependencies(superDependencies.toArray(new FlowDependency[superDependencies.size()]));
+
+        List<FlowDependency> subDependencies = new ArrayList<>();
+        populateSubDependencies(flow, hydrate, 0, subDependencies);
+        flow.setSubDependencies(subDependencies.toArray(new FlowDependency[subDependencies.size()]));
     }
 
     public void updateDependencies(Flow flow, boolean flowWillBeDeleted) {
@@ -28,8 +28,7 @@ public abstract class FlowDependencyResolver {
             flow.removeProducerConsumerNodes();
 
         flow.clearDependencies();
-        populateSuperDependencies(flow);
-        populateSubDependencies(flow, false);
+        populateDependencies(flow, false);
 
         for (FlowDependency superDependency : flow.getDirectSuperDependencies()) {
             Flow superFlow = findFlow(superDependency.getId());
@@ -143,6 +142,20 @@ public abstract class FlowDependencyResolver {
 
         for (Node subflowNode : subflowNodes) {
             Flow subflow = findFlow(subflowNode.getSubflowId());
+
+            // Do we have a loop?
+            if (subflow.getId().equals(flow.getId())) {
+                throw new IllegalStateException(
+                    "Loop detected, can't have flow as its own subflow: " + flow
+                );
+            }
+            for (FlowDependency superDependency : flow.getSuperDependencies()) {
+                if (subflow.getId().equals(superDependency.getId())) {
+                    throw new IllegalStateException(
+                        "Loop detected in '" + flow + "', subflow is also super dependency: " + subflow
+                    );
+                }
+            }
 
             if (subflow == null)
                 throw new IllegalStateException(

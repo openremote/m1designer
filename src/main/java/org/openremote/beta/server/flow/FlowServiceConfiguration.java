@@ -92,8 +92,8 @@ public class FlowServiceConfiguration implements Configuration {
                             exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
                         }
                     } catch (Exception ex) {
-                        LOG.info("Error resolving dependencies of '" + flow + "'", ex);
-                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
+                        LOG.debug("Error resolving dependencies of '" + flow + "'", ex);
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 400);
                     }
                 })
                 .endRest()

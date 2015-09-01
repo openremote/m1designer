@@ -240,9 +240,12 @@ public class FlowEditorPresenter extends RequestPresenter {
     public void createSubflowNode(String subflowId, double positionX, double positionY) {
         if (flowDesigner == null || flow == null)
             return;
+
+        // Can't add current flow as subflow
         if (subflowId != null && flow.getId().equals(subflowId)) {
-            return; // Can't add current flow as subflow
+            return;
         }
+
         new CreateSubflowNode(flow.getId(), subflowId, new AddNode(positionX, positionY, true)).call();
     }
 
@@ -439,7 +442,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                 };
             }
 
-            new CheckDependencies(flowToSave, affectedFlows -> {
+            new CheckDependencies(flowToSave, false, affectedFlows -> {
                 if (affectedFlows == null) {
                     saveCallback.call();
                 } else {
@@ -484,7 +487,7 @@ public class FlowEditorPresenter extends RequestPresenter {
             // Remove all the consumers and producers to test what dependencies will be broken
             flowToDelete.removeProducerConsumerNodes();
 
-            new CheckDependencies(flowToDelete, affectedFlows -> {
+            new CheckDependencies(flowToDelete, true, affectedFlows -> {
 
                 if (affectedFlows != null)
                     confirmationText.append(" ").append(affectedFlows);
@@ -754,7 +757,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
             LOG.debug("Resolving and updating dependencies: " + flowToUpdate);
             sendRequest(
-                false, true,
+                false, false,
                 resource("flow", "resolve")
                     .addQueryParam("hydrateSubs", Boolean.toString(hydrateSubs))
                     .post().json(FLOW_CODEC.encode(flowToUpdate)),
@@ -765,18 +768,38 @@ public class FlowEditorPresenter extends RequestPresenter {
                         flowToUpdate.setSuperDependencies(resolvedFlow.getSuperDependencies());
                         success.call();
                     }
+
+                    @Override
+                    public void onFailure(RequestFailure requestFailure) {
+                        super.onFailure(requestFailure);
+                        dependencyFailure(requestFailure);
+                    }
                 }
             );
         }
+
+        protected void dependencyFailure(RequestFailure requestFailure) {
+            if (requestFailure.statusCode == 400) {
+                dispatchEvent(new ShowFailureEvent(
+                    "Can't create an endless loop between flows.",
+                    5000
+                ));
+            } else {
+                dispatchEvent(new RequestFailureEvent(requestFailure));
+            }
+        }
+
     }
 
     protected class CheckDependencies implements Callback {
 
         final Flow flowToCheck;
+        final boolean isDelete;
         final Consumer<String> consumer;
 
-        public CheckDependencies(Flow flowToCheck, Consumer<String> consumer) {
+        public CheckDependencies(Flow flowToCheck, boolean isDelete, Consumer<String> consumer) {
             this.flowToCheck = flowToCheck;
+            this.isDelete = isDelete;
             this.consumer = consumer;
         }
 
@@ -788,7 +811,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
                 StringBuilder affectedFlows = new StringBuilder();
                 for (FlowDependency superDependency : superDependencies) {
-                    if (superDependency.isPeersInvalid()) {
+                    if (isDelete  || superDependency.isPeersInvalid()) {
                         affectedFlows.append(" ");
                         affectedFlows.append(superDependency.getDefaultedLabel().toUpperCase(Locale.ROOT));
                         affectedFlows.append(",");

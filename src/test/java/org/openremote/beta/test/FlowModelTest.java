@@ -61,7 +61,7 @@ public class FlowModelTest {
     @Test
     public void resolveSuperDependencies() throws Exception {
 
-        flowDependencyResolver.populateSuperDependencies(sampleTemperatureProcessor);
+        flowDependencyResolver.populateDependencies(sampleTemperatureProcessor, false);
 
         assertTrue(sampleTemperatureProcessor.hasDirectWiredSuperDependencies());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
@@ -83,7 +83,7 @@ public class FlowModelTest {
         // This will break the last (direct) super-dependency, we remove a consumer node
         sampleTemperatureProcessor.removeNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER);
 
-        flowDependencyResolver.populateSuperDependencies(sampleTemperatureProcessor);
+        flowDependencyResolver.populateDependencies(sampleTemperatureProcessor, false);
 
         assertTrue(sampleTemperatureProcessor.hasDirectWiredSuperDependencies());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
@@ -106,7 +106,7 @@ public class FlowModelTest {
     @Test
     public void resolveSubDependencies() throws Exception {
 
-        flowDependencyResolver.populateSubDependencies(sampleEnvironmentWidget, false);
+        flowDependencyResolver.populateDependencies(sampleEnvironmentWidget, false);
 
         assertEquals(sampleEnvironmentWidget.getSubDependencies().length, 2);
 
@@ -127,7 +127,7 @@ public class FlowModelTest {
     @Test
     public void resolveSubDependenciesHydrate() throws Exception {
 
-        flowDependencyResolver.populateSubDependencies(sampleEnvironmentWidget, true);
+        flowDependencyResolver.populateDependencies(sampleEnvironmentWidget, true);
 
         assertEquals(sampleEnvironmentWidget.getSubDependencies().length, 2);
 

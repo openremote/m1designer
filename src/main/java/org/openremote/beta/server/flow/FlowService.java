@@ -170,7 +170,7 @@ public class FlowService implements StaticService {
             if (flow == null)
                 return null;
 
-            resolveDependencies(flow, false);
+            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, false);
 
             return flow;
         }
@@ -196,6 +196,13 @@ public class FlowService implements StaticService {
     public void postFlow(Flow flow) {
         LOG.debug("Posting new flow: " + flow);
         synchronized (SAMPLE_FLOWS) {
+
+            if (flow.getSuperDependencies().length > 0 || flow.getSubDependencies().length > 0)
+                throw new IllegalArgumentException("Don't send dependencies when posting a flow");
+
+            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, false);
+
+            // TODO: Another consistency check, e.g. all wires good
             SAMPLE_FLOWS.put(flow.getId(), flow);
         }
     }
@@ -215,6 +222,7 @@ public class FlowService implements StaticService {
             // TODO cleaner solution
             filterNonPersistentProperties(flow);
 
+            // TODO: Another consistency check, e.g. all wires good
             SAMPLE_FLOWS.put(flow.getId(), flow);
 
             return true;
@@ -224,7 +232,7 @@ public class FlowService implements StaticService {
     public Flow getResolvedFlow(Flow flow, boolean hydrateSubs) {
         LOG.debug("Resolving dependencies of flow: " + flow);
         synchronized (SAMPLE_FLOWS) {
-            resolveDependencies(flow, hydrateSubs);
+            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, hydrateSubs);
             return flow;
         }
     }
@@ -272,17 +280,6 @@ public class FlowService implements StaticService {
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
-        }
-    }
-
-    protected void resolveDependencies(Flow flow, boolean hydrateSubs) {
-        try {
-            flow.clearDependencies();
-            SAMPLE_DEPENDENCY_RESOLVER.populateSuperDependencies(flow);
-            SAMPLE_DEPENDENCY_RESOLVER.populateSubDependencies(flow, hydrateSubs);
-        } catch (IllegalStateException ex) {
-            LOG.warn("Error in flow dependency resolution: " + flow, ex);
-            throw ex;
         }
     }
 }
