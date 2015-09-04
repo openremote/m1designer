@@ -1,5 +1,6 @@
 package org.openremote.beta.client.editor.flow.designer;
 
+import com.ait.lienzo.client.core.shape.BezierCurve;
 import com.ait.lienzo.client.core.shape.Layer;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.types.Point2D;
@@ -35,7 +36,7 @@ public abstract class WiringLayer extends Layer {
     class WireRemovalStartHandler {
         public void onInteraction(int x, int y) {
             Shape shape = findShapeAtPoint(x, y);
-            if (shape != null && shape.getParent() instanceof WireShape) {
+            if (shape != null && shape instanceof BezierCurve) {
                 wireRemovalConfirmationHandler.wireShape = (WireShape) shape.getParent();
                 wireRemovalConfirmationHandler.start = new Point2D(x, y);
                 wireRemovalConfirmationHandler.removalConfirmed = false;

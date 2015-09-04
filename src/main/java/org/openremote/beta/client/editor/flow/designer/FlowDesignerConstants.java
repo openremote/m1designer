@@ -57,4 +57,6 @@ public interface FlowDesignerConstants {
 
     int TOOLTIP_AUTO_HIDE_MILLIS = 3000;
     IColor TOOLTIP_BACKGROUND_COLOR = new Color(240, 240, 240);
+    int TOOLTIP_MAX_SHOW_TIMES = 3;
+
 }

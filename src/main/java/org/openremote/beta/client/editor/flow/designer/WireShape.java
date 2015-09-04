@@ -11,7 +11,6 @@ import com.ait.lienzo.client.core.types.Point2DArray;
 import com.ait.lienzo.shared.core.types.DragMode;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
-import org.openremote.beta.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +21,8 @@ import static org.openremote.beta.client.editor.flow.designer.FlowDesignerConsta
 public abstract class WireShape extends Group {
 
     private static final Logger LOG = LoggerFactory.getLogger(WireShape.class);
+
+    public static int HELP_SHOWN = 0;
 
     public abstract class Handle extends Circle {
 
@@ -276,14 +277,20 @@ public abstract class WireShape extends Group {
 
     public void activateToolTip(ToolTip toolTip, String title, String text) {
         curve.addNodeMouseEnterHandler(event -> {
-            toolTip.setValues(text, title);
-            final BoundingBox bb = curve.getBoundingBox();
-            toolTip.show(
-                curve.getX() + bb.getX() + (bb.getWidth() / 2),
-                curve.getY() + bb.getY() + (bb.getHeight() / 2) - (WIRE_WIDTH * 2)
-            );
+            if (HELP_SHOWN <= TOOLTIP_MAX_SHOW_TIMES) {
+                toolTip.setValues(text, title);
+                final BoundingBox bb = curve.getBoundingBox();
+                toolTip.show(
+                    curve.getX() + bb.getX() + (bb.getWidth() / 2),
+                    curve.getY() + bb.getY() + (bb.getHeight() / 2) - (WIRE_WIDTH * 2)
+                );
+                HELP_SHOWN = HELP_SHOWN + 1;
+            }
         });
-        curve.addNodeMouseExitHandler(event -> toolTip.hide());
+        curve.addNodeMouseExitHandler(event -> {
+
+            toolTip.hide();
+        });
         curve.addNodeDragStartHandler(event -> toolTip.hide());
     }
 
