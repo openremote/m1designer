@@ -72,7 +72,6 @@ Custom property | Description | Default
         }
 
         #regularTitlePanel {
-            padding: 11px 0;
         }
 
         #switchTitle {
@@ -81,7 +80,7 @@ Custom property | Description | Default
 
         #regularTitle {
             overflow: hidden;
-            padding: 0 11px;
+            padding: 11px;
         }
 
         #panel > * {
@@ -151,11 +150,16 @@ Custom property | Description | Default
             </template>
             <template is="dom-if" if="[[!switchable]]">
                 <template is="dom-if" if="[[title]]">
-                    <div class="layout horizontal center">
-                        <div id="regularTitlePanel" class="layout horizontal flex center-justified">
-                            <div id="regularTitle">[[title]]</div>
-                        </div>
+                    <div id="regularTitlePanel" class="layout horizontal center center-justified">
+                        <div id="regularTitle">[[title]]</div>
                         <div id="titleToolbar">
+                            <content select=".titleToolbar"></content>
+                        </div>
+                    </div>
+                </template>
+                <template is="dom-if" if="[[!title]]">
+                    <div id="regularTitlePanel" class="layout horizontal center">
+                        <div id="titleToolbar" class="flex">
                             <content select=".titleToolbar"></content>
                         </div>
                     </div>
@@ -207,9 +211,11 @@ Custom property | Description | Default
                         }
                         if (this.$$("#switchButton")) {
                             this.$$("#switchButton").style.order = "3";
+                            this.$$("#switchButton").style["-webkit-order"]= "3";
                         }
                         if (this.$$("#switchTitleToolbar")) {
                             this.$$("#switchTitleToolbar").style.order = "0";
+                            this.$$("#switchTitleToolbar").style["-webkit-order"] = "0";
                         }
                     }
                     this.$.panel.noCancelOnEscKey = true;

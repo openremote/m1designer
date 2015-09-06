@@ -29,75 +29,7 @@
                     value: function () {
                         return new openremote.editor.EditorPresenter(this);
                     }
-                },
-                _confirmationTitle: {
-                    type: String,
-                    value: "Confirmation"
-                },
-                _confirmationText: {
-                    type: String
-                },
-                _confirmAction: {
-                    type: Function
-                },
-                _cancelAction: {
-                    type: Function
-                },
-                _otherActionText: {
-                    type: String
-                },
-                _otherAction: {
-                    type: Function
                 }
-            },
-            listeners: {
-                "confirmation": "_onConfirmation"
-            },
-            _onConfirmation: function (ce, event) {
-                this.set("_confirmationTitle", event.title);
-                this.set("_confirmationText", event.text);
-                this._confirmAction = event.confirmAction;
-                this._cancelAction = event.cancelAction;
-                this._otherActionText = event.otherActionText;
-                this._otherAction = event.otherAction;
-                this._openConfirmation();
-            },
-            _confirm: function () {
-                this._closeConfirmation();
-                if (this._confirmAction) {
-                    this._confirmAction.call();
-                }
-                this._clearConfirmation();
-            },
-            _cancel: function () {
-                this._closeConfirmation();
-                if (this._cancelAction) {
-                    this._cancelAction.call();
-                }
-                this._clearConfirmation();
-            },
-            _other: function () {
-                this._closeConfirmation();
-                if (this._otherAction) {
-                    this._otherAction.call();
-                }
-                this._clearConfirmation();
-            },
-            _openConfirmation: function () {
-                this.toggleAttribute("hidden", false, this.$.confirmationPanel);
-                this.$.confirmationPanel.open();
-            },
-            _closeConfirmation: function () {
-                this.toggleAttribute("hidden", true, this.$.confirmationPanel);
-                this.$.confirmationPanel.close();
-            },
-            _clearConfirmation: function () {
-                this.set("_confirmationTitle", "Confirmation");
-                this.set("_confirmationText", undefined);
-                this._confirmAction = undefined;
-                this._cancelAction = undefined;
-                this._otherActionText = undefined;
-                this._otherAction = undefined;
             }
         });
     });
@@ -109,61 +41,42 @@
         :host {
             height: 100vh;
             display: flex;
+            display: -webkit-flex;
             flex-direction: column;
+            -webkit-flex-direction: column;
         }
 
         #container {
             flex: 1 1 auto;
+            -webkit-flex: 1 1 auto;
             display: flex;
+            display: -webkit-flex;
             flex-direction: row;
+            -webkit-flex-direction: row;
         }
 
         #sidebar {
             background: var(--or-editor-sidebar-background-color, black);
             color: var(--or-editor-sidebar-color, white);
-            max-width: 240px;
-            min-width: 240px;
-            font-size: smaller;
+            max-width: 270px;
+            min-width: 270px;
             overflow: hidden;
         }
 
         #main {
             background: var(--or-editor-main-background-color, white);
             flex-grow: 1;
+            -webkit-flex-grow: 1;
             width: 100%;
             height: 100vh;
             overflow: hidden;
-        }
-
-        #confirmationPanel {
-            position: fixed;
-            left: 40vw;
-            top: 20vh;
-            z-index: 1000;
-            --or-panel-width: 420px;
-            --or-panel-max-height: 200px;
-        }
-
-        #confirmationPanel .confirmationText {
-            padding: 1em;
-        }
-
-        #confirmationPanel .confirm {
-            background-color: var(--or-editor-confirm-color);
-        }
-
-        #confirmationPanel .cancel {
-            background-color: var(--or-editor-cancel-color);
-        }
-
-        #confirmationPanel .other {
-            background-color: var(--or-editor-other-color);
         }
 
         @media all and (max-width: 640px) {
 
             #container {
                 flex-direction: column;
+                -webkit-flex-direction: column;
             }
 
             #container > #sidebar {
@@ -176,13 +89,6 @@
             #container > #main {
                 height: 60vh;
             }
-
-            #confirmationPanel {
-                position: fixed;
-                left: 10px;
-                top: 10px;
-            }
-
         }
 
     </style>
@@ -197,33 +103,6 @@
                                        dirty="{{_presenter.flowEditorDirty}}"></or-editor-flow-editor>
             </div>
         </div>
-
-        <or-panel id="confirmationPanel"
-                  title="[[_confirmationTitle]]"
-                  modal
-                  hidden>
-            <div class="content">
-                <div class="confirmationText">
-                    <span>[[_confirmationText]]</span>
-                </div>
-            </div>
-            <div class="bottomToolbar layout horizontal center">
-                <paper-button class="cancel" on-tap="_cancel">
-                    <iron-icon icon="icons:close"></iron-icon>
-                    Cancel
-                </paper-button>
-                <template is="dom-if" if="[[_otherAction]]">
-                    <paper-button class="other" on-tap="_other">
-                        <iron-icon icon="icons:done-all"></iron-icon>
-                        <span>[[_otherActionText]]</span>
-                    </paper-button>
-                </template>
-                <paper-button class="confirm" on-tap="_confirm">
-                    <iron-icon icon="icons:check"></iron-icon>
-                    OK
-                </paper-button>
-            </div>
-        </or-panel>
 
     </template>
 </dom-module>

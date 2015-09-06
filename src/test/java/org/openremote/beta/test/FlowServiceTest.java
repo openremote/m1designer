@@ -39,14 +39,14 @@ public class FlowServiceTest extends IntegrationTest {
 
     protected void putFlow(Flow flow) throws Exception {
         flow.clearDependencies();
-        Exchange postFlowExchange = producerTemplate.request(
+        Exchange putFlowExchange = producerTemplate.request(
             createWebClientUri("flow", flow.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
                 exchange.getIn().setBody(toJson(flow));
             }
         );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
+        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
     }
 
     @Test

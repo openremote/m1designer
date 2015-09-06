@@ -14,6 +14,8 @@
 <link rel="import" href="or-console-widget-togglebutton.html"/>
 
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
 <script>
     function onGwtReadyClient() {
@@ -36,6 +38,10 @@
                         return new openremote.console.ConsolePresenter(this);
                     }
                 },
+                minimized: {
+                    type: Boolean,
+                    value: false
+                },
                 _haveWidgets: {
                     type: Boolean,
                     value: false
@@ -43,6 +49,10 @@
                 _draggableWidgets: {
                     type: Array,
                     value: []
+                },
+                _zoomFactor: {
+                    type: Number,
+                    value: 1.0
                 }
             },
             listeners: {
@@ -50,28 +60,49 @@
                 "editor-close": "_onEditorClose",
                 "console-refreshed": "_onConsoleRefreshed"
             },
+            attached: function () {
+                if (this.minimized) {
+                    this._switchConsole();
+                }
+            },
             _onEditorOpen: function () {
-                this.toggleAttribute("hidden", false, this.$.controls);
+                this.toggleAttribute("hidden", false, this.$.editorControls);
             },
             _onEditorClose: function () {
-                this.toggleAttribute("hidden", true, this.$.controls);
+                this.toggleAttribute("hidden", true, this.$.editorControls);
                 this._disableDragging();
             },
             _onConsoleRefreshed: function () {
-                var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
-
                 // TODO: light DOM!
                 var nonCompositeWidgets = this.$.widgetComponentContainer.querySelectorAll(":not(or-console-widget-composite)");
-
                 this.set("_haveWidgets", nonCompositeWidgets.length);
 
+                var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
                 this.set("_draggableWidgets", []);
                 widgets.forEach(function (widget) {
+
+                    // TODO: evil hack fixes zoom artifacts on chrome
+                    widget.style["-webkit-backface-visibility"] = "hidden";
+
                     var draggableWidget = new Draggabilly(widget, {
                         grid: [10, 10]
                     });
 
+                    draggableWidget.on("staticClick", function (event, pointer) {
+                        if (draggableWidget.isEnabled) {
+                            var nodeId = draggableWidget.element.nodeId;
+                            if (nodeId) {
+                                this._presenter.widgetSelected(nodeId);
+                            }
+                        }
+                    }.bind(this));
+
+                    draggableWidget.on("dragStart", function (event, pointer) {
+                        draggableWidget.element.style.cursor = "move";
+                    });
+
                     draggableWidget.on("dragEnd", function (event, pointer) {
+                        draggableWidget.element.style.cursor = "pointer";
                         draggableWidget.element.onDragEnd(draggableWidget.element.offsetLeft, draggableWidget.element.offsetTop);
                     });
 
@@ -90,7 +121,10 @@
             _enableDragging: function () {
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.enable();
-                    draggable.element.style.cursor = "move";
+                    draggable.element.style.cursor = "pointer";
+                    draggable.element.set("draggable", true);
+                    this.toggleClass("draggable", true, draggable.element);
+                    draggable.element.set("draggable", true);
                     draggable.element.set("draggable", true);
                 }.bind(this));
                 this.updateStyles();
@@ -100,6 +134,7 @@
                     draggable.disable();
                     draggable.element.style.cursor = "";
                     draggable.element.set("draggable", false);
+                    this.toggleClass("draggable", false, draggable.element);
                 }.bind(this));
                 this.updateStyles();
             },
@@ -109,6 +144,33 @@
                 } else {
                     this._disableDragging();
                 }
+            },
+            _switchConsole: function (e) {
+                this._presenter.switchConsole();
+            },
+            _zoomIn: function () {
+                if (this.get("_zoomFactor") >= 2.0) {
+                    return;
+                }
+                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) + 0.2).toFixed(1));
+                this._zoom();
+            },
+            _zoomOut: function () {
+                if (this.get("_zoomFactor") <= 0.5) {
+                    return;
+                }
+                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) - 0.2).toFixed(1));
+                this._zoom();
+            },
+            _resetZoom: function () {
+                this.set("_zoomFactor", 1.0);
+                this._zoom();
+            },
+            _zoom: function () {
+                this.$.widgetComponentContainer.style.transform = "scale(" + this._zoomFactor + ")";
+                this.$.widgetComponentContainer.style["-webkit-transform"] = "scale(" + this._zoomFactor + ")";
+                this.$.widgetComponentContainer.style.transformOrigin = "0 0";
+                this.$.widgetComponentContainer.style["-webkit-transform-origin"] = "0 0";
             }
         });
     });
@@ -126,28 +188,112 @@
             color: var(--or-console-color);
         }
 
+        #editorControls {
+            background-color: var(--or-console-toolbar-background-color);
+            color: var(--or-console-toolbar-button-color);
+            height: 40px;
+        }
+
+        #editorControls paper-button {
+            --paper-button: {
+                min-width: 3em;
+            }
+        }
+
+        #editorControls paper-button /deep/ .content {
+            padding: 0;
+        }
+
+        #editorControls .toggleLabel {
+            color: var(--or-console-toolbar-color);
+        }
+
+        #editorControls .zoomFactor {
+            font-size: smaller;
+            cursor: pointer;
+        }
+
+        #consoleSwitchButton {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 2px dotted var(--or-console-toolbar-button-color);
+            margin: 4px;
+            cursor: pointer;
+        }
+
+        #consoleSwitchButton:active {
+            background: var(--or-console-toolbar-button-color);
+            border: none;
+        }
+
+        #consoleSwitchButton:focus {
+            outline: 0;
+        }
+
         #draggingSwitch {
-            position: fixed;
-            top: 50px;
-            right: 5px;
         }
 
         #empty {
             color: var(--or-console-empty-color);
             padding: 1em;
+            pointer-events: none;
         }
 
         #widgetComponentContainer {
             white-space: nowrap;
             cursor: default;
+            position: relative;
+        }
+
+        .draggable:before {
+            content: "";
+            border-radius: 5px;
+            width: 15px;
+            height: 20px;
+            position: absolute;
+            left: -17px;
+            top: 0;
+            background-color: var(--or-console-widget-draggable-color);
+        }
+
+        .selected.draggable:before {
+            background-color: var(--or-console-widget-selected-color);
+        }
+
+        @media all and (max-width: 300px) {
+            #widgetControls{
+                display: none;
+            }
         }
 
     </style>
     <template>
-        <div id="controls" hidden>
-            <template is="dom-if" if="[[_haveWidgets]]">
-                <paper-toggle-button id="draggingSwitch"
-                                     on-change="_onDraggingSwitch"></paper-toggle-button>
+        <div id="editorControls" hidden class="layout horizontal center">
+            <div id="widgetControls" class="flex layout horizontal center">
+                <template is="dom-if" if="[[_haveWidgets]]">
+                    <paper-toggle-button id="draggingSwitch"
+                                         on-change="_onDraggingSwitch"
+                                         style="margin: 0 0.5em;">
+                    </paper-toggle-button>
+                    <span class="toggleLabel">EDIT MODE</span>
+
+                    <div class="flex layout horizontal center center-justified">
+                        <paper-button on-tap="_zoomIn">
+                            <iron-icon icon="zoom-in"></iron-icon>
+                        </paper-button>
+                        <div class="zoomFactor" on-tap="_resetZoom"><span>[[_zoomFactor]]</span></div>
+                        <paper-button on-tap="_zoomOut">
+                            <iron-icon icon="zoom-out"></iron-icon>
+                        </paper-button>
+                    </div>
+                </template>
+            </div>
+            <template is="dom-if" if="[[!_presenter.maximixed]]">
+                <button id="consoleSwitchButton" on-tap="_switchConsole"></button>
             </template>
         </div>
 
@@ -156,7 +302,11 @@
                 <h1>OpenRemote Console</h1>
 
                 <p>
-                    This panel has no widgets. Open the editor with the button in the top right corner.
+                    This is an empty panel.
+                </p>
+
+                <p>
+                    Hold the mouse button or touch the screen for a few seconds to edit your panel.
                 </p>
             </div>
         </template>

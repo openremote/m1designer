@@ -1,17 +1,18 @@
 package org.openremote.beta.client.shell;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.html.IFrameElement;
-import org.openremote.beta.client.console.ConsoleMessageSendEvent;
-import org.openremote.beta.client.console.ConsoleReadyEvent;
-import org.openremote.beta.client.console.ConsoleRefreshEvent;
-import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
-import org.openremote.beta.client.editor.flow.FlowDeletedEvent;
-import org.openremote.beta.client.editor.flow.FlowEditEvent;
-import org.openremote.beta.client.editor.flow.FlowModifiedEvent;
+import org.openremote.beta.client.console.*;
+import org.openremote.beta.client.editor.flow.*;
+import org.openremote.beta.client.shared.ShowFailureEvent;
+import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.session.event.*;
+import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class ShellPresenter extends EventSessionPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShellPresenter.class);
+
+    private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
     public boolean editorOpen;
 
@@ -48,8 +51,12 @@ public class ShellPresenter extends EventSessionPresenter {
             }
         });
 
-        addEventListener(MessageSendEvent.class,event -> {
+        addEventListener(MessageSendEvent.class, event -> {
             dispatchEvent("#messageLog", event);
+        });
+
+        addEventListener(ConfirmationEvent.class, event -> {
+            dispatchEvent(getRequiredElement("#confirmationDialog"), event);
         });
 
         addEventListener(
@@ -88,8 +95,32 @@ public class ShellPresenter extends EventSessionPresenter {
                 } else {
                     dispatchEvent(getConsoleView(), new EditorCloseEvent());
                 }
+
+                ClientPresetVariant clientPresetVariant = new ClientPresetVariant(
+                    Browser.getWindow().getNavigator().getUserAgent(),
+                    Browser.getWindow().getScreen().getWidth(),
+                    Browser.getWindow().getScreen().getHeight()
+                );
+
+                loadPresetFlow(clientPresetVariant);
             }
         );
+
+        addEventListener(
+            ConsoleSwitchEvent.class, event -> {
+                if (event.isMaximized() && editorOpen) {
+
+
+                    dispatchEvent("#messageLog", new MessageLogCloseEvent());
+                    dispatchEvent(new EditorCloseEvent());
+                    editorOpen = false;
+                } else if (!event.isMaximized() && !editorOpen){
+                    dispatchEvent("#messageLog", new MessageLogOpenEvent());
+                    dispatchEvent(new EditorOpenEvent(event.getFlow() != null ? event.getFlow().getId() : null));
+                    editorOpen = true;
+                }
+                notifyPath("editorOpen", editorOpen);
+            });
 
         addEventListener(
             ConsoleWidgetUpdatedEvent.class, event -> {
@@ -103,6 +134,22 @@ public class ShellPresenter extends EventSessionPresenter {
             ConsoleRefreshEvent.class, event -> {
                 if (isConsoleViewAvailable()) {
                     dispatchEvent(getConsoleView(), event);
+                }
+            }
+        );
+
+        addEventListener(
+            ConsoleWidgetSelectEvent.class, event -> {
+                if (isConsoleViewAvailable()) {
+                    dispatchEvent(getConsoleView(), event);
+                }
+            }
+        );
+
+        addEventListener(
+            ConsoleWidgetSelectedEvent.class, event -> {
+                if (isEditorViewAvailable()) {
+                    dispatchEvent(getEditorView(), event);
                 }
             }
         );
@@ -135,17 +182,33 @@ public class ShellPresenter extends EventSessionPresenter {
         dispatchEvent(new EventSessionConnectEvent());
     }
 
-    public void toggleEditor() {
-        if (editorOpen) {
-            dispatchEvent("#messageLog", new MessageLogCloseEvent());
-            dispatchEvent(new EditorCloseEvent());
-            editorOpen = false;
-        } else {
-            dispatchEvent("#messageLog", new MessageLogOpenEvent());
-            dispatchEvent(new EditorOpenEvent());
-            editorOpen = true;
-        }
-        notifyPath("editorOpen", editorOpen);
+    protected void loadPresetFlow(ClientPresetVariant clientPresetVariant) {
+        sendRequest(
+            false,
+            false,
+            resource("flow", "preset")
+                .addQueryParam("agent", clientPresetVariant.getUserAgent())
+                .addQueryParam("width", Integer.toString(clientPresetVariant.getWidthPixels()))
+                .addQueryParam("height", Integer.toString(clientPresetVariant.getHeightPixels()))
+                .get(),
+            new ObjectResponseCallback<Flow>("Load preset flow", FLOW_CODEC) {
+                @Override
+                protected void onResponse(Flow flow) {
+                    dispatchEvent(new ConsoleRefreshEvent(flow, false));
+                }
+
+                @Override
+                public void onFailure(RequestFailure requestFailure) {
+                    super.onFailure(requestFailure);
+                    if (requestFailure != null && requestFailure.statusCode == 404) {
+                        LOG.debug("No preset flow found...");
+                    } else {
+                        dispatchEvent(
+                            new ShowFailureEvent("Can't initialize panel. " + requestFailure.getFailureMessage()));
+                    }
+                }
+            }
+        );
     }
 
     protected boolean isEditorViewAvailable() {

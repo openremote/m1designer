@@ -6,6 +6,7 @@
 
 <link rel="import" href="or-shell-toast.html">
 <link rel="import" href="or-shell-messagelog.html">
+<link rel="import" href="or-shell-confirmation.html">
 
 <script>
     // One-time initialization, this MUST be a script in an imported file! The
@@ -34,14 +35,6 @@
                         return new openremote.shell.ShellPresenter(this);
                     }
                 },
-                editorOpen: {
-                    type: Boolean,
-                    value: false
-                },
-                _editorMinWidth: {
-                    type: Number,
-                    value: 500
-                },
                 _consoleWidth: {
                     type: Number,
                     value: 400
@@ -52,7 +45,7 @@
                 },
                 _consoleResizeThreshold: {
                     type: Number,
-                    value: 0
+                    value: 10
                 },
                 _consoleResizeSnapRightThreshold: {
                     type: Number,
@@ -70,27 +63,21 @@
                 "show-failure": "_onShowFailure",
                 "request-complete": "_onShowInfo"
             },
-            attached: function() {
-                if (this.editorOpen) {
-                    this.async(function() {
-                        this._toggleEditor();
-                    })
-                }
-            },
-            _toggleEditor: function () {
-                this._presenter.toggleEditor();
-            },
-            _onEditorOpen: function() {
+            _onEditorOpen: function (ce, event) {
                 this.$.editor.style.display = "inherit";
-                this.$.editor.src = "editor.html";
-                this.$.consoleContainer.style.flexBasis = this._consoleWidth + "px";
+                if (event.flowId) {
+                    this.$.editor.src = "editor.html?flowId=" + event.flowId;
+                } else {
+                    this.$.editor.src = "editor.html";
+                }
+                this._consoleResize(this._consoleWidth);
                 this.$.consoleResizeHandle.style.minWidth = this._consoleResizeHandleWidth + "px";
                 this.$.consoleResizeHandle.style.display = "block";
             },
-            _onEditorClose: function() {
+            _onEditorClose: function () {
                 this.$.editor.style.display = "none";
                 this.$.editor.src = "about:blank";
-                this.$.consoleContainer.style.flexBasis = "100vw";
+                this._consoleResize();
                 this.$.consoleResizeHandle.style.minWidth = "0";
                 this.$.consoleResizeHandle.style.display = "none";
             },
@@ -104,30 +91,31 @@
                 document.documentElement.addEventListener("touchend", this._consoleResizeEnd.bind(this), false);
                 this.toggleClass("active", true, this.$.consoleResizeHandle);
                 this.toggleClass("active", true, this.$.consoleLabel);
-                this._consoleResizeInProgress = {cursor: detail.x, panelWidth: this.$.consoleContainer.clientWidth};
+                this._consoleResizeInProgress = {cursor: detail.x, originalWidth: this.$.console.clientWidth};
             },
             _consoleResizeMove: function (e) {
                 e.preventDefault();
                 this.async(function () {
-                    var x = e.clientX || e.changedTouches[0].clientX;
+                    var x = e.clientX;
+                    if (!x && e.changedTouches) {
+                        x = e.changedTouches[0].clientX;
+                    }
                     if (x && this._consoleResizeInProgress) {
 
                         var cursorOffset = this._consoleResizeInProgress.cursor - x;
-                        var newWidth = this._consoleResizeInProgress.panelWidth + cursorOffset;
+                        var newWidth = this._consoleResizeInProgress.originalWidth + cursorOffset;
 
                         // Only move if diff is larger than threshold, might look choppy but avoids too many events
-                        if (Math.abs(this.$.consoleContainer.clientWidth - newWidth) < this._consoleResizeThreshold) {
+                        if (Math.abs(this.$.console.clientWidth - newWidth) < this._consoleResizeThreshold) {
                             return;
                         }
 
                         // Snap to right border if we are getting close and still moving towards the right
                         if (x > document.documentElement.clientWidth - this._consoleResizeSnapRightThreshold && cursorOffset < 0) {
-                            newWidth = this._consoleResizeHandleWidth;
+                            newWidth = 0;
                         }
 
-                        // Stay within bounds
-                        if (newWidth >= this._consoleResizeHandleWidth
-                                && newWidth + this._editorMinWidth < document.documentElement.clientWidth + 10) {
+                        if (newWidth >= 0) {
                             this._consoleResize(newWidth);
                         }
                     }
@@ -148,8 +136,12 @@
                 }
             },
             _consoleResize: function (width) {
-                this.$.consoleContainer.style.flexBasis = width + "px";
-                this._consoleWidth = width;
+                if (width !== undefined) {
+                    this.$.console.style.maxWidth = width + "px";
+                    this._consoleWidth = width;
+                } else {
+                    this.$.console.style.maxWidth = "100vw";
+                }
             },
             _onShowInfo: function (ce, event) {
                 this.$.toast.show(false, event.text, 3000);
@@ -168,8 +160,9 @@
 
         :host {
             height: 100vh;
+            width: 100vw;
             display: flex;
-            flex-direction: row;
+            display: -webkit-flex;
         }
 
         #messageLog {
@@ -177,48 +170,26 @@
         }
 
         #editor {
-            flex-grow: 1;
-            flex-shrink: 0;
-            flex-basis: auto;
             display: none;
-        }
-
-        #editorToggleButton {
-            position: fixed;
-            top: 3px;
-            right: 3px;
-            width: 28px;
-            height: 28px;
-            background: transparent;
-            border: 2px dotted var(--default-primary-color, white);
-            cursor: pointer;
-        }
-
-        #editorToggleButton:active {
-            background: var(--default-primary-color, white);
-            border: none;
-        }
-
-        #editorToggleButton:focus {
-            outline: 0;
-        }
-
-        #consoleContainer {
-            flex-grow: 0;
-            flex-shrink: 0;
-            flex-basis: 100vw;
-            overflow: hidden;
-            resize: horizontal;
-            display: flex;
+            flex: 1 0 auto;
+            -webkit-flex: 1 0 auto;
         }
 
         #consoleResizeHandle {
             display: none;
             background-color: black;
             height: 100vh;
-            flex: 0 0 0;
             cursor: pointer;
             position: relative;
+            flex: 0 0 auto;
+            -webkit-flex: 0 0 auto;
+        }
+
+        #console {
+            height: 100vh;
+            width: 100vw;
+            flex: 1 1 100vw;
+            -webkit-flex: 1 1 100vw;
         }
 
         #consoleResizeHandle.active {
@@ -230,6 +201,7 @@
             top: 50%;
             left: 50%;
             transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+            -webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
             color: var(--or-lightgreen, white);
             font-style: italic;
         }
@@ -238,10 +210,6 @@
             color: var(--or-darkgrey, black);
         }
 
-        #console {
-            height: 100vh;
-            flex: 1 0 100px;
-        }
     </style>
     <template>
 
@@ -249,16 +217,15 @@
 
         <or-shell-messagelog id="messageLog"></or-shell-messagelog>
 
+        <or-shell-confirmation id="confirmationDialog"></or-shell-confirmation>
+
         <iframe id="editor" frameborder="0" src="about:blank"></iframe>
 
-        <div id="consoleContainer">
-            <div id="consoleResizeHandle" on-down="_consoleResizeStart">
-                <div id="consoleLabel">CONSOLE</div>
-            </div>
-            <iframe id="console" frameborder="0" src="/console.html"></iframe>
+        <div id="consoleResizeHandle" on-down="_consoleResizeStart">
+            <div id="consoleLabel">CONSOLE</div>
         </div>
 
-        <button id="editorToggleButton" on-click="_toggleEditor"></button>
+        <iframe id="console" frameborder="0" src="/console.html"></iframe>
 
     </template>
 </dom-module>

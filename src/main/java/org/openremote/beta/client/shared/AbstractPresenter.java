@@ -9,7 +9,6 @@ import elemental.dom.Node;
 import elemental.dom.TimeoutHandler;
 import elemental.events.CustomEvent;
 import elemental.events.EventRemover;
-import elemental.json.JsonBoolean;
 import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +200,7 @@ public abstract class AbstractPresenter {
     }
 
     protected void addRedirectToShellView(Class<? extends Event> eventClass) {
-        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("or-shell");
+        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("#shell");
         if (shellView == null) {
             throw new RuntimeException("Missing 'or-shell' view in browser top window document");
         }
@@ -209,6 +208,10 @@ public abstract class AbstractPresenter {
             getView(), eventClass, event ->
             dispatchEvent(shellView, event)
         );
+    }
+
+    protected String getWindowQueryArgument(String parameter) {
+        return JsUtil.getQueryArgument(parameter);
     }
 
 }

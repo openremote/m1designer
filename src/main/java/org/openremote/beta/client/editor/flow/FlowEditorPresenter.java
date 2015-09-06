@@ -9,12 +9,10 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
-import org.openremote.beta.client.console.ConsoleMessageSendEvent;
-import org.openremote.beta.client.console.ConsoleRefreshEvent;
-import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
+import org.openremote.beta.client.console.*;
 import org.openremote.beta.client.editor.flow.designer.FlowDesigner;
 import org.openremote.beta.client.editor.flow.designer.FlowDesignerConstants;
-import org.openremote.beta.client.editor.flow.designer.FlowDesignerNodeSelectedEvent;
+import org.openremote.beta.client.editor.flow.node.NodeSelectedEvent;
 import org.openremote.beta.client.editor.flow.designer.FlowEditorViewportMediator;
 import org.openremote.beta.client.editor.flow.node.*;
 import org.openremote.beta.client.shared.Callback;
@@ -101,7 +99,7 @@ public class FlowEditorPresenter extends RequestPresenter {
 
             startFlowDesigner();
 
-            sendConsoleRefresh(flow);
+            sendConsoleRefresh(flow, flowUnsaved);
         });
 
         addEventListener(FlowStatusEvent.class, event -> {
@@ -120,13 +118,14 @@ public class FlowEditorPresenter extends RequestPresenter {
             setFlowStatusDetail(flowStatusDetail);
             setFlowDirty(true);
             if (event.isNotifyConsole()) {
-                sendConsoleRefresh(event.getFlow());
+                sendConsoleRefresh(event.getFlow(), true);
             }
         });
 
-        addEventListener(FlowDesignerNodeSelectedEvent.class, event -> {
+        addEventListener(NodeSelectedEvent.class, event -> {
             dispatchEvent("#flowNode", new FlowNodeEditEvent(flow, event.getNode()));
             isFlowNodeOpen = true;
+            dispatchEvent(new ConsoleWidgetSelectEvent(event.getNode().getId()));
         });
 
         addEventListener(NodeUpdatedEvent.class, event -> {
@@ -172,6 +171,16 @@ public class FlowEditorPresenter extends RequestPresenter {
                     if (isFlowNodeOpen) {
                         dispatchEvent("#flowNode", new NodePropertiesRefreshEvent(node.getId()));
                     }
+                }
+            }
+        });
+
+        addEventListener(ConsoleWidgetSelectedEvent.class, event -> {
+            if (flow != null && flowDesigner != null) {
+                Node node = flow.findNode(event.getNodeId());
+                if (node != null) {
+                    LOG.debug("Received console select: " + node);
+                    dispatchEvent(new NodeSelectedEvent(node));
                 }
             }
         });
@@ -256,6 +265,17 @@ public class FlowEditorPresenter extends RequestPresenter {
 
     /* ################################################################################# */
 
+    protected void closeEditor() {
+        flow = null;
+        notifyPathNull("flow");
+
+        dispatchEvent("#flowNode", new FlowNodeCloseEvent());
+        isFlowNodeOpen = false;
+
+        stopFlowDesigner();
+
+        sendConsoleRefresh(null, false);
+    }
 
     protected Flow copyFlow() {
         return FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
@@ -341,7 +361,7 @@ public class FlowEditorPresenter extends RequestPresenter {
         flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
             @Override
             protected void onSelection(Node node) {
-                dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
+                dispatchEvent(new NodeSelectedEvent(node));
             }
 
             @Override
@@ -373,14 +393,14 @@ public class FlowEditorPresenter extends RequestPresenter {
         }
     }
 
-    protected void sendConsoleRefresh(Flow flow) {
+    protected void sendConsoleRefresh(Flow flow, boolean flowDirty) {
         if (flow == null) {
-            dispatchEvent(new ConsoleRefreshEvent(null));
+            dispatchEvent(new ConsoleRefreshEvent(null, false));
             return;
         }
 
         Flow dupe = copyFlow();
-        new UpdateDependencies(dupe, true, () -> dispatchEvent(new ConsoleRefreshEvent(dupe))).call();
+        new UpdateDependencies(dupe, true, () -> dispatchEvent(new ConsoleRefreshEvent(dupe, flowDirty))).call();
     }
 
 
@@ -463,6 +483,7 @@ public class FlowEditorPresenter extends RequestPresenter {
             if (flow != null && flow.getId().equals(flowToSave.getId())) {
                 setFlowUnsaved(false);
                 setFlowDirty(false);
+                sendConsoleRefresh(flow, false);
             }
         }
     }
@@ -521,17 +542,8 @@ public class FlowEditorPresenter extends RequestPresenter {
 
         protected void deleteSuccess() {
             if (flow != null && flow.getId().equals(flowToDelete.getId())) {
-                flow = null;
-                notifyPathNull("flow");
-
-                dispatchEvent("#flowNode", new FlowNodeCloseEvent());
-                isFlowNodeOpen = false;
-
-                stopFlowDesigner();
-
-                sendConsoleRefresh(null);
+                closeEditor();
             }
-
             dispatchEvent(new ShowInfoEvent("Flow '" + flowToDelete.getDefaultedLabel() + "' deleted."));
             dispatchEvent(new FlowDeletedEvent(flowToDelete));
         }
@@ -585,7 +597,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                 flowDesigner.addNodeShape(node);
 
                 flowDesigner.selectNodeShape(node);
-                dispatchEvent(new FlowDesignerNodeSelectedEvent(node));
+                dispatchEvent(new NodeSelectedEvent(node));
             }
         }
     }

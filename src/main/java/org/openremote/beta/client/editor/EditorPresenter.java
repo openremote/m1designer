@@ -2,9 +2,7 @@ package org.openremote.beta.client.editor;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.console.ConsoleMessageSendEvent;
-import org.openremote.beta.client.console.ConsoleRefreshEvent;
-import org.openremote.beta.client.console.ConsoleWidgetUpdatedEvent;
+import org.openremote.beta.client.console.*;
 import org.openremote.beta.client.editor.flow.*;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
@@ -31,10 +29,12 @@ public class EditorPresenter extends RequestPresenter {
         addRedirectToShellView(RequestFailureEvent.class);
         addRedirectToShellView(ShowInfoEvent.class);
         addRedirectToShellView(ShowFailureEvent.class);
+        addRedirectToShellView(ConfirmationEvent.class);
         addRedirectToShellView(FlowEditEvent.class);
         addRedirectToShellView(FlowModifiedEvent.class);
         addRedirectToShellView(FlowDeletedEvent.class);
         addRedirectToShellView(ConsoleRefreshEvent.class);
+        addRedirectToShellView(ConsoleWidgetSelectEvent.class);
         addRedirectToShellView(MessageSendEvent.class);
         addRedirectToShellView(ServerSendEvent.class);
 
@@ -77,12 +77,21 @@ public class EditorPresenter extends RequestPresenter {
         addEventListener(ConsoleWidgetUpdatedEvent.class, event -> {
             dispatchEvent("#flowEditor", event);
         });
+
+        addEventListener(ConsoleWidgetSelectedEvent.class, event -> {
+            dispatchEvent("#flowEditor", event);
+        });
     }
 
     @Override
     public void attached() {
         super.attached();
         dispatchEvent("#editorSidebar", new InventoryRefreshEvent());
+
+        String flowId = getWindowQueryArgument("flowId");
+        if (flowId != null && flowId.length() > 0) {
+            dispatchEvent(new FlowLoadEvent(flowId));
+        }
     }
 
 }

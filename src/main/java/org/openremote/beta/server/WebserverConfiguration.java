@@ -42,7 +42,7 @@ public class WebserverConfiguration implements Configuration {
     private static final Logger LOG = LoggerFactory.getLogger(WebserverConfiguration.class);
 
     public static final String WEBSERVER_ADDRESS = "WEBSERVER_ADDRESS";
-    public static final String WEBSERVER_ADDRESS_DEFAULT = "0.0.0.0";
+    public static final String WEBSERVER_ADDRESS_DEFAULT = "127.0.0.1";
     public static final String WEBSERVER_PORT = "WEBSERVER_PORT";
     public static final String WEBSERVER_PORT_DEFAULT = "8080";
     public static final String WEBSERVER_DOCUMENT_ROOT = "WEBSERVER_DOCUMENT_ROOT";

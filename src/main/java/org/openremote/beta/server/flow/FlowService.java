@@ -5,6 +5,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.beta.server.catalog.NodeDescriptor;
+import org.openremote.beta.server.inventory.InventoryService;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.server.testdata.SampleEnvironmentWidget;
@@ -12,7 +13,9 @@ import org.openremote.beta.server.testdata.SampleTemperatureProcessor;
 import org.openremote.beta.server.testdata.SampleThermostatControl;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.*;
+import org.openremote.beta.shared.inventory.ClientPreset;
 import org.openremote.beta.shared.model.Identifier;
+import org.openremote.beta.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,10 +93,12 @@ public class FlowService implements StaticService {
 
     final protected CamelContext context;
     final protected RouteManagementService routeManagementService;
+    final protected InventoryService inventoryService;
 
-    public FlowService(CamelContext context, RouteManagementService routeManagementService) {
+    public FlowService(CamelContext context, RouteManagementService routeManagementService, InventoryService inventoryService) {
         this.context = context;
         this.routeManagementService = routeManagementService;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -133,7 +138,7 @@ public class FlowService implements StaticService {
 
     public Node createSubflowNode(@Header("id") String id) {
         LOG.debug("Creating subflow node of: " + id);
-        Flow flow = getFlow(id);
+        Flow flow = getFlow(id, false);
         if (flow == null)
             return null;
 
@@ -162,7 +167,7 @@ public class FlowService implements StaticService {
         return subflowNode;
     }
 
-    public Flow getFlow(@Header("id") String id) {
+    public Flow getFlow(@Header("id") String id, @Header("hydrateSubs") Boolean hydrateSubs) {
         LOG.debug("Getting flow: " + id);
         synchronized (SAMPLE_FLOWS) {
 
@@ -170,17 +175,32 @@ public class FlowService implements StaticService {
             if (flow == null)
                 return null;
 
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, false);
+            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, hydrateSubs != null ? hydrateSubs : false);
 
             return flow;
         }
+    }
+
+    public Flow getPresetFlow(@Header("agent") String agent, @Header("width") Integer width, @Header("height") Integer height) {
+        ClientPresetVariant clientPresetVariant = new ClientPresetVariant(agent, width, height);
+        LOG.debug("Getting preset flow: " + clientPresetVariant);
+        String flowId = null;
+        ClientPreset[] presets = inventoryService.getClientPresets();
+        for (ClientPreset preset : presets) {
+            if (preset.matches(clientPresetVariant) && preset.getInitialFlowId() != null) {
+                LOG.debug("Matching preset for variant, using flow: " + preset.getInitialFlowId());
+                flowId = preset.getInitialFlowId();
+                break;
+            }
+        }
+        return getFlow(flowId, true);
     }
 
     public void deleteFlow(String id) throws Exception {
         LOG.debug("Delete flow: " + id);
         synchronized (SAMPLE_FLOWS) {
 
-            Flow flow = getFlow(id);
+            Flow flow = getFlow(id, false);
             if (flow == null)
                 return;
 

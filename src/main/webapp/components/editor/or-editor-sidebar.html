@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 
+<link rel="import" href="or-editor-inventory.html">
 <link rel="import" href="or-editor-flows.html">
 <link rel="import" href="or-editor-catalog.html">
 
@@ -27,17 +28,17 @@
                 }
             },
             observers: [
-                    "_onCatalogVisible(_presenter.catalogVisible)"
+                "_onCatalogVisible(_presenter.catalogVisible)"
             ],
             _onTabSelect: function (index) {
                 switch (index) {
                     case 0:
-                        this.set("_showDiscovery", true);
-                        this.set("_showInventory", false);
+                        this.set("_showInventory", true);
+                        this.set("_showFlows", false);
                         break;
                     case 1:
-                        this.set("_showDiscovery", false);
-                        this.set("_showInventory", true);
+                        this.set("_showInventory", false);
+                        this.set("_showFlows", true);
                         break;
                 }
             },
@@ -53,13 +54,17 @@
     <style>
         :host {
             display: flex;
+            display: -webkit-flex;
             flex-direction: column;
+            -webkit-flex-direction: column;
             height: 100vh;
         }
 
         #container {
             display: flex;
+            display: -webkit-flex;
             flex-direction: column;
+            -webkit-flex-direction: column;
             height: 100%;
         }
 
@@ -80,17 +85,25 @@
 
         .section {
             display: flex;
+            display: -webkit-flex;
             flex-direction: column;
+            -webkit-flex-direction: column;
         }
 
         .section .head {
             background-color: var(--or-editor-sidebar-title-background-color, black);
             color: var(--or-editor-sidebar-title-color, white);
             flex: 0 0 40px;
+            -webkit-flex: 0 0 40px;
             display: flex;
-            flex-direction: column;
+            display: -webkit-flex;
+            flex-direction: row;
+            -webkit-flex-direction: row;
             justify-content: center;
-            align-items: center
+            -webkit-justify-content: center;
+            align-items: center;
+            -webkit-align-items: center;
+            font-size: smaller;
         }
 
         .section .head .title {
@@ -99,9 +112,21 @@
             cursor: default;
         }
 
+        #inventory {
+            --or-editor-inventory: {
+                flex: 1 0 0;
+                -webkit-flex: 1 0 0;
+            };
+            --or-editor-inventory-toolbar: {
+                background: var(--or-editor-sidebar-toolbar-background-color);
+                color: var(--or-editor-sidebar-toolbar-color);
+            };
+        }
+
         #flows {
             --or-editor-flows: {
                 flex: 1 0 0;
+                -webkit-flex: 1 0 0;
             };
             --or-editor-flows-toolbar: {
                 background: var(--or-editor-sidebar-toolbar-background-color);
@@ -112,6 +137,12 @@
         #catalog {
             --or-editor-catalog: {
                 flex: 1 0 0;
+                -webkit-flex: 1 0 0;
+            };
+
+            --or-editor-catalog-toolbar: {
+                background: var(--or-editor-sidebar-toolbar-background-color);
+                color: var(--or-editor-sidebar-toolbar-color);
             };
         }
 
@@ -119,6 +150,7 @@
 
             #container {
                 flex-direction: row;
+                -webkit-flex-direction: row;
             }
 
             #browser,
@@ -126,7 +158,6 @@
             #catalog {
                 height: 40%;
             }
-
         }
 
     </style>
@@ -137,14 +168,14 @@
             <div id="browser" class="section">
                 <div class="head">
                     <paper-tabs selected="{{_selectedTab}}">
-                        <paper-tab>DISCOVERY</paper-tab>
-                        <paper-tab>INVENTORY</paper-tab>
+                        <paper-tab>THINGS</paper-tab>
+                        <paper-tab>FLOWS</paper-tab>
                     </paper-tabs>
                 </div>
-                <template is="dom-if" if="[[_showDiscovery]]">
-                    This will be the INBOX...
-                </template>
                 <template is="dom-if" if="[[_showInventory]]">
+                    <or-editor-inventory id="inventory"></or-editor-inventory>
+                </template>
+                <template is="dom-if" if="[[_showFlows]]">
                     <or-editor-flows id="flows"></or-editor-flows>
                 </template>
             </div>
@@ -152,7 +183,7 @@
             <template is="dom-if" if="[[_presenter.catalogVisible]]">
                 <div id="catalog" class="section">
                     <div class="head">
-                        <div class="title">CATALOG</div>
+                        <div class="title">ELEMENTS</div>
                     </div>
                     <or-editor-catalog id="catalog"></or-editor-catalog>
                 </div>

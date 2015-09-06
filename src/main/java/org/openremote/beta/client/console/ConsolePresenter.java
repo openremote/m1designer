@@ -7,9 +7,11 @@ import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.js.util.JsMapFromStringTo;
+import org.openremote.beta.client.editor.flow.ConfirmationEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
+import org.openremote.beta.client.shared.LongPressListener;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
@@ -28,20 +30,30 @@ public class ConsolePresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsolePresenter.class);
 
+    public static final int SWITCH_LONG_PRESS_DELAY_MILLIS = 1500;
+
+    public boolean maximized = true;
+    protected Flow flow;
+    protected boolean flowDirty;
+
     public ConsolePresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
+        addRedirectToShellView(ConfirmationEvent.class);
         addRedirectToShellView(ConsoleReadyEvent.class);
+        addRedirectToShellView(ConsoleSwitchEvent.class);
         addRedirectToShellView(ConsoleMessageSendEvent.class);
         addRedirectToShellView(ConsoleWidgetUpdatedEvent.class);
+        addRedirectToShellView(ConsoleWidgetSelectedEvent.class);
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
-            DOM container = getDOM(getWidgetComponentContainer());
-            clearWidgetContainer(container);
-            if (event.getFlow() != null) {
-                updateWidgets(event.getFlow(), container);
-            }
-            dispatchEvent(new ConsoleRefreshedEvent());
+            flow = event.getFlow();
+            flowDirty = event.isDirty();
+            refreshConsole();
+        });
+
+        addEventListener(ConsoleWidgetSelectEvent.class, event -> {
+            selectWidget(event.getNodeId());
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -51,9 +63,56 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     @Override
+    public void ready() {
+        super.ready();
+        new LongPressListener(getView(), SWITCH_LONG_PRESS_DELAY_MILLIS, this::switchConsole);
+    }
+
+    @Override
     public void attached() {
         super.attached();
         dispatchEvent(new ConsoleReadyEvent());
+    }
+
+    public void switchConsole() {
+        if (!maximized && flowDirty) {
+            dispatchEvent(new ConfirmationEvent(
+                "Unsaved Changes",
+                "You have edited the current flow and not redeployed/saved the changes. Close?",
+                () -> {
+                    maximized = !maximized;
+                    notifyPath("maximized", maximized);
+                    dispatchEvent(new ConsoleSwitchEvent(flow, maximized));
+                }
+            ));
+        } else {
+            maximized = !maximized;
+            notifyPath("maximized", maximized);
+            dispatchEvent(new ConsoleSwitchEvent(flow, maximized));
+        }
+    }
+
+    public void widgetSelected(String nodeId) {
+        dispatchEvent(new ConsoleWidgetSelectedEvent(nodeId));
+        selectWidget(nodeId);
+    }
+
+    protected void selectWidget(String nodeId) {
+        elemental.dom.Node[] widgets = getDOM(getWidgetComponentContainer()).getChildNodes();
+        for (elemental.dom.Node widget : widgets) {
+            Component widgetComponent = (Component) widget;
+            String widgetNodeId = (String) widgetComponent.get("nodeId");
+            widgetComponent.toggleClass("selected", nodeId.equals(widgetNodeId), widget);
+        }
+    }
+
+    protected void refreshConsole() {
+        DOM container = getDOM(getWidgetComponentContainer());
+        clearWidgetContainer(container);
+        if (flow  != null) {
+            updateWidgets(flow, container);
+        }
+        dispatchEvent(new ConsoleRefreshedEvent());
     }
 
     protected Element getWidgetComponentContainer() {
@@ -87,6 +146,17 @@ public class ConsolePresenter extends AbstractPresenter {
 
     protected void updateWidgets(Flow flow, DOM container) {
         updateWidgets(flow, flow, container, null);
+
+        // Remove all composite widget trees that have only other (empty) composite widget children
+        elemental.dom.Node[] compositeWidgets = container.querySelectorAll("or-console-widget-composite");
+        for (elemental.dom.Node compositeWidgetNode : compositeWidgets) {
+            DOM compositeDOM = getDOMRoot((Element) compositeWidgetNode);
+            elemental.dom.Node[] nonCompositeChildren =
+                compositeDOM.querySelectorAll(":not(or-console-widget-composite)");
+            if (nonCompositeChildren.length == 0) {
+                getDOM(compositeWidgetNode).getParentNode().removeChild(compositeWidgetNode);
+            }
+        }
     }
 
     protected void updateWidgets(Flow rootFlow, Flow currentFlow, DOM container, String instanceId) {
@@ -149,7 +219,6 @@ public class ConsolePresenter extends AbstractPresenter {
         widget.set("persistentPropertyPaths", node.getPersistentPropertyPaths());
 
         if (widget.get("onWidgetPropertiesChanged") != null) {
-            // Must therefore be PropertiesAwareWidget
             widget.set("widgetProperties", widgetProperties);
         }
 

@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
 import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
+import org.openremote.beta.server.inventory.InventoryService;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -38,6 +39,12 @@ public class FlowServiceConfiguration implements Configuration {
                 .get("/template")
                 .route().id("GET flow template")
                 .bean(getContext().hasService(FlowService.class), "getFlowTemplate")
+                .endRest()
+
+                .get("/preset")
+                .route().id("GET flow by preset")
+                .bean(getContext().hasService(FlowService.class), "getPresetFlow")
+                .to("direct:restStatusNotFound")
                 .endRest()
 
                 .get("/{id}/subflow")
@@ -142,7 +149,8 @@ public class FlowServiceConfiguration implements Configuration {
 
         FlowService flowService = new FlowService(
             context,
-            context.hasService(RouteManagementService.class)
+            context.hasService(RouteManagementService.class),
+            context.hasService(InventoryService.class)
         );
         context.addService(flowService);
 

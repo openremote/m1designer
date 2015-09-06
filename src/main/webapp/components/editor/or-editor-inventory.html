@@ -1,0 +1,185 @@
+<link rel="import" href="or-editor-inventory-presets.html">
+
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-editor-inventory',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.editor.inventory.InventoryPresenter(this);
+                    }
+                },
+                _selectedTab: {
+                    type: Number,
+                    value: 2,
+                    observer: "_onTabSelect"
+                }
+            },
+            _openManager: function() {
+                this._presenter.setManagerOpen(true);
+                this.$.manager.open();
+            },
+            _closeManager: function() {
+                this._presenter.setManagerOpen(false);
+                this.$.manager.close();
+            },
+            _onTabSelect: function (index) {
+                switch (index) {
+                    case 0:
+                        this.set("_showInventory", true);
+                        this.set("_showLibraries", false);
+                        this.set("_showPresets", false);
+                        this.set("_showSettings", false);
+                        break;
+                    case 1:
+                        this.set("_showInventory", false);
+                        this.set("_showLibraries", true);
+                        this.set("_showPresets", false);
+                        this.set("_showSettings", false);
+                        break;
+                    case 2:
+                        this.set("_showInventory", false);
+                        this.set("_showLibraries", false);
+                        this.set("_showPresets", true);
+                        this.set("_showSettings", false);
+                        break;
+                    case 3:
+                        this.set("_showInventory", false);
+                        this.set("_showLibraries", false);
+                        this.set("_showPresets", false);
+                        this.set("_showSettings", true);
+                        break;
+                }
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-editor-inventory">
+
+    <style>
+        :host {
+            display: flex;
+            display: -webkit-flex;
+            flex-direction: column;
+            -webkit-flex-direction: column;
+            @apply(--or-editor-flows)
+        }
+
+        #toolbar {
+            flex: 0 0 40px;
+            -webkit-flex: 0 0 40px;
+            display: flex;
+            display: -webkit-flex;
+            justify-content: space-around;
+            -webkit-justify-content: space-around;
+            white-space: nowrap;
+            font-size: smaller;
+
+            @apply(--or-editor-inventory-toolbar)
+        }
+
+        #toolbar paper-menu .iron-selected {
+            font-weight: inherit;
+        }
+
+        #list {
+            flex: 1 0 0;
+            -webkit-flex: 1 0 0;
+            overflow: auto;
+            padding: 0.4em;
+            min-height: 2em;
+            font-size: smaller;
+
+            @apply(--or-editor-inventory-list);
+        }
+
+        #list #empty {
+            @apply(--or-editor-inventory-list-empty)
+        }
+
+        #manager {
+            position: absolute;
+            top: 100px;
+            left: 200px;
+            z-index: 999;
+            --or-panel-width: 700px;
+            --or-panel-max-height: 500px;
+        }
+
+        @media all and (max-width: 640px) {
+            #manager {
+                top: 20px;
+                left: 20px;
+            }
+        }
+
+
+    </style>
+
+    <template>
+
+        <div id="toolbar">
+            <paper-button on-tap="_openManager">
+                <iron-icon icon="build"></iron-icon>
+                Manage
+            </paper-button>
+            <paper-button>
+                <iron-icon icon="filter-list"></iron-icon>
+            </paper-button>
+        </div>
+
+        <div id="list">
+            <template is="dom-if" if="{{!_presenter.things.length}}">
+                <div id="empty">Your inventory is empty.</div>
+            </template>
+        </div>
+
+        <or-panel id="manager"
+                  modal
+                  hidden$="[[!_presenter.managerOpen]]">
+
+            <div class="titleToolbar">
+                <paper-tabs selected="{{_selectedTab}}">
+                    <paper-tab>INVENTORY</paper-tab>
+                    <paper-tab>LIBRARIES</paper-tab>
+                    <paper-tab>CLIENT PRESETS</paper-tab>
+                    <paper-tab>SETTINGS</paper-tab>
+                </paper-tabs>
+            </div>
+
+            <div class="content">
+                <template is="dom-if" if="[[_showPresets]]">
+                    <or-editor-inventory-presets></or-editor-inventory-presets>
+                </template>
+            </div>
+
+            <div class="bottomToolbar">
+
+                <paper-button disabled id="deleteButton" on-tap="_deleteFlow">
+                    <iron-icon icon="icons:delete"></iron-icon>
+                    Remove
+                </paper-button>
+
+                <paper-button on-tap="_closeManager">
+                    <iron-icon icon="close"></iron-icon>
+                    Close
+                </paper-button>
+            </div>
+
+        </or-panel>
+
+    </template>
+</dom-module>
+

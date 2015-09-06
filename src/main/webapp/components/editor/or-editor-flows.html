@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
@@ -36,14 +37,21 @@
     <style>
         :host {
             display: flex;
+            display: -webkit-flex;
             flex-direction: column;
+            -webkit-flex-direction: column;
             @apply(--or-editor-flows)
         }
 
         #toolbar {
             flex: 0 0 40px;
+            -webkit-flex: 0 0 40px;
             display: flex;
+            display: -webkit-flex;
             justify-content: space-around;
+            -webkit-justify-content: space-around;
+            white-space: nowrap;
+            font-size: smaller;
 
             @apply(--or-editor-flows-toolbar)
         }
@@ -54,8 +62,11 @@
 
         #list {
             flex: 1 0 0;
+            -webkit-flex: 1 0 0;
             overflow: auto;
             padding: 0.4em;
+            min-height: 2em;
+            font-size: smaller;
 
             @apply(--or-editor-flows-list);
         }
@@ -70,7 +81,6 @@
             padding: 0.4em;
             border-radius: 0.4em;
             background-color: var(--or-editor-flow-item-background-color, white);
-            overflow-x: auto;
             cursor: pointer;
         }
 
@@ -112,12 +122,15 @@
 
         <div id="toolbar">
             <paper-button on-tap="_createFlow">
-                <iron-icon icon="add"></iron-icon>
-                New Flow
+                <iron-icon icon="add-box"></iron-icon>
+                New
             </paper-button>
-            <paper-button class="dropdown-trigger">
+            <paper-button on-tap="_openLibrary">
+                <iron-icon icon="av:library-books"></iron-icon>
+                Library
+            </paper-button>
+            <paper-button>
                 <iron-icon icon="filter-list"></iron-icon>
-                Filter
             </paper-button>
         </div>
 

@@ -1,0 +1,153 @@
+<link rel="import" href="../shared/or-panel.html">
+
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-shell-confirmation',
+            properties: {
+                _confirmationTitle: {
+                    type: String,
+                    value: "Confirmation"
+                },
+                _confirmationText: {
+                    type: String
+                },
+                _confirmAction: {
+                    type: Function
+                },
+                _cancelAction: {
+                    type: Function
+                },
+                _otherActionText: {
+                    type: String
+                },
+                _otherAction: {
+                    type: Function
+                }
+            },
+            listeners: {
+                "confirmation": "_onConfirmation"
+            },
+            _onConfirmation: function (ce, event) {
+                this.set("_confirmationTitle", event.title);
+                this.set("_confirmationText", event.text);
+                this._confirmAction = event.confirmAction;
+                this._cancelAction = event.cancelAction;
+                this._otherActionText = event.otherActionText;
+                this._otherAction = event.otherAction;
+                this._openConfirmation();
+            },
+            _confirm: function () {
+                this._closeConfirmation();
+                if (this._confirmAction) {
+                    this._confirmAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _cancel: function () {
+                this._closeConfirmation();
+                if (this._cancelAction) {
+                    this._cancelAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _other: function () {
+                this._closeConfirmation();
+                if (this._otherAction) {
+                    this._otherAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _openConfirmation: function () {
+                this.toggleAttribute("hidden", false, this.$.confirmationPanel);
+                this.$.confirmationPanel.open();
+            },
+            _closeConfirmation: function () {
+                this.toggleAttribute("hidden", true, this.$.confirmationPanel);
+                this.$.confirmationPanel.close();
+            },
+            _clearConfirmation: function () {
+                this.set("_confirmationTitle", "Confirmation");
+                this.set("_confirmationText", undefined);
+                this._confirmAction = undefined;
+                this._cancelAction = undefined;
+                this._otherActionText = undefined;
+                this._otherAction = undefined;
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-shell-confirmation">
+
+    <style>
+        #confirmationPanel {
+            position: fixed;
+            left: 25vw;
+            top: 20vh;
+            z-index: 1000;
+            --or-panel-width: 355px;
+            --or-panel-max-height: 200px;
+        }
+
+        #confirmationPanel .confirmationText {
+            padding: 1em;
+        }
+
+        #confirmationPanel .confirm {
+            background-color: var(--or-shell-confirm-action-color);
+        }
+
+        #confirmationPanel .cancel {
+            background-color: var(--or-shell-confirm-cancel-color);
+        }
+
+        #confirmationPanel .other {
+            background-color: var(--or-shell-confirm-other-color);
+        }
+
+        @media all and (max-width: 1000px) {
+            #confirmationPanel {
+                position: fixed;
+                left: 10px;
+                top: 10px;
+            }
+        }
+
+    </style>
+
+    <template>
+        <or-panel id="confirmationPanel"
+                  title="[[_confirmationTitle]]"
+                  modal
+                  hidden>
+            <div class="content">
+                <div class="confirmationText">
+                    <span>[[_confirmationText]]</span>
+                </div>
+            </div>
+            <div class="bottomToolbar layout horizontal center">
+                <paper-button class="cancel" on-tap="_cancel">
+                    <iron-icon icon="icons:close"></iron-icon>
+                    Cancel
+                </paper-button>
+                <template is="dom-if" if="[[_otherAction]]">
+                    <paper-button class="other" on-tap="_other">
+                        <iron-icon icon="icons:done-all"></iron-icon>
+                        <span>[[_otherActionText]]</span>
+                    </paper-button>
+                </template>
+                <paper-button class="confirm" on-tap="_confirm">
+                    <iron-icon icon="icons:check"></iron-icon>
+                    OK
+                </paper-button>
+            </div>
+        </or-panel>
+    </template>
+</dom-module>
+

@@ -33,5 +33,19 @@ public class JsUtil {
         this.@AbstractPresenter::view.push("_presenter." + array, obj);
     }-*/;
 
+    static public native String getQueryArgument(String parameter) /*-{
+        var query = $wnd.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == parameter) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+        return undefined;
+    }-*/;
+
+
+
 
 }

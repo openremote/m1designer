@@ -54,7 +54,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
     public void onEvent(FlowRequestStatusEvent flowRequestStatusEvent) {
         LOG.debug("On flow event: " + flowRequestStatusEvent);
         if (flowRequestStatusEvent.getFlowId() != null) {
-            Flow flow = flowService.getFlow(flowRequestStatusEvent.getFlowId());
+            Flow flow = flowService.getFlow(flowRequestStatusEvent.getFlowId(), false);
             if (flow != null) {
                 routeManagementService.notifyPhaseListeners(flow);
             } else {
@@ -75,7 +75,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
     public void onEvent(FlowDeployEvent flowDeployEvent) {
         LOG.debug("On flow event: " + flowDeployEvent);
-        Flow flow = flowService.getFlow(flowDeployEvent.getFlowId());
+        Flow flow = flowService.getFlow(flowDeployEvent.getFlowId(), false);
         if (flow != null) {
             try {
                 routeManagementService.startFlowRoutes(flow);
@@ -101,7 +101,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
     public void onEvent(FlowStopEvent flowStopEvent) {
         LOG.debug("On flow event: " + flowStopEvent);
-        Flow flow = flowService.getFlow(flowStopEvent.getFlowId());
+        Flow flow = flowService.getFlow(flowStopEvent.getFlowId(), false);
         if (flow != null) {
             try {
                 routeManagementService.stopFlowRoutes(flow);

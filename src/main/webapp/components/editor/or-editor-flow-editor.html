@@ -1,6 +1,9 @@
 <link rel="import" href="or-editor-flow-node.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 
 <script>
     document.addEventListener("gwtReadyClient", function () {
@@ -124,7 +127,8 @@
         }
 
         #empty {
-            padding: 0.5em;
+            padding: 0 1em;
+            color: var(--or-editor-main-color);
         }
 
         #flowControl {
@@ -208,7 +212,13 @@
     <template>
 
         <template is="dom-if" if="{{!_presenter.flow}}">
-            <div id="empty">Please select or create a data flow in your inventory.</div>
+            <div id="empty">
+                <h1>OpenRemote Editor</h1>
+
+                <p>
+                    Manage your things and edit your panel flows.
+                </p>
+            </div>
         </template>
 
         <div id="flowDesigner"

@@ -11,6 +11,10 @@ public class ShowFailureEvent extends Event {
     final public String text;
     final public int durationMillis;
 
+    public ShowFailureEvent(String text) {
+        this(text, DURABLE);
+    }
+
     public ShowFailureEvent(String text, int durationMillis) {
         this.text = text;
         this.durationMillis = durationMillis;

@@ -8,10 +8,6 @@
         --or-editor-mark-deploying-color: var(--or-yellow);
         --or-editor-mark-problem-color: var(--or-red);
 
-        --or-editor-confirm-color: var(--or-lightgreen);
-        --or-editor-cancel-color: var(--or-white);
-        --or-editor-other-color: var(--or-lightgreen);
-
         --or-editor-sidebar-background-color: var(--or-brightgrey);
         --or-editor-sidebar-color: var(--or-darkgrey);
 
@@ -27,6 +23,7 @@
         --or-editor-flow-sink-foreground-color: white;
 
         --or-editor-main-background-color: white;
+        --or-editor-main-color: var(--or-darkgrey);
 
         --or-editor-flow-item-nodecolor-default: var(--or-darkgrey);
         --or-editor-flow-item-nodecolor-sensor-actuator: var(--or-violet);
@@ -40,22 +37,28 @@
 
     html /deep/ .formItem {
         display: flex;
+        display: -webkit-flex;
         flex-direction: row;
+        -webkit-flex-direction: row;
         min-height: 3.5em;
         align-items: center;
+        -webkit-align-items: center;
     }
 
     html /deep/ .formLabel {
         font-weight: bold;
         flex: 0 0 4em;
+        -webkit-flex: 0 0 4em;
     }
 
     html /deep/ .formValue {
         flex: 1;
+        -webkit-flex: 1;
     }
 
     html /deep/ .formDivider{
         flex: 0 0 1em;
+        -webkit-flex: 0 0 1em;
     }
 
 </style>

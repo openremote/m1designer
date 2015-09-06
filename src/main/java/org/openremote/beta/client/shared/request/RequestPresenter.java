@@ -59,7 +59,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         @Override
         public void onFailure(Method method, Throwable exception) {
-            if (!dispatchedComplete) {
+            if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
                 dispatchEvent(new RequestCompleteEvent(requestText));
             }

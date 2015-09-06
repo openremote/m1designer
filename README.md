@@ -1,4 +1,4 @@
-# Beta Editor
+# OR3 Controller/Designer
 
 * Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
 
@@ -33,8 +33,10 @@ All JARs can be found in `build/libs/`.
 Run production
 ---
 
-    WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/v3/orc3-editor/build/libs/openremote-beta-client.jar!/' \
+    WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/gh/or3-controller/build/libs/or3-controller-client.jar!/' \
+    WEBSERVER_ADDRESS=0.0.0.0 \
     WEBSERVER_PORT=8080 \
+    WEBSOCKET_ADDRESS=0.0.0.0 \
     WEBSOCKET_PORT=9292 \
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.beta.server.Server

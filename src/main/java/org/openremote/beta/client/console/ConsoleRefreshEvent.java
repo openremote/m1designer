@@ -7,7 +7,14 @@ import org.openremote.beta.shared.flow.Flow;
 @JsType
 public class ConsoleRefreshEvent extends FlowEvent {
 
-    public ConsoleRefreshEvent(Flow flow) {
+    final public boolean dirty;
+
+    public ConsoleRefreshEvent(Flow flow, boolean dirty) {
         super(flow);
+        this.dirty = dirty;
+    }
+
+    public boolean isDirty() {
+        return dirty;
     }
 }

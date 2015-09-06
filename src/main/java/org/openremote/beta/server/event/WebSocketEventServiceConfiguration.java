@@ -17,7 +17,7 @@ public class WebSocketEventServiceConfiguration implements Configuration {
     public static final String WEBSOCKET_EVENTS = "events";
 
     public static final String WEBSOCKET_ADDRESS = "WEBSOCKET_ADDRESS";
-    public static final String WEBSOCKET_ADDRESS_DEFAULT = "0.0.0.0";
+    public static final String WEBSOCKET_ADDRESS_DEFAULT = "127.0.0.1";
     public static final String WEBSOCKET_PORT = "WEBSOCKET_PORT";
     public static final String WEBSOCKET_PORT_DEFAULT = "9292";
 
