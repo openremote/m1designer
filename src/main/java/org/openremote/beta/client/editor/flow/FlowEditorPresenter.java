@@ -180,6 +180,7 @@ public class FlowEditorPresenter extends RequestPresenter {
                 Node node = flow.findNode(event.getNodeId());
                 if (node != null) {
                     LOG.debug("Received console select: " + node);
+                    flowDesigner.selectNodeShape(node);
                     dispatchEvent(new NodeSelectedEvent(node));
                 }
             }
