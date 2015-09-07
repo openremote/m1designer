@@ -51,6 +51,11 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
     }
 
+    public void sendEvent(Event event) {
+        LOG.debug("Sending: " + event);
+        producerTemplate.sendBody(OUTGOING_EVENT_QUEUE, event);
+    }
+
     public void onEvent(FlowRequestStatusEvent flowRequestStatusEvent) {
         LOG.debug("On flow event: " + flowRequestStatusEvent);
         if (flowRequestStatusEvent.getFlowId() != null) {
@@ -59,8 +64,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
                 routeManagementService.notifyPhaseListeners(flow);
             } else {
                 LOG.debug("Flow not found: " + flowRequestStatusEvent);
-                producerTemplate.sendBody(
-                    OUTGOING_EVENT_QUEUE,
+                sendEvent(
                     new FlowDeploymentFailureEvent(flowRequestStatusEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
                 );
             }
@@ -81,7 +85,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
                 routeManagementService.startFlowRoutes(flow);
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow start failed: " + flow, ex);
-                producerTemplate.sendBody(OUTGOING_EVENT_QUEUE, new FlowDeploymentFailureEvent(
+                sendEvent(new FlowDeploymentFailureEvent(
                     flow,
                     ex.getPhase(),
                     ex.getClass().getCanonicalName(),
@@ -92,8 +96,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
             }
         } else {
             LOG.debug("Flow not found: " + flowDeployEvent);
-            producerTemplate.sendBody(
-                OUTGOING_EVENT_QUEUE,
+            sendEvent(
                 new FlowDeploymentFailureEvent(flowDeployEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
             );
         }
@@ -107,7 +110,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
                 routeManagementService.stopFlowRoutes(flow);
             } catch (FlowProcedureException ex) {
                 LOG.info("Flow stop failed: " + flow, ex);
-                producerTemplate.sendBody(OUTGOING_EVENT_QUEUE, new FlowDeploymentFailureEvent(
+                sendEvent(new FlowDeploymentFailureEvent(
                     flow,
                     ex.getPhase(),
                     ex.getClass().getCanonicalName(),
@@ -118,8 +121,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
             }
         } else {
             LOG.debug("Flow not found: " + flowStopEvent);
-            producerTemplate.sendBody(
-                OUTGOING_EVENT_QUEUE,
+            sendEvent(
                 new FlowDeploymentFailureEvent(flowStopEvent.getFlowId(), FlowDeploymentPhase.NOT_FOUND)
             );
         }
@@ -127,8 +129,7 @@ public class EventService implements StaticService, FlowDeploymentListener {
 
     @Override
     public void onFlowDeployment(Flow flow, FlowDeploymentPhase phase) {
-        producerTemplate.sendBody(
-            OUTGOING_EVENT_QUEUE,
+        sendEvent(
             new FlowStatusEvent(flow.getId(), phase)
         );
     }
@@ -147,21 +148,21 @@ public class EventService implements StaticService, FlowDeploymentListener {
         }
 
         LOG.debug("Processing message event with node: " + node);
-        Map<String, Object> exchangeHeaders = new HashMap<>(
+        Map<String, Object> messageHeaders = new HashMap<>(
             message.hasHeaders() ? message.getHeaders() : Collections.EMPTY_MAP
         );
 
-        exchangeHeaders.put(RouteConstants.SLOT_ID, message.getSlotId());
+        messageHeaders.put(RouteConstants.SLOT_ID, message.getSlotId());
 
         if (message.getInstanceId() != null) {
             LOG.debug("Received instance identifier, pushing onto correlation stack: " + message.getInstanceId());
-            SubflowRoute.pushOntoCorrelationStack(exchangeHeaders, message.getInstanceId());
+            SubflowRoute.pushOntoCorrelationStack(messageHeaders, message.getInstanceId());
         }
 
         String body = message.getBody();
 
         try {
-            producerTemplate.sendBodyAndHeaders(NodeRoute.getConsumerUri(node), body, exchangeHeaders);
+            producerTemplate.sendBodyAndHeaders(NodeRoute.getConsumerUri(node), body, messageHeaders);
         } catch (Exception ex) {
             LOG.warn("Handling message event failed: " + message, ex);
         }
@@ -193,4 +194,5 @@ public class EventService implements StaticService, FlowDeploymentListener {
             LOG.warn("Sending message event failed: " + message, ex);
         }
     }
+
 }

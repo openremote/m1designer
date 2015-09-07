@@ -34,7 +34,7 @@ public class MessageLogDetail {
                 : node.getEditorSettings().getTypeLabel();
         }
 
-        if (node == null || slot == null || !node.getLabel().equals(slot.getLabel())) {
+        if (node == null || slot == null || !(node.getLabel() != null && node.getLabel().equals(slot.getLabel()))) {
             if (slot != null) {
                 if (slot.getLabel() != null) {
                     this.slotLabel = slot.getLabel() + (slot.isOfType(Slot.TYPE_SINK) ? " (Sink)" : " (Source)");

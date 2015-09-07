@@ -11,6 +11,7 @@ import org.openremote.beta.client.editor.flow.*;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.session.event.*;
+import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
@@ -38,8 +39,21 @@ public class ShellPresenter extends EventSessionPresenter {
                 if (isConsoleViewAvailable()) {
                     dispatchEvent(getConsoleView(), event);
                 }
+
+                // TODO: Not pretty, nicer way to handle server failure messages?
+                if (event.getEvent() instanceof FlowRuntimeFailureEvent) {
+                    FlowRuntimeFailureEvent runtimeFailureEvent = (FlowRuntimeFailureEvent) event.getEvent();
+                    dispatchEvent(new ShowFailureEvent(runtimeFailureEvent.getMessage(),10000));
+                }
             }
         );
+
+        addEventListener(FlowRuntimeFailureEvent.class, event -> {
+            if (isEditorViewAvailable()) {
+                dispatchEvent(getEditorView(), event);
+            }
+            dispatchEvent(new ShowFailureEvent(event.getMessage(), 10000));
+        });
 
         addEventListener(MessageReceivedEvent.class, event -> {
             dispatchEvent("#messageLog", event);
@@ -114,7 +128,7 @@ public class ShellPresenter extends EventSessionPresenter {
                     dispatchEvent("#messageLog", new MessageLogCloseEvent());
                     dispatchEvent(new EditorCloseEvent());
                     editorOpen = false;
-                } else if (!event.isMaximized() && !editorOpen){
+                } else if (!event.isMaximized() && !editorOpen) {
                     dispatchEvent("#messageLog", new MessageLogOpenEvent());
                     dispatchEvent(new EditorOpenEvent(event.getFlow() != null ? event.getFlow().getId() : null));
                     editorOpen = true;

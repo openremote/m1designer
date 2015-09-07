@@ -13,6 +13,10 @@
                 type: String,
                 reflectToAttribute: true
             },
+            nodeLabel: {
+                type: String,
+                reflectToAttribute: true
+            },
             persistentPropertyPaths: {
                 type: Array,
                 value: []
@@ -20,6 +24,12 @@
             widgetProperties: {
                 type: Object,
                 value: undefined
+            },
+            // This is used as an internal flag as well: It's set when received
+            // as a message header, and removed if another message has to be send
+            // (due to widgetProperties changing) in the same JS event loop
+            visitedWidgets: {
+                type: String
             }
         },
         observers: [
@@ -28,9 +38,7 @@
         _onWidgetPropertiesChanged: function (event) {
             if (event.path != "widgetProperties") {
                 var path = event.path.substring("widgetProperties.".length);
-                this._presenter.widgetPropertiesChanged(
-                        this.nodeId, this.widgetProperties, path, event.value
-                );
+                this._presenter.widgetPropertiesChanged(this.widgetProperties, path, event.value);
             }
             this.onWidgetPropertiesChanged();
         },

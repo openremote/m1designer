@@ -51,6 +51,7 @@ dependencies {
     clientDependencies "com.google.gwt:gwt-elemental:${gwtVersion}"
     clientDependencies "com.ahome-it:lienzo-core:${lienzoVersion}"
     clientDependencies "org.fusesource.restygwt:restygwt:${restygwtVersion}"
+    clientDependencies "com.google.guava:guava-gwt:${guavagwtVersion}"
 
     gwt("ru.finam:slf4j-gwt:${slf4jGwtVersion}") {
         exclude group: "com.google.gwt"

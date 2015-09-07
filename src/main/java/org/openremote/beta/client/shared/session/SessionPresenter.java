@@ -117,6 +117,14 @@ public abstract class SessionPresenter extends RequestPresenter {
         }
     }
 
+    protected static String getWebSocketHost() {
+        MetaElement metaWebSocketHost =
+            (MetaElement) Browser.getDocument().querySelector("meta[name=webSocketHost]");
+        if (metaWebSocketHost == null)
+            return hostname();
+        return metaWebSocketHost.getContent();
+    }
+
     protected static String getWebSocketPort() {
         MetaElement metaWebSocketPort =
             (MetaElement) Browser.getDocument().querySelector("meta[name=webSocketPort]");
@@ -127,7 +135,7 @@ public abstract class SessionPresenter extends RequestPresenter {
 
     protected static String getWebSocketUrl(String... pathElement) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ws://").append(hostname()).append(":").append(getWebSocketPort());
+        sb.append("ws://").append(getWebSocketHost()).append(":").append(getWebSocketPort());
         if (pathElement != null) {
             for (String pe : pathElement) {
                 sb.append("/").append(pe);

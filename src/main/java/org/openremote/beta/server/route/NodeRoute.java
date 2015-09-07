@@ -11,6 +11,7 @@ import org.openremote.beta.server.route.predicate.InputIsEmpty;
 import org.openremote.beta.server.route.predicate.InputIsFalse;
 import org.openremote.beta.server.route.predicate.InputIsTrue;
 import org.openremote.beta.server.route.predicate.NodePropertyIsTrue;
+import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.flow.Slot;
@@ -19,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.openremote.beta.server.route.RouteConstants.*;
 import static org.openremote.beta.server.route.SubflowRoute.copyCorrelationStack;
@@ -154,6 +153,25 @@ public abstract class NodeRoute extends RouteBuilder {
 
         routeDefinition
             .process(exchange -> {
+                Set<String> visitedNodes = exchange.getIn().getHeader(VISITED_NODES, new HashSet<>(), Set.class);
+                if (visitedNodes.contains(getNode().getId())) {
+                    LOG.debug("Exchange stopped, loop detected. Message has already been processed by: " + getNode());
+                    getContext().hasService(EventService.class).sendEvent(
+                        new FlowRuntimeFailureEvent(
+                            getFlow().getId(),
+                            "Exchange stopped, loop detected. Message has already been processed by: " + getNode().getDefaultedLabel(),
+                            getNode().getId()
+                        )
+                    );
+                    exchange.setProperty(Exchange.ROUTE_STOP, true);
+                } else {
+                    visitedNodes.add(getNode().getId());
+                    exchange.getIn().setHeader(VISITED_NODES, visitedNodes);
+                }
+            }).id(getProcessorId("checkSeenNodes"));
+
+        routeDefinition
+            .process(exchange -> {
                 Slot slot = getNode().findSlot(getSlotId(exchange));
                 if (slot == null) {
                     LOG.debug("Slot '" + getSlotId(exchange) + "' not found on node, stopping exchange: " + getNode());
@@ -202,6 +220,7 @@ public abstract class NodeRoute extends RouteBuilder {
                     // Cleanup the copy of the map
                     headers.remove(RouteConstants.SLOT_ID);
                     headers.remove(RouteConstants.INSTANCE_ID);
+                    headers.remove(VISITED_NODES);
                     String body = getInput(exchange);
                     getContext().hasService(EventService.class).sendMessageEvent(
                         getNode(), slot, body, headers
@@ -229,7 +248,7 @@ public abstract class NodeRoute extends RouteBuilder {
             .log(LoggingLevel.DEBUG, LOG, "<<< " + getRouteDescription() + " done processing: '${body}'");
 
         // If this is a sink slot that's mapped to a node property, we don't continue routing the
-        // message to destination wires. Later we might implement servers-side dynamic properties
+        // message to destination wires. Later we might implement server-side dynamic properties
         // and pick a target source slot dynamically (depending on which property changed) but
         // now we simply stop here.
         sinkProcessingDefinition

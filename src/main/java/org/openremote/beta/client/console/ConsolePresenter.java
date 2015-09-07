@@ -13,6 +13,7 @@ import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
 import org.openremote.beta.client.shared.LongPressListener;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependency;
@@ -45,6 +46,7 @@ public class ConsolePresenter extends AbstractPresenter {
         addRedirectToShellView(ConsoleMessageSendEvent.class);
         addRedirectToShellView(ConsoleWidgetUpdatedEvent.class);
         addRedirectToShellView(ConsoleWidgetSelectedEvent.class);
+        addRedirectToShellView(FlowRuntimeFailureEvent.class);
 
         addEventListener(ConsoleRefreshEvent.class, event -> {
             flow = event.getFlow();
@@ -59,6 +61,18 @@ public class ConsolePresenter extends AbstractPresenter {
         addEventListener(MessageReceivedEvent.class, event -> {
             LOG.debug("Message received from server: " + event.getMessage());
             onMessage(event.getMessage());
+        });
+
+        addEventListener(ConsoleLoopDetectedEvent.class, event -> {
+            LOG.warn("Exchange stopped, loop detected. Message has already been processed by: " + event.getNodeId());
+            if (flow != null) {
+                dispatchEvent(new FlowRuntimeFailureEvent(
+                        flow.getId(),
+                        "Exchange stopped, loop detected. Message has already been processed by: " + event.getNodeLabel(),
+                        event.getNodeId()
+                    )
+                );
+            }
         });
     }
 
@@ -109,7 +123,7 @@ public class ConsolePresenter extends AbstractPresenter {
     protected void refreshConsole() {
         DOM container = getDOM(getWidgetComponentContainer());
         clearWidgetContainer(container);
-        if (flow  != null) {
+        if (flow != null) {
             updateWidgets(flow, container);
         }
         dispatchEvent(new ConsoleRefreshedEvent());
@@ -216,6 +230,7 @@ public class ConsolePresenter extends AbstractPresenter {
         Component widget = (Component) getView().getOwnerDocument().createElement(widgetComponent);
 
         widget.set("nodeId", node.getId());
+        widget.set("nodeLabel", node.getDefaultedLabel());
         widget.set("persistentPropertyPaths", node.getPersistentPropertyPaths());
 
         if (widget.get("onWidgetPropertiesChanged") != null) {

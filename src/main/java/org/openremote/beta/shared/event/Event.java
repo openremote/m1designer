@@ -9,6 +9,7 @@ import org.openremote.beta.shared.util.Util;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = FlowDeployEvent.class),
     @JsonSubTypes.Type(value = FlowDeploymentFailureEvent.class),
+    @JsonSubTypes.Type(value = FlowRuntimeFailureEvent.class),
     @JsonSubTypes.Type(value = FlowRequestStatusEvent.class),
     @JsonSubTypes.Type(value = FlowStatusEvent.class),
     @JsonSubTypes.Type(value = FlowStopEvent.class),

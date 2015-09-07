@@ -41,7 +41,7 @@ Run production
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.beta.server.Server
 
-If you change the WebSocket port, you must adjust `index.html`. Running all services on one port is currently not supported by the Camel components.
+If you change the WebSocket host or port, you must adjust `index.html`.
 
 Build image and run Docker container
 ---
