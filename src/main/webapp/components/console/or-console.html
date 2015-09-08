@@ -98,6 +98,14 @@
                 var nonCompositeWidgets = this.$.widgetComponentContainer.querySelectorAll(":not(or-console-widget-composite)");
                 this.set("_haveWidgets", nonCompositeWidgets.length);
 
+                // TODO: ugly
+                if (!this._haveWidgets) {
+                    this.toggleAttribute("hidden", true, this.$.guideFrame);
+                } else if (this._selectedGuideFrame != this._guideFrames[0]) {
+                    this.toggleAttribute("hidden", false, this.$.guideFrame);
+                }
+
+
                 var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
                 this.set("_draggableWidgets", []);
                 widgets.forEach(function (widget) {
