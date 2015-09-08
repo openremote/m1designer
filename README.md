@@ -13,9 +13,9 @@ Development
 
 * Install JDK 1.8
 
-* Checkout `orc3-zwave` project and follow its build instructions
+* Checkout `or3-zwave` project and follow its build instructions
 
-* Edit `gradle.properties` and set `zwaveProjectDirectory` to path of `orc3-zwave` project
+* Edit `gradle.properties` and set `zwaveProjectDirectory` to path of `or3-zwave` project
 
 * Run GWT super dev mode code-server: `./gradlew gwtSuperDev`
 
@@ -30,6 +30,11 @@ Build tested archives
 
 All JARs can be found in `build/libs/`.
 
+Optimize for production:
+
+* Disable client DEBUG logging in `src/main/resources/org/openremote/beta/Client.gwt.xml`
+* Disable server DEBUG logging in `src/main/resources/logback.xml`
+
 Run production
 ---
 
@@ -42,6 +47,10 @@ Run production
     java -cp 'build/libs/*' org.openremote.beta.server.Server
 
 If you change the WebSocket host or port, you must adjust `index.html`.
+
+For quick turnaround when debugging client in production, recompile only the client portion between server restarts:
+
+    ./gradlew assembleClient
 
 Build image and run Docker container
 ---

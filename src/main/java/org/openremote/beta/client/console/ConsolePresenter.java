@@ -11,6 +11,7 @@ import org.openremote.beta.client.editor.flow.ConfirmationEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
+import org.openremote.beta.client.shared.JsUtil;
 import org.openremote.beta.client.shared.LongPressListener;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
@@ -112,11 +113,12 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected void selectWidget(String nodeId) {
-        elemental.dom.Node[] widgets = getDOM(getWidgetComponentContainer()).getChildNodes();
-        for (elemental.dom.Node widget : widgets) {
-            Component widgetComponent = (Component) widget;
+        // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
+        NodeList widgetNodes = getView().querySelectorAll("#widgetComponentContainer > .consoleWidget");
+        for (int i = 0; i < widgetNodes.getLength(); i++) {
+            Component widgetComponent = (Component) widgetNodes.item(i);
             String widgetNodeId = (String) widgetComponent.get("nodeId");
-            widgetComponent.toggleClass("selected", nodeId.equals(widgetNodeId), widget);
+            widgetComponent.toggleClass("selected", nodeId.equals(widgetNodeId), (elemental.dom.Node)widgetComponent);
         }
     }
 
@@ -229,6 +231,7 @@ public class ConsolePresenter extends AbstractPresenter {
         LOG.debug("Creating widget component: " + widgetComponent);
         Component widget = (Component) getView().getOwnerDocument().createElement(widgetComponent);
 
+        widget.toggleClass("consoleWidget", true, (elemental.dom.Node)widget);
         widget.set("nodeId", node.getId());
         widget.set("nodeLabel", node.getDefaultedLabel());
         widget.set("persistentPropertyPaths", node.getPersistentPropertyPaths());

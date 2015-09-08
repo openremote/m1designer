@@ -15,7 +15,11 @@
 
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 
 <script>
     function onGwtReadyClient() {
@@ -53,6 +57,21 @@
                 _zoomFactor: {
                     type: Number,
                     value: 1.0
+                },
+                _guideFrames: {
+                    type: Array,
+                    value: [
+                        {label: "No Frame", width: 0, height: 0},
+                        {label: "RPi Landscape", width: 800, height: 480},
+                        {label: "RPi Portrait", width: 480, height: 800},
+                        {label: "iPhone 6 Landscape", width: 480, height: 320},
+                        {label: "iPhone 6 Portrait", width: 320, height: 480},
+                        {label: "Gear S Watch", width: 180, height: 240}
+                    ]
+                },
+                _selectedGuideFrame: {
+                    type: Object,
+                    value: {label: "No Frame", width: 0, height: 0}
                 }
             },
             listeners: {
@@ -67,10 +86,12 @@
             },
             _onEditorOpen: function () {
                 this.toggleAttribute("hidden", false, this.$.editorControls);
+                this._selectGuideFrame(this._selectedGuideFrame);
             },
             _onEditorClose: function () {
                 this.toggleAttribute("hidden", true, this.$.editorControls);
                 this._disableDragging();
+                this._selectGuideFrame(this._guideFrames[0]);
             },
             _onConsoleRefreshed: function () {
                 // TODO: light DOM!
@@ -110,7 +131,7 @@
                 }.bind(this));
 
                 this.async(function () {
-                    if (this.$$("#draggingSwitch") && this.$$("#draggingSwitch").checked) {
+                    if (this.$$("#editSwitch") && this.$$("#editSwitch").checked) {
                         this._disableDragging();
                         this._enableDragging();
                     } else {
@@ -138,7 +159,7 @@
                 }.bind(this));
                 this.updateStyles();
             },
-            _onDraggingSwitch: function (e) {
+            _onEditSwitch: function (e) {
                 if (e.target.checked) {
                     this._enableDragging();
                 } else {
@@ -171,6 +192,23 @@
                 this.$.widgetComponentContainer.style["-webkit-transform"] = "scale(" + this._zoomFactor + ")";
                 this.$.widgetComponentContainer.style.transformOrigin = "0 0";
                 this.$.widgetComponentContainer.style["-webkit-transform-origin"] = "0 0";
+                this.$.guideFrame.style.transform = "scale(" + this._zoomFactor + ")";
+                this.$.guideFrame.style["-webkit-transform"] = "scale(" + this._zoomFactor + ")";
+                this.$.guideFrame.style.transformOrigin = "0 0";
+                this.$.guideFrame.style["-webkit-transform-origin"] = "0 0";
+            },
+            _onGuideFrameSwitched: function (e) {
+                this._selectGuideFrame(e.model.frame);
+            },
+            _selectGuideFrame: function(guideFrame) {
+                this.set("_selectedGuideFrame", guideFrame);
+                if (guideFrame.width == 0 || guideFrame.height == 0) {
+                    this.toggleAttribute("hidden", true, this.$.guideFrame);
+                    return;
+                }
+                this.toggleAttribute("hidden", false, this.$.guideFrame);
+                this.$.guideFrame.style.width = guideFrame.width + "px";
+                this.$.guideFrame.style.height = guideFrame.height+ "px";
             }
         });
     });
@@ -234,7 +272,7 @@
             outline: 0;
         }
 
-        #draggingSwitch {
+        #editSwitch {
         }
 
         #empty {
@@ -264,8 +302,23 @@
             background-color: var(--or-console-widget-selected-color);
         }
 
-        @media all and (max-width: 300px) {
-            #widgetControls{
+        .guideFrameLabel {
+            vertical-align: middle;
+            font-size: x-small;
+        }
+
+        #guideFrame {
+            border: 2px dashed var(--or-console-guide-color);
+            width: 0;
+            height: 0;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            pointer-events: none;
+        }
+
+        @media all and (max-width: 380px) {
+            #widgetControls {
                 display: none;
             }
         }
@@ -273,15 +326,34 @@
     </style>
     <template>
         <div id="editorControls" hidden class="layout horizontal center">
+
             <div id="widgetControls" class="flex layout horizontal center">
                 <template is="dom-if" if="[[_haveWidgets]]">
-                    <paper-toggle-button id="draggingSwitch"
-                                         on-change="_onDraggingSwitch"
+
+                    <paper-toggle-button id="editSwitch"
+                                         on-change="_onEditSwitch"
                                          style="margin: 0 0.5em;">
                     </paper-toggle-button>
-                    <span class="toggleLabel">EDIT MODE</span>
+                    <span class="toggleLabel">EDIT</span>
 
                     <div class="flex layout horizontal center center-justified">
+
+                        <paper-menu-button no-animations
+                                           horizontal-align="right"
+                                           vertical-align="top"
+                                           vertical-offset="20"
+                                           horizontal-offset="0">
+                            <paper-button class="dropdown-trigger">
+                                <iron-icon icon="editor:border-outer"></iron-icon>
+                                <span class="guideFrameLabel">[[_selectedGuideFrame.label]]</span>
+                            </paper-button>
+                            <paper-menu id="dependencyTree" class="dropdown-content">
+                                <template is="dom-repeat" items="[[_guideFrames]]" as="frame">
+                                    <paper-item on-tap="_onGuideFrameSwitched">[[frame.label]]</paper-item>
+                                </template>
+                            </paper-menu>
+                        </paper-menu-button>
+
                         <paper-button on-tap="_zoomIn">
                             <iron-icon icon="zoom-in"></iron-icon>
                         </paper-button>
@@ -289,12 +361,15 @@
                         <paper-button on-tap="_zoomOut">
                             <iron-icon icon="zoom-out"></iron-icon>
                         </paper-button>
+
                     </div>
                 </template>
             </div>
+
             <template is="dom-if" if="[[!_presenter.maximixed]]">
                 <button id="consoleSwitchButton" on-tap="_switchConsole"></button>
             </template>
+
         </div>
 
         <template is="dom-if" if="[[!_haveWidgets]]">
@@ -310,6 +385,8 @@
                 </p>
             </div>
         </template>
+
+        <div id="guideFrame" hidden></div>
 
         <div id="widgetComponentContainer"></div>
 

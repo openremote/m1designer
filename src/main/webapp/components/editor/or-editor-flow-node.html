@@ -31,6 +31,10 @@
                     value: function () {
                         return new openremote.editor.flow.node.FlowNodePresenter(this);
                     }
+                },
+                hasBeenOpen: {
+                    type: Boolean,
+                    value: false
                 }
             },
             listeners: {
@@ -43,7 +47,10 @@
             ],
             _onFlowNodeOpen: function () {
                 this.toggleAttribute("hidden", false, this.$.panel);
-                this.$.panel.open();
+                if (!this.hasBeenOpen) {
+                    this.$.panel.open();
+                    this.set("hasBeenOpen", true);
+                }
             },
             _onFlowNodeClose: function () {
                 this.toggleAttribute("hidden", true, this.$.panel);

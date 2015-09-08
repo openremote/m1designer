@@ -51,6 +51,10 @@
                     type: Number,
                     value: 150
                 },
+                _consoleResizeSnapLeftThreshold: {
+                    type: Number,
+                    value: 400
+                },
                 _consoleResizeInProgress: {
                     type: Number,
                     value: null
@@ -66,13 +70,14 @@
             _onEditorOpen: function (ce, event) {
                 this.$.editor.style.display = "inherit";
                 if (event.flowId) {
-                    this.$.editor.src = "editor.html?flowId=" + event.flowId;
+                    this.$.editor.src = "editor.html?flowId=" + event.flowId; // TODO hack, we need a URL router?
                 } else {
                     this.$.editor.src = "editor.html";
                 }
                 this._consoleResize(this._consoleWidth);
                 this.$.consoleResizeHandle.style.minWidth = this._consoleResizeHandleWidth + "px";
                 this.$.consoleResizeHandle.style.display = "block";
+                this.toggleAttribute("hidden", false, this.$.editor);
             },
             _onEditorClose: function () {
                 this.$.editor.style.display = "none";
@@ -80,6 +85,7 @@
                 this._consoleResize();
                 this.$.consoleResizeHandle.style.minWidth = "0";
                 this.$.consoleResizeHandle.style.display = "none";
+                this.toggleAttribute("hidden", true, this.$.editor);
             },
             _consoleResizeStart: function (e, detail) {
                 this.$.editor.style.pointerEvents = "none";
@@ -103,16 +109,34 @@
                     if (x && this._consoleResizeInProgress) {
 
                         var cursorOffset = this._consoleResizeInProgress.cursor - x;
-                        var newWidth = this._consoleResizeInProgress.originalWidth + cursorOffset;
+                        var originalWidth = this._consoleResizeInProgress.originalWidth;
+                        var newWidth = originalWidth + cursorOffset;
 
                         // Only move if diff is larger than threshold, might look choppy but avoids too many events
                         if (Math.abs(this.$.console.clientWidth - newWidth) < this._consoleResizeThreshold) {
                             return;
                         }
 
-                        // Snap to right border if we are getting close and still moving towards the right
+                        // Snap to right border if we are getting close and still moving right
                         if (x > document.documentElement.clientWidth - this._consoleResizeSnapRightThreshold && cursorOffset < 0) {
                             newWidth = 0;
+                            this.toggleAttribute("hidden", true, this.$.console);
+                        }
+
+                        // Unsnap from right border
+                        if (originalWidth == 0 && cursorOffset > 0) {
+                           this.toggleAttribute("hidden", false, this.$.console);
+                        }
+
+                        // Snap to left border if we are getting close to left and still moving left
+                        if (x <  this._consoleResizeSnapLeftThreshold  && cursorOffset > 0) {
+                            newWidth = document.documentElement.clientWidth - this._consoleResizeHandleWidth;
+                            this.toggleAttribute("hidden", true, this.$.editor);
+                        }
+
+                        // Unsnap from left border
+                        if (originalWidth = document.documentElement.clientWidth - this._consoleResizeHandleWidth && cursorOffset < 0) {
+                            this.toggleAttribute("hidden", false, this.$.editor);
                         }
 
                         if (newWidth >= 0) {
