@@ -1,0 +1,283 @@
+<link rel="import" href="or-text.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+
+<dom-module id="or-toolbox">
+    <style>
+        :host {
+            position: fixed;
+            display: block;
+            /* Fire transitioned event when size changes */
+            transition: width 0.01s, height 0.01s, top 0.01s, left 0.01s;
+        }
+
+        #title {
+            background-color: lightgreen;
+            position: relative;
+            top: 0;
+            left: 0;
+        }
+
+        #title.layout.horizontal {
+            height: 40px;
+        }
+
+        #title.layout.vertical {
+            width: 40px;
+        }
+
+        #title.dirty {
+            background-color: var(--or-toolbox-dirty-background-color, red);
+            color: var(--or-toolbox-dirty-color, white);
+        }
+
+        #titleToolbar {
+            background-color: pink;
+        }
+
+        #titleToolbar /deep/ paper-button,
+        #titleToolbar /deep/ paper-button .content {
+            padding: 2px;
+            margin: 0;
+            min-width: 32px;
+        }
+
+        #titleSwitch {
+            height: 40px;
+        }
+
+        #titleLabel {
+            margin: 0 0.2em;
+        }
+
+        #dialog > * {
+            padding: 0;
+        }
+
+        #dialog {
+            position: relative;
+            top: 0;
+            left: 0;
+            margin: 0 0 0.5em 0 !important;
+            overflow: hidden;
+        }
+
+        #content {
+            background-color: red;
+            margin: 0;
+        }
+
+        #content[scrollable] {
+            overflow: auto;
+        }
+
+        #topToolbar {
+            background-color: lightgray;
+            color: black;
+            margin: 0;
+        }
+
+        #bottomToolbar {
+            background-color: lightblue;
+            color: black;
+            margin: 0;
+        }
+    </style>
+    <template>
+
+        <div id="title"
+             hidden
+             class="layout center">
+
+            <div id="titleSwitch">
+                <paper-icon-button id="titleSwitchButton"
+                                   on-tap="_internalToggle"
+                                   icon="menu"></paper-icon-button>
+            </div>
+
+            <div id="titleLabel"
+                 class="flex"
+                 on-tap="_internalToggle">
+                <paper-ripple id="titleLabelRipple" center></paper-ripple>
+                <or-text class="line-clamp line-clamp-1">[[title]]</or-text>
+            </div>
+
+            <div id="titleToolbar" class="layout center">
+                <content select=".dialogTitleToolbar"></content>
+            </div>
+        </div>
+
+        <paper-dialog id="dialog"
+                      modal="[[modal]]"
+                      hidden
+                      no-cancel-on-esc-key="[[nocancel]]"
+                      no-cancel-on-outside-click="[[nocancel]]">
+
+                <div id="content" class="layout vertical" scrollable$="[[scrollable]]">
+                    <content select=".dialogContent"></content>
+                </div>
+            </template>
+
+
+        </paper-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-toolbox",
+            properties: {
+                nocancel: {
+                    type: Boolean,
+                    value: true
+                },
+                title: {
+                    type: String,
+                    observer: "_onLayoutChange"
+                },
+                switchable: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_onLayoutChange"
+                },
+                scrollable: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_onLayoutChange"
+                },
+                toolbar: {
+                    type: String,
+                    observer: "_onLayoutChange"
+                },
+                overlay: {
+                    type: String,
+                    observer: "_onLayoutChange"
+                },
+                dirty: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: "_onDirtyChange"
+                }
+
+            },
+            ready: function () {
+                this.addEventListener("transitionend", function (e) {
+                    this._onLayoutChange();
+                })
+            },
+            get opened() {
+                return this.$.dialog.opened;
+            },
+            get hostWidth() {
+                return parseInt(this.style.width, 10);
+            },
+            get hostHeight() {
+                return parseInt(this.style.height, 10);
+            },
+            _onDirtyChange: function (dirty) {
+                this.toggleClass("dirty", dirty, this.$.title);
+            },
+            _onLayoutChange: function () {
+                this.async(function () {
+                    this._doLayoutChange();
+                });
+            },
+            _doLayoutChange: function () {
+
+                // Hide title if nothing is given
+                this.toggleAttribute("hidden", !this.title && !this.toolbar && !this.switchable, this.$.title);
+
+                // Set dialog width (height is tricky, it's inside the scrollable)
+                this.$.dialog.style.width = this.hostWidth + "px";
+                this.$.dialog.style.height = this.hostHeight + "px";
+                this.$.content.style.height = this.hostHeight + "px";
+
+                this.$.dialog.style.zIndex = "initial"; // TODO Fix for iron-dropdown cutoff
+
+                // Switchable
+                this.$.title.style.cursor = this.switchable ?  "pointer" : "default";
+                this.toggleAttribute("hidden", !this.switchable, this.$.titleSwitch);
+                this.toggleAttribute("hidden", !this.switchable, this.$.titleLabelRipple);
+
+
+                // We need offsets and they might not always be available
+                if (this.$.dialog.offsetHeight === undefined) {
+                    this.toggleAttribute("hidden", true, this.$.dialog);
+                    return;
+                }
+                this.toggleAttribute("hidden", false, this.$.dialog);
+
+                // Layout the title/toolbar
+                if (this.toolbar == "vertical") {
+                    this.toggleClass("vertical", true, this.$.title);
+                    this.toggleClass("horizontal", false, this.$.title);
+                    this.toggleClass("vertical", true, this.$.titleToolbar);
+                    this.toggleClass("horizontal", false, this.$.titleToolbar);
+                    this.$.title.style.width = "40px";
+                    this.$.titleLabel.style.display = "none";
+
+                    if (this.overlay == "left") {
+                        var left = this.$.dialog.offsetWidth;
+                        this.$.dialog.style.left = "-" + left + "px";
+                        this.$.dialog.style.top = "-" + this.$.title.offsetHeight + "px";
+                    } else {
+                        this.$.dialog.style.left = this.$.title.offsetWidth + "px";
+                        this.$.dialog.style.top = "-" + this.$.title.offsetHeight + "px";
+                    }
+
+                } else {
+
+                    this.toggleClass("vertical", false, this.$.title);
+                    this.toggleClass("horizontal", true, this.$.title);
+                    this.toggleClass("vertical", false, this.$.titleToolbar);
+                    this.toggleClass("horizontal", true, this.$.titleToolbar);
+                    this.$.title.style.width = this.$.dialog.style.width;
+                    this.$.titleLabel.style.display = "inherit";
+
+                    if (this.overlay == "left") {
+                        this.$.dialog.style.left = 0;
+                        var top = this.$.dialog.offsetHeight + this.$.title.offsetHeight;
+                        this.$.dialog.style.top = "-" + top + "px";
+                    } else {
+                        this.$.dialog.style.left = 0;
+                        this.$.dialog.style.top = 0;
+                    }
+                }
+
+            },
+            _internalToggle: function() {
+                if (this.switchable) {
+                    this.toggle();
+                }
+            },
+            open: function () {
+                this.$.dialog.open();
+                this._onLayoutChange();
+            },
+            close: function () {
+                this.$.dialog.close();
+            },
+            toggle: function () {
+                this.$.dialog.toggle();
+                this._onLayoutChange();
+            },
+            show: function () {
+                this.toggleAttribute("hidden", false, this);
+                this.open();
+            },
+            hide: function () {
+                this.close();
+                this.toggleAttribute("hidden", true, this);
+            }
+        });
+    </script>
+</dom-module>
