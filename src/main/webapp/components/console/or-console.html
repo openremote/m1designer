@@ -64,8 +64,10 @@
                         {label: "No Frame", width: 0, height: 0},
                         {label: "RPi Landscape", width: 800, height: 480},
                         {label: "RPi Portrait", width: 480, height: 800},
-                        {label: "iPhone 6 Landscape", width: 480, height: 320},
-                        {label: "iPhone 6 Portrait", width: 320, height: 480},
+                        {label: "iPhone 6 Landscape", width: 667, height: 375},
+                        {label: "iPhone 6 Portrait", width: 375, height: 667},
+                        {label: "Nexus 5 Landscape", width: 640, height: 360},
+                        {label: "Nexus 5 Portrait", width: 360, height: 640},
                         {label: "Gear S Watch", width: 180, height: 240}
                     ]
                 },
@@ -101,7 +103,7 @@
                 // TODO: ugly
                 if (!this._haveWidgets) {
                     this.toggleAttribute("hidden", true, this.$.guideFrame);
-                } else if (this._selectedGuideFrame != this._guideFrames[0]) {
+                } else if (this._selectedGuideFrame.label != this._guideFrames[0].label) {
                     this.toggleAttribute("hidden", false, this.$.guideFrame);
                 }
 
