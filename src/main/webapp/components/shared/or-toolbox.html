@@ -113,6 +113,9 @@
                     observer: "_onDirtyChange"
                 }
             },
+            get hostFlexDirection() {
+                return getComputedStyle(this).flexDirection;
+            },
             get hostTop() {
                 return this.offsetTop;
             },
@@ -143,16 +146,19 @@
                 this.toggleClass("dirty", dirty, this.$.toolbar);
             },
             _onLayoutChange: function () {
-                // Hide label if nothing is given
-                this.toggleAttribute("hidden", !this.title && !this.toolbar && !this.switchable, this.$.toolbarLabel);
 
-                // Switchable
+                var columnLayout = this.hostFlexDirection == "column";
+
+                // In column layout or when not label is given, hide the label
+                this.toggleAttribute("hidden", columnLayout || (!this.title && !this.toolbar && !this.switchable), this.$.toolbarLabel);
+
+                // Add switch function
                 this.$.toolbar.style.cursor = this.switchable ?  "pointer" : "default";
                 this.toggleAttribute("hidden", !this.switchable, this.$.toolboxSwitch);
                 this.toggleAttribute("hidden", !this.switchable, this.$.toolbarLabelRipple);
 
-                // Layout the title/toolbar
-                if (this.toolbar == "vertical") {
+                // Layout everything
+                if (columnLayout) {
                     this.toggleClass("vertical", true, this.$.toolbar);
                     this.toggleClass("horizontal", false, this.$.toolbar);
                     this.toggleClass("vertical", true, this.$.toolbarNested);
