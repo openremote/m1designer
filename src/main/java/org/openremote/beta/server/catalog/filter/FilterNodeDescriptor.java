@@ -16,7 +16,7 @@ import static org.openremote.beta.server.util.JsonUtil.JSON;
 
 public class FilterNodeDescriptor extends NodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:flow:node:filter";
+    public static final String TYPE = "urn:openremote:flow:node:filter";
     public static final String TYPE_LABEL = "Filter";
 
     public static final ObjectNode FILTER_INITIAL_PROPERTIES = JSON.createObjectNode()

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class StorageNodeDescriptor extends NodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:flow:node:storage";
+    public static final String TYPE = "urn:openremote:flow:node:storage";
     public static final String TYPE_LABEL = "Storage";
 
     @Override

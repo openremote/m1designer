@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SliderNodeDescriptor extends WidgetNodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:widget:slider";
+    public static final String TYPE = "urn:openremote:widget:slider";
     public static final String TYPE_LABEL = "Slider";
 
     public static final String WIDGET_COMPONENT = "or-console-widget-slider";

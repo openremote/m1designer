@@ -10,13 +10,13 @@ import java.util.List;
 @JsType
 public class Node extends FlowObject {
 
-    public static final String TYPE_SUBFLOW = "urn:org-openremote:flow:node:subflow";
+    public static final String TYPE_SUBFLOW = "urn:openremote:flow:node:subflow";
     public static final String TYPE_SUBFLOW_LABEL = "Flow";
 
-    public static final String TYPE_CONSUMER = "urn:org-openremote:flow:node:consumer";
+    public static final String TYPE_CONSUMER = "urn:openremote:flow:node:consumer";
     public static final String TYPE_CONSUMER_LABEL = "Sink";
 
-    public static final String TYPE_PRODUCER = "urn:org-openremote:flow:node:producer";
+    public static final String TYPE_PRODUCER = "urn:openremote:flow:node:producer";
     public static final String TYPE_PRODUCER_LABEL = "Source";
 
     public String subflowId;

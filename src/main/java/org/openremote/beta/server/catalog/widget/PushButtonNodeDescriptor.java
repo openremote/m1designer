@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:widget:pushbutton";
+    public static final String TYPE = "urn:openremote:widget:pushbutton";
     public static final String TYPE_LABEL = "Push Button";
 
     public static final String COMPONENT = "or-console-widget-pushbutton";

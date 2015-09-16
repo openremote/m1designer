@@ -16,7 +16,7 @@ import static org.openremote.beta.server.util.JsonUtil.JSON;
 
 public class FunctionNodeDescriptor extends NodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:flow:node:function";
+    public static final String TYPE = "urn:openremote:flow:node:function";
     public static final String TYPE_LABEL = "Function";
 
     public static final ObjectNode FUNCTION_INITIAL_PROPERTIES  = JSON.createObjectNode()

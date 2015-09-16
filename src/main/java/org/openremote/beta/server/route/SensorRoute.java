@@ -2,7 +2,6 @@ package org.openremote.beta.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.model.RouteDefinition;
 import org.openremote.beta.server.catalog.NodeDescriptor;
 import org.openremote.beta.server.util.IdentifierUtil;
 import org.openremote.beta.shared.flow.Flow;
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class SensorRoute extends NodeRoute {
 
-    public static final String NODE_TYPE = "urn:org-openremote:flow:node:sensor";
+    public static final String NODE_TYPE = "urn:openremote:flow:node:sensor";
     public static final String NODE_TYPE_LABEL = "Sensor";
 
     public static class Descriptor extends NodeDescriptor {

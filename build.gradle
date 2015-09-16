@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "de.richsource.gradle.plugins:gwt-gradle-plugin:${gwtGradlePluginVersion}"
+        classpath "de.richsource.gradle.plugins:gwt-gradle-plugin:$gwtGradlePluginVersion"
     }
 }
 
@@ -24,6 +24,9 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/google-snapshots/"
     }
+    maven {
+        url "http://4thline.org/m2"
+    }
 }
 configurations {
     serverDependencies
@@ -32,33 +35,34 @@ configurations {
 }
 
 dependencies {
-    serverDependencies "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
-    serverDependencies "org.slf4j:jul-to-slf4j:${slf4jVersion}"
-    serverDependencies "ch.qos.logback:logback-classic:${logbackVersion}"
+    serverDependencies "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    serverDependencies "org.slf4j:jul-to-slf4j:$slf4jVersion"
+    serverDependencies "ch.qos.logback:logback-classic:$logbackVersion"
 
-    serverDependencies "org.apache.camel:camel-core:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-jetty:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-websocket:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-ahc-ws:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-jackson:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-script:${camelVersion}"
-    serverDependencies "org.apache.camel:camel-groovy:${camelVersion}"
-    serverDependencies "org.hibernate:hibernate-validator:${hibernateValidatorVersion}"
+    serverDependencies "org.apache.camel:camel-core:$camelVersion"
+    serverDependencies "org.apache.camel:camel-jetty:$camelVersion"
+    serverDependencies "org.apache.camel:camel-websocket:$camelVersion"
+    serverDependencies "org.apache.camel:camel-ahc-ws:$camelVersion"
+    serverDependencies "org.apache.camel:camel-jackson:$camelVersion"
+    serverDependencies "org.apache.camel:camel-script:$camelVersion"
+    serverDependencies "org.apache.camel:camel-groovy:$camelVersion"
+    serverDependencies "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
+    serverDependencies "org.fourthline.cling:cling-core:$clingVersion"
 
     serverDependencies fileTree("${zwaveProjectDirectory}/build/libs")
 
-    clientDependencies "com.google.gwt:gwt-user:${gwtVersion}"
-    clientDependencies "com.google.gwt:gwt-elemental:${gwtVersion}"
-    clientDependencies "com.ahome-it:lienzo-core:${lienzoVersion}"
-    clientDependencies "org.fusesource.restygwt:restygwt:${restygwtVersion}"
-    clientDependencies "com.google.guava:guava-gwt:${guavagwtVersion}"
+    clientDependencies "com.google.gwt:gwt-user:$gwtVersion"
+    clientDependencies "com.google.gwt:gwt-elemental:$gwtVersion"
+    clientDependencies "com.ahome-it:lienzo-core:$lienzoVersion"
+    clientDependencies "org.fusesource.restygwt:restygwt:$restygwtVersion"
+    clientDependencies "com.google.guava:guava-gwt:$guavagwtVersion"
 
-    gwt("ru.finam:slf4j-gwt:${slf4jGwtVersion}") {
+    gwt("ru.finam:slf4j-gwt:$slf4jGwtVersion") {
         exclude group: "com.google.gwt"
     }
 
-    testCompile "org.testng:testng:${testngVersion}"
-    testCompile ("org.apache.camel:camel-testng:${camelVersion}") {
+    testCompile "org.testng:testng:$testngVersion"
+    testCompile ("org.apache.camel:camel-testng:$camelVersion") {
         exclude group:"org.apache.camel", module: "camel-spring"
         exclude group:"org.apache.camel", module: "camel-test-spring"
     }

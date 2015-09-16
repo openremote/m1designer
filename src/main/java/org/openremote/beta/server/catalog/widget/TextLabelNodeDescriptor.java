@@ -10,7 +10,7 @@ import java.util.List;
 
 public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:widget:textlabel";
+    public static final String TYPE = "urn:openremote:widget:textlabel";
     public static final String TYPE_LABEL = "Text Label";
 
     public static final String COMPONENT = "or-console-widget-textlabel";

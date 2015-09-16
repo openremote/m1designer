@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ChangeNodeDescriptor extends NodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:flow:node:change";
+    public static final String TYPE = "urn:openremote:flow:node:change";
     public static final String TYPE_LABEL = "Change";
 
     @Override

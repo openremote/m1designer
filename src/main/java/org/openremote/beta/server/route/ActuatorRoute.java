@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ActuatorRoute extends NodeRoute {
 
-    public static final String NODE_TYPE = "urn:org-openremote:flow:node:actuator";
+    public static final String NODE_TYPE = "urn:openremote:flow:node:actuator";
     public static final String NODE_TYPE_LABEL = "Actuator";
 
     public static class Descriptor extends NodeDescriptor {

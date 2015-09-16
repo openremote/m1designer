@@ -6,8 +6,8 @@ import org.openremote.beta.shared.model.Identifier;
 @JsType
 public class Slot extends FlowObject {
 
-    public static final String TYPE_SINK = "urn:org-openremote:flow:slot:sink";
-    public static final String TYPE_SOURCE = "urn:org-openremote:flow:slot:source";
+    public static final String TYPE_SINK = "urn:openremote:flow:slot:sink";
+    public static final String TYPE_SOURCE = "urn:openremote:flow:slot:source";
 
     public boolean connectable = true;
     public String peerId;

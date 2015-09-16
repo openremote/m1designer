@@ -25,10 +25,10 @@ public class AdapterDiscoveryService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdapterDiscoveryService.class);
 
-    public static final String COMPONENT_TYPE = "org-openremote-component-type";
-    public static final String COMPONENT_LABEL = "org-openremote-component-label";
-    public static final String COMPONENT_DISCOVERY_ENDPOINT = "org-openremote-component-discoveryEndpoint";
-    public static final String COMPONENT_DISCOVERY_ENDPOINT_REQ_PROPERTIES = "org-openremote-component-discoveryEndpointRequiredProperties";
+    public static final String COMPONENT_TYPE = "openremote-component-type";
+    public static final String COMPONENT_LABEL = "openremote-component-label";
+    public static final String COMPONENT_DISCOVERY_ENDPOINT = "openremote-component-discoveryEndpoint";
+    public static final String COMPONENT_DISCOVERY_ENDPOINT_REQ_PROPERTIES = "openremote-component-discoveryEndpointRequiredProperties";
 
     final protected CamelContext context;
     protected Adapter[] adapters;

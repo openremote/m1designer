@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ToggleButtonNodeDescriptor extends WidgetNodeDescriptor {
 
-    public static final String TYPE = "urn:org-openremote:widget:toggelbutton";
+    public static final String TYPE = "urn:openremote:widget:toggelbutton";
     public static final String TYPE_LABEL = "Toggle Button";
 
     public static final String WIDGET_COMPONENT = "or-console-widget-togglebutton";

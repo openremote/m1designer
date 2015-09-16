@@ -53,8 +53,6 @@ public class LongPressListener implements EventListener {
             }
         } else if (event.getTypeInt() == ONTOUCHEND
             || event.getTypeInt() == ONTOUCHCANCEL
-            || event.getTypeInt() == ONTOUCHMOVE
-            || event.getTypeInt() == ONMOUSEMOVE
             || event.getTypeInt() == ONMOUSEUP) {
             if (longPressTimer != null) {
                 target.getStyle().setOpacity(1.0);

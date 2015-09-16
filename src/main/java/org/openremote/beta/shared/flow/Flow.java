@@ -13,7 +13,7 @@ public class Flow extends FlowObject {
 
     private static final Logger LOG = LoggerFactory.getLogger(Flow.class);
 
-    public static final String TYPE = "urn:org-openremote:flow";
+    public static final String TYPE = "urn:openremote:flow";
 
     public Node[] nodes = new Node[0];
     public Wire[] wires = new Wire[0];
