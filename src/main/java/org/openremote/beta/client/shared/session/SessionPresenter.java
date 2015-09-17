@@ -4,7 +4,6 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
 import elemental.events.CloseEvent;
-import elemental.html.MetaElement;
 import elemental.html.WebSocket;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.ShowInfoEvent;
@@ -16,6 +15,8 @@ import org.slf4j.LoggerFactory;
 @JsType
 @JsExport
 public abstract class SessionPresenter extends RequestPresenter {
+
+    public static final String WEBSOCKET_CONTEXT_PATH = "ws";
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionPresenter.class);
 
@@ -117,25 +118,9 @@ public abstract class SessionPresenter extends RequestPresenter {
         }
     }
 
-    protected static String getWebSocketHost() {
-        MetaElement metaWebSocketHost =
-            (MetaElement) Browser.getDocument().querySelector("meta[name=webSocketHost]");
-        if (metaWebSocketHost == null)
-            return hostname();
-        return metaWebSocketHost.getContent();
-    }
-
-    protected static String getWebSocketPort() {
-        MetaElement metaWebSocketPort =
-            (MetaElement) Browser.getDocument().querySelector("meta[name=webSocketPort]");
-        if (metaWebSocketPort == null)
-            return "9292";
-        return metaWebSocketPort.getContent();
-    }
-
     protected static String getWebSocketUrl(String... pathElement) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ws://").append(getWebSocketHost()).append(":").append(getWebSocketPort());
+        sb.append("ws://").append(hostname()).append(":").append(port()).append("/").append(WEBSOCKET_CONTEXT_PATH);
         if (pathElement != null) {
             for (String pe : pathElement) {
                 sb.append("/").append(pe);

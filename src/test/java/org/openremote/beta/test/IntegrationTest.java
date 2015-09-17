@@ -14,9 +14,12 @@ import org.openremote.beta.server.event.EventServiceConfiguration;
 import org.openremote.beta.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.beta.server.flow.FlowServiceConfiguration;
 import org.openremote.beta.server.inventory.InventoryServiceConfiguration;
-import org.openremote.beta.server.inventory.discovery.DiscoveryServiceConfiguration;
 import org.openremote.beta.server.route.RouteManagementServiceConfiguration;
 import org.openremote.beta.server.util.JsonUtil;
+import org.openremote.beta.server.web.UndertowService;
+import org.openremote.beta.server.web.UndertowWebsocketComponent;
+import org.openremote.beta.server.web.WebserverConfiguration;
+import org.openremote.beta.server.web.socket.WebsocketComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +37,7 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected Server server;
     protected Environment environment;
-    protected String webServerEphemeralPort;
-    protected String webSocketEphemeralPort;
+    protected String serverEphemeralPort;
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
@@ -48,8 +50,7 @@ public class IntegrationTest extends CamelTestSupport {
         Properties properties = new Properties();
         List<Configuration> configurations = new ArrayList<>();
 
-        webServerEphemeralPort = findEphemeralPort();
-        webSocketEphemeralPort = findEphemeralPort();
+        serverEphemeralPort = findEphemeralPort();
 
         configure(properties, configurations, context);
 
@@ -66,7 +67,7 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new SystemConfiguration());
 
         properties.put(WebserverConfiguration.WEBSERVER_ADDRESS, getServerHost());
-        properties.put(WebserverConfiguration.WEBSERVER_PORT, getWebServerPort());
+        properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
         configurations.add(new WebserverConfiguration());
 
         configurations.add(new NodeDescriptorConfiguration());
@@ -76,8 +77,6 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new FlowServiceConfiguration());
         configurations.add(new EventServiceConfiguration());
 
-        properties.put(WebSocketEventServiceConfiguration.WEBSOCKET_ADDRESS, getServerHost());
-        properties.put(WebSocketEventServiceConfiguration.WEBSOCKET_PORT, getWebSocketPort());
         configurations.add(new WebSocketEventServiceConfiguration());
 
     }
@@ -111,34 +110,22 @@ public class IntegrationTest extends CamelTestSupport {
         return "127.0.0.1";
     }
 
-    protected String getWebServerPort() {
-        return webServerEphemeralPort;
-    }
-
-    public String getWebSocketPort() {
-        return webSocketEphemeralPort;
+    protected String getServerPort() {
+        return serverEphemeralPort;
     }
 
     protected String createWebClientUri(String... pathSegments) {
-        StringBuilder path = new StringBuilder();
-        if (pathSegments != null) {
-            for (String pathSegment : pathSegments) {
-                path
-                    .append(pathSegment.startsWith("/") ? "" : "/")
-                    .append(pathSegment);
-            }
-        }
-        try {
-            URI uri = new URI(getWebServerScheme(), null, getServerHost(), Integer.valueOf(getWebServerPort()), path.toString(), null, null);
-            System.err.println(uri);
-            return uri.toString() + "?throwExceptionOnFailure=false"; // Don't swallow OUT message with status code > 400
-        } catch (URISyntaxException ex) {
-            throw new RuntimeException(ex);
-        }
+        // Throw exception on failure, don't swallow OUT message with status code > 400
+        return createClientUri(getWebServerScheme(), UndertowService.SERVICE_CONTEXT_PATH, "?throwExceptionOnFailure=false", pathSegments);
     }
 
     protected String createWebSocketUri(String... pathSegments) {
+        return createClientUri(getWebSocketScheme(), UndertowWebsocketComponent.SERVICE_CONTEXT_PATH, "", pathSegments);
+    }
+
+    protected String createClientUri(String scheme, String contextPath, String queryParams, String... pathSegments) {
         StringBuilder path = new StringBuilder();
+        path.append(contextPath);
         if (pathSegments != null) {
             for (String pathSegment : pathSegments) {
                 path
@@ -147,8 +134,9 @@ public class IntegrationTest extends CamelTestSupport {
             }
         }
         try {
-            URI uri = new URI(getWebSocketScheme(), null, getServerHost(), Integer.valueOf(getWebSocketPort()), path.toString(), null, null);
-            return uri.toString();
+            URI uri = new URI(scheme, null, getServerHost(), Integer.valueOf(getServerPort()), path.toString(), null, null);
+            System.err.println(uri);
+            return uri.toString() + queryParams;
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
         }
@@ -176,7 +164,7 @@ public class IntegrationTest extends CamelTestSupport {
     }
 
     private String findEphemeralPort() {
-        // TODO: As usual it's impossible with the Camel API to let Jetty use an ephemeral port and then get that port somehow...
+        // TODO: As usual it's impossible with the Camel API to use an ephemeral port and then get that port somehow...
         try {
             ServerSocket socket = new ServerSocket(0, 0, Inet4Address.getLocalHost());
             int port = socket.getLocalPort();

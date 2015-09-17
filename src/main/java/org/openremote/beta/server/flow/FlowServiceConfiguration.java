@@ -3,7 +3,7 @@ package org.openremote.beta.server.flow;
 import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
-import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
+import org.openremote.beta.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.beta.server.inventory.InventoryService;
 import org.openremote.beta.server.route.RouteManagementService;
 import org.openremote.beta.shared.flow.Flow;

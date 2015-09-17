@@ -14,6 +14,7 @@
     <logger name="org.openremote.beta" level="INFO"/>
     <logger name="org.openremote.beta.server" level="INFO"/>
     <logger name="org.openremote.beta.server.ServerCamelContext" level="INFO"/>
+    <logger name="org.openremote.beta.server.web" level="DEBUG"/>
     <logger name="org.openremote.beta.server.event" level="DEBUG"/>
     <logger name="org.openremote.beta.server.flow" level="DEBUG"/>
     <logger name="org.openremote.beta.server.route" level="DEBUG"/>
@@ -25,16 +26,11 @@
     <logger name="org.apache.camel.main" level="WARN"/>
     <logger name="org.apache.camel.impl.converter" level="WARN"/>
     <logger name="org.apache.camel.management" level="WARN"/>
-    <logger name="org.apache.camel.component.jetty" level="WARN"/>
     <logger name="org.apache.camel.component.jackson" level="WARN"/>
     <logger name="org.apache.camel.component.seda" level="INFO"/>
     <logger name="org.apache.camel.component.http" level="DEBUG"/>
     <logger name="org.apache.camel.component.mock" level="TRACE"/>
     <logger name="org.apache.camel.testng" level="WARN"/>
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
-
-    <logger name="org.eclipse.jetty.server" level="WARN"/>
-    <logger name="org.eclipse.jetty.server.handler.AbstractHandler" level="ERROR"/>
-    <logger name="org.eclipse.jetty.util.log" level="WARN"/>
 
 </configuration>

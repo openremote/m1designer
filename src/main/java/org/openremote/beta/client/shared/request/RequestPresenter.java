@@ -25,6 +25,8 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestPresenter.class);
 
+    public static final String SERVICE_CONTEXT_PATH = "svc/";
+
     public RequestPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
@@ -192,7 +194,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
     }
 
     protected Resource resource(String base, String... pathElement) {
-        Resource resource = new Resource(GWT.getHostPageBaseURL() + base);
+        Resource resource = new Resource("http://" + hostname() + ":" + port() + "/" + SERVICE_CONTEXT_PATH + base);
         if (pathElement != null) {
             for (String pe : pathElement) {
                 resource = resource.resolve(pe);
@@ -203,6 +205,10 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
     protected static String hostname() {
         return Window.Location.getHostName();
+    }
+
+    protected static String port() {
+        return Window.Location.getPort();
     }
 
     protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {

@@ -26,7 +26,7 @@ Development
 Build tested archives
 ---
 
-    ./gradlew clean check build
+    ./gradlew clean build
 
 All JARs can be found in `build/libs/`.
 
@@ -38,15 +38,11 @@ Optimize for production:
 Run production
 ---
 
-    WEBSERVER_DOCUMENT_ROOT='jar:file:/Users/cb/work/openremote/gh/or3-controller/build/libs/or3-controller-client.jar!/' \
+    WEBSERVER_DOCUMENT_ROOT='/Users/cb/work/openremote/gh/or3-controller/build/libs/or3-controller-client.jar' \
     WEBSERVER_ADDRESS=0.0.0.0 \
     WEBSERVER_PORT=8080 \
-    WEBSOCKET_ADDRESS=0.0.0.0 \
-    WEBSOCKET_PORT=9292 \
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.beta.server.Server
-
-If you change the WebSocket host or port, you must adjust `index.html`.
 
 For quick turnaround when debugging client in production, recompile only the client portion between server restarts:
 
@@ -60,4 +56,4 @@ Build image and run Docker container
     docker rmi orc3:latest
     cp Dockerfile build/libs/
     docker build -t orc3:latest build/libs/
-    docker run -d --name=orc3 -p 8006:8080 -p 9292:9292 -v /etc/localtime:/etc/localtime orc3
+    docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime orc3

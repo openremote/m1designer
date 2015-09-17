@@ -1,12 +1,9 @@
 package org.openremote.beta.server.inventory;
 
-import com.ait.tooling.nativetools.client.util.Client;
 import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
-import org.openremote.beta.server.WebserverConfiguration.RestRouteBuilder;
-import org.openremote.beta.server.flow.FlowService;
-import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.beta.shared.inventory.ClientPreset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

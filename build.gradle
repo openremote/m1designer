@@ -39,9 +39,12 @@ dependencies {
     serverDependencies "org.slf4j:jul-to-slf4j:$slf4jVersion"
     serverDependencies "ch.qos.logback:logback-classic:$logbackVersion"
 
+    serverDependencies "io.undertow:undertow-servlet:$undertowVersion"
+    serverDependencies "io.undertow:undertow-websockets-jsr:$undertowVersion"
+    serverDependencies "org.jboss.logging:jboss-logging-processor:$jbossLoggingProcessVersion"
+
     serverDependencies "org.apache.camel:camel-core:$camelVersion"
-    serverDependencies "org.apache.camel:camel-jetty:$camelVersion"
-    serverDependencies "org.apache.camel:camel-websocket:$camelVersion"
+    serverDependencies "org.apache.camel:camel-servlet:$camelVersion"
     serverDependencies "org.apache.camel:camel-ahc-ws:$camelVersion"
     serverDependencies "org.apache.camel:camel-jackson:$camelVersion"
     serverDependencies "org.apache.camel:camel-script:$camelVersion"

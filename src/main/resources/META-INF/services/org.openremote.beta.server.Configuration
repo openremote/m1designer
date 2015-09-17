@@ -1,6 +1,5 @@
 org.openremote.beta.server.SystemConfiguration
-org.openremote.beta.server.WebserverConfiguration
-org.openremote.beta.server.announce.ControllerAnnounceConfiguration
+org.openremote.beta.server.web.WebserverConfiguration
 org.openremote.beta.server.catalog.NodeDescriptorConfiguration
 org.openremote.beta.server.catalog.CatalogServiceConfiguration
 org.openremote.beta.server.inventory.InventoryServiceConfiguration
@@ -9,3 +8,4 @@ org.openremote.beta.server.flow.FlowServiceConfiguration
 org.openremote.beta.server.event.EventServiceConfiguration
 org.openremote.beta.server.event.WebSocketEventServiceConfiguration
 org.openremote.beta.server.inventory.discovery.DiscoveryServiceConfiguration
+org.openremote.beta.server.announce.ControllerAnnounceConfiguration
