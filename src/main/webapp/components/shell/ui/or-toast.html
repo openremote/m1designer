@@ -1,0 +1,39 @@
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="or-toast">
+    <template>
+        <style>
+            :host {
+                z-index: 9999;
+            }
+            #toast {
+                background-color: var(--or-toast-background-color);
+                color: var(--or-toast-color);
+            }
+
+            #toast.warning {
+                background-color: var(--or-toast-warning-background-color);
+                color: var(--or-toast-warning-color);
+            }
+        </style>
+
+        <paper-toast id="toast"></paper-toast>
+
+    </template>
+    <script>
+        Polymer({
+            show: function (warning, text, duration) {
+                this.toggleClass("warning", warning, this.$.toast);
+                this.$.toast.text = text;
+                if (duration) {
+                    this.$.toast.duration = duration;
+                }
+                this.$.toast.show();
+            },
+            hide: function() {
+                this.$.toast.hide();
+            }
+        });
+    </script>
+</dom-module>
+

@@ -1,0 +1,42 @@
+<dom-module id="or-flow-statusindicator">
+    <template>
+        <style>
+            #indicator {
+                display: inline-block;
+                line-height: 0;
+                vertical-align: middle;
+                color: var(--or-mark-default-color);
+            }
+
+            #indicator:before {
+                content: ' \25CF';
+                font-size: 25px;
+            }
+
+            #indicator.deployed {
+                color: var(--or-mark-ok-color);
+            }
+
+            #indicator.deploying {
+                color: var(--or-mark-progress-color);
+            }
+
+            #indicator.problem {
+                color: var(--or-mark-problem-color);
+            }
+        </style>
+
+        <span id="indicator" class$="[[status]]"></span>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-flow-statusindicator",
+            properties: {
+                status: {
+                    type: String
+                }
+            }
+        });
+    </script>
+</dom-module>

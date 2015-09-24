@@ -1,0 +1,20 @@
+<dom-module id="or-text">
+    <template>
+        <style>
+            :host {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                /* TODO firefox */
+            }
+        </style>
+
+        <content></content>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'or-text'
+        });
+    </script>
+</dom-module>

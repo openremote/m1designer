@@ -1,0 +1,29 @@
+<link rel="import" href="../../../bower_components/paper-tabs/paper-tabs.html"/>
+
+<dom-module id="or-tab-content">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: auto;
+                -webkit-flex: auto;
+            }
+        </style>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-tab-content",
+            properties: {
+                index: {
+                    type: Number,
+                    notify: true,
+                    reflectToAttribute: true
+                }
+            }
+        });
+    </script>
+</dom-module>

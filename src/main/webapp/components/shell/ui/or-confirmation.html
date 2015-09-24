@@ -1,0 +1,130 @@
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-confirmation',
+            properties: {
+                _confirmationTitle: {
+                    type: String,
+                    value: "Confirmation"
+                },
+                _confirmationText: {
+                    type: String
+                },
+                _confirmAction: {
+                    type: Function
+                },
+                _cancelAction: {
+                    type: Function
+                },
+                _otherActionText: {
+                    type: String
+                },
+                _otherAction: {
+                    type: Function
+                }
+            },
+            listeners: {
+                "confirmation": "_onConfirmation"
+            },
+            _onConfirmation: function (ce, event) {
+                this.set("_confirmationTitle", event.title);
+                this.set("_confirmationText", event.text);
+                this._confirmAction = event.confirmAction;
+                this._cancelAction = event.cancelAction;
+                this._otherActionText = event.otherActionText;
+                this._otherAction = event.otherAction;
+                this._openConfirmation();
+            },
+            _confirm: function () {
+                this._closeConfirmation();
+                if (this._confirmAction) {
+                    this._confirmAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _cancel: function () {
+                this._closeConfirmation();
+                if (this._cancelAction) {
+                    this._cancelAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _other: function () {
+                this._closeConfirmation();
+                if (this._otherAction) {
+                    this._otherAction.call();
+                }
+                this._clearConfirmation();
+            },
+            _openConfirmation: function () {
+                this.toggleAttribute("hidden", false, this.$.toolbox);
+                this.$.toolbox.open();
+            },
+            _closeConfirmation: function () {
+                this.toggleAttribute("hidden", true, this.$.toolbox);
+                this.$.toolbox.close();
+            },
+            _clearConfirmation: function () {
+                this.set("_confirmationTitle", "Confirmation");
+                this.set("_confirmationText", undefined);
+                this._confirmAction = undefined;
+                this._cancelAction = undefined;
+                this._otherActionText = undefined;
+                this._otherAction = undefined;
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-confirmation">
+    <template>
+        <style>
+            #toolbox {
+                position: fixed;
+                z-index: 12;
+                top: 50vh;
+                left: 50vw;
+                width: 30em;
+                height: 12em;
+                margin-left: -15em;
+                margin-top: -6em;
+            }
+
+            .panelContent {
+                text-align: center;
+            }
+
+        </style>
+
+        <or-toolbox id="toolbox"
+                    modal
+                    hidden>
+
+            <or-text class="toolboxTitle">[[_confirmationTitle]]</or-text>
+
+            <or-panel id="panel" class="toolboxContent">
+
+                <div class="panelContent">[[_confirmationText]]</div>
+
+                <or-button class="panelBottomToolbarItem" icon="close" on-tap="_cancel">Cancel</or-button>
+
+                <template is="dom-if" if="[[_otherAction]]">
+                    <or-button class="panelBottomToolbarItem" icon="done-all" on-tap="_other">[[_otherActionText]]
+                    </or-button>
+                </template>
+
+                <or-button class="panelBottomToolbarItem" icon="check" primary on-tap="_confirm">OK</or-button>
+
+            </or-panel>
+
+        </or-toolbox>
+    </template>
+</dom-module>
+

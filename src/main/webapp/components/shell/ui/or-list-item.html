@@ -1,0 +1,37 @@
+<dom-module id="or-list-item">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+                margin: 0.2em;
+                padding: 0.2em 0.4em;
+                border-radius: 0.4em;
+                cursor: pointer;
+                background-color: var(--or-list-item-background-color);
+                color: var(--or-list-item-color);
+            }
+
+            #container {
+                font-size: smaller;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+
+            #container:active {
+                opacity: 0.8;
+                background-color: #888 !important;
+            }
+
+        </style>
+
+        <div id="container">
+            <content></content>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-list-item"
+        });
+    </script>
+</dom-module>

@@ -203,14 +203,6 @@ public abstract class RequestPresenter extends AbstractPresenter {
         return resource;
     }
 
-    protected static String hostname() {
-        return Window.Location.getHostName();
-    }
-
-    protected static String port() {
-        return Window.Location.getPort();
-    }
-
     protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {
         sendRequest(false, true, method, callback);
     }
@@ -219,6 +211,14 @@ public abstract class RequestPresenter extends AbstractPresenter {
         callback.setNotifyUserOnSuccess(notifyUserOnSuccess);
         callback.setNotifyUserOnFailure(notifyUserOnFailure);
         method.send(callback);
+    }
+
+    protected static String hostname() {
+        return Window.Location.getHostName();
+    }
+
+    protected static String port() {
+        return Window.Location.getPort();
     }
 
 }

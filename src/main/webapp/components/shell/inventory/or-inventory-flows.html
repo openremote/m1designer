@@ -1,0 +1,97 @@
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-list-section.html">
+<link rel="import" href="../ui/or-list-item.html">
+<link rel="import" href="../ui/or-flow-statusindicator.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory-flows',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryFlowsPresenter(this);
+                    }
+                }
+            },
+            _flowSelected: function (e) {
+                this._presenter.loadFlow(e.model.flowItem.flow.getId());
+            },
+            _createFlow: function () {
+                this._presenter.createFlow();
+            },
+            _flowDragStart: function (e) {
+                e.dataTransfer.setData("flowId", e.model.flowItem.flow.getId());
+                e.dataTransfer.effectAllowed = 'link';
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-inventory-flows">
+    <template>
+        <style>
+            :host {
+                flex: auto;
+                -webkit-flex: auto;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                overflow: hidden;
+            }
+
+            .flow {
+                background-color: var(--or-flow-item-background-color);
+            }
+
+            .flow .label {
+                color: var(--or-flow-item-label-color);
+            }
+
+            .flow .label.unlabeled {
+                font-style: italic;
+            }
+        </style>
+
+        <or-panel>
+            <or-button class="panelTopToolbarItem" icon="add-box" on-tap="_createFlow">New</or-button>
+            <or-button class="panelTopToolbarItem" icon="av:library-books" on-tap="_openLibrary">Library</or-button>
+            <or-button class="panelTopToolbarItem" icon="filter-list" on-tap="_filterList">Filter</or-button>
+
+            <div class="panelContent">
+
+                <template is="dom-if" if="{{!_presenter.flowItems.length}}">
+                    No flows in inventory.
+                </template>
+
+                <or-list-section>
+                    <template is="dom-repeat" items="[[_presenter.flowItems]]" as="flowItem">
+                        <or-list-item
+                                class="flow"
+                                on-tap="_flowSelected"
+                                draggable="true"
+                                on-dragstart="_flowDragStart">
+                            <template is="dom-if" if="[[flowItem.flow.label]]">
+                                <span class="label">[[flowItem.flow.label]]</span>
+                            </template>
+                            <template is="dom-if" if="[[!flowItem.flow.label]]">
+                                <span class="label unlabeled">Unlabeled Flow</span>
+                            </template>
+                            <or-flow-statusindicator status="[[flowItem.status.mark]]"></or-flow-statusindicator>
+                        </or-list-item>
+                    </template>
+                </or-list-section>
+            </div>
+
+        </or-panel>
+
+    </template>
+</dom-module>
+

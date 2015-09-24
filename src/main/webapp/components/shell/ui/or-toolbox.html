@@ -1,0 +1,196 @@
+<link rel="import" href="../../../bower_components/paper-tabs/paper-tabs.html"/>
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+
+<dom-module id="or-toolbox">
+    <template>
+        <style>
+            :host {
+                position: fixed;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                z-index: 1;
+                /* Fire transitioned event when size changes */
+                transition: width 0.01s, height 0.01s, top 0.01s, left 0.01s;
+            }
+
+            #dialog > * {
+                padding: 0;
+            }
+
+            #dialog {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 0 !important;
+                max-width: inherit !important;
+                max-height: inherit !important;
+                font-size: inherit;
+                font-weight: inherit;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: hidden;
+            }
+
+            #title {
+                flex: 0 0 2.75em;
+                -webkit-flex: 0 0 2.75em;
+                display: flex;
+                display: -webkit-flex;
+                justify-content: center;
+                -webkit-justify-content: center;
+                align-items: center;
+                -webkit-align-items: center;
+                font-weight: 500;
+                text-transform: uppercase;
+                background-color: var(--or-toolbox-title-background-color);
+                color: var(--or-toolbox-title-color);
+            }
+
+            #tabs {
+                flex: 0 0 2.75em;
+                -webkit-flex: 0 0 2.75em;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: row;
+                -webkit-flex-direction: row;
+                text-transform: uppercase;
+                background-color: var(--or-toolbox-tabs-background-color);
+                color: var(--or-toolbox-tabs-color);
+                --paper-tabs-selection-bar-color: var(--or-toolbox-tabs-color);
+            }
+
+            #tabs ::content > * {
+                height: 2.75em;
+            }
+
+            #content {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: hidden;
+                background-color: var(--or-toolbox-background-color);
+                margin: 0;
+            }
+
+            #contentWrapper {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: hidden;
+            }
+
+        </style>
+
+        <paper-dialog id="dialog"
+                      opened="{{_dialogOpened}}"
+                      modal$="[[modal]]"
+                      no-cancel-on-esc-key="[[nocancel]]"
+                      no-cancel-on-outside-click="[[nocancel]]">
+
+            <div id="content">
+
+                <div id="title">
+                    <content select=".toolboxTitle"></content>
+                </div>
+
+                <paper-tabs id="tabs"
+                            selected="{{selectedTab}}">
+                    <content select="paper-tab"></content>
+                </paper-tabs>
+
+                <div id="contentWrapper">
+                    <content></content>
+                </div>
+            </div>
+        </paper-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: "or-toolbox",
+            properties: {
+                nocancel: {
+                    type: Boolean,
+                    value: false
+                },
+                selectedTab: {
+                    type: Number,
+                    reflectToAttribute: true,
+                    notify: true,
+                    observer: "_onTabSelected"
+                },
+                _dialogOpened: {
+                    type: Boolean,
+                    observer: "_onDialogOpened"
+                }
+            },
+            attached: function() {
+                this.async(function() {
+                    this._hideIfEmpty(this.$.tabs);
+                    this._hideIfEmpty(this.$.title);
+
+                    // TODO https://github.com/Polymer/polymer/issues/2188
+                    Polymer.dom(this).querySelectorAll('paper-tab').forEach(function(el) {
+                        el.customStyle["--paper-tab-ink"] = "var(--or-toolbox-tabs-color)";
+                        el.updateStyles();
+                    });
+                });
+            },
+            _hideIfEmpty: function(element) {
+                this.toggleAttribute("hidden", this._getDistributedNodes(element).length == 0, element);
+            },
+            _getDistributedNodes: function(element) {
+                return Polymer.dom(Polymer.dom(element).querySelector("content")).getDistributedNodes();
+            },
+            get dialog() {
+                return this.$.dialog;
+            },
+            get opened() {
+                return this.dialog.opened;
+            },
+            open: function () {
+                this.dialog.open();
+                this._fix();
+            },
+            close: function () {
+                this.dialog.close();
+                this._fix();
+            },
+            toggle: function () {
+                this.dialog.toggle();
+                this._fix();
+            },
+            _fix: function () {
+                // TODO Fix for iron-dropdown cutoff
+                this.dialog.style.zIndex = "initial";
+            },
+            _onDialogOpened: function(opened) {
+                this.toggleAttribute("hidden", !opened);
+            },
+            _onTabSelected: function(index) {
+                var contentNodes = this._getDistributedNodes(this.$.contentWrapper);
+                for (var i = 0; i < contentNodes.length; i++) {
+                    var contentNode = contentNodes[i];
+                    if (contentNode.nodeType != 1) {
+                        continue;
+                    }
+                    var tabIndex = contentNode.getAttribute("tab-index");
+                    this.toggleAttribute("hidden", tabIndex != index, contentNode);
+                }
+            }
+        });
+    </script>
+</dom-module>

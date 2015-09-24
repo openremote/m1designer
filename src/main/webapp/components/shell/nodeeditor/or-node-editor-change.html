@@ -1,0 +1,25 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-input.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="or-node-editor-change">
+    <template>
+
+        <or-input label="Prepend text on message"
+                  value="{{nodeProperties.prepend}}"></or-input>
+
+        <or-input label="Append text on message"
+                  value="{{nodeProperties.append}}"></or-input>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-change",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

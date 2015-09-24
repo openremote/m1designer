@@ -3,24 +3,111 @@
     :root {
         /* ######################## START THEME ######################## */
 
-        --or-shell-busy-indicator-color: var(--or-darkgrey);
-        --or-shell-busy-indicator-secondary-color: var(--or-blue);
+        --or-darkgreen: #006224; /* rgb(0, 98, 36); */
+        --or-mediumgreen: #49a942; /* rgb(73, 169, 66); */
+        --or-lightgreen: #c1d72f; /* rgb(193, 215, 47); */
+        --or-darkgrey: #455a64; /* rgb(69, 90, 100); */
+        --or-mediumgrey: #919194; /* rgb(145, 145, 148); */
+        --or-lightgrey: #cccccc; /* rgb(204, 204, 204); */
+        --or-brightgrey: #f5f5f5; /* rgb(245, 245, 245); */
+        --or-red: #e64a19; /* rgb(230, 74, 25); */
+        --or-yellow: #fbc02d; /* rgb(251, 192, 45); */
+        --or-blue: #1976d2; /* rgb(25, 118, 210); */
+        --or-purple: #660092; /* rgb(102, 0, 146) */
 
-        --or-shell-toast-background-color: var(--or-darkgrey);
-        --or-shell-toast-color: white;
-        --or-shell-toast-warning-background-color: var(--or-red);
-        --or-shell-toast-warning-color: white;
+        --primary-background-color: white;
+        --primary-text-color: black;
+        --default-primary-color: var(--or-lightgreen);
 
-        --or-shell-confirm-action-color: var(--or-lightgreen);
-        --or-shell-confirm-cancel-color: var(--or-white);
-        --or-shell-confirm-other-color: var(--or-lightgreen);
+        --or-toast-background-color: var(--or-darkgrey);
+        --or-toast-color: white;
+        --or-toast-warning-background-color: var(--or-red);
+        --or-toast-warning-color: white;
 
-        --or-messagelog-item-background-color: var(--or-brightgrey);
-        --or-messagelog-item-text-color: var(--or-darkgrey);
-        --or-messagelog-item-icon-incoming-color: var(--or-darkgrey);
+        --or-button-background-color: inherit;
+        --or-button-color: inherit;
+        --or-button-primary-background-color: var(--or-darkgrey);
+        --or-button-primary-color: var(--or-lightgreen);
+        --or-button-disabled-color: var(--or-lightgrey);
+
+        --or-toggle-button-color: var(--or-lightgreen);
+        --or-toggle-button-unchecked-color: var(--or-lightgrey);
+        --or-toggle-button-disabled-color: var(--or-lightgrey);
+
+        --or-toolbar-background-color: black;
+        --or-toolbar-color: white;
+        --or-toolbar-highlight-color: var(--or-lightgreen);
+        --or-toolbar-active-background-color: var(--or-mediumgrey);
+        --or-toolbar-dirty-background-color: var(--or-yellow);
+        --or-toolbar-dirty-color: white;
+
+        --or-toolbox-title-background-color: var(--or-lightgreen);
+        --or-toolbox-title-color: black;
+        --or-toolbox-background-color: white;
+        --or-toolbox-tabs-background-color: var(--or-darkgrey);
+        --or-toolbox-tabs-color: var(--or-lightgreen);
+
+        --or-panel-toolbar-background-color: var(--or-mediumgrey);
+        --or-panel-toolbar-color: white;
+        --or-panel-content-background-color: var(--or-brightgrey);
+        --or-panel-content-color: black;
+
+        --or-list-section-label-color: var(--or-darkgrey);
+        --or-list-item-background-color: var(--or-mediumgrey);
+        --or-list-item-color: white;
+
+        --or-input-label-color: var(--or-mediumgrey);
+
+        --or-flow-item-background-color: var(--or-mediumgrey);
+        --or-flow-item-label-color: white;
+
+        --or-mark-default-color: black;
+        --or-mark-ok-color: var(--or-mediumgreen);
+        --or-mark-progress-color: var(--or-yellow);
+        --or-mark-problem-color: var(--or-red);
+
+        --or-catalog-item-default-background-color: var(--or-darkgrey);
+        --or-catalog-item-sensoractuator-background-color: var(--or-purple);
+        --or-catalog-item-virtual-background-color: var(--or-mediumgrey);
+        --or-catalog-item-client-background-color: var(--or-blue);
+        --or-catalog-item-label-color: white;
+        --or-catalog-item-selected-background-color: black;
+        --or-catalog-item-selected-label-color: white;
+
+        --or-messagelog-item-background-color: white;
+        --or-messagelog-item-color: black;
         --or-messagelog-item-icon-outgoing-color: var(--or-mediumgrey);
+        --or-messagelog-item-icon-incoming-color: var(--or-lightgrey);
 
-        /* ######################## END THEME ######################## */
+        --or-node-editor-sink-background-color: var(--or-darkgrey);
+        --or-node-editor-sink-color: white;
+    }
+
+    /* ######################## END THEME ######################## */
+
+    html,
+    body {
+        height: 100vh;
+        width: 100vw;
+        max-width:100%;
+        max-height:100%;
+        overflow:hidden;
+        padding: 0;
+        margin: 0;
+    }
+
+    body {
+        font-family: Helvetica, sans-serif;
+        background-color: white;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        cursor: default;
+        font-size: 14px;
+    }
+
+    * {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     }
 
 </style>

@@ -1,0 +1,143 @@
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-menu-item.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-console-settings',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.consolesettings.ConsoleSettingsPresenter(this);
+                    }
+                },
+                consoleHasWidgets: {
+                    type: Boolean,
+                    value: false
+                },
+                _editMode: {
+                    type: Boolean,
+                    value: false,
+                    observer: "_onEditModeChanged"
+                },
+                _guideFrames: {
+                    type: Array,
+                    value: [
+                        {label: "No Frame", width: 0, height: 0},
+                        {label: "RPi Landscape", width: 800, height: 480},
+                        {label: "RPi Portrait", width: 480, height: 800},
+                        {label: "iPhone 6 Landscape", width: 667, height: 375},
+                        {label: "iPhone 6 Portrait", width: 375, height: 667},
+                        {label: "Nexus 5 Landscape", width: 640, height: 360},
+                        {label: "Nexus 5 Portrait", width: 360, height: 640},
+                        {label: "Gear S Watch", width: 180, height: 240}
+                    ]
+                },
+                _selectedGuideFrame: {
+                    type: Object,
+                    value: {label: "No Frame", width: 0, height: 0}
+                },
+                _zoomFactor: {
+                    type: Number,
+                    value: 1.0
+                }
+            },
+            _onEditModeChanged: function(mode) {
+                this._presenter.switchEditMode(mode);
+            },
+            _onGuideFrameSwitched: function (e) {
+                this._selectGuideFrame(e.model.frame);
+            },
+            _selectGuideFrame: function (guideFrame) {
+                this.set("_selectedGuideFrame", guideFrame);
+                this._presenter.selectGuideFrame(guideFrame.width, guideFrame.height);
+            },
+            _zoomIn: function() {
+                if (this.get("_zoomFactor") >= 2.0) {
+                    return;
+                }
+                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) + 0.2).toFixed(1));
+                this._presenter.zoom(this.get("_zoomFactor"));
+            },
+            _zoomOut: function() {
+                if (this.get("_zoomFactor") <= 0.5) {
+                    return;
+                }
+                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) - 0.2).toFixed(1));
+                this._presenter.zoom(this.get("_zoomFactor"));
+            },
+            _zoomReset: function() {
+                this.set("_zoomFactor", 1.0);
+                this._presenter.zoom(this.get("_zoomFactor"));
+            },
+            _exit: function() {
+                this._presenter.exit();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-console-settings">
+    <template>
+        <style>
+            #guideFrameMenu {
+                --or-menu-label: {
+                    font-size: x-small;
+                }
+                margin-left: 2em;
+            }
+
+            #zoomOptions {
+                margin-left: 2em;
+            }
+
+            #zoomReset {
+                min-width: 2em;
+                justify-content: center;
+                -webkit-justify-content: center;
+            }
+
+            #exit {
+                margin-left: 2em;
+            }
+        </style>
+
+        <div class="layout horizontal center">
+            <or-toggle-button hidden$="[[!consoleHasWidgets]]"
+                              checked="{{_editMode}}">Console Edit Mode</or-toggle-button>
+
+            <div id="zoomOptions"
+                 class="flex layout horizontal center">
+                <or-button icon="zoom-in" hidden$="[[!consoleHasWidgets]]" on-tap="_zoomIn"></or-button>
+                <or-button id="zoomReset" hidden$="[[!consoleHasWidgets]]" on-tap="_zoomReset">[[_zoomFactor]]</or-button>
+                <or-button icon="zoom-out" hidden$="[[!consoleHasWidgets]]" on-tap="_zoomOut"></or-button>
+            </div>
+
+            <!-- TODO not pretty, need proper client presets
+            <or-menu id="guideFrameMenu"
+                     icon="editor:border-outer"
+                     vertical-align="bottom"
+                     horizontal-align="right"
+                     label="[[_selectedGuideFrame.label]]">
+                <template is="dom-repeat" items="[[_guideFrames]]" as="frame">
+                    <or-menu-item on-tap="_onGuideFrameSwitched">[[frame.label]]</or-menu-item>
+                </template>
+            </or-menu>
+            -->
+
+            <or-button id="exit"
+                       icon="exit-to-app" on-tap="_exit"></or-button>
+        </div>
+
+    </template>
+</dom-module>
+

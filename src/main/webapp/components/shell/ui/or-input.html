@@ -1,0 +1,71 @@
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+
+<dom-module id="or-input">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+            }
+
+            #input {
+                flex: auto;
+                -webkit-flex: auto;
+                --paper-input-container: {
+                    padding: 0 0 0.4em 0;
+                };
+                --paper-input-container-label: {
+                    color: var(--or-input-label-color);
+                };
+            }
+        </style>
+
+        <paper-input id="input"
+                     label="{{label}}"
+                     value="{{value}}"
+                     invalid="{{invalid}}"
+                     autofocus$="[[autofocus]]"
+                     disabled$="[[disabled]]"
+                     prevent-invalid-input="[[preventInvalidInput]]"
+                     allowed-pattern="[[allowedPattern]]"
+                     validator="[[validator]]"
+                     type$="[[type]]"
+                     pattern$="[[pattern]]"
+                     required$="[[required]]"
+                     autocomplete$="[[autocomplete]]"
+                     autofocus$="[[autofocus]]"
+                     inputmode$="[[inputmode]]"
+                     minlength$="[[minlength]]"
+                     maxlength$="[[maxlength]]"
+                     min$="[[min]]"
+                     max$="[[max]]"
+                     step$="[[step]]"
+                     name$="[[name]]"
+                     placeholder$="[[placeholder]]"
+                     readonly$="[[readonly]]"
+                     list$="[[list]]"
+                     size$="[[size]]"
+                     autocapitalize$="[[autocapitalize]]"
+                     autocorrect$="[[autocorrect]]"></paper-input>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'or-input',
+            properties: {
+                label: {
+                    type: String,
+                    notify: true,
+                    reflectToAttribute: true
+                },
+                value: {
+                    type: String,
+                    notify: true
+                },
+                invalid: {
+                    type: Boolean
+                }
+            }
+        });
+    </script>
+</dom-module>

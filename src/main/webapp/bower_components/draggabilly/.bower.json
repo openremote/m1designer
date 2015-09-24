@@ -48,6 +48,5 @@
   },
   "_source": "git://github.com/desandro/draggabilly.git",
   "_target": "~1.2.4",
-  "_originalSource": "draggabilly",
-  "_direct": true
+  "_originalSource": "draggabilly"
 }

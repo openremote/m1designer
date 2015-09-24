@@ -1,0 +1,163 @@
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-menu-item.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+<link rel="import" href="../ui/or-input.html">
+
+<link rel="import" href="or-node-editor-widget.html">
+<link rel="import" href="or-node-editor-change.html">
+<link rel="import" href="or-node-editor-filter.html">
+<link rel="import" href="or-node-editor-function.html">
+<link rel="import" href="or-node-editor-pushbutton.html">
+<link rel="import" href="or-node-editor-slider.html">
+<link rel="import" href="or-node-editor-textlabel.html">
+<link rel="import" href="or-node-editor-togglebutton.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-node-editor',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.nodeeditor.NodeEditorPresenter(this);
+                    }
+                },
+                _wasToggledByUser: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            observers: [
+                "_nodeUpdated(_presenter.node)",
+                "_nodeChanged(_presenter.node.label)",
+                "_nodeChanged(_presenter.node.clientAccess)"
+            ],
+            _nodeUpdated: function (node) {
+                this.toggleAttribute("hidden", !node);
+                if (node && !this._wasToggledByUser) {
+                    this.$.toolbox.open();
+                }
+            },
+            _nodeChanged: function () {
+                this._presenter.nodeChanged();
+            },
+            _toggleNodeEditor: function () {
+                this.$.toolbox.toggle();
+                this.set("_wasToggledByUser", true);
+            },
+            _editSubflow: function () {
+                this._presenter.editSubflow();
+            },
+            _deleteNode: function () {
+                this._presenter.deleteNode();
+            },
+            _duplicateNode: function () {
+                this._presenter.duplicateNode();
+            },
+            _getSinkLabel: function (sink) {
+                return this._presenter.getSinkLabel(sink);
+            },
+            _sendSinkMessage: function (e) {
+                var slot = e.model.sink;
+                var body = e.model.sink.msgValue;
+                this._presenter.sendSinkMessage(slot, body);
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-node-editor">
+    <template>
+        <style>
+            #toolbar {
+                min-width: 300px;
+            }
+
+            #toolbox {
+                top: 2.75em;
+                right: 0;
+                width: 350px;
+                max-height: 80vh;
+            }
+
+            .panelContent {
+                user-select: text;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+            }
+
+            .sinkIndex {
+                background: var(--or-node-editor-sink-background-color);
+                color: var(--or-node-editor-sink-color);
+                margin: 0 0.5em;
+                padding: 0.5em;
+                border-radius: 0.2em;
+            }
+        </style>
+
+        <div id="toolbar"
+             class="layout horizontal center end-justified">
+
+            <or-button icon="content-copy" on-tap="_duplicateNode"></or-button>
+            <or-button icon="delete" on-tap="_deleteNode"></or-button>
+
+            <or-button on-tap="_toggleNodeEditor">
+                <or-text style="max-width: 25vw;">[[_presenter.flowNodeTitle]]</or-text>
+            </or-button>
+        </div>
+
+        <or-toolbox id="toolbox" nocancel scrollable>
+            <or-panel>
+
+                <or-toggle-button class="panelTopToolbarItem"
+                                  hidden$="[[_presenter.isSubflow]]"
+                                  checked="{{_presenter.node.clientAccess}}">Client Access
+                </or-toggle-button>
+
+                <or-button class="panelTopToolbarItem"
+                           hidden$="[[!_presenter.isSubflow]]"
+                           icon="editor:mode-edit"
+                           on-tap="_editSubflow">Edit Flow
+                </or-button>
+
+                <div class="panelContent">
+
+                    <div class="layout horizontal center">
+                        <or-input class="flex"
+                                  label="Label"
+                                  value="{{_presenter.node.label}}"></or-input>
+                    </div>
+
+                    <div id="editorComponentContainer"></div>
+
+                    <template is="dom-repeat" items="{{_presenter.sinks}}" as="sink">
+                        <div id=slots" class="layout horizontal center">
+                            <template is="dom-if" if="{{_presenter.hasMultipleSinks}}">
+                                <div class="sinkIndex">{{index}}</div>
+                            </template>
+                            <div class="flex sinkInput">
+                                <or-input autofocus
+                                          value="{{sink.msgValue}}"
+                                          label="{{_getSinkLabel(sink)}}"></or-input>
+                            </div>
+                            <or-button icon="send" on-tap="_sendSinkMessage">Send</or-button>
+                        </div>
+                    </template>
+                </div>
+
+            </or-panel>
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

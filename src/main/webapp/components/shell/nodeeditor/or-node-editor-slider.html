@@ -1,0 +1,72 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="or-node-editor-slider">
+    <template>
+
+        <div class="flex layout horizontal center">
+            <or-input class="flex"
+                      label="Width Pixels"
+                      preventInvalidInput="true"
+                      type="number" min="50" max="5000"
+                      value="{{nodeProperties.widthPixels}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Min Value"
+                      preventInvalidInput="true"
+                      type="number" min="0" max="9999"
+                      value="{{nodeProperties.minValue}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Max Value"
+                      preventInvalidInput="true"
+                      type="number" min="0" max="9999"
+                      value="{{nodeProperties.maxValue}}"></or-input>
+        </div>
+
+        <div class="flex layout horizontal center">
+            <or-input class="flex"
+                      label="Color"
+                      value="{{nodeProperties.color}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Knob"
+                      value="{{nodeProperties.knobColor}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Progress"
+                      value="{{nodeProperties.progressColor}}"></or-input>
+        </div>
+
+        <div class="flex layout horizontal center">
+            <or-toggle-button class="flex"
+                              checked="{{nodeProperties.pin}}">Pin
+            </or-toggle-button>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Pin Color"
+                      value="{{nodeProperties.pinColor}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Pin Text"
+                      value="{{nodeProperties.pinTextColor}}"></or-input>
+        </div>
+
+        <or-toggle-button class="flex"
+                          checked="{{nodeProperties.editable}}">Show value & allow direct input
+        </or-toggle-button>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-slider",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

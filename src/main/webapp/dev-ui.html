@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DEV UI</title>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <!-- Launch app fullscreen if started through a shortcut on a mobile device's home screen -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <link rel="import" href="bower_components/polymer/polymer.html">
+    <link rel="import" href="bower_components/iron-icons/iron-icons.html"/>
+    <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
+
+    <link rel="import" href="components/shell/ui/or-toolbox.html"/>
+    <link rel="import" href="components/shell/ui/or-tab-content.html"/>
+    <link rel="import" href="components/shell/ui/or-panel.html"/>
+    <link rel="import" href="components/shell/ui/or-button.html"/>
+    <link rel="import" href="components/shell/ui/or-toggle-button.html"/>
+    <link rel="import" href="components/shell/ui/or-menu.html"/>
+    <link rel="import" href="components/shell/ui/or-input.html"/>
+    <link rel="import" href="components/shell/ui/or-list-section.html"/>
+    <link rel="import" href="components/shell/ui/or-list-item.html"/>
+
+    <link rel="import" href="styles/shell-style.html"/>
+
+    <style is="custom-style">
+        #mainToolbar {
+            background: var(--or-toolbar-background-color);
+            color: var(--or-toolbar-color);
+            display: flex;
+            display: -webkit-flex;
+            align-items: center;
+            -webkit-align-items: center;
+            justify-content: space-around;
+            -webkit-justify-content: space-around;
+            height: 2.75em;
+        }
+
+        #testbox {
+            top: 4em;
+            left: 4em;
+            width: 50vw;
+            max-height: 70vh;
+        }
+
+        @media all and (max-width: 1000px) {
+            #testbox {
+                top: 60px;
+                left: 10px;
+                width: 95vw;
+                height: 80vh;
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<script>
+    window.addEventListener('WebComponentsReady', function (e) {
+        document.body.querySelector('#testbox').open();
+    });
+</script>
+
+<div id="mainToolbar">
+
+    <or-text>UI Elements</or-text>
+
+    <or-button icon="add" onclick="document.body.querySelector('#testbox').open();">Open</or-button>
+    <or-button icon="remove" onclick="document.body.querySelector('#testbox').close();">Close</or-button>
+    <or-button icon="code" onclick="document.body.querySelector('#testpanel').scrollToBottom();">Scroll</or-button>
+
+    <or-toggle-button checked>Toggle</or-toggle-button>
+
+    <or-button>No Icon</or-button>
+
+    <or-button primary icon="delete">Primary</or-button>
+
+    <or-button disabled icon="remove">Disabled</or-button>
+
+    <or-menu icon="menu"
+             label="Menu"
+             horizontal-align="right"
+             vertical-offset="20">
+        <or-menu-item icon="delete">Foo with a long title</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+        <or-menu-item icon="delete">Foo</or-menu-item>
+    </or-menu>
+
+</div>
+
+<or-toolbox id="testbox" selected-tab="2" nocancel>
+
+    <or-text class="toolboxTitle">This is a toolbox title</or-text>
+
+    <paper-tab>One</paper-tab>
+    <paper-tab>Two</paper-tab>
+    <paper-tab>Three</paper-tab>
+
+    <div tab-index="0">
+        ONE
+    </div>
+
+    <div tab-index="1">
+        TWO
+    </div>
+
+    <or-panel id="testpanel" tab-index="2">
+
+        <or-toggle-button class="panelTopToolbarItem" checked>Foo</or-toggle-button>
+
+        <or-button class="panelTopToolbarItem" icon="add">Add</or-button>
+
+        <or-button class="panelTopToolbarItem">Other</or-button>
+
+        <or-button primary class="panelTopToolbarItem" icon="delete">Delete</or-button>
+
+        <or-button disabled class="panelTopToolbarItem" icon="remove">Remove</or-button>
+
+        <or-menu class="panelTopToolbarItem"
+                 icon="menu"
+                 label="No Selection Menu">
+            <or-menu-item icon="delete">Foo with a long title</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+            <or-menu-item icon="delete">Foo</or-menu-item>
+        </or-menu>
+
+        <div class="panelContent">
+
+            <div class="layout horizontal center">
+                <or-input class="flex"
+                          label="Some input form"
+                          value="Foo bar baz"></or-input>
+                <div style="width:1em"></div>
+                <or-input class="flex"
+                          label="Some other input form"
+                          value="Abc"></or-input>
+            </div>
+
+            <div class="layout horizontal center">
+                <or-toggle-button class="flex" checked>Some toggle button</or-toggle-button>
+                <or-toggle-button class="flex" checked>Another toggle button</or-toggle-button>
+            </div>
+
+            <div class="layout horizontal center">
+                            <or-menu class="flex"
+                                     label="Single Select"
+                                     icon="menu"
+                                     selectable-value
+                                     selected="This is option two">
+                                <or-menu-item value="This is option one">Foo with a long title</or-menu-item>
+                                <or-menu-item value="This is option two">Bar</or-menu-item>
+                                <or-menu-item value="This is option three">Baz</or-menu-item>
+                            </or-menu>
+                <or-menu class="flex"
+                         label="Another disabled menu"
+                         disabled
+                         selectable-value>
+                    <or-menu-item value="This is option one">Foo with a long title</or-menu-item>
+                    <or-menu-item value="This is option two">Bar</or-menu-item>
+                    <or-menu-item value="This is option three">Baz</or-menu-item>
+                </or-menu>
+            </div>
+
+            <div class="layout horizontal center">
+                <or-button class="flex" icon="delete">Some button</or-button>
+                <or-button class="flex">Another button without icon</or-button>
+            </div>
+
+            <or-list-section label="Some List Section">
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+            </or-list-section>
+
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+            <div>Dialog Content</div>
+
+        </div>
+
+        <or-button class="panelBottomToolbarItem" icon="add">Add</or-button>
+
+        <or-toggle-button class="panelBottomToolbarItem" disabled>Bar</or-toggle-button>
+
+    </or-panel>
+
+</or-toolbox>
+
+</body>
+</html>

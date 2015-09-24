@@ -14,7 +14,7 @@ public class SliderNodeDescriptor extends WidgetNodeDescriptor {
     public static final String TYPE_LABEL = "Slider";
 
     public static final String WIDGET_COMPONENT = "or-console-widget-slider";
-    public static final String EDITOR_COMPONENT = "or-editor-node-slider";
+    public static final String EDITOR_COMPONENT = "or-node-editor-slider";
 
     public static final ObjectNode SLIDER_INITIAL_PROPERTIES = WIDGET_INITIAL_PROPERTIES.deepCopy()
         .put(PROPERTY_COMPONENT, WIDGET_COMPONENT)

@@ -13,11 +13,49 @@ import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @JsExport
 @JsType
 public abstract class AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
+
+    /* TODO global message bus instead of manual event passing to child presenters
+    final static protected Map<String, List<EventListener>> EVENT_BUS = new HashMap<>();
+
+    protected <E extends Event> void addListener(Class<E> eventClass,
+                                                 EventListener<E> listener) {
+        synchronized (EVENT_BUS) {
+            String eventType = Event.getType(eventClass);
+            List<EventListener> listeners = EVENT_BUS.get(eventType);
+            if (listeners == null) {
+                listeners = new ArrayList<>();
+                EVENT_BUS.put(eventType, listeners);
+            }
+            listeners.add(listener);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected boolean dispatch(Event event) {
+        synchronized (EVENT_BUS) {
+            try {
+                List<EventListener> listeners = EVENT_BUS.get(event.getType());
+                for (EventListener listener : listeners) {
+                    listener.on(event);
+                }
+                return true;
+            } catch (VetoEventException ex) {
+                LOG.debug("Event vetoed: " + event.getType());
+                return false;
+            }
+        }
+    }
+    */
 
     final protected Element view;
 
@@ -34,7 +72,7 @@ public abstract class AbstractPresenter {
     }
 
     public Component getViewComponent() {
-        return (Component)view;
+        return (Component) view;
     }
 
     public Component.DOM getViewRootDOM() {
@@ -59,6 +97,10 @@ public abstract class AbstractPresenter {
 
     protected native boolean notifyPath(String path, String s) /*-{
         return this.@AbstractPresenter::view.notifyPath("_presenter." + path, s);
+    }-*/;
+
+    protected native boolean notifyPath(String path, double d) /*-{
+        return this.@AbstractPresenter::view.notifyPath("_presenter." + path, d);
     }-*/;
 
     protected native boolean notifyPath(String path, int i) /*-{
@@ -91,34 +133,34 @@ public abstract class AbstractPresenter {
     }-*/;
 
     protected <E extends Event> EventRemover addEventListener(Class<E> eventClass,
-                                                           EventListener<E> listener) {
+                                                              EventListener<E> listener) {
         return addEventListener(getView(), eventClass, listener);
     }
 
     protected <E extends Event> EventRemover addEventListener(Element originView,
-                                                           Class<E> eventClass,
-                                                           EventListener<E> listener) {
+                                                              Class<E> eventClass,
+                                                              EventListener<E> listener) {
         return addEventListener(originView, eventClass, false, false, listener);
     }
 
     protected <E extends Event> EventRemover addEventListener(Class<E> eventClass,
-                                                           boolean stopPropagation,
-                                                           EventListener<E> listener) {
+                                                              boolean stopPropagation,
+                                                              EventListener<E> listener) {
         return addEventListener(getView(), eventClass, stopPropagation, false, listener);
     }
 
     protected <E extends Event> EventRemover addEventListener(Class<E> eventClass,
-                                                           boolean stopPropagation,
-                                                           boolean stopImmediatePropagation,
-                                                           EventListener<E> listener) {
+                                                              boolean stopPropagation,
+                                                              boolean stopImmediatePropagation,
+                                                              EventListener<E> listener) {
         return addEventListener(getView(), eventClass, stopPropagation, stopImmediatePropagation, listener);
     }
 
     protected <E extends Event> EventRemover addEventListener(Element originView,
-                                                           Class<E> eventClass,
-                                                           boolean stopPropagation,
-                                                           boolean stopImmediatePropagation,
-                                                           EventListener<E> listener) {
+                                                              Class<E> eventClass,
+                                                              boolean stopPropagation,
+                                                              boolean stopImmediatePropagation,
+                                                              EventListener<E> listener) {
         String eventType = Event.getType(eventClass);
         LOG.debug("Adding event listener to view '" + originView.getLocalName() + "': " + eventType);
         return originView.addEventListener(eventType, evt -> {
@@ -171,7 +213,7 @@ public abstract class AbstractPresenter {
         TimeoutHandler dispatchHandler = () -> {
             LOG.debug("Dispatching event on view '" + targetView.getLocalName() + "': " + event.getType());
             CustomEvent customEvent = (CustomEvent) targetView.getOwnerDocument().createEvent("CustomEvent");
-            boolean bubbling =  canBubble && !(event instanceof NonBubblingEvent);
+            boolean bubbling = canBubble && !(event instanceof NonBubblingEvent);
             customEvent.initCustomEvent(event.getType(), bubbling, false, event);
             targetView.dispatchEvent(customEvent);
         };
@@ -182,6 +224,10 @@ public abstract class AbstractPresenter {
             dispatchHandler.onTimeoutHandler();
             return -1;
         }
+    }
+
+    protected boolean hasViewElement(String selector) {
+        return getOptionalElement(selector) != null;
     }
 
     protected Element getOptionalElement(String selector) {
@@ -197,17 +243,6 @@ public abstract class AbstractPresenter {
 
     protected Component.DOM getRequiredElementDOM(String selector) {
         return getDOM(getRequiredElement(selector));
-    }
-
-    protected void addRedirectToShellView(Class<? extends Event> eventClass) {
-        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("#shell");
-        if (shellView == null) {
-            throw new RuntimeException("Missing 'or-shell' view in browser top window document");
-        }
-        addEventListener(
-            getView(), eventClass, event ->
-            dispatchEvent(shellView, event)
-        );
     }
 
     protected String getWindowQueryArgument(String parameter) {

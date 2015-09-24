@@ -1,0 +1,33 @@
+<script>
+    window.openremote = window.openremote || {};
+
+    window.openremote.NodeEditor = {
+        properties: {
+            _presenter: {
+                type: Object,
+                value: function () {
+                    return new openremote.shell.nodeeditor.NodePropertiesPresenter(this);
+                }
+            },
+            nodeId: {
+                type: String
+            },
+            nodeProperties: {
+                type: Object,
+                value: undefined
+            }
+        },
+        observers: [
+            "_oNodePropertiesChanged(nodeProperties.*)"
+        ],
+        ready: function () {
+            Polymer.dom(this).classList.add("or-editor-node-editor");
+        },
+        _oNodePropertiesChanged: function (event) {
+            if (event.path != "nodeProperties") {
+                this._presenter.nodePropertiesChanged(this.nodeId, this.nodeProperties);
+            }
+        }
+    };
+
+</script>

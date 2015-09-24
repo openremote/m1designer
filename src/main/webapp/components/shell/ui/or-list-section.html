@@ -1,0 +1,45 @@
+<dom-module id="or-list-section">
+    <template>
+        <style>
+            :host {
+            }
+
+            #label {
+                font-weight: bold;
+                font-size: smaller;
+                color: var(--or-list-section-label-color);
+            }
+
+            #items {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: row;
+                -webkit-flex-direction: row;
+                flex-wrap: wrap;
+                -webkit-flex-wrap: wrap;
+            }
+        </style>
+
+        <template is="dom-if" if="[[label]]">
+            <div id="label">[[label]]</div>
+        </template>
+
+        <div id="items">
+            <content select="or-list-item"></content>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-list-section",
+            properties: {
+                label: {
+                    type: String,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                }
+            }
+        });
+    </script>
+</dom-module>

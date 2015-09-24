@@ -7,12 +7,16 @@ import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.html.IFrameElement;
 import org.openremote.beta.client.console.*;
-import org.openremote.beta.client.editor.flow.*;
+import org.openremote.beta.client.shared.Callback;
+import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.ShowFailureEvent;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.session.event.*;
+import org.openremote.beta.client.shell.event.*;
+import org.openremote.beta.client.shell.flowcontrol.FlowControlPresenter;
 import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.beta.shared.flow.Flow;
+import org.openremote.beta.shared.flow.Node;
 import org.openremote.beta.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,40 +29,37 @@ public class ShellPresenter extends EventSessionPresenter {
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
-    public boolean editorOpen;
+    public boolean consoleMaximized = true;
+    public boolean consoleHasWidgets = false;
+    public Flow flow;
+    public boolean flowDirty;
+    public Node node;
 
     public ShellPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(
-            ServerReceivedEvent.class,
-            event -> {
-                if (isEditorViewAvailable()) {
-                    dispatchEvent(getEditorView(), event);
-                }
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), event);
-                }
+        addEventListener(ConfirmationEvent.class, event -> {
+            dispatchEvent("#confirmationDialog", event);
+        });
 
-                // TODO: Not pretty, nicer way to handle server failure messages?
-                if (event.getEvent() instanceof FlowRuntimeFailureEvent) {
-                    FlowRuntimeFailureEvent runtimeFailureEvent = (FlowRuntimeFailureEvent) event.getEvent();
-                    dispatchEvent(new ShowFailureEvent(runtimeFailureEvent.getMessage(),10000));
+        addEventListener(ServerReceivedEvent.class, event -> {
+            // TODO should probably do more when a flow fails at runtime
+            if (event.getEvent() instanceof FlowRuntimeFailureEvent) {
+                FlowRuntimeFailureEvent runtimeFailureEvent = (FlowRuntimeFailureEvent) event.getEvent();
+                dispatchEvent(new ShowFailureEvent(runtimeFailureEvent.getMessage(), 10000));
+            } else {
+                if (!consoleMaximized) {
+                    dispatchEvent("#inventory", event);
+                    dispatchEvent("#flowControl", event);
+                    dispatchEvent("#flowEditor", event);
                 }
             }
-        );
-
-        addEventListener(FlowRuntimeFailureEvent.class, event -> {
-            if (isEditorViewAvailable()) {
-                dispatchEvent(getEditorView(), event);
-            }
-            dispatchEvent(new ShowFailureEvent(event.getMessage(), 10000));
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
-            dispatchEvent("#messageLog", event);
-            if (isEditorViewAvailable()) {
-                dispatchEvent(getEditorView(), event);
+            if (!consoleMaximized) {
+                dispatchEvent("#messageLog", event);
+                dispatchEvent("#flowEditor", event.getMessage());
             }
             if (isConsoleViewAvailable()) {
                 dispatchEvent(getConsoleView(), event);
@@ -66,134 +67,207 @@ public class ShellPresenter extends EventSessionPresenter {
         });
 
         addEventListener(MessageSendEvent.class, event -> {
-            dispatchEvent("#messageLog", event);
+            if (!consoleMaximized) {
+                dispatchEvent("#messageLog", event);
+                dispatchEvent("#flowEditor", event.getMessage());
+            }
         });
 
-        addEventListener(ConfirmationEvent.class, event -> {
-            dispatchEvent(getRequiredElement("#confirmationDialog"), event);
+        addEventListener(ConsoleMessageSendEvent.class, event -> {
+            dispatchEvent(new MessageSendEvent(event.getMessage()));
         });
 
-        addEventListener(
-            ConsoleMessageSendEvent.class,
-            event -> {
-                dispatchEvent(new MessageSendEvent(event.getMessage()));
-                if (isEditorViewAvailable()) {
-                    dispatchEvent(getEditorView(), event);
-                }
+        addEventListener(ConsoleReadyEvent.class, event -> {
+            ClientPresetVariant clientPresetVariant = new ClientPresetVariant(
+                Browser.getWindow().getNavigator().getUserAgent(),
+                Browser.getWindow().getScreen().getWidth(),
+                Browser.getWindow().getScreen().getHeight()
+            );
+            loadPresetFlow(clientPresetVariant);
+        });
+
+        addEventListener(ConsoleSwitchEvent.class, event -> {
+            consoleMaximized = event.isMaximized();
+            notifyPath("consoleMaximized", consoleMaximized);
+        });
+
+        addEventListener(ConsoleMaximizeEvent.class, event-> {
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(getConsoleView(), event);
             }
-        );
+        });
 
-        addEventListener(
-            EditorOpenEvent.class,
-            event -> {
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), event);
-                }
+        addEventListener(ConsoleEditModeEvent.class, event-> {
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(getConsoleView(), event);
             }
-        );
+        });
 
-        addEventListener(
-            EditorCloseEvent.class,
-            event -> {
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), event);
-                }
-            });
+        addEventListener(ConsoleZoomEvent.class, event-> {
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(getConsoleView(), event);
+            }
+        });
 
-        addEventListener(
-            ConsoleReadyEvent.class, event -> {
-                if (!isConsoleViewAvailable())
-                    return;
-                if (editorOpen) {
-                    dispatchEvent(getConsoleView(), new EditorOpenEvent());
-                } else {
-                    dispatchEvent(getConsoleView(), new EditorCloseEvent());
-                }
-
-                ClientPresetVariant clientPresetVariant = new ClientPresetVariant(
-                    Browser.getWindow().getNavigator().getUserAgent(),
-                    Browser.getWindow().getScreen().getWidth(),
-                    Browser.getWindow().getScreen().getHeight()
+        addEventListener(ConsoleRefreshEvent.class, event -> {
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(
+                    getConsoleView(),
+                    // TODO Starting to look like spaghetti here
+                    new ConsoleRefreshEvent(
+                        event.getFlow(), event.isDirty(), node != null ? node.getId() : null)
                 );
-
-                loadPresetFlow(clientPresetVariant);
             }
-        );
+        });
 
-        addEventListener(
-            ConsoleSwitchEvent.class, event -> {
-                if (event.isMaximized() && editorOpen) {
-
-
-                    dispatchEvent("#messageLog", new MessageLogCloseEvent());
-                    dispatchEvent(new EditorCloseEvent());
-                    editorOpen = false;
-                } else if (!event.isMaximized() && !editorOpen) {
-                    dispatchEvent("#messageLog", new MessageLogOpenEvent());
-                    dispatchEvent(new EditorOpenEvent(event.getFlow() != null ? event.getFlow().getId() : null));
-                    editorOpen = true;
-                }
-                notifyPath("editorOpen", editorOpen);
-            });
-
-        addEventListener(
-            ConsoleWidgetUpdatedEvent.class, event -> {
-                if (isEditorViewAvailable()) {
-                    dispatchEvent(getEditorView(), event);
-                }
+        addEventListener(ConsoleRefreshedEvent.class, event-> {
+            if (!consoleMaximized) {
+                consoleHasWidgets = event.isRenderedWidgets();
+                notifyPath("consoleHasWidgets", consoleHasWidgets);
             }
-        );
+        });
 
-        addEventListener(
-            ConsoleRefreshEvent.class, event -> {
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), event);
-                }
+        addEventListener(FlowLoadEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#inventory", event);
             }
-        );
+        });
 
-        addEventListener(
-            ConsoleWidgetSelectEvent.class, event -> {
-                if (isConsoleViewAvailable()) {
-                    dispatchEvent(getConsoleView(), event);
-                }
+        addEventListener(FlowEditEvent.class, event -> {
+
+            // Let user confirm dropping unsaved changed
+            if (flow != null && flowDirty) {
+                dispatchDirtyConfirmation(() -> {
+                        flowDirty = false;
+                        notifyPath("flowDirty", flowDirty);
+                        dispatchEvent(false, event);
+                    }
+                );
+                return;
             }
-        );
 
-        addEventListener(
-            ConsoleWidgetSelectedEvent.class, event -> {
-                if (isEditorViewAvailable()) {
-                    dispatchEvent(getEditorView(), event);
-                }
-            }
-        );
+            flow = event.getFlow();
+            notifyPath("flow");
 
-        addEventListener(
-            FlowEditEvent.class,
-            event -> {
+            // TODO spaghetti
+            node = null;
+            notifyPathNull("node");
+
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
+                dispatchEvent("#flowEditor", event);
+                dispatchEvent("#nodeEditor", event);
                 dispatchEvent("#messageLog", event);
             }
-        );
+        });
 
-        addEventListener(
-            FlowModifiedEvent.class,
-            event -> {
+        addEventListener(FlowModifiedEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
                 dispatchEvent("#messageLog", event);
             }
-        );
+        });
 
-        addEventListener(
-            FlowDeletedEvent.class,
-            event -> {
-                dispatchEvent("#messageLog", event);
+        addEventListener(FlowSavedEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#inventory", new InventoryRefreshEvent());
             }
-        );
+        });
+
+        addEventListener(FlowDeletedEvent.class, event -> {
+            flow = null;
+            notifyPathNull("flow");
+
+            // TODO spaghetti
+            node = null;
+            notifyPathNull("node");
+
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
+                dispatchEvent("#flowEditor", event);
+                dispatchEvent("#nodeEditor", event);
+                dispatchEvent("#messageLog", event);
+                dispatchEvent("#inventory", new InventoryRefreshEvent());
+            }
+        });
+
+        addEventListener(NodeCreateEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
+            }
+        });
+
+        addEventListener(NodeDeleteEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
+            }
+        });
+
+        addEventListener(NodeDuplicateEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowControl", event);
+            }
+        });
+
+        addEventListener(NodeAddedEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowEditor", event);
+            }
+        });
+
+        addEventListener(NodeModifiedEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowEditor", event);
+            }
+        });
+
+        addEventListener(ConsoleWidgetSelectedEvent.class, event -> {
+            if (!consoleMaximized) {
+                dispatchEvent("#flowEditor", new NodeSelectEvent(event.getNodeId()));
+            }
+        });
+
+        addEventListener(ConsoleWidgetUpdatedEvent.class, event -> {
+            if (flow != null && !consoleMaximized) {
+                dispatchEvent("#flowEditor", new NodeSelectEvent(event.getNodeId()));
+                dispatchEvent("#nodeEditor", new NodePropertiesUpdatedEvent(event.getNodeId(), event.getProperties()));
+            }
+        });
+
+        addEventListener(NodeSelectedEvent.class, event -> {
+            this.node = event.getNode();
+            notifyPath("node");
+            if (isConsoleViewAvailable()) {
+                dispatchEvent(getConsoleView(), new ConsoleWidgetSelectEvent(event.getNode().getId()));
+            }
+            if (!consoleMaximized) {
+                dispatchEvent("#nodeEditor", event);
+            }
+        });
+
+
+        addEventListener(NodeDeletedEvent.class, event -> {
+            this.node = null;
+            notifyPathNull("node");
+            if (!consoleMaximized) {
+                dispatchEvent("#flowEditor", event);
+                dispatchEvent("#nodeEditor", event);
+            }
+        });
     }
 
     @Override
     public void attached() {
         super.attached();
         dispatchEvent(new EventSessionConnectEvent());
+    }
+
+    protected void dispatchDirtyConfirmation(Callback confirmAction) {
+        dispatchEvent(new ConfirmationEvent(
+            "Unsaved Changes",
+            "You have edited the current flow and not redeployed/saved the changes. Continue without saving changes?",
+            confirmAction
+        ));
     }
 
     protected void loadPresetFlow(ClientPresetVariant clientPresetVariant) {
@@ -208,7 +282,7 @@ public class ShellPresenter extends EventSessionPresenter {
             new ObjectResponseCallback<Flow>("Load preset flow", FLOW_CODEC) {
                 @Override
                 protected void onResponse(Flow flow) {
-                    dispatchEvent(new ConsoleRefreshEvent(flow, false));
+                    dispatchEvent(new ConsoleRefreshEvent(flow, false, null));
                 }
 
                 @Override
@@ -225,24 +299,10 @@ public class ShellPresenter extends EventSessionPresenter {
         );
     }
 
-    protected boolean isEditorViewAvailable() {
-        IFrameElement frame = (IFrameElement) getRequiredElement("#editor");
-        Element view = frame.getContentDocument().querySelector("or-editor");
-        return view != null;
-    }
-
     protected boolean isConsoleViewAvailable() {
         IFrameElement frame = (IFrameElement) getRequiredElement("#console");
         Element view = frame.getContentDocument().querySelector("or-console");
         return view != null;
-    }
-
-    protected Element getEditorView() {
-        IFrameElement frame = (IFrameElement) getRequiredElement("#editor");
-        Element view = frame.getContentDocument().querySelector("or-editor");
-        if (view == null)
-            throw new IllegalArgumentException("Missing or-editor view component in editor frame.");
-        return view;
     }
 
     protected Element getConsoleView() {

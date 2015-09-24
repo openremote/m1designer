@@ -47,7 +47,7 @@ public abstract class WidgetNodeDescriptor extends ClientNodeDescriptor {
     @Override
     public void addEditorComponents(List<String> editorComponents) {
         super.addEditorComponents(editorComponents);
-        editorComponents.add("or-editor-node-widget");
+        editorComponents.add("or-node-editor-widget");
     }
 
     @Override

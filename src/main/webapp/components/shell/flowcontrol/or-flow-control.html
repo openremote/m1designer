@@ -1,0 +1,288 @@
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-menu-item.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-flow-statusindicator.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-flow-control',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.flowcontrol.FlowControlPresenter(this);
+                    }
+                },
+                dirty: {
+                    type: Boolean,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                }
+            },
+            observers: [
+                "_flowUpdated(_presenter.flow)",
+                "_flowStatusDetailUpdated(_presenter.flowStatusDetail)",
+                "_flowDirtyUpdated(_presenter.flowDirty)",
+                "_flowUnsavedUpdated(_presenter.flowUnsaved)",
+                "_flowPropertyChanged(_presenter.flow.label)"
+            ],
+            _toggleFlowControl: function () {
+                this.$.toolbox.toggle();
+            },
+            _flowUpdated: function(flow) {
+                this.toggleAttribute("hidden", !flow);
+            },
+            _flowStatusDetailUpdated: function (flowStatusDetail) {
+                this.toggleAttribute("disabled", !flowStatusDetail || !flowStatusDetail.canStart, this.$.startButton);
+                this.toggleAttribute("disabled", !flowStatusDetail || !flowStatusDetail.canStop, this.$.stopButton);
+            },
+            _flowUnsavedUpdated: function (unsaved) {
+                this.toggleAttribute("disabled", unsaved, this.$.deleteButton);
+            },
+            _flowDirtyUpdated: function (dirty) {
+                this.set("dirty", dirty);
+            },
+            _flowPropertyChanged: function (value) {
+                if (value === undefined)
+                    return;
+                this._presenter.flowPropertyChanged();
+            },
+            _getSuperFlowDependencyStyle: function (level) {
+                return "margin-left: " + (level * 20) + "px;";
+            },
+            _getCurrentFlowDependencyStyle: function (level) {
+                return "font-weight: bold;";
+            },
+            _getSubFlowDependencyStyle: function (level) {
+                return "margin-left: " + (level * 20) + "px;";
+            },
+            _getSuperFlowDependencyStatusLabel: function (dependency) {
+                if (dependency.wired && !dependency.peersInvalid) {
+                    return " (Wired)";
+                } else if (dependency.peersInvalid) {
+                    return " (Invalid Wires)";
+                }
+                return "";
+            },
+            _editFlowDependency: function (event) {
+                this._presenter.editFlowDependency(event.model.flowDependency);
+            },
+            _redeployFlow: function () {
+                this._presenter.redeployFlow();
+            },
+            _saveFlow: function () {
+                this._presenter.saveFlow();
+            },
+            _stopFlow: function () {
+                this._presenter.stopFlow();
+            },
+            _startFlow: function () {
+                this._presenter.startFlow();
+            },
+            _deleteFlow: function () {
+                this._presenter.deleteFlow();
+            },
+            _exportFlow: function () {
+                this._presenter.exportFlow();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-flow-control">
+    <template>
+        <style>
+            #toolbar {
+            }
+
+            #toolbox {
+                top: 2.75em;
+                width: 350px;
+            }
+
+            #statusIndicator {
+                padding: 0.4em;
+                border-radius: 0.4em;
+                cursor: pointer;
+            }
+
+            #statusIndicator[dirty] {
+                background-color: var(--or-toolbar-dirty-background-color);
+                color: var(--or-toolbar-dirty-color);
+            }
+
+            #status {
+                font-weight: 500;
+            }
+
+            #status.deployed {
+                color: var(--or-mark-ok-color);
+            }
+
+            #status.deploying {
+                color: var(--or-mark-progress-color);
+            }
+
+            #status.problem {
+                color: var(--or-mark-problem-color);
+            }
+
+            #dependencyTree .currentFlow{
+                font-weight: bold;
+            }
+
+            #dependencyTree .superDependency:before {
+                content: ' \2197';
+                font-weight: bold;
+                margin: 0 0.2em;
+                vertical-align: sub;
+                color: var(--or-flow-item-background-color);
+            }
+
+            #dependencyTree .subDependency:before {
+                content: ' \2198';
+                font-weight: bold;
+                margin: 0 0.2em;
+                vertical-align: super;
+                color: var(--or-flow-item-background-color);
+            }
+
+            #dependencyTree .superDependency.empty,
+            #dependencyTree .subDependency.empty {
+                text-transform: initial;
+                color: var(--or-flow-item-background-color);
+            }
+
+            #dependencyTree .superDependency > span[peersInvalid] {
+                color: var(--or-mark-problem-color);
+            }
+
+        </style>
+
+        <div id="toolbar"
+             class="layout horizontal center">
+
+            <or-flow-statusindicator id="statusIndicator"
+                                     on-tap="_toggleFlowControl"
+                                     dirty$="[[_presenter.flowDirty]]"
+                                     status="[[_presenter.flowStatusDetail.mark]]"></or-flow-statusindicator>
+
+            <or-button icon="refresh" on-tap="_redeployFlow"></or-button>
+
+            <or-menu id="dependencyTree"
+                     icon="arrow-drop-down-circle"
+                     vertical-offset="20">
+
+                <template is="dom-repeat"
+                          items="[[_presenter.flowSuperDependencies]]"
+                          as="flowDependency">
+                    <or-menu-item on-tap="_editFlowDependency"
+                                  style$="[[_getSuperFlowDependencyStyle(flowDependency.level)]]">
+                        <span class="superDependency">
+                            <span>[[flowDependency.label]]</span>
+                            <span peersInvalid$="[[flowDependency.peersInvalid]]">[[_getSuperFlowDependencyStatusLabel(flowDependency)]]</span>
+                        </span>
+                    </or-menu-item>
+                </template>
+                <template is="dom-if" if="[[!_presenter.flowSuperDependencies.length]]">
+                    <or-menu-item style$="[[_getSuperFlowDependencyStyle(0)]]">
+                        <span class="superDependency empty">Not included in other flows</span>
+                    </or-menu-item>
+                </template>
+
+                <or-menu-item
+                        style$="[[_getCurrentFlowDependencyStyle()]]">
+                    <span class="currentFlow">[[_presenter.flow.label]]</span>
+                </or-menu-item>
+
+                <template is="dom-if" if="[[!_presenter.flowSubDependencies.length]]">
+                    <or-menu-item style$="[[_getSubFlowDependencyStyle(0)]]">
+                        <span class="subDependency empty">No included flows</span>
+                    </or-menu-item>
+                </template>
+                <template is="dom-repeat"
+                          items="[[_presenter.flowSubDependencies]]"
+                          as="flowDependency">
+                    <or-menu-item on-tap="_editFlowDependency"
+                                  style$="[[_getSubFlowDependencyStyle(flowDependency.level)]]">
+                        <span class="subDependency">[[flowDependency.label]]</span>
+                    </or-menu-item>
+                </template>
+
+            </or-menu>
+
+            <or-button on-tap="_toggleFlowControl">
+                <or-text style="max-width: 25vw;">[[_presenter.flowControlTitle]]</or-text>
+            </or-button>
+
+        </div>
+
+        <or-toolbox id="toolbox" nocancel>
+
+            <or-panel>
+
+                <or-button class="panelTopToolbarItem"
+                           id="startButton"
+                           icon="av:play-arrow"
+                           on-tap="_startFlow"
+                           disabled>Start
+                </or-button>
+
+                <or-button class="panelTopToolbarItem"
+                           id="stopButton"
+                           icon="av:stop"
+                           on-tap="_stopFlow"
+                           disabled>Stop
+                </or-button>
+
+                <or-button class="panelTopToolbarItem"
+                           id="deleteButton"
+                           icon="delete"
+                           on-tap="_deleteFlow"
+                           disabled>Remove
+                </or-button>
+
+                <or-menu class="panelTopToolbarItem"
+                         icon="menu"
+                         vertical-offset="20">
+                    <or-menu-item icon="save" on-tap="_saveFlow">Save</or-menu-item>
+                    <or-menu-item icon="communication:call-made" on-tap="_exportFlow">Export</or-menu-item>
+                    <or-menu-item icon="communication:call-received" on-tap="_importFlow">Import</or-menu-item>
+                </or-menu>
+
+                <div class="panelContent">
+
+                    <div class="flex layout horizontal center">
+                        <div class="flex">Status:</div>
+                        <div class="flex-6">
+                            <span id="status" class$="[[_presenter.flowStatusDetail.mark]]">[[_presenter.flowStatusDetail.text]]</span>
+                        </div>
+                    </div>
+
+                    <div class="flex layout horizontal center">
+                        <or-input class="flex"
+                                  label="Label"
+                                  value="{{_presenter.flow.label}}"></or-input>
+                    </div>
+
+                </div>
+
+            </or-panel>
+
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

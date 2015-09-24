@@ -1,0 +1,50 @@
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory-devices',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryDevicesPresenter(this);
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-inventory-devices">
+    <template>
+        <style>
+            :host {
+                flex: auto;
+                -webkit-flex: auto;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                overflow: hidden;
+            }
+        </style>
+
+        <or-panel>
+            <or-button class="panelTopToolbarItem" icon="build" on-tap="_manageDevices">Manage</or-button>
+            <or-button class="panelTopToolbarItem" icon="filter-list" on-tap="_filterList">Filter</or-button>
+
+            <div class="panelContent">
+                <template is="dom-if" if="{{!_presenter.devices.length}}">
+                    No devices in inventory.
+                </template>
+            </div>
+        </or-panel>
+
+    </template>
+</dom-module>
+

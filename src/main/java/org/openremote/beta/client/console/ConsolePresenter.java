@@ -4,16 +4,17 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.js.util.JsMapFromStringTo;
-import org.openremote.beta.client.editor.flow.ConfirmationEvent;
+import org.openremote.beta.client.shell.event.ConfirmationEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
-import org.openremote.beta.client.shared.JsUtil;
 import org.openremote.beta.client.shared.LongPressListener;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.shared.event.Event;
 import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
@@ -35,6 +36,9 @@ public class ConsolePresenter extends AbstractPresenter {
     public static final int SWITCH_LONG_PRESS_DELAY_MILLIS = 1500;
 
     public boolean maximized = true;
+    public boolean editMode = false;
+    public double zoomFactor = 1.0;
+
     protected Flow flow;
     protected boolean flowDirty;
 
@@ -44,6 +48,7 @@ public class ConsolePresenter extends AbstractPresenter {
         addRedirectToShellView(ConfirmationEvent.class);
         addRedirectToShellView(ConsoleReadyEvent.class);
         addRedirectToShellView(ConsoleSwitchEvent.class);
+        addRedirectToShellView(ConsoleRefreshedEvent.class);
         addRedirectToShellView(ConsoleMessageSendEvent.class);
         addRedirectToShellView(ConsoleWidgetUpdatedEvent.class);
         addRedirectToShellView(ConsoleWidgetSelectedEvent.class);
@@ -52,11 +57,25 @@ public class ConsolePresenter extends AbstractPresenter {
         addEventListener(ConsoleRefreshEvent.class, event -> {
             flow = event.getFlow();
             flowDirty = event.isDirty();
-            refreshConsole();
+            refreshConsole(event.getSelectedNodeId());
+        });
+
+        addEventListener(ConsoleEditModeEvent.class, event -> {
+            editMode = event.isEditMode();
+            notifyPath("editMode", editMode);
+        });
+
+        addEventListener(ConsoleZoomEvent.class, event -> {
+            zoomFactor = event.getZoomFactor();
+            notifyPath("zoomFactor", zoomFactor);
         });
 
         addEventListener(ConsoleWidgetSelectEvent.class, event -> {
             selectWidget(event.getNodeId());
+        });
+
+        addEventListener(ConsoleMaximizeEvent.class, event-> {
+            switchConsole();
         });
 
         addEventListener(MessageReceivedEvent.class, event -> {
@@ -122,13 +141,19 @@ public class ConsolePresenter extends AbstractPresenter {
         }
     }
 
-    protected void refreshConsole() {
+    protected void refreshConsole(String selectedNodeId) {
         DOM container = getDOM(getWidgetComponentContainer());
         clearWidgetContainer(container);
         if (flow != null) {
             updateWidgets(flow, container);
         }
-        dispatchEvent(new ConsoleRefreshedEvent());
+
+        if (selectedNodeId != null)
+            selectWidget(selectedNodeId);
+
+        // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
+        NodeList nonCompositeWidgets = getView().querySelectorAll("#widgetComponentContainer :not(or-console-widget-composite)");
+        dispatchEvent(new ConsoleRefreshedEvent(nonCompositeWidgets.length() > 0));
     }
 
     protected Element getWidgetComponentContainer() {
@@ -268,4 +293,16 @@ public class ConsolePresenter extends AbstractPresenter {
         component.set("propertyPath", slot.getPropertyPath());
         return (Element) component;
     }
+
+    protected void addRedirectToShellView(Class<? extends Event> eventClass) {
+        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("#shell");
+        if (shellView == null) {
+            throw new RuntimeException("Missing 'or-shell' view in browser top window document");
+        }
+        addEventListener(
+            getView(), eventClass, event ->
+                dispatchEvent(shellView, event)
+        );
+    }
+
 }

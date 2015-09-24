@@ -1,0 +1,158 @@
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-messagelog',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.messagelog.MessageLogPresenter(this);
+                    }
+                }
+            },
+            observers: [
+                "_onMessageLogUpdate(_presenter.log.splices)"
+            ],
+            _toggleMessageLog: function () {
+                this.$.toolbox.toggle();
+            },
+            _clearMessageLog: function () {
+                this._presenter.clearMessageLog();
+            },
+            _onMessageLogUpdate: function () {
+                this.debounce("LogScrollDelay", function () {
+                    this.$.messageLog.scrollToBottom();
+                }, 1);
+            },
+            _getLabelClass: function (value) {
+                return "layout horizontal label " + (value ? "" : "empty");
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-messagelog">
+    <template>
+        <style>
+            #toolbox {
+                left: 0;
+                bottom: 2.75em;
+                width: 450px;
+                height: 30vh;
+            }
+
+            .message {
+                padding: 0.4em;
+                margin: 0.4em 0;
+                font-size: smaller;
+                background-color: var(--or-messagelog-item-background-color);
+                color: var(--or-messagelog-item-color);
+                border-radius: 0.4em;
+                user-select: text;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+            }
+
+            .message .icon {
+                text-align: center;
+                color: var(--or-messagelog-item-icon-outgoing-color);
+            }
+
+            .message .icon[incoming] {
+                color: var(--or-messagelog-item-icon-incoming-color);
+            }
+
+            .message .icon iron-icon {
+                height: 32px;
+                width: 32px;
+            }
+
+            .message .label {
+                line-height: 1.5em;
+            }
+
+            .message .label.empty {
+                display: none;
+            }
+
+            .message .details {
+                font-size: xx-small;
+            }
+
+            .message .value {
+                font-weight: bold;
+            }
+
+            .message .body {
+                border-left: 1px dashed black;
+                margin-left: 0.5em;
+                padding-left: 0.5em;
+                align-self: stretch;
+            }
+        </style>
+
+        <or-button icon="menu" on-tap="_toggleMessageLog">
+            <or-text style="max-width: 25vw;">[[_presenter.messageLogTitle]]</or-text>
+        </or-button>
+
+        <or-toolbox id="toolbox" nocancel>
+            <or-panel id="messageLog">
+                <div class="panelContent">
+
+                    <template is="dom-if" if="[[!_presenter.log.length]]">
+                        No messages.
+                    </template>
+
+                    <template is="dom-repeat" items="[[_presenter.log]]" as="logDetail">
+                        <div class="message flex-none layout horizontal center">
+                            <div class="icon flex-3" incoming$="[[logDetail.incoming]]">
+                                <template is="dom-if" if="[[logDetail.incoming]]">
+                                    <iron-icon icon="cloud-upload"></iron-icon>
+                                </template>
+                                <template is="dom-if" if="[[!logDetail.incoming]]">
+                                    <iron-icon icon="cloud-download"></iron-icon>
+                                </template>
+                            </div>
+                            <div class="details flex-9 layout vertical">
+                                <div class$="{{_getLabelClass(logDetail.flowLabel)}}">
+                                    Flow:&#160;<span class="value">[[logDetail.flowLabel]]</span>
+                                </div>
+                                <div class$="{{_getLabelClass(logDetail.nodeLabel)}}">
+                                    Node:&#160;<span class="value">[[logDetail.nodeLabel]]</span>
+                                </div>
+                                <div class$="{{_getLabelClass(logDetail.slotLabel)}}">
+                                    Slot:&#160;<span class="value">[[logDetail.slotLabel]]</span>
+                                </div>
+                                <div class$="{{_getLabelClass(logDetail.instanceLabel)}}">
+                                    Instance:&#160;<span class="value">[[logDetail.instanceLabel]]</span>
+                                </div>
+                            </div>
+                            <div class="flex-8 body">[[logDetail.body]]</div>
+                        </div>
+                    </template>
+
+                </div>
+
+                <or-toggle-button class="panelTopToolbarItem"
+                                  checked="{{_presenter.watchAllFlows}}">Watch All Flows</or-toggle-button>
+
+                <or-button class="panelTopToolbarItem"
+                           icon="clear" on-tap="_clearMessageLog">Clear Log</or-button>
+
+
+            </or-panel>
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

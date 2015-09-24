@@ -1,0 +1,66 @@
+<link rel="import" href="../ui/or-icons.html">
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+
+<link rel="import" href="or-inventory-devices.html">
+<link rel="import" href="or-inventory-flows.html">
+<link rel="import" href="or-inventory-catalog.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/paper-tabs/paper-tab.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryPresenter(this);
+                    }
+                }
+            },
+            _toggleInventory: function () {
+                this.$.toolbox.toggle();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-inventory">
+    <template>
+        <style>
+            #toolbox {
+                top: 2.75em;
+                left: 0;
+                width: 300px;
+                max-height: 80vh;
+            }
+        </style>
+
+        <or-button on-tap="_toggleInventory">
+            <iron-icon icon="or:logo" style="width: 2.2em; height: 2.2em; margin-right: 0.5em;"></iron-icon>
+            <or-text style="max-width: 25vw;">Inventory</or-text>
+        </or-button>
+
+        <or-toolbox id="toolbox"
+                    nocancel
+                    selected-tab="1">
+
+            <paper-tab>DEVICES</paper-tab>
+            <paper-tab>FLOWS</paper-tab>
+            <paper-tab>ELEMENTS</paper-tab>
+
+            <or-inventory-devices id="devices" tab-index="0"></or-inventory-devices>
+            <or-inventory-flows id="flows" tab-index="1"></or-inventory-flows>
+            <or-inventory-catalog id="catalog" tab-index="2"></or-inventory-catalog>
+
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

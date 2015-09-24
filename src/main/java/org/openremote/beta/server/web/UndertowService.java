@@ -2,10 +2,10 @@ package org.openremote.beta.server.web;
 
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.UndertowLogger;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.resource.*;
+import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
@@ -18,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.file.*;
 
 public class UndertowService implements StaticService {
 

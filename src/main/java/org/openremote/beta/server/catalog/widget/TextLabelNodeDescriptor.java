@@ -43,7 +43,7 @@ public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
     @Override
     public void addEditorComponents(List<String> editorComponents) {
         super.addEditorComponents(editorComponents);
-        editorComponents.add("or-editor-node-textlabel");
+        editorComponents.add("or-node-editor-textlabel");
     }
 
     @Override

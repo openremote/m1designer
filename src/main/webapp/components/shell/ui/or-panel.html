@@ -1,0 +1,94 @@
+<dom-module id="or-panel">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: hidden;
+            }
+
+            #topToolbar,
+            #bottomToolbar {
+                flex: 0 0 2.75em;
+                -webkit-flex: 0 0 2.75em;
+                display: flex;
+                display: -webkit-flex;
+                justify-content: space-around;
+                -webkit-justify-content: space-around;
+                align-items: center;
+                -webkit-align-items: center;
+                padding: 0 0.4em;
+                background-color: var(--or-panel-toolbar-background-color);
+                color: var(--or-panel-toolbar-color);
+            }
+
+            #content {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: hidden;
+                background-color: var(--or-panel-content-background-color);
+                color: var(--or-panel-content-color);
+            }
+
+            #content ::content > .panelContent {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                overflow: auto;
+                padding: 0.6em;
+            }
+        </style>
+
+        <div id="topToolbar">
+            <content select=".panelTopToolbarItem"></content>
+        </div>
+
+        <div id="content">
+            <content select=".panelContent"></content>
+        </div>
+
+        <div id="bottomToolbar">
+            <content select=".panelBottomToolbarItem"></content>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-panel",
+            attached: function() {
+                this.async(function() {
+                    this._hideIfEmpty(this.$.topToolbar);
+                    this._hideIfEmpty(this.$.content);
+                    this._hideIfEmpty(this.$.bottomToolbar);
+                });
+            },
+            _hideIfEmpty: function(element) {
+                this.toggleAttribute("hidden", this._getDistributedNodes(element).length == 0, element);
+            },
+            _getDistributedNodes: function(element) {
+                return Polymer.dom(Polymer.dom(element).querySelector("content")).getDistributedNodes();
+            },
+            scrollToBottom: function () {
+                var nodes = this._getDistributedNodes(this.$.content);
+                for (var i = 0; i < nodes.length; i++) {
+                    var contentNode = nodes[i];
+                    if (contentNode.nodeType != 1) {
+                        continue;
+                    }
+                    contentNode.scrollTop = contentNode.scrollHeight;
+                }
+            }
+        });
+    </script>
+</dom-module>

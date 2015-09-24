@@ -14,7 +14,7 @@ public class ToggleButtonNodeDescriptor extends WidgetNodeDescriptor {
     public static final String TYPE_LABEL = "Toggle Button";
 
     public static final String WIDGET_COMPONENT = "or-console-widget-togglebutton";
-    public static final String EDITOR_COMPONENT = "or-editor-node-togglebutton";
+    public static final String EDITOR_COMPONENT = "or-node-editor-togglebutton";
 
     public static final ObjectNode TOGGLE_BUTTON_INITIAL_PROPERTIES = WIDGET_INITIAL_PROPERTIES.deepCopy()
         .put(PROPERTY_COMPONENT, WIDGET_COMPONENT)

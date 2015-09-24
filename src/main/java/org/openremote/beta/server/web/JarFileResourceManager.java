@@ -3,6 +3,8 @@ package org.openremote.beta.server.web;
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.PathResource;
 import io.undertow.server.handlers.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.*;
@@ -12,6 +14,7 @@ import java.nio.file.*;
  */
 public class JarFileResourceManager extends FileResourceManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JarFileResourceManager.class);
 
     public JarFileResourceManager(File base, long transferMinSize) {
         super(base, transferMinSize);
@@ -50,7 +53,8 @@ public class JarFileResourceManager extends FileResourceManager {
                 return new PathResource(file, this, p);
             }
             return null;
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            LOG.warn("Error getting document resource: " + p, ex);
             return null;
         }
     }

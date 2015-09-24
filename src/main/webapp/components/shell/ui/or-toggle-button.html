@@ -1,0 +1,85 @@
+<link rel="import" href="../../../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<dom-module id="or-toggle-button">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                align-items: center;
+                -webkit-align-items: center;
+                height: 1.5em;
+                padding: 0.4em 0.6em;
+                margin: 0.2em 0;
+                cursor: pointer;
+                font-weight: 500;
+                white-space: nowrap;
+                text-transform: uppercase;
+            }
+
+            :host[disabled] {
+                cursor: default;
+                pointer-events: none;
+                background: none;
+                color: var(--or-toggle-button-disabled-color);
+            }
+
+            #button {
+                --paper-toggle-button-checked-bar-color: var(--or-toggle-button-color);
+                --paper-toggle-button-checked-button-color: var(--or-toggle-button-color);
+                --paper-toggle-button-checked-ink-color: var(--or-toggle-button-color);
+                --paper-toggle-button-unchecked-bar-color: var(--or-toggle-button-unchecked-color);
+                --paper-toggle-button-unchecked-button-color: var(--or-toggle-button-unchecked-color);
+                --paper-toggle-button-unchecked-ink-color: var(--or-toggle-button-unchecked-color);
+            }
+
+            #label {
+                border-radius: 0.2em;
+                margin-left: 0.25em;
+                padding: 0.2em;
+            }
+
+            #label:active {
+                opacity: 0.8;
+                background-color: #888 !important;
+            }
+
+        </style>
+
+        <paper-toggle-button id="button"
+                             checked="{{checked}}"
+                             disabled$="{{disabled}}">
+        </paper-toggle-button>
+        <div id="label" on-tap="_toggle">
+            <content></content>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'or-toggle-button',
+            properties: {
+                checked: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                disabled: {
+                    type: Boolean,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                }
+            },
+            attached: function () {
+                this.updateStyles();
+            },
+            _toggle: function () {
+                if (!this.disabled) {
+                    this.toggleAttribute("checked", !this.$.button.checked, this.$.button);
+                }
+            }
+        });
+    </script>
+</dom-module>

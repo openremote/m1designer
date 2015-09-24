@@ -1,0 +1,63 @@
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="or-menu-item">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                align-items: center;
+                -webkit-align-items: center;
+                height: 1.5em;
+                padding: 0.4em;
+                cursor: pointer;
+                font-weight: 500;
+                white-space: nowrap;
+                text-transform: uppercase;
+            }
+
+            #container {
+                padding: 0.4em;
+                margin: 0 0.8em;
+            }
+
+            #container:active {
+                opacity: 0.8;
+                background-color: #888 !important;
+            }
+
+            #icon {
+                flex: 0 0 auto;
+                -webkit-flex: 0 0 auto;
+                height: 1.5em;
+                width: 1.5em;
+            }
+        </style>
+
+        <div id="container">
+            <iron-icon id="icon"
+                       hidden$="[[!icon]]"
+                       icon="[[icon]]"></iron-icon>
+            <content></content>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-menu-item",
+            properties: {
+                icon: {
+                    type: String,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                },
+                value: {
+                    type: String,
+                    value: "",
+                    reflectToAttribute: true
+                }
+            }
+        });
+    </script>
+</dom-module>

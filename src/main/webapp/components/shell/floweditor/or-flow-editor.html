@@ -1,0 +1,100 @@
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-flow-editor',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.floweditor.FlowEditorPresenter(this);
+                    }
+                },
+                _parentStyleObserver: {
+                    type: Object,
+                    value: function () {
+                        return new MutationObserver(function (mutations) {
+                            mutations.forEach(function (mutation) {
+                                if (mutation.attributeName == "style") {
+                                    this._presenter.onContainerResize();
+                                }
+                            }.bind(this));
+                        }.bind(this));
+                    }
+                }
+            },
+            attached: function () {
+                this._parentStyleObserver.observe(Polymer.dom(this).parentNode, {attributes: true});
+            },
+            detached: function() {
+                this._parentStyleObserver.disconnect();
+            },
+            _onDragEnter: function (e) {
+                this.toggleClass("dragOver", true, this.$.flowDesigner);
+            },
+            _onDragLeave: function (e) {
+                this.toggleClass("dragOver", false, this.$.flowDesigner);
+            },
+            _onDragOver: function (e) {
+                e.preventDefault();
+                if (e.dataTransfer.getData("nodeType")) {
+                    e.dataTransfer.dropEffect = "copy";
+                } else if (e.dataTransfer.getData("flowId")) {
+                    e.dataTransfer.dropEffect = "link";
+                }
+            },
+            _onDrop: function (e) {
+                e.preventDefault();
+                this.toggleClass("dragOver", false, this.$.flowDesigner);
+                var nodeType = e.dataTransfer.getData("nodeType");
+                var flowId = e.dataTransfer.getData("flowId");
+                this._presenter.onDrop(nodeType, flowId, e.offsetX, e.offsetY);
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-flow-editor">
+    <template>
+        <style>
+            :host, #flowDesigner{
+                display: flex;
+                display: -webkit-flex;
+                min-width: 100%;
+                min-height: 100%;
+                overflow: hidden;
+            }
+
+            #flowDesigner.dragOver {
+                background: radial-gradient(#ccc 0, #ccc 15%, white 15%, white 100%);
+                background-origin: padding-box;
+                background-clip: border-box;
+                background-size: 10px 10px;
+            }
+
+            #empty {
+                padding: 1em;
+                color: var(--or-editor-main-color);
+            }
+        </style>
+
+        <template is="dom-if" if="[[!_presenter.flow]]">
+            <div id="empty">
+                <h1>OpenRemote Designer</h1>
+
+                <p>
+                    Manage your inventory and edit your panel flows.
+                </p>
+            </div>
+        </template>
+
+        <div id="flowDesigner"
+             hidden$="[[!_presenter.flow]]"
+             on-dragenter="_onDragEnter"
+             on-dragleave="_onDragLeave"
+             on-dragover="_onDragOver"
+             on-drop="_onDrop"></div>
+
+    </template>
+</dom-module>
+

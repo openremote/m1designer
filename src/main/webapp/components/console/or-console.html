@@ -15,9 +15,7 @@
 
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 
@@ -53,60 +51,23 @@
                 _draggableWidgets: {
                     type: Array,
                     value: []
-                },
-                _zoomFactor: {
-                    type: Number,
-                    value: 1.0
-                },
-                _guideFrames: {
-                    type: Array,
-                    value: [
-                        {label: "No Frame", width: 0, height: 0},
-                        {label: "RPi Landscape", width: 800, height: 480},
-                        {label: "RPi Portrait", width: 480, height: 800},
-                        {label: "iPhone 6 Landscape", width: 667, height: 375},
-                        {label: "iPhone 6 Portrait", width: 375, height: 667},
-                        {label: "Nexus 5 Landscape", width: 640, height: 360},
-                        {label: "Nexus 5 Portrait", width: 360, height: 640},
-                        {label: "Gear S Watch", width: 180, height: 240}
-                    ]
-                },
-                _selectedGuideFrame: {
-                    type: Object,
-                    value: {label: "No Frame", width: 0, height: 0}
                 }
             },
             listeners: {
-                "editor-open": "_onEditorOpen",
-                "editor-close": "_onEditorClose",
                 "console-refreshed": "_onConsoleRefreshed"
             },
+            observers: [
+                "_onMaximized(_presenter.maximized)",
+                "_onEditMode(_presenter.editMode)",
+                "_onZoomFactor(_presenter.zoomFactor)"
+            ],
             attached: function () {
                 if (this.minimized) {
-                    this._switchConsole();
+                    this._presenter.switchConsole();
                 }
             },
-            _onEditorOpen: function () {
-                this.toggleAttribute("hidden", false, this.$.editorControls);
-                this._selectGuideFrame(this._selectedGuideFrame);
-            },
-            _onEditorClose: function () {
-                this.toggleAttribute("hidden", true, this.$.editorControls);
-                this._disableDragging();
-                this._selectGuideFrame(this._guideFrames[0]);
-            },
-            _onConsoleRefreshed: function () {
-                // TODO: light DOM!
-                var nonCompositeWidgets = this.$.widgetComponentContainer.querySelectorAll(":not(or-console-widget-composite)");
-                this.set("_haveWidgets", nonCompositeWidgets.length);
-
-                // TODO: ugly
-                if (!this._haveWidgets) {
-                    this.toggleAttribute("hidden", true, this.$.guideFrame);
-                } else if (this._selectedGuideFrame.label != this._guideFrames[0].label) {
-                    this.toggleAttribute("hidden", false, this.$.guideFrame);
-                }
-
+            _onConsoleRefreshed: function (ce, event) {
+                this.set("_haveWidgets", event.renderedWidgets);
 
                 var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
                 this.set("_draggableWidgets", []);
@@ -141,15 +102,30 @@
                 }.bind(this));
 
                 this.async(function () {
-                    if (this.$$("#editSwitch") && this.$$("#editSwitch").checked) {
+                    if (this._presenter.editMode) {
                         this._disableDragging();
                         this._enableDragging();
                     } else {
                         this._disableDragging();
                     }
-                });
+                }, 50); // TODO awful
+            },
+            _onMaximized: function(maximized) {
+                if (maximized) {
+                    this._disableDragging();
+                }
+            },
+            _onEditMode: function(editMode) {
+                if (editMode) {
+                    this._enableDragging();
+                } else {
+                    this._disableDragging();
+                }
             },
             _enableDragging: function () {
+                if(!this._draggableWidgets) {
+                    return;
+                }
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.enable();
                     draggable.element.style.cursor = "pointer";
@@ -161,6 +137,9 @@
                 this.updateStyles();
             },
             _disableDragging: function () {
+                if(!this._draggableWidgets) {
+                    return;
+                }
                 this._draggableWidgets.forEach(function (draggable) {
                     draggable.disable();
                     draggable.element.style.cursor = "";
@@ -169,218 +148,57 @@
                 }.bind(this));
                 this.updateStyles();
             },
-            _onEditSwitch: function (e) {
-                if (e.target.checked) {
-                    this._enableDragging();
-                } else {
-                    this._disableDragging();
-                }
-            },
-            _switchConsole: function (e) {
-                this._presenter.switchConsole();
-            },
-            _zoomIn: function () {
-                if (this.get("_zoomFactor") >= 2.0) {
-                    return;
-                }
-                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) + 0.2).toFixed(1));
-                this._zoom();
-            },
-            _zoomOut: function () {
-                if (this.get("_zoomFactor") <= 0.5) {
-                    return;
-                }
-                this.set("_zoomFactor", (parseFloat(this.get("_zoomFactor")) - 0.2).toFixed(1));
-                this._zoom();
-            },
-            _resetZoom: function () {
-                this.set("_zoomFactor", 1.0);
-                this._zoom();
-            },
-            _zoom: function () {
-                this.$.widgetComponentContainer.style.transform = "scale(" + this._zoomFactor + ")";
-                this.$.widgetComponentContainer.style["-webkit-transform"] = "scale(" + this._zoomFactor + ")";
+            _onZoomFactor: function (zoomFactor) {
+                this.$.widgetComponentContainer.style.transform = "scale(" + zoomFactor + ")";
+                this.$.widgetComponentContainer.style["-webkit-transform"] = "scale(" + zoomFactor + ")";
                 this.$.widgetComponentContainer.style.transformOrigin = "0 0";
                 this.$.widgetComponentContainer.style["-webkit-transform-origin"] = "0 0";
-                this.$.guideFrame.style.transform = "scale(" + this._zoomFactor + ")";
-                this.$.guideFrame.style["-webkit-transform"] = "scale(" + this._zoomFactor + ")";
-                this.$.guideFrame.style.transformOrigin = "0 0";
-                this.$.guideFrame.style["-webkit-transform-origin"] = "0 0";
-            },
-            _onGuideFrameSwitched: function (e) {
-                this._selectGuideFrame(e.model.frame);
-            },
-            _selectGuideFrame: function(guideFrame) {
-                this.set("_selectedGuideFrame", guideFrame);
-                if (guideFrame.width == 0 || guideFrame.height == 0) {
-                    this.toggleAttribute("hidden", true, this.$.guideFrame);
-                    return;
-                }
-                this.toggleAttribute("hidden", false, this.$.guideFrame);
-                this.$.guideFrame.style.width = guideFrame.width + "px";
-                this.$.guideFrame.style.height = guideFrame.height+ "px";
             }
         });
     });
 </script>
 
 <dom-module id="or-console">
-    <style>
-
-        :host {
-            display: block;
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            background-color: var(--or-console-background-color);
-            color: var(--or-console-color);
-        }
-
-        #editorControls {
-            background-color: var(--or-console-toolbar-background-color);
-            color: var(--or-console-toolbar-button-color);
-            height: 40px;
-        }
-
-        #editorControls paper-button {
-            --paper-button: {
-                min-width: 3em;
-            }
-        }
-
-        #editorControls paper-button /deep/ .content {
-            padding: 0;
-        }
-
-        #editorControls .toggleLabel {
-            color: var(--or-console-toolbar-color);
-        }
-
-        #editorControls .zoomFactor {
-            font-size: smaller;
-            cursor: pointer;
-        }
-
-        #consoleSwitchButton {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 28px;
-            height: 28px;
-            background: transparent;
-            border: 2px dotted var(--or-console-toolbar-button-color);
-            margin: 4px;
-            cursor: pointer;
-        }
-
-        #consoleSwitchButton:active {
-            background: var(--or-console-toolbar-button-color);
-            border: none;
-        }
-
-        #consoleSwitchButton:focus {
-            outline: 0;
-        }
-
-        #editSwitch {
-        }
-
-        #empty {
-            color: var(--or-console-empty-color);
-            padding: 1em;
-            pointer-events: none;
-        }
-
-        #widgetComponentContainer {
-            white-space: nowrap;
-            cursor: default;
-            position: relative;
-        }
-
-        .draggable:before {
-            content: "";
-            border-radius: 5px;
-            width: 15px;
-            height: 20px;
-            position: absolute;
-            left: -17px;
-            top: 0;
-            background-color: var(--or-console-widget-draggable-color);
-        }
-
-        .selected.draggable:before {
-            background-color: var(--or-console-widget-selected-color);
-        }
-
-        .guideFrameLabel {
-            vertical-align: middle;
-            font-size: x-small;
-        }
-
-        #guideFrame {
-            border: 2px dashed var(--or-console-guide-color);
-            width: 0;
-            height: 0;
-            position: absolute;
-            top: 40px;
-            left: 0;
-            pointer-events: none;
-        }
-
-        @media all and (max-width: 380px) {
-            #widgetControls {
-                display: none;
-            }
-        }
-
-    </style>
     <template>
-        <div id="editorControls" hidden class="layout horizontal center">
+        <style>
 
-            <div id="widgetControls" class="flex layout horizontal center">
-                <template is="dom-if" if="[[_haveWidgets]]">
+            :host {
+                display: block;
+                position: absolute;
+                height: 100%;
+                width: 100%;
+                background-color: var(--or-console-background-color);
+                color: var(--or-console-color);
+            }
 
-                    <paper-toggle-button id="editSwitch"
-                                         on-change="_onEditSwitch"
-                                         style="margin: 0 0.5em;">
-                    </paper-toggle-button>
-                    <span class="toggleLabel">EDIT</span>
+            #empty {
+                color: var(--or-console-empty-color);
+                padding: 1em;
+                pointer-events: none;
+            }
 
-                    <div class="flex layout horizontal center center-justified">
+            #widgetComponentContainer {
+                white-space: nowrap;
+                cursor: default;
+                position: relative;
+            }
 
-                        <paper-menu-button no-animations
-                                           horizontal-align="right"
-                                           vertical-align="top"
-                                           vertical-offset="20"
-                                           horizontal-offset="0">
-                            <paper-button class="dropdown-trigger">
-                                <iron-icon icon="editor:border-outer"></iron-icon>
-                                <span class="guideFrameLabel">[[_selectedGuideFrame.label]]</span>
-                            </paper-button>
-                            <paper-menu id="dependencyTree" class="dropdown-content">
-                                <template is="dom-repeat" items="[[_guideFrames]]" as="frame">
-                                    <paper-item on-tap="_onGuideFrameSwitched">[[frame.label]]</paper-item>
-                                </template>
-                            </paper-menu>
-                        </paper-menu-button>
+            .draggable:before {
+                content: "";
+                border-radius: 5px;
+                width: 15px;
+                height: 20px;
+                position: absolute;
+                left: -17px;
+                top: 0;
+                background-color: var(--or-console-widget-draggable-color);
+            }
 
-                        <paper-button on-tap="_zoomIn">
-                            <iron-icon icon="zoom-in"></iron-icon>
-                        </paper-button>
-                        <div class="zoomFactor" on-tap="_resetZoom"><span>[[_zoomFactor]]</span></div>
-                        <paper-button on-tap="_zoomOut">
-                            <iron-icon icon="zoom-out"></iron-icon>
-                        </paper-button>
+            .selected.draggable:before {
+                background-color: var(--or-console-widget-selected-color);
+            }
 
-                    </div>
-                </template>
-            </div>
-
-            <template is="dom-if" if="[[!_presenter.maximixed]]">
-                <button id="consoleSwitchButton" on-tap="_switchConsole"></button>
-            </template>
-
-        </div>
+        </style>
 
         <template is="dom-if" if="[[!_haveWidgets]]">
             <div id="empty">
@@ -395,8 +213,6 @@
                 </p>
             </div>
         </template>
-
-        <div id="guideFrame" hidden></div>
 
         <div id="widgetComponentContainer"></div>
 

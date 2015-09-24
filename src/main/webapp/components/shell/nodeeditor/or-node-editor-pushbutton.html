@@ -1,0 +1,66 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+<link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-menu-item.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="or-node-editor-pushbutton">
+    <template>
+
+        <or-input class="flex"
+                  label="Button Text"
+                  value="{{nodeProperties.text}}"></or-input>
+
+        <div class="flex layout horizontal center">
+            <or-input
+                    class="flex"
+                    label="Font Size (px)"
+                    preventInvalidInput="true"
+                    type="number" min="5" max="5000"
+                    value="{{nodeProperties.fontSizePixels}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-input class="flex"
+                      label="Text Color"
+                      value="{{nodeProperties.color}}"></or-input>
+        </div>
+
+        <div class="flex layout horizontal center">
+            <or-input class="flex"
+                      label="Background Color"
+                      value="{{nodeProperties.backgroundColor}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-toggle-button
+                    checked="{{nodeProperties.raised}}">Raised Look
+            </or-toggle-button>
+        </div>
+
+        <div class="flex layout horizontal center">
+            <or-input class="flex"
+                      label="Icon"
+                      value="{{nodeProperties.icon}}"></or-input>
+            <div style="width:1em;"></div>
+            <or-menu class="flex"
+                     icon="more-vert"
+                     label="Position"
+                     selectable-value
+                     selected="{{nodeProperties.iconPosition}}">
+                <or-menu-item value="left">Left</or-menu-item>
+                <or-menu-item value="right">Right</or-menu-item>
+                <or-menu-item value="top">Top</or-menu-item>
+                <or-menu-item value="bottom">Bottom</or-menu-item>
+            </or-menu>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-pushbutton",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

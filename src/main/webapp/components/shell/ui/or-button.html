@@ -1,0 +1,67 @@
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="or-button">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                align-items: center;
+                -webkit-align-items: center;
+                height: 1.5em;
+                padding: 0.4em;
+                border-radius: 0.2em;
+                cursor: pointer;
+                font-weight: 500;
+                white-space: nowrap;
+                text-transform: uppercase;
+                background-color: var(--or-button-background-color);
+                color: var(--or-button-color);
+                margin: 0;
+            }
+
+            :host:active {
+                opacity: 0.8;
+                background-color: #888 !important;
+            }
+
+            :host[disabled] {
+                cursor: default;
+                pointer-events: none;
+                background: none;
+                color: var(--or-button-disabled-color);
+            }
+
+            :host[primary] {
+                background-color: var(--or-button-primary-background-color);
+                color: var(--or-button-primary-color);
+            }
+
+            #icon {
+                flex: 0 0 auto;
+                -webkit-flex: 0 0 auto;
+                width: 1.75em;
+                height: 1.75em;
+                margin: 0 0.1em;
+            }
+        </style>
+
+        <iron-icon id="icon"
+                   hidden$="[[!icon]]"
+                   icon="[[icon]]"></iron-icon>
+
+        <content></content>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-button",
+            properties: {
+                icon: {
+                    type: String,
+                    value: false
+                }
+            }
+        });
+    </script>
+</dom-module>

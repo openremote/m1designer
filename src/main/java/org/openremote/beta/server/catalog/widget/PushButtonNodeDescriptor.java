@@ -45,7 +45,7 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
     @Override
     public void addEditorComponents(List<String> editorComponents) {
         super.addEditorComponents(editorComponents);
-        editorComponents.add("or-editor-node-pushbutton");
+        editorComponents.add("or-node-editor-pushbutton");
     }
 
     @Override

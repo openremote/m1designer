@@ -2,11 +2,18 @@
 <script src="../../gwt/Client/Client.nocache.js"></script>
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+
 <link rel="import" href="../shared/or-component-behaviors.html">
 
-<link rel="import" href="or-shell-toast.html">
-<link rel="import" href="or-shell-messagelog.html">
-<link rel="import" href="or-shell-confirmation.html">
+<link rel="import" href="ui/or-confirmation.html">
+<link rel="import" href="ui/or-toast.html">
+
+<link rel="import" href="inventory/or-inventory.html">
+<link rel="import" href="flowcontrol/or-flow-control.html">
+<link rel="import" href="floweditor/or-flow-editor.html">
+<link rel="import" href="nodeeditor/or-node-editor.html">
+<link rel="import" href="consolesettings/or-console-settings.html">
+<link rel="import" href="messagelog/or-messagelog.html">
 
 <script>
     // One-time initialization, this MUST be a script in an imported file! The
@@ -35,136 +42,82 @@
                         return new openremote.shell.ShellPresenter(this);
                     }
                 },
-                _consoleWidth: {
-                    type: Number,
-                    value: 400
-                },
-                _consoleResizeHandleWidth: {
-                    type: Number,
-                    value: 35
-                },
-                _consoleResizeThreshold: {
-                    type: Number,
-                    value: 10
-                },
-                _consoleResizeSnapRightThreshold: {
+                _centerResizeSnapThreshold: {
                     type: Number,
                     value: 150
                 },
-                _consoleResizeSnapLeftThreshold: {
-                    type: Number,
-                    value: 400
-                },
-                _consoleResizeInProgress: {
-                    type: Number,
-                    value: null
+                _centerResizeInProgress: {
+                    type: Object
                 }
             },
             listeners: {
-                "editor-open": "_onEditorOpen",
-                "editor-close": "_onEditorClose",
                 "show-info": "_onShowInfo",
                 "show-failure": "_onShowFailure",
                 "request-complete": "_onShowInfo"
             },
-            _onEditorOpen: function (ce, event) {
-                this.$.editor.style.display = "inherit";
-                if (event.flowId) {
-                    this.$.editor.src = "editor.html?flowId=" + event.flowId; // TODO hack, we need a URL router?
-                } else {
-                    this.$.editor.src = "editor.html";
-                }
-                this._consoleResize(this._consoleWidth);
-                this.$.consoleResizeHandle.style.minWidth = this._consoleResizeHandleWidth + "px";
-                this.$.consoleResizeHandle.style.display = "block";
-                this.toggleAttribute("hidden", false, this.$.editor);
+            ready: function () {
+                this.addEventListener("mousemove", this._centerResizeMove.bind(this), false);
+                this.addEventListener("mouseup", this._centerResizeEnd.bind(this), false);
+                this.addEventListener("touchmove", this._centerResizeMove.bind(this), false);
+                this.addEventListener("touchcancel", this._centerResizeEnd.bind(this), false);
+                this.addEventListener("touchend", this._centerResizeEnd.bind(this), false);
             },
-            _onEditorClose: function () {
-                this.$.editor.style.display = "none";
-                this.$.editor.src = "about:blank";
-                this._consoleResize();
-                this.$.consoleResizeHandle.style.minWidth = "0";
-                this.$.consoleResizeHandle.style.display = "none";
-                this.toggleAttribute("hidden", true, this.$.editor);
-            },
-            _consoleResizeStart: function (e, detail) {
-                this.$.editor.style.pointerEvents = "none";
+            _centerResizeStart: function (e, detail) {
                 this.$.console.style.pointerEvents = "none";
-                document.documentElement.addEventListener("mousemove", this._consoleResizeMove.bind(this), false);
-                document.documentElement.addEventListener("mouseup", this._consoleResizeEnd.bind(this), false);
-                document.documentElement.addEventListener("touchmove", this._consoleResizeMove.bind(this), false);
-                document.documentElement.addEventListener("touchcancel", this._consoleResizeEnd.bind(this), false);
-                document.documentElement.addEventListener("touchend", this._consoleResizeEnd.bind(this), false);
-                this.toggleClass("active", true, this.$.consoleResizeHandle);
-                this.toggleClass("active", true, this.$.consoleLabel);
-                this._consoleResizeInProgress = {cursor: detail.x, originalWidth: this.$.console.clientWidth};
+                this._centerResizeInProgress = {startX: detail.x, originalWest: this.$$("#west").offsetWidth};
+                this.toggleClass("active", true, this.$$("#centerResizeHandle"));
             },
-            _consoleResizeMove: function (e) {
-                e.preventDefault();
-                this.async(function () {
-                    var x = e.clientX;
-                    if (!x && e.changedTouches) {
-                        x = e.changedTouches[0].clientX;
+            _centerResizeMove: function (e) {
+                if (e.target.id == "centerResizeHandle") {
+                    e.preventDefault(); // Stop whole body bounce on iOS Safari
+                }
+                if (!this._centerResizeInProgress) {
+                    return;
+                }
+                var x = e.clientX; // Mouse or multi-touch?
+                if (!x && e.changedTouches) {
+                    x = e.changedTouches[0].clientX;
+                }
+                if (x) {
+                    // We are resizing the west panel
+                    var currentWidth = this.$$("#west").offsetWidth;
+                    var cursorOffset = this._centerResizeInProgress.startX - x;
+                    var originalWidth = this._centerResizeInProgress.originalWest;
+                    var newWidth = originalWidth - cursorOffset;
+
+                    // Snap to right border if we are getting close
+                    if (x > document.documentElement.clientWidth - this._centerResizeSnapThreshold) {
+                        newWidth = document.documentElement.clientWidth - 32;
+                        this.toggleAttribute("hidden", true, this.$.east);
                     }
-                    if (x && this._consoleResizeInProgress) {
 
-                        var cursorOffset = this._consoleResizeInProgress.cursor - x;
-                        var originalWidth = this._consoleResizeInProgress.originalWidth;
-                        var newWidth = originalWidth + cursorOffset;
-
-                        // Only move if diff is larger than threshold, might look choppy but avoids too many events
-                        if (Math.abs(this.$.console.clientWidth - newWidth) < this._consoleResizeThreshold) {
-                            return;
-                        }
-
-                        // Snap to right border if we are getting close and still moving right
-                        if (x > document.documentElement.clientWidth - this._consoleResizeSnapRightThreshold && cursorOffset < 0) {
-                            newWidth = 0;
-                            this.toggleAttribute("hidden", true, this.$.console);
-                        }
-
-                        // Unsnap from right border
-                        if (originalWidth == 0 && cursorOffset > 0) {
-                           this.toggleAttribute("hidden", false, this.$.console);
-                        }
-
-                        // Snap to left border if we are getting close to left and still moving left
-                        if (x <  this._consoleResizeSnapLeftThreshold  && cursorOffset > 0) {
-                            newWidth = document.documentElement.clientWidth - this._consoleResizeHandleWidth;
-                            this.toggleAttribute("hidden", true, this.$.editor);
-                        }
-
-                        // Unsnap from left border
-                        if (originalWidth = document.documentElement.clientWidth - this._consoleResizeHandleWidth && cursorOffset < 0) {
-                            this.toggleAttribute("hidden", false, this.$.editor);
-                        }
-
-                        if (newWidth >= 0) {
-                            this._consoleResize(newWidth);
-                        }
+                    // Unsnap from right border
+                    if (newWidth < document.documentElement.clientWidth - 32 && this.$.east.attributes["hidden"]) {
+                        this.toggleAttribute("hidden", false, this.$.east);
                     }
-                });
-            },
-            _consoleResizeEnd: function (e) {
-                if (this._consoleResizeInProgress) {
-                    this.$.editor.style.pointerEvents = "auto";
-                    this.$.console.style.pointerEvents = "auto";
-                    document.documentElement.removeEventListener("mousemove", this._consoleResizeMove);
-                    document.documentElement.removeEventListener("mouseup", this._consoleResizeEnd);
-                    document.documentElement.removeEventListener("touchmove", this._consoleResizeMove);
-                    document.documentElement.removeEventListener("touchcancel", this._consoleResizeEnd);
-                    document.documentElement.removeEventListener("touchend", this._consoleResizeEnd);
-                    this.toggleClass("active", false, this.$.consoleResizeHandle);
-                    this.toggleClass("active", false, this.$.consoleLabel);
-                    this._consoleResizeInProgress = null;
+
+                    // Snap to left border if we are getting close
+                    if (x < this._centerResizeSnapThreshold) {
+                        newWidth = 0;
+                        this.toggleAttribute("hidden", true, this.$$("#west"));
+                    }
+
+                    // Unsnap from left border
+                    if (currentWidth == 0 && newWidth > 0) {
+                        this.toggleAttribute("hidden", false, this.$$("#west"));
+                    }
+
+                    if (newWidth >= 0) {
+                        this.$$("#west").style.minWidth = newWidth + "px";
+                        this.$$("#west").style.maxWidth = newWidth + "px";
+                    }
                 }
             },
-            _consoleResize: function (width) {
-                if (width !== undefined) {
-                    this.$.console.style.maxWidth = width + "px";
-                    this._consoleWidth = width;
-                } else {
-                    this.$.console.style.maxWidth = "100vw";
+            _centerResizeEnd: function (e) {
+                if (this._centerResizeInProgress) {
+                    this.$.console.style.pointerEvents = "auto";
+                    this._centerResizeInProgress = null;
+                    this.toggleClass("active", false, this.$$("#centerResizeHandle"));
                 }
             },
             _onShowInfo: function (ce, event) {
@@ -180,76 +133,153 @@
 
 
 <dom-module id="or-shell">
-    <style>
-
-        :host {
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            display: -webkit-flex;
-        }
-
-        #messageLog {
-            z-index: 1;
-        }
-
-        #editor {
-            display: none;
-            flex: 1 0 auto;
-            -webkit-flex: 1 0 auto;
-        }
-
-        #consoleResizeHandle {
-            display: none;
-            background-color: black;
-            height: 100vh;
-            cursor: pointer;
-            position: relative;
-            flex: 0 0 auto;
-            -webkit-flex: 0 0 auto;
-        }
-
-        #console {
-            height: 100vh;
-            width: 100vw;
-            flex: 1 1 100vw;
-            -webkit-flex: 1 1 100vw;
-        }
-
-        #consoleResizeHandle.active {
-            background-color: var(--or-lightgreen, grey);
-        }
-
-        #consoleLabel {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-50%) rotate(-90deg);
-            -webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
-            color: var(--or-lightgreen, white);
-            font-style: italic;
-        }
-
-        #consoleLabel.active {
-            color: var(--or-darkgrey, black);
-        }
-
-    </style>
     <template>
+        <style>
 
-        <or-shell-toast id="toast"></or-shell-toast>
+            :host {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+            }
 
-        <or-shell-messagelog id="messageLog"></or-shell-messagelog>
+            #center {
+            }
 
-        <or-shell-confirmation id="confirmationDialog"></or-shell-confirmation>
+            #north,
+            #south {
+                padding: 0 0.2em;
+                height: 2.75em;
+                background-color: var(--or-toolbar-background-color);
+                color: var(--or-toolbar-color);
+            }
 
-        <iframe id="editor" frameborder="0" src="about:blank"></iframe>
+            #west {
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                min-width: 50%;
+                max-width: 50%;
+            }
 
-        <div id="consoleResizeHandle" on-down="_consoleResizeStart">
-            <div id="consoleLabel">CONSOLE</div>
+            #east {
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+                /* TODO one line background artifact on top in safari */
+                background-color: var(--or-toolbar-background-color);
+            }
+
+            #console {
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+            }
+
+            #centerResizeHandle {
+                position: relative;
+                background-color: var(--or-toolbar-background-color);
+                color: var(--or-toolbar-color);
+                cursor: pointer;
+                flex: 0 0 32px;
+                -webkit-flex: 0 0 32px;
+            }
+
+            #centerResizeHandle .line1,
+            #centerResizeHandle .line2,
+            #centerResizeHandle .line3 {
+                position: absolute;
+                height: 4%;
+                width: 1px;
+                border-left: 2px solid var(--or-toolbar-highlight-color);
+                top: 48%;
+            }
+
+            #centerResizeHandle .line1 {
+                left: 10px;
+            }
+
+            #centerResizeHandle .line2 {
+                left: 15px;
+            }
+
+            #centerResizeHandle .line3 {
+                left: 20px;
+            }
+
+            #centerResizeHandle.active {
+                background-color: var(--or-toolbar-active-background-color);
+            }
+
+            @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: landscape) and (-webkit-min-device-pixel-ratio: 2) {
+
+                #north1 {
+                    flex: 6;
+                    -webkit-flex: 6;
+                }
+
+                #north2,
+                #north3 {
+                    flex: 7;
+                    -webkit-flex: 7;
+                }
+
+            }
+
+        </style>
+
+        <or-toast id="toast"></or-toast>
+        <or-confirmation id="confirmationDialog"></or-confirmation>
+
+        <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+            <div id="north"
+                 class="layout horizontal center">
+                <div id="north1" class="flex layout horizontal center">
+                    <or-inventory id="inventory"></or-inventory>
+                </div>
+                <div id="north2" class="layout horizontal center">
+                    <or-flow-control id="flowControl"
+                                     dirty="{{_presenter.flowDirty}}"></or-flow-control>
+                </div>
+                <div id="north3" class="flex layout horizontal center end-justified">
+                    <or-node-editor id="nodeEditor"></or-node-editor>
+                </div>
+            </div>
+        </template>
+
+        <div id="center" class="flex layout horizontal">
+
+            <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+                <div id="west"
+                     class="layout horizontal">
+                    <or-flow-editor id="flowEditor"></or-flow-editor>
+                </div>
+
+                <div id="centerResizeHandle"
+                     on-down="_centerResizeStart">
+                    <div class="line1"></div>
+                    <div class="line2"></div>
+                    <div class="line3"></div>
+                </div>
+            </template>
+
+            <div id="east" class="layout horizontal">
+                <iframe id="console" frameborder="none" src="/console.html"></iframe>
+            </div>
+
         </div>
 
-        <iframe id="console" frameborder="0" src="/console.html"></iframe>
+        <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+            <div id="south"
+                 class="layout horizontal">
+                <div class="flex layout horizontal center">
+                    <or-messagelog id="messageLog"></or-messagelog>
+                </div>
+                <div class="flex layout horizontal center end-justified">
+                    <or-console-settings id="consoleSettings"
+                                         console-has-widgets$="{{_presenter.consoleHasWidgets}}"></or-console-settings>
+                </div>
+            </div>
+        </template>
 
     </template>
 </dom-module>

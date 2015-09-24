@@ -1,0 +1,34 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-toggle-button.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="or-node-editor-filter">
+    <template>
+
+        <or-toggle-button class="flex"
+                          checked="{{nodeProperties.dropEmpty}}">
+            Drop empty messages
+        </or-toggle-button>
+
+        <or-toggle-button class="flex"
+                          checked="{{nodeProperties.dropFalse}}">
+            Drop 'false' messages
+        </or-toggle-button>
+
+        <or-toggle-button class="flex"
+                          checked="{{nodeProperties.waitForTrigger}}">
+            Wait for trigger message
+        </or-toggle-button>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-filter",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+

@@ -1,0 +1,44 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-input.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html">
+
+<dom-module id="or-node-editor-function">
+    <template>
+        <style>
+            #label {
+                color: var(--or-mediumgrey);
+                margin-top: 0.8em;
+            }
+
+            #textarea {
+                background-color: var(--or-lightgrey);
+                border: none;
+                width: 320px;
+                margin-bottom: 1em;
+                font-family: monospace;
+                font-size: smaller;
+            }
+        </style>
+
+        <div class="flex layout vertical">
+            <div id="label">
+                Javascript Code
+            </div>
+            <iron-autogrow-textarea id="textarea"
+                                    bind-value="{{nodeProperties.javascript}}"
+                                    rows="1"></iron-autogrow-textarea>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-function",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+
