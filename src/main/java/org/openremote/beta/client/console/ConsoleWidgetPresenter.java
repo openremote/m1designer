@@ -11,7 +11,6 @@ import org.openremote.beta.client.event.ConsoleWidgetModifiedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
-import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;

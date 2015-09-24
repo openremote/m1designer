@@ -104,6 +104,14 @@ public class ConsolePresenter extends AbstractPresenter {
         dispatch(new NodeSelectedEvent(nodeId));
     }
 
+    public void onDrop(String nodeType, String subflowId, double positionX, double positionY) {
+        if (nodeType != null && nodeType.length() > 0) {
+            dispatch(new NodeCreateEvent(flow, nodeType, positionX, positionY, true));
+        } else if (subflowId != null && subflowId.length() > 0) {
+            dispatch(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY, true));
+        }
+    }
+
     protected void selectWidget(String nodeId) {
         // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
         NodeList widgetNodes = getView().querySelectorAll("#widgetComponentContainer > .consoleWidget");

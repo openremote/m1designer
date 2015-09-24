@@ -1,9 +1,11 @@
 package org.openremote.beta.client.shell.flowcontrol;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.event.ConsoleRefreshEvent;
+import elemental.js.util.JsMapFromStringTo;
+import org.openremote.beta.client.event.*;
 import org.openremote.beta.client.shared.*;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestFailureEvent;
@@ -12,7 +14,6 @@ import org.openremote.beta.client.shared.session.SessionOpenedEvent;
 import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.client.shell.FlowCodec;
 import org.openremote.beta.client.shell.NodeCodec;
-import org.openremote.beta.client.event.*;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependency;
@@ -76,7 +77,7 @@ public class FlowControlPresenter extends RequestPresenter {
             notifyPath("selectedNodeId");
         });
 
-        addListener(SessionOpenedEvent.class, event-> {
+        addListener(SessionOpenedEvent.class, event -> {
             dispatch(new ServerSendEvent(new FlowRequestStatusEvent()));
         });
 
@@ -110,7 +111,12 @@ public class FlowControlPresenter extends RequestPresenter {
                 new CreateNodeProcedure(
                     flow.getId(),
                     event.getNodeType(),
-                    new AddNodeProcedure(event.getPositionX(), event.getPositionY(), true)
+                    new AddNodeProcedure(
+                        event.getPositionX(),
+                        event.getPositionY(),
+                        event.isApplyPositionAsProperties(),
+                        true
+                    )
                 ).call();
             }
         });
@@ -124,7 +130,11 @@ public class FlowControlPresenter extends RequestPresenter {
                 new CreateSubflowNodeProcedure(
                     flow.getId(),
                     event.getSubflowId(),
-                    new AddNodeProcedure(event.getPositionX(), event.getPositionY(), true)
+                    new AddNodeProcedure(
+                        event.getPositionX(),
+                        event.getPositionY(),
+                        event.isApplyPositionAsProperties(),
+                        true)
                 ).call();
             }
         });
@@ -138,7 +148,7 @@ public class FlowControlPresenter extends RequestPresenter {
             }
         });
 
-        addListener(ConsoleWidgetModifiedEvent.class, event-> {
+        addListener(ConsoleWidgetModifiedEvent.class, event -> {
             if (flow != null) {
                 Node node = flow.findNode(event.getNodeId());
                 if (node != null) {
@@ -289,19 +299,36 @@ public class FlowControlPresenter extends RequestPresenter {
 
         final double positionX;
         final double positionY;
+        final boolean applyPositionAsProperties; // Or editor settings
         final boolean transformPosition;
 
-        public AddNodeProcedure(double positionX, double positionY, boolean transformPosition) {
+        public AddNodeProcedure(double positionX, double positionY, boolean applyPositionAsProperties, boolean transformPosition) {
             this.positionX = positionX;
             this.positionY = positionY;
+            this.applyPositionAsProperties = applyPositionAsProperties;
             this.transformPosition = transformPosition;
         }
 
         @Override
         public void accept(Node node) {
+            // TODO this is a bit awkward, we might want to clean this up along with the zoom factor/transformposition
+            if (applyPositionAsProperties) {
+                JsMapFromStringTo existingProperties = JsonUtils.safeEval(node.getProperties());
+                existingProperties.put("positionX", positionX);
+                existingProperties.put("positionY", positionY);
+                String nodeProperties = JsonUtils.stringify(existingProperties);
+                node.setProperties(nodeProperties);
+            }
+
             flow.addNode(node);
             dispatch(new FlowModifiedEvent(flow, true));
-            dispatch(new NodeAddedEvent(flow, node, positionX, positionY, transformPosition));
+
+            if (applyPositionAsProperties) {
+                // TODO what's the default location on the editor canvas when you drop it on the console?
+                dispatch(new NodeAddedEvent(flow, node, 250, 250, true));
+            } else {
+                dispatch(new NodeAddedEvent(flow, node, positionX, positionY, transformPosition));
+            }
         }
     }
 
@@ -392,6 +419,7 @@ public class FlowControlPresenter extends RequestPresenter {
                             new AddNodeProcedure(
                                 dupe.getEditorSettings().getPositionX(),
                                 dupe.getEditorSettings().getPositionY(),
+                                false,
                                 false
                             ).accept(dupe);
                         }

@@ -15,11 +15,19 @@ public class ConsoleSettingsPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsoleSettingsPresenter.class);
 
+    public boolean editMode = false;
+
     public ConsoleSettingsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
     }
 
+    public void toggleEditMode() {
+        switchEditMode(!editMode);
+    }
+
     public void switchEditMode(boolean editMode) {
+        this.editMode = editMode;
+        notifyPath("editMode", editMode);
         dispatch(new ConsoleEditModeEvent(editMode));
     }
 

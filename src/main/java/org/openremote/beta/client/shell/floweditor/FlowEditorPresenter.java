@@ -123,9 +123,9 @@ public class FlowEditorPresenter extends AbstractPresenter {
     }
 
     public void onDrop(String nodeType, String subflowId, double positionX, double positionY) {
-        if (nodeType != null) {
+        if (nodeType != null && nodeType.length() > 0) {
             dispatch(new NodeCreateEvent(flow, nodeType, positionX, positionY));
-        } else if (subflowId != null) {
+        } else if (subflowId != null && subflowId.length() > 0) {
             dispatch(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY));
         }
     }

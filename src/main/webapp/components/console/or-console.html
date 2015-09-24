@@ -37,7 +37,11 @@
                 }
             },
             listeners: {
-                "console-refreshed": "_onConsoleRefreshed"
+                "console-refreshed": "_onConsoleRefreshed",
+                "dragenter": "_onDragEnter",
+                "dragleave": "_onDragLeave",
+                "dragover": "_onDragOver",
+                "drop": "_onDrop"
             },
             observers: [
                 "_onMaximized(_presenter.maximized)",
@@ -129,6 +133,38 @@
                 this.$.widgetComponentContainer.style["-webkit-transform"] = "scale(" + zoomFactor + ")";
                 this.$.widgetComponentContainer.style.transformOrigin = "0 0";
                 this.$.widgetComponentContainer.style["-webkit-transform-origin"] = "0 0";
+            },
+            _onDragEnter: function (e) {
+                if (!this._presenter.flow) return;
+                this.toggleClass("dragOver", true);
+                this.toggleAttribute("hidden", true, this.$$("#empty"));
+            },
+            _onDragLeave: function (e) {
+                if (!this._presenter.flow) return;
+                this.toggleClass("dragOver", false);
+                this.toggleAttribute("hidden", false, this.$$("#empty"));
+            },
+            _onDragOver: function (e) {
+                if (!this._presenter.flow) return;
+                e.preventDefault();
+                this.toggleClass("dragOver", true);
+                this.toggleAttribute("hidden", true, this.$$("#empty"));
+                if (e.dataTransfer.getData("nodeType")) {
+                    e.dataTransfer.dropEffect = "copy";
+                } else if (e.dataTransfer.getData("flowId")) {
+                    e.dataTransfer.dropEffect = "link";
+                }
+            },
+            _onDrop: function (e) {
+                if (!this._presenter.flow) return;
+                e.preventDefault();
+                this.toggleClass("dragOver", false);
+                this.toggleAttribute("hidden", false, this.$$("#empty"));
+                var nodeType = e.dataTransfer.getData("nodeType");
+                var flowId = e.dataTransfer.getData("flowId");
+
+                // TODO Zoom transform coordinates
+                this._presenter.onDrop(nodeType, flowId, e.offsetX, e.offsetY);
             }
         });
     });
@@ -145,6 +181,13 @@
                 -webkit-flex: 1 1 auto;
                 background-color: var(--or-console-background-color);
                 color: var(--or-console-color);
+            }
+
+            :host.dragOver {
+                background: radial-gradient(#ccc 0, #ccc 15%, transparent 15%, transparent 100%);
+                background-origin: padding-box;
+                background-clip: border-box;
+                background-size: 10px 10px;
             }
 
             #empty {
