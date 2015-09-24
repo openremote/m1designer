@@ -15,6 +15,8 @@
 <link rel="import" href="consolesettings/or-console-settings.html">
 <link rel="import" href="messagelog/or-messagelog.html">
 
+<link rel="import" href="../console/or-console.html">
+
 <script>
     // One-time initialization, this MUST be a script in an imported file! The
     // GWT entry point will poll for this function indefinitely and call it when
@@ -63,7 +65,6 @@
                 this.addEventListener("touchend", this._centerResizeEnd.bind(this), false);
             },
             _centerResizeStart: function (e, detail) {
-                this.$.console.style.pointerEvents = "none";
                 this._centerResizeInProgress = {startX: detail.x, originalWest: this.$$("#west").offsetWidth};
                 this.toggleClass("active", true, this.$$("#centerResizeHandle"));
             },
@@ -115,15 +116,14 @@
             },
             _centerResizeEnd: function (e) {
                 if (this._centerResizeInProgress) {
-                    this.$.console.style.pointerEvents = "auto";
                     this._centerResizeInProgress = null;
                     this.toggleClass("active", false, this.$$("#centerResizeHandle"));
                 }
             },
-            _onShowInfo: function (ce, event) {
+            _onShowInfo: function (e, event) {
                 this.$.toast.show(false, event.text, 3000);
             },
-            _onShowFailure: function (ce, event) {
+            _onShowFailure: function (e, event) {
                 this.$.toast.show(true, event.text, event.durationMillis);
             }
         });
@@ -230,7 +230,7 @@
         <or-toast id="toast"></or-toast>
         <or-confirmation id="confirmationDialog"></or-confirmation>
 
-        <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+        <template is="dom-if" if="[[_presenter.shellOpened]]" restamp="true">
             <div id="north"
                  class="layout horizontal center">
                 <div id="north1" class="flex layout horizontal center">
@@ -248,7 +248,7 @@
 
         <div id="center" class="flex layout horizontal">
 
-            <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+            <template is="dom-if" if="[[_presenter.shellOpened]]" restamp="true">
                 <div id="west"
                      class="layout horizontal">
                     <or-flow-editor id="flowEditor"></or-flow-editor>
@@ -263,12 +263,12 @@
             </template>
 
             <div id="east" class="layout horizontal">
-                <iframe id="console" frameborder="none" src="/console.html"></iframe>
+                <or-console id="console" minimized></or-console>
             </div>
 
         </div>
 
-        <template is="dom-if" if="[[!_presenter.consoleMaximized]]">
+        <template is="dom-if" if="[[_presenter.shellOpened]]" restamp="true">
             <div id="south"
                  class="layout horizontal">
                 <div class="flex layout horizontal center">

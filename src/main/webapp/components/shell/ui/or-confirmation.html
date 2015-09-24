@@ -33,7 +33,7 @@
             listeners: {
                 "confirmation": "_onConfirmation"
             },
-            _onConfirmation: function (ce, event) {
+            _onConfirmation: function (e, event) {
                 this.set("_confirmationTitle", event.title);
                 this.set("_confirmationText", event.text);
                 this._confirmAction = event.confirmAction;

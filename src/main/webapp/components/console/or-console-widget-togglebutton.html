@@ -11,34 +11,35 @@
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
 
+<link rel="import" href="../../styles/console-widget-style.html">
+
 <dom-module id="or-console-widget-togglebutton">
-
-    <link rel="import" type="css" href="../../styles/console-widget-style.css">
-
-    <style>
-        :host {
-            display: block;
-            position: absolute;
-        }
-
-        #button {
-            --paper-toggle-button-checked-bar-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
-            --paper-toggle-button-checked-button-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
-            --paper-toggle-button-checked-ink-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
-            --paper-toggle-button-unchecked-bar-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
-            --paper-toggle-button-unchecked-button-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
-            --paper-toggle-button-unchecked-ink-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
-        }
-
-        .icon {
-            width: var(--or-console-widget-togglebutton-width, 38px);
-            height: var(--or-console-widget-togglebutton-height, 38px);
-            color: var(--or-console-widget-togglebutton-icon-color, #c1d72f);
-            background-color: var(--or-console-widget-togglebutton-background-color, transparent);
-        }
-
-    </style>
     <template>
+        <style include="console-widget-style"></style>
+        <style>
+            :host {
+                display: block;
+                position: absolute;
+            }
+
+            #button {
+                --paper-toggle-button-checked-bar-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+                --paper-toggle-button-checked-button-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+                --paper-toggle-button-checked-ink-color: var(--or-console-widget-togglebutton-on-color, #c1d72f);
+                --paper-toggle-button-unchecked-bar-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
+                --paper-toggle-button-unchecked-button-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
+                --paper-toggle-button-unchecked-ink-color: var(--or-console-widget-togglebutton-off-color, #cccccc);
+            }
+
+            .icon {
+                width: var(--or-console-widget-togglebutton-width, 38px);
+                height: var(--or-console-widget-togglebutton-height, 38px);
+                color: var(--or-console-widget-togglebutton-icon-color, #c1d72f);
+                background-color: var(--or-console-widget-togglebutton-background-color, transparent);
+            }
+
+        </style>
+
         <template is="dom-if" if="[[!useIcon]]">
             <paper-toggle-button id="button"
                                  class="control"

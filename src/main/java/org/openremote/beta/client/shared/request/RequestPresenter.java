@@ -30,8 +30,8 @@ public abstract class RequestPresenter extends AbstractPresenter {
     public RequestPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(RequestFailureEvent.class, event -> {
-            dispatchEvent(new ShowFailureEvent(
+        addListener(RequestFailureEvent.class, event -> {
+            dispatch(new ShowFailureEvent(
                 event.getRequestFailure().getFailureMessage(),
                 30000
             ));
@@ -55,7 +55,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         public void onSuccess(Method method, JSONValue response) {
             if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
-                dispatchEvent(new RequestCompleteEvent(requestText));
+                dispatch(new RequestCompleteEvent(requestText));
             }
         }
 
@@ -63,7 +63,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
         public void onFailure(Method method, Throwable exception) {
             if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
-                dispatchEvent(new RequestCompleteEvent(requestText));
+                dispatch(new RequestCompleteEvent(requestText));
             }
             RequestFailure requestFailure = new RequestFailure(
                 requestText,
@@ -76,7 +76,7 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         public void onFailure(RequestFailure requestFailure) {
             if (notifyUserOnFailure)
-                dispatchEvent(new RequestFailureEvent(requestFailure));
+                dispatch(new RequestFailureEvent(requestFailure));
             else
                 LOG.error(requestFailure.getFailureMessage());
         }

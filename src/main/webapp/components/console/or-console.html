@@ -1,9 +1,8 @@
-<script src="../util.js"></script>
-<script src="../../gwt/Client/Client.nocache.js"></script>
 <script src="../../bower_components/draggabilly/dist/draggabilly.pkgd.min.js"></script>
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../shared/or-component-behaviors.html">
+
+<link rel="import" href="../shared/or-component-behaviors.html"/>
 
 <link rel="import" href="or-console-widget-composite.html"/>
 <link rel="import" href="or-console-widget-slot.html"/>
@@ -13,21 +12,9 @@
 <link rel="import" href="or-console-widget-slider.html"/>
 <link rel="import" href="or-console-widget-togglebutton.html"/>
 
-<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../styles/console-style.html">
 
 <script>
-    function onGwtReadyClient() {
-        waitUntil(function () {
-            return window.Polymer;
-        }, 100, 50, function () {
-            document.dispatchEvent(new CustomEvent("gwtReadyClient"));
-        });
-    }
-
     document.addEventListener("gwtReadyClient", function () {
 
         Polymer({
@@ -39,10 +26,6 @@
                     value: function () {
                         return new openremote.console.ConsolePresenter(this);
                     }
-                },
-                minimized: {
-                    type: Boolean,
-                    value: false
                 },
                 _haveWidgets: {
                     type: Boolean,
@@ -61,23 +44,16 @@
                 "_onEditMode(_presenter.editMode)",
                 "_onZoomFactor(_presenter.zoomFactor)"
             ],
-            attached: function () {
-                if (this.minimized) {
-                    this._presenter.switchConsole();
-                }
-            },
-            _onConsoleRefreshed: function (ce, event) {
+            _onConsoleRefreshed: function (e, event) {
                 this.set("_haveWidgets", event.renderedWidgets);
 
                 var widgets = Polymer.dom(this.$.widgetComponentContainer).childNodes;
                 this.set("_draggableWidgets", []);
                 widgets.forEach(function (widget) {
 
-                    // TODO: evil hack fixes zoom artifacts on chrome
-                    widget.style["-webkit-backface-visibility"] = "hidden";
-
                     var draggableWidget = new Draggabilly(widget, {
-                        grid: [10, 10]
+                        grid: [10, 10],
+                        containment: "or-console"
                     });
 
                     draggableWidget.on("staticClick", function (event, pointer) {
@@ -160,13 +136,13 @@
 
 <dom-module id="or-console">
     <template>
+        <style include="console-style"></style>
         <style>
-
             :host {
-                display: block;
-                position: absolute;
-                height: 100%;
-                width: 100%;
+                display: flex;
+                display: -webkit-flex;
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
                 background-color: var(--or-console-background-color);
                 color: var(--or-console-color);
             }
@@ -184,18 +160,24 @@
             }
 
             .draggable:before {
-                content: "";
-                border-radius: 5px;
-                width: 15px;
-                height: 20px;
                 position: absolute;
-                left: -17px;
+                left: -15px;
                 top: 0;
-                background-color: var(--or-console-widget-draggable-color);
+                content: "";
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width: 0 15px 15px 0;
+                border-color: transparent var(--or-console-widget-draggable-color) transparent transparent;
+            }
+
+            .draggable.is-dragging {
+                /* hack for artifacts http://stackoverflow.com/a/12023155 */
+                -webkit-backface-visibility: hidden;
             }
 
             .selected.draggable:before {
-                background-color: var(--or-console-widget-selected-color);
+                border-right-color: var(--or-console-widget-selected-color);
             }
 
         </style>

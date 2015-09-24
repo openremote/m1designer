@@ -2,7 +2,6 @@ package org.openremote.beta.client.shell.floweditor;
 
 import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
-import com.ait.lienzo.shared.core.types.ColorName;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Style;
@@ -10,7 +9,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
 import org.openremote.beta.client.shared.AbstractPresenter;
-import org.openremote.beta.client.shell.event.*;
+import org.openremote.beta.client.event.*;
+import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
+import org.openremote.beta.client.shared.session.event.MessageSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -37,13 +38,13 @@ public class FlowEditorPresenter extends AbstractPresenter {
 
         Window.addResizeHandler(event -> onContainerResize());
 
-        addEventListener(FlowEditEvent.class, event -> {
+        addListener(FlowEditEvent.class, event -> {
             flow = event.getFlow();
             notifyPath("flow");
             startFlowDesigner();
         });
 
-        addEventListener(FlowDeletedEvent.class, event-> {
+        addListener(FlowDeletedEvent.class, event-> {
             if (event.matches(flow)) {
                 flow = null;
                 notifyPathNull("flow");
@@ -51,17 +52,16 @@ public class FlowEditorPresenter extends AbstractPresenter {
             }
         });
 
-        addEventListener(NodeSelectEvent.class, event -> {
+        addListener(NodeSelectedEvent.class, event -> {
             if (flowDesigner != null && flow != null) {
                 Node node = flow.findNode(event.getNodeId());
                 if (node != null) {
                     flowDesigner.selectNodeShape(node);
-                    dispatchEvent(new NodeSelectedEvent(flow, node));
                 }
             }
         });
 
-        addEventListener(NodeAddedEvent.class, event -> {
+        addListener(NodeAddedEvent.class, event -> {
             if (flowDesigner != null && event.matches(flow)) {
                 Node node = event.getNode();
 
@@ -81,12 +81,12 @@ public class FlowEditorPresenter extends AbstractPresenter {
 
                 LOG.debug("Adding node shape to flow designer: " + node);
                 flowDesigner.addNodeShape(node);
-                flowDesigner.selectNodeShape(node);
-                dispatchEvent(new NodeSelectedEvent(flow, node));
+
+                dispatch(new NodeSelectedEvent(node.getId()));
             }
         });
 
-        addEventListener(NodeDeletedEvent.class, event -> {
+        addListener(NodeDeletedEvent.class, event -> {
             if (flowDesigner != null && event.matches(flow)) {
                 Node node = event.getNode();
                 LOG.debug("Removing node shape from flow designer: " + node);
@@ -94,13 +94,21 @@ public class FlowEditorPresenter extends AbstractPresenter {
             }
         });
 
-        addEventListener(NodeModifiedEvent.class, event -> {
+        addListener(NodeModifiedEvent.class, event -> {
             if (flowDesigner != null && event.matches(flow)) {
                 flowDesigner.updateNodeShape(event.getNode());
             }
         });
 
-        addEventListener(Message.class, message -> {
+        addListener(MessageReceivedEvent.class, event -> {
+            Message message = event.getMessage();
+            if (flowDesigner != null && flow != null && flow.findSlot(message.getSlotId()) != null) {
+                flowDesigner.handleMessage(message);
+            }
+        });
+
+        addListener(MessageSendEvent.class, event-> {
+            Message message = event.getMessage();
             if (flowDesigner != null && flow != null && flow.findSlot(message.getSlotId()) != null) {
                 flowDesigner.handleMessage(message);
             }
@@ -116,9 +124,9 @@ public class FlowEditorPresenter extends AbstractPresenter {
 
     public void onDrop(String nodeType, String subflowId, double positionX, double positionY) {
         if (nodeType != null) {
-            dispatchEvent(new NodeCreateEvent(flow, nodeType, positionX, positionY));
+            dispatch(new NodeCreateEvent(flow, nodeType, positionX, positionY));
         } else if (subflowId != null) {
-            dispatchEvent(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY));
+            dispatch(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY));
         }
     }
 
@@ -154,22 +162,22 @@ public class FlowEditorPresenter extends AbstractPresenter {
         flowDesigner = new FlowDesigner(flow, flowDesignerPanel.getScene()) {
             @Override
             protected void onSelection(Node node) {
-                dispatchEvent(new NodeSelectedEvent(flow, node));
+                dispatch(new NodeSelectedEvent(node.getId()));
             }
 
             @Override
             protected void onMoved(Node node) {
-                dispatchEvent(new FlowModifiedEvent(flow, true));
+                dispatch(new FlowModifiedEvent(flow, true));
             }
 
             @Override
             protected void onAddition(Wire wire) {
-                dispatchEvent(new FlowModifiedEvent(flow, true));
+                dispatch(new FlowModifiedEvent(flow, true));
             }
 
             @Override
             protected void onRemoval(Wire wire) {
-                dispatchEvent(new FlowModifiedEvent(flow, true));
+                dispatch(new FlowModifiedEvent(flow, true));
             }
         };
         flowDesignerPanel.draw();

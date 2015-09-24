@@ -25,10 +25,7 @@
     <!-- ##################################################################### -->
 
     <source path="shared"/>
-    <source path="client/shared"/>
-    <source path="client/shell"/>
-    <source path="client/editor"/>
-    <source path="client/console"/>
+    <source path="client"/>
 
     <!-- ##################################################################### -->
 

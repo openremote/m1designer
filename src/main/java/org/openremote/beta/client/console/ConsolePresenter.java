@@ -4,19 +4,15 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.js.util.JsMapFromStringTo;
-import org.openremote.beta.client.shell.event.ConfirmationEvent;
+import org.openremote.beta.client.event.*;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.Component.DOM;
 import org.openremote.beta.client.shared.LongPressListener;
-import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
-import org.openremote.beta.shared.event.Event;
 import org.openremote.beta.shared.event.FlowRuntimeFailureEvent;
-import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependency;
 import org.openremote.beta.shared.flow.Node;
@@ -35,58 +31,50 @@ public class ConsolePresenter extends AbstractPresenter {
 
     public static final int SWITCH_LONG_PRESS_DELAY_MILLIS = 1500;
 
-    public boolean maximized = true;
+    public boolean shellOpened = false;
     public boolean editMode = false;
     public double zoomFactor = 1.0;
 
     protected Flow flow;
-    protected boolean flowDirty;
 
     public ConsolePresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addRedirectToShellView(ConfirmationEvent.class);
-        addRedirectToShellView(ConsoleReadyEvent.class);
-        addRedirectToShellView(ConsoleSwitchEvent.class);
-        addRedirectToShellView(ConsoleRefreshedEvent.class);
-        addRedirectToShellView(ConsoleMessageSendEvent.class);
-        addRedirectToShellView(ConsoleWidgetUpdatedEvent.class);
-        addRedirectToShellView(ConsoleWidgetSelectedEvent.class);
-        addRedirectToShellView(FlowRuntimeFailureEvent.class);
-
-        addEventListener(ConsoleRefreshEvent.class, event -> {
+        addListener(ConsoleRefreshEvent.class, event -> {
             flow = event.getFlow();
-            flowDirty = event.isDirty();
+            notifyPath("flow");
             refreshConsole(event.getSelectedNodeId());
         });
 
-        addEventListener(ConsoleEditModeEvent.class, event -> {
+        addListener(ConsoleRefreshedEvent.class, event-> {
+            getViewComponent().fire(event.getType(), event);
+        });
+
+        addListener(ConsoleEditModeEvent.class, event -> {
             editMode = event.isEditMode();
             notifyPath("editMode", editMode);
         });
 
-        addEventListener(ConsoleZoomEvent.class, event -> {
+        addListener(ConsoleZoomEvent.class, event -> {
             zoomFactor = event.getZoomFactor();
             notifyPath("zoomFactor", zoomFactor);
         });
 
-        addEventListener(ConsoleWidgetSelectEvent.class, event -> {
+        addListener(NodeSelectedEvent.class, event -> {
             selectWidget(event.getNodeId());
         });
 
-        addEventListener(ConsoleMaximizeEvent.class, event-> {
-            switchConsole();
+        addListener(ShellCloseEvent.class, event-> {
+            if (shellOpened) {
+                shellOpened = false;
+                notifyPath("shellOpened", shellOpened);
+            }
         });
 
-        addEventListener(MessageReceivedEvent.class, event -> {
-            LOG.debug("Message received from server: " + event.getMessage());
-            onMessage(event.getMessage());
-        });
-
-        addEventListener(ConsoleLoopDetectedEvent.class, event -> {
+        addListener(ConsoleLoopDetectedEvent.class, event -> {
             LOG.warn("Exchange stopped, loop detected. Message has already been processed by: " + event.getNodeId());
             if (flow != null) {
-                dispatchEvent(new FlowRuntimeFailureEvent(
+                dispatch(new FlowRuntimeFailureEvent(
                         flow.getId(),
                         "Exchange stopped, loop detected. Message has already been processed by: " + event.getNodeLabel(),
                         event.getNodeId()
@@ -99,36 +87,21 @@ public class ConsolePresenter extends AbstractPresenter {
     @Override
     public void ready() {
         super.ready();
-        new LongPressListener(getView(), SWITCH_LONG_PRESS_DELAY_MILLIS, this::switchConsole);
+        new LongPressListener(getView(), SWITCH_LONG_PRESS_DELAY_MILLIS, this::toggleShell);
     }
 
-    @Override
-    public void attached() {
-        super.attached();
-        dispatchEvent(new ConsoleReadyEvent());
-    }
-
-    public void switchConsole() {
-        if (!maximized && flowDirty) {
-            dispatchEvent(new ConfirmationEvent(
-                "Unsaved Changes",
-                "You have edited the current flow and not redeployed/saved the changes. Close?",
-                () -> {
-                    maximized = !maximized;
-                    notifyPath("maximized", maximized);
-                    dispatchEvent(new ConsoleSwitchEvent(flow, maximized));
-                }
-            ));
+    public void toggleShell() {
+        shellOpened = !shellOpened;
+        notifyPath("shellOpened", shellOpened);
+        if (shellOpened) {
+            dispatch(new ShellOpenEvent(flow));
         } else {
-            maximized = !maximized;
-            notifyPath("maximized", maximized);
-            dispatchEvent(new ConsoleSwitchEvent(flow, maximized));
+            dispatch(new ShellCloseEvent());
         }
     }
 
     public void widgetSelected(String nodeId) {
-        dispatchEvent(new ConsoleWidgetSelectedEvent(nodeId));
-        selectWidget(nodeId);
+        dispatch(new NodeSelectedEvent(nodeId));
     }
 
     protected void selectWidget(String nodeId) {
@@ -153,30 +126,11 @@ public class ConsolePresenter extends AbstractPresenter {
 
         // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
         NodeList nonCompositeWidgets = getView().querySelectorAll("#widgetComponentContainer :not(or-console-widget-composite)");
-        dispatchEvent(new ConsoleRefreshedEvent(nonCompositeWidgets.length() > 0));
+        dispatch(new ConsoleRefreshedEvent(nonCompositeWidgets.length() > 0));
     }
 
     protected Element getWidgetComponentContainer() {
         return getRequiredElement("#widgetComponentContainer");
-    }
-
-    protected void onMessage(Message message) {
-        String instanceId = message.getInstanceId();
-        String slotId = message.getSlotId();
-
-        String sinkSelector = "or-console-widget-slot[type='" + Slot.TYPE_SINK + "'][slot-id='" + slotId + "']";
-        if (instanceId != null) {
-            sinkSelector += "[instance-id='" + instanceId + "']";
-        }
-
-        LOG.debug("Received message, querying sink slots: " + sinkSelector);
-        // USE THE LIGHT DOM FOR THIS QUERY! This only works with shady DOM!
-        NodeList sinkNodes = getWidgetComponentContainer().querySelectorAll(sinkSelector);
-        LOG.debug("Found sink slots: " + sinkNodes.getLength());
-        for (int i = 0; i < sinkNodes.getLength(); i++) {
-            Element slotElement = (Element) sinkNodes.item(i);
-            dispatchEvent(slotElement, message);
-        }
     }
 
     protected void clearWidgetContainer(DOM container) {
@@ -293,16 +247,4 @@ public class ConsolePresenter extends AbstractPresenter {
         component.set("propertyPath", slot.getPropertyPath());
         return (Element) component;
     }
-
-    protected void addRedirectToShellView(Class<? extends Event> eventClass) {
-        Element shellView = Browser.getWindow().getTop().getDocument().querySelector("#shell");
-        if (shellView == null) {
-            throw new RuntimeException("Missing 'or-shell' view in browser top window document");
-        }
-        addEventListener(
-            getView(), eventClass, event ->
-                dispatchEvent(shellView, event)
-        );
-    }
-
 }

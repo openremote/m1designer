@@ -7,7 +7,6 @@ import org.openremote.beta.client.shared.JsUtil;
 import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestPresenter;
-import org.openremote.beta.client.shell.event.InventoryRefreshEvent;
 import org.openremote.beta.shared.catalog.CatalogCategory;
 import org.openremote.beta.shared.catalog.CatalogItem;
 import org.slf4j.Logger;
@@ -29,8 +28,6 @@ public class InventoryCatalogPresenter extends RequestPresenter {
 
     public InventoryCatalogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
-
-        addEventListener(InventoryRefreshEvent.class, event -> loadCatalog());
     }
 
     @Override
@@ -61,7 +58,7 @@ public class InventoryCatalogPresenter extends RequestPresenter {
     }
 
     public void itemSelected(CatalogItem item) {
-        dispatchEvent(new ShowInfoEvent("TODO: Implement help display for selected: " + item));
+        dispatch(new ShowInfoEvent("TODO: Implement help display for selected: " + item));
     }
 
     public void itemDeselected() {

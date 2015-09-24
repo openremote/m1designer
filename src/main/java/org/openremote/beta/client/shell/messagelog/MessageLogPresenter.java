@@ -5,9 +5,9 @@ import com.google.gwt.core.client.js.JsType;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
-import org.openremote.beta.client.shell.event.FlowDeletedEvent;
-import org.openremote.beta.client.shell.event.FlowEditEvent;
-import org.openremote.beta.client.shell.event.FlowModifiedEvent;
+import org.openremote.beta.client.event.FlowDeletedEvent;
+import org.openremote.beta.client.event.FlowEditEvent;
+import org.openremote.beta.client.event.FlowModifiedEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.Node;
@@ -31,7 +31,7 @@ public class MessageLogPresenter extends AbstractPresenter {
     public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(FlowEditEvent.class, false, event -> {
+        addListener(FlowEditEvent.class, event -> {
             flow = event.getFlow();
             notifyPath("flow");
             watchAllFlows = false;
@@ -39,27 +39,23 @@ public class MessageLogPresenter extends AbstractPresenter {
             setMessageLogTitle();
         });
 
-        addEventListener(FlowModifiedEvent.class, event -> {
-            if (this.flow != null && this.flow.getId().equals(event.getFlow().getId())) {
-                this.flow = event.getFlow();
-                notifyPath("flow");
-                setMessageLogTitle();
-            }
+        addListener(FlowModifiedEvent.class, event -> {
+            this.flow = event.getFlow();
+            notifyPath("flow");
+            setMessageLogTitle();
         });
 
-        addEventListener(FlowDeletedEvent.class, event -> {
-            if (this.flow != null && this.flow.getId().equals(event.getFlow().getId())) {
-                this.flow = null;
-                notifyPathNull("flow");
-                setMessageLogTitle();
-            }
+        addListener(FlowDeletedEvent.class, event -> {
+            this.flow = null;
+            notifyPathNull("flow");
+            setMessageLogTitle();
         });
 
-        addEventListener(MessageReceivedEvent.class, event-> {
+        addListener(MessageReceivedEvent.class, event-> {
             updateMessageLog(true, event.getMessage());
         });
 
-        addEventListener(MessageSendEvent.class, event-> {
+        addListener(MessageSendEvent.class, event-> {
             updateMessageLog(false, event.getMessage());
         });
     }

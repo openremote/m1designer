@@ -3,14 +3,13 @@ package org.openremote.beta.client.shell.inventory;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.beta.client.event.*;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestPresenter;
+import org.openremote.beta.client.shared.session.SessionOpenedEvent;
 import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.client.shell.FlowCodec;
-import org.openremote.beta.client.shell.event.FlowEditEvent;
-import org.openremote.beta.client.shell.event.FlowLoadEvent;
 import org.openremote.beta.client.shell.flowcontrol.FlowStatusDetail;
-import org.openremote.beta.client.shell.event.InventoryRefreshEvent;
 import org.openremote.beta.shared.event.FlowRequestStatusEvent;
 import org.openremote.beta.shared.event.FlowStatusEvent;
 import org.openremote.beta.shared.flow.Flow;
@@ -33,13 +32,19 @@ public class InventoryFlowsPresenter extends RequestPresenter {
     public InventoryFlowsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(InventoryRefreshEvent.class, event -> loadFlows());
+        addListener(FlowLoadEvent.class, event -> loadFlow(event.getFlowId()));
 
-        addEventListener(FlowLoadEvent.class, event -> loadFlow(event.getFlowId()));
+        addListener(SessionOpenedEvent.class, event-> {
+            dispatch(new ServerSendEvent(new FlowRequestStatusEvent()));
+        });
 
-        addEventListener(FlowStatusEvent.class, event -> {
+        addListener(FlowStatusEvent.class, event -> {
             updateFlowStatus(event.getFlowId(), new FlowStatusDetail(event.getPhase()));
         });
+
+        addListener(FlowSavedEvent.class, event -> loadFlows());
+
+        addListener(FlowDeletedEvent.class, event -> loadFlows());
     }
 
     @Override
@@ -73,7 +78,7 @@ public class InventoryFlowsPresenter extends RequestPresenter {
                     flowItems = items.toArray(new FlowItem[items.size()]);
                     notifyPath("flowItems", flowItems);
 
-                    dispatchEvent(new ServerSendEvent(new FlowRequestStatusEvent()));
+                    dispatch(new ServerSendEvent(new FlowRequestStatusEvent()));
                 }
 
                 @Override
@@ -92,7 +97,7 @@ public class InventoryFlowsPresenter extends RequestPresenter {
             new ObjectResponseCallback<Flow>("Load flow", FLOW_CODEC) {
                 @Override
                 protected void onResponse(Flow flow) {
-                    dispatchEvent(new FlowEditEvent(flow, false));
+                    dispatch(new FlowEditEvent(flow, false));
                 }
             }
         );
@@ -105,7 +110,7 @@ public class InventoryFlowsPresenter extends RequestPresenter {
             new ObjectResponseCallback<Flow>("Create flow", FLOW_CODEC) {
                 @Override
                 protected void onResponse(Flow flow) {
-                    dispatchEvent(new FlowEditEvent(flow, true));
+                    dispatch(new FlowEditEvent(flow, true));
                 }
             }
         );

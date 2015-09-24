@@ -2,43 +2,44 @@
 
 <link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
 
+<link rel="import" href="../../styles/console-widget-style.html">
+
 <dom-module id="or-console-widget-slider">
-
-    <link rel="import" type="css" href="../../styles/console-widget-style.css">
-
-    <style>
-        :host {
-            display: block;
-            position: absolute;
-        }
-
-        #slider {
-            width: var(--or-console-widget-slider-width, 250px);
-
-            --paper-progress-container-color: var(--or-console-widget-slider-color, #919194);
-            --paper-slider-active-color: var(--or-console-widget-slider-progress-color, #c1d72f);
-            --paper-slider-knob-color: var(--or-console-widget-slider-knob-color, #c1d72f);
-            --paper-slider-knob-start-border-color: var(--or-console-widget-slider-knob-color, #c1d72f);
-            --paper-slider-pin-color: var(--or-console-widget-slider-pin-color, #c1d72f);
-            --paper-slider-pin-start-color: var(--or-console-widget-slider-pin-color, #c1d72f);
-            --paper-slider-font-color: var(--or-console-widget-slider-pin-text-color, #455a64);
-
-            --paper-input-container-color: var(--or-console-widget-slider-color, #919194);
-            --paper-input-container-input-color: var(--or-console-widget-slider-color, #c1d72f);
-            --paper-input-container-underline-focus: var(--or-console-widget-slider-color, #c1d72f);
-            --paper-input-container: {
-                padding: 15px 0 0 0;
-            };
-            --paper-input-container-underline: {
-                display: none;
-            };
-            --paper-font-caption: {
-                display: none;
+    <template>
+        <style include="console-widget-style"></style>
+        <style>
+            :host {
+                display: block;
+                position: absolute;
             }
 
-        }
-    </style>
-    <template>
+            #slider {
+                width: var(--or-console-widget-slider-width, 250px);
+
+                --paper-progress-container-color: var(--or-console-widget-slider-color, #919194);
+                --paper-slider-active-color: var(--or-console-widget-slider-progress-color, #c1d72f);
+                --paper-slider-knob-color: var(--or-console-widget-slider-knob-color, #c1d72f);
+                --paper-slider-knob-start-border-color: var(--or-console-widget-slider-knob-color, #c1d72f);
+                --paper-slider-pin-color: var(--or-console-widget-slider-pin-color, #c1d72f);
+                --paper-slider-pin-start-color: var(--or-console-widget-slider-pin-color, #c1d72f);
+                --paper-slider-font-color: var(--or-console-widget-slider-pin-text-color, #455a64);
+
+                --paper-input-container-color: var(--or-console-widget-slider-color, #919194);
+                --paper-input-container-input-color: var(--or-console-widget-slider-color, #c1d72f);
+                --paper-input-container-underline-focus: var(--or-console-widget-slider-color, #c1d72f);
+                --paper-input-container: {
+                    padding: 15px 0 0 0;
+                };
+                --paper-input-container-underline: {
+                    display: none;
+                };
+                --paper-font-caption: {
+                    display: none;
+                }
+
+            }
+        </style>
+
         <paper-slider
                 id="slider"
                 class="control"

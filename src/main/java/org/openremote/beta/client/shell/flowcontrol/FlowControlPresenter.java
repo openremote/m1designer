@@ -3,19 +3,16 @@ package org.openremote.beta.client.shell.flowcontrol;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.console.ConsoleRefreshEvent;
-import org.openremote.beta.client.shared.Callback;
-import org.openremote.beta.client.shared.Consumer;
-import org.openremote.beta.client.shared.ShowFailureEvent;
-import org.openremote.beta.client.shared.ShowInfoEvent;
+import org.openremote.beta.client.event.ConsoleRefreshEvent;
+import org.openremote.beta.client.shared.*;
 import org.openremote.beta.client.shared.request.RequestFailure;
 import org.openremote.beta.client.shared.request.RequestFailureEvent;
 import org.openremote.beta.client.shared.request.RequestPresenter;
-import org.openremote.beta.client.shared.session.event.ServerReceivedEvent;
+import org.openremote.beta.client.shared.session.SessionOpenedEvent;
 import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.client.shell.FlowCodec;
 import org.openremote.beta.client.shell.NodeCodec;
-import org.openremote.beta.client.shell.event.*;
+import org.openremote.beta.client.event.*;
 import org.openremote.beta.shared.event.*;
 import org.openremote.beta.shared.flow.Flow;
 import org.openremote.beta.shared.flow.FlowDependency;
@@ -43,15 +40,17 @@ public class FlowControlPresenter extends RequestPresenter {
     public FlowStatusDetail flowStatusDetail;
     public FlowDependency[] flowSuperDependencies;
     public FlowDependency[] flowSubDependencies;
+    public String selectedNodeId;
 
     public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(ServerReceivedEvent.class, event -> {
-            dispatchEvent(false, event.getEvent());
-        });
+        addPrepareListener(ShellCloseEvent.class, this::vetoIfDirty);
 
-        addEventListener(FlowEditEvent.class, event -> {
+        addPrepareListener(FlowEditEvent.class, this::vetoIfDirty);
+
+        addListener(FlowEditEvent.class, event -> {
+
             flow = event.getFlow();
             notifyPath("flow");
 
@@ -61,37 +60,52 @@ public class FlowControlPresenter extends RequestPresenter {
             setDependencies();
 
             setFlowStatusDetail(new FlowStatusDetail("REQUESTING FLOW STATUS..."));
-            dispatchEvent(new ServerSendEvent(new FlowRequestStatusEvent(flow.getId())));
+            dispatch(new ServerSendEvent(new FlowRequestStatusEvent(flow.getId())));
 
-            sendConsoleRefresh(flow, flowUnsaved);
+            sendConsoleRefresh(flow);
         });
 
-        addEventListener(FlowDeletedEvent.class, event -> {
+        addListener(FlowDeletedEvent.class, event -> {
             flow = null;
             notifyPathNull("flow");
+            sendConsoleRefresh(null);
         });
 
-        addEventListener(FlowStatusEvent.class, event -> {
+        addListener(NodeSelectedEvent.class, event -> {
+            selectedNodeId = event.getNodeId();
+            notifyPath("selectedNodeId");
+        });
+
+        addListener(SessionOpenedEvent.class, event-> {
+            dispatch(new ServerSendEvent(new FlowRequestStatusEvent()));
+        });
+
+        addListener(FlowStatusEvent.class, event -> {
             if (event.matches(flow)) {
                 setFlowStatusDetail(new FlowStatusDetail(event.getPhase()));
             }
         });
 
-        addEventListener(FlowDeploymentFailureEvent.class, event -> {
+        addListener(FlowDeploymentFailureEvent.class, event -> {
             if (event.matches(flow)) {
                 setFlowStatusDetail(new FlowStatusDetail(event));
             }
         });
 
-        addEventListener(FlowModifiedEvent.class, event -> {
+        addListener(FlowRuntimeFailureEvent.class, event -> {
+            // TODO should probably do more when a flow fails at runtime
+            dispatch(new ShowFailureEvent(event.getMessage(), 10000));
+        });
+
+        addListener(FlowModifiedEvent.class, event -> {
             setFlowStatusDetail(flowStatusDetail);
             setFlowDirty(true);
             if (event.isNotifyConsole()) {
-                sendConsoleRefresh(event.getFlow(), true);
+                sendConsoleRefresh(event.getFlow());
             }
         });
 
-        addEventListener(NodeCreateEvent.class, event -> {
+        addListener(NodeCreateEvent.class, event -> {
             if (event.matches(flow)) {
                 new CreateNodeProcedure(
                     flow.getId(),
@@ -101,7 +115,7 @@ public class FlowControlPresenter extends RequestPresenter {
             }
         });
 
-        addEventListener(SubflowNodeCreateEvent.class, event -> {
+        addListener(SubflowNodeCreateEvent.class, event -> {
             if (event.matches(flow)) {
                 // Can't add current flow as subflow
                 if (flow.getId().equals(event.getSubflowId())) {
@@ -115,13 +129,40 @@ public class FlowControlPresenter extends RequestPresenter {
             }
         });
 
-        addEventListener(NodeDeleteEvent.class, event -> {
-            if (event.matches(flow)) {
-                new DeleteNodeProcedure(event.getNode()).call();
+        addListener(NodeSelectedEvent.class, event -> {
+            if (flow != null) {
+                Node node = flow.findNode(event.getNodeId());
+                if (node != null) {
+                    dispatch(new NodeEditEvent(flow, node));
+                }
             }
         });
 
-        addEventListener(NodeDuplicateEvent.class, event -> {
+        addListener(ConsoleWidgetModifiedEvent.class, event-> {
+            if (flow != null) {
+                Node node = flow.findNode(event.getNodeId());
+                if (node != null) {
+                    node.setProperties(event.getNodeProperties());
+                    dispatch(new FlowModifiedEvent(flow, false));
+                    if (node.getId().equals(selectedNodeId)) {
+                        dispatch(new NodePropertiesRefreshEvent(node.getId()));
+                    }
+                }
+            }
+        });
+
+        addListener(NodeDeleteEvent.class, event -> {
+            new DeleteNodeProcedure(event.getNode()).call();
+        });
+
+        addListener(NodeDeletedEvent.class, event -> {
+            if (event.getNode().getId().equals(selectedNodeId)) {
+                selectedNodeId = null;
+                notifyPathNull("selectedNodeId");
+            }
+        });
+
+        addListener(NodeDuplicateEvent.class, event -> {
             if (event.matches(flow)) {
                 new DuplicateNodeProcedure(flow.getId(), event.getNode()).call();
             }
@@ -134,35 +175,35 @@ public class FlowControlPresenter extends RequestPresenter {
         flowDirty = true; // Assume this is dirty, now other listeners might run
         debounce("FlowPropertyChange", () -> {
             if (flowDirty) { // If it's still dirty (after other listeners executed), tell the user
-                dispatchEvent(new FlowModifiedEvent(flow, false));
+                dispatch(new FlowModifiedEvent(flow, false));
             }
         }, 500);
     }
 
     public void editFlowDependency(Flow dependency) {
-        dispatchEvent(new FlowLoadEvent(dependency.getId()));
+        dispatch(new FlowLoadEvent(dependency.getId()));
     }
 
     public void startFlow() {
-        dispatchEvent(new ServerSendEvent(new FlowDeployEvent(flow.getId())));
+        dispatch(new ServerSendEvent(new FlowDeployEvent(flow.getId())));
     }
 
     public void stopFlow() {
-        dispatchEvent(new ServerSendEvent(new FlowStopEvent(flow.getId())));
+        dispatch(new ServerSendEvent(new FlowStopEvent(flow.getId())));
     }
 
     public void exportFlow() {
         Flow dupe = copyFlow();
         new UpdateDependenciesProcedure(dupe, true, () -> {
             LOG.info(FLOW_CODEC.encode(dupe).toString());
-            dispatchEvent(new ShowInfoEvent("Export complete, see your browsers console."));
+            dispatch(new ShowInfoEvent("Export complete, see your browsers console."));
         }).call();
     }
 
     public void redeployFlow() {
         new SaveFlowProcedure(copyFlow(), flowUnsaved, savedFlow -> {
-            dispatchEvent(new ServerSendEvent(new FlowStopEvent(savedFlow.getId())));
-            dispatchEvent(new ServerSendEvent(new FlowDeployEvent(savedFlow.getId())));
+            dispatch(new ServerSendEvent(new FlowStopEvent(savedFlow.getId())));
+            dispatch(new ServerSendEvent(new FlowDeployEvent(savedFlow.getId())));
         }).call();
     }
 
@@ -175,6 +216,24 @@ public class FlowControlPresenter extends RequestPresenter {
     }
 
     /* ################################################################################# */
+
+    protected void vetoIfDirty(Event event) {
+        if (flowDirty) {
+            dispatchDirtyConfirmation(() -> {
+                setFlowDirty(false);
+                dispatch(event);
+            });
+            throw new VetoEventException();
+        }
+    }
+
+    protected void dispatchDirtyConfirmation(Callback confirmAction) {
+        dispatch(new ConfirmationEvent(
+            "Unsaved Changes",
+            "You have edited the current flow and not redeployed/saved the changes. Continue without saving changes?",
+            confirmAction
+        ));
+    }
 
     protected Flow copyFlow() {
         return FLOW_CODEC.decode(FLOW_CODEC.encode(flow));
@@ -210,9 +269,9 @@ public class FlowControlPresenter extends RequestPresenter {
         notifyPath("flowControlTitle", flowControlTitle);
     }
 
-    protected void sendConsoleRefresh(Flow flow, boolean flowDirty) {
+    protected void sendConsoleRefresh(Flow flow) {
         if (flow == null) {
-            dispatchEvent(new ConsoleRefreshEvent(null, false, null));
+            dispatch(new ConsoleRefreshEvent());
             return;
         }
 
@@ -220,7 +279,7 @@ public class FlowControlPresenter extends RequestPresenter {
         new UpdateDependenciesProcedure(
             dupe,
             true,
-            () -> dispatchEvent(new ConsoleRefreshEvent(dupe, flowDirty, null))
+            () -> dispatch(new ConsoleRefreshEvent(dupe, selectedNodeId))
         ).call();
     }
 
@@ -241,8 +300,8 @@ public class FlowControlPresenter extends RequestPresenter {
         @Override
         public void accept(Node node) {
             flow.addNode(node);
-            dispatchEvent(new FlowModifiedEvent(flow, true));
-            dispatchEvent(new NodeAddedEvent(flow, node, positionX, positionY, transformPosition));
+            dispatch(new FlowModifiedEvent(flow, true));
+            dispatch(new NodeAddedEvent(flow, node, positionX, positionY, transformPosition));
         }
     }
 
@@ -298,13 +357,13 @@ public class FlowControlPresenter extends RequestPresenter {
                         flow.setSubDependencies(dupe.getSubDependencies());
                         setDependencies();
                     }
-                    dispatchEvent(new ShowInfoEvent("Reloaded dependencies of flow '" + flow.getDefaultedLabel() + "'"));
-                    dispatchEvent(new FlowModifiedEvent(flow, true));
-                    dispatchEvent(new NodeDeletedEvent(flow, node));
+                    dispatch(new ShowInfoEvent("Reloaded dependencies of flow '" + flow.getDefaultedLabel() + "'"));
+                    dispatch(new FlowModifiedEvent(flow, true));
+                    dispatch(new NodeDeletedEvent(flow, node));
                 }).call();
             } else {
-                dispatchEvent(new FlowModifiedEvent(flow, true));
-                dispatchEvent(new NodeDeletedEvent(flow, node));
+                dispatch(new FlowModifiedEvent(flow, true));
+                dispatch(new NodeDeletedEvent(flow, node));
             }
         }
     }
@@ -452,7 +511,7 @@ public class FlowControlPresenter extends RequestPresenter {
                         "Are you sure you want to save changes to flow '" +
                             flowToSave.getDefaultedLabel() +
                             "'? " + affectedFlows;
-                    dispatchEvent(
+                    dispatch(
                         new ConfirmationEvent("Save Breaking Changes", confirmationText, saveCallback)
                     );
                 }
@@ -460,13 +519,13 @@ public class FlowControlPresenter extends RequestPresenter {
         }
 
         protected void saveSuccess() {
-            dispatchEvent(new FlowSavedEvent(flowToSave));
-            dispatchEvent(new ShowInfoEvent("Flow '" + flowToSave.getDefaultedLabel() + "' saved."));
             if (flow != null && flow.getId().equals(flowToSave.getId())) {
                 setFlowUnsaved(false);
                 setFlowDirty(false);
-                sendConsoleRefresh(flow, false);
+                sendConsoleRefresh(flow);
             }
+            dispatch(new FlowSavedEvent(flowToSave));
+            dispatch(new ShowInfoEvent("Flow '" + flowToSave.getDefaultedLabel() + "' saved."));
         }
     }
 
@@ -495,7 +554,7 @@ public class FlowControlPresenter extends RequestPresenter {
                 if (affectedFlows != null)
                     confirmationText.append(" ").append(affectedFlows);
 
-                dispatchEvent(new ConfirmationEvent(
+                dispatch(new ConfirmationEvent(
                     "Remove Flow",
                     confirmationText.toString(),
                     new Callback() {
@@ -523,18 +582,18 @@ public class FlowControlPresenter extends RequestPresenter {
         }
 
         protected void deleteSuccess() {
-            dispatchEvent(new ShowInfoEvent("Flow '" + flowToDelete.getDefaultedLabel() + "' deleted."));
-            dispatchEvent(new FlowDeletedEvent(flowToDelete));
+            dispatch(new ShowInfoEvent("Flow '" + flowToDelete.getDefaultedLabel() + "' deleted."));
+            dispatch(new FlowDeletedEvent(flowToDelete));
         }
 
         protected void deleteFailure(RequestFailure requestFailure) {
             if (requestFailure.statusCode == 409) {
-                dispatchEvent(new ShowFailureEvent(
+                dispatch(new ShowFailureEvent(
                     "Flow '" + flowToDelete.getLabel() + "' can't be deleted, stopping it failed or it's still in use by other flows.",
                     5000
                 ));
             } else {
-                dispatchEvent(new RequestFailureEvent(requestFailure));
+                dispatch(new RequestFailureEvent(requestFailure));
             }
         }
     }
@@ -581,12 +640,12 @@ public class FlowControlPresenter extends RequestPresenter {
 
         protected void dependencyFailure(RequestFailure requestFailure) {
             if (requestFailure.statusCode == 400) {
-                dispatchEvent(new ShowFailureEvent(
+                dispatch(new ShowFailureEvent(
                     "Can't create an endless loop between flows.",
                     5000
                 ));
             } else {
-                dispatchEvent(new RequestFailureEvent(requestFailure));
+                dispatch(new RequestFailureEvent(requestFailure));
             }
         }
 

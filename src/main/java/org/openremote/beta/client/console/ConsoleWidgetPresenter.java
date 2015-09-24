@@ -7,8 +7,11 @@ import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.json.client.JSONObject;
 import elemental.dom.NodeList;
 import elemental.js.util.JsArrayOfString;
+import org.openremote.beta.client.event.ConsoleWidgetModifiedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
+import org.openremote.beta.client.shared.session.event.MessageSendEvent;
+import org.openremote.beta.client.shared.session.event.ServerSendEvent;
 import org.openremote.beta.shared.event.Message;
 import org.openremote.beta.shared.flow.Slot;
 import org.slf4j.Logger;
@@ -42,7 +45,7 @@ public class ConsoleWidgetPresenter extends AbstractPresenter {
             LOG.debug("Persistent path changed, dispatching widget node update event: " + path);
             // This updates the editor's flow and node state
             String widgetProperties = new JSONObject(jso).toString();
-            dispatchEvent(new ConsoleWidgetUpdatedEvent(nodeId, widgetProperties));
+            dispatch(new ConsoleWidgetModifiedEvent(nodeId, widgetProperties));
         }
 
         // Find a child source slot with a property-path that matches the changed path
@@ -84,7 +87,7 @@ public class ConsoleWidgetPresenter extends AbstractPresenter {
                 value != null ? value.toString() : null,
                 headers
             );
-            dispatchEvent(new ConsoleMessageSendEvent(message));
+            dispatch(new MessageSendEvent(message));
         }
     }
 

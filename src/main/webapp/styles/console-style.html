@@ -1,54 +1,30 @@
-<style is="custom-style">
+<dom-module id="console-style">
+    <template>
+        <style>
+            :host {
+                /* ######################## START THEME ######################## */
 
-    :root {
-        /* ######################## START THEME ######################## */
+                --or-darkgreen: #006224; /* rgb(0, 98, 36); */
+                --or-mediumgreen: #49a942; /* rgb(73, 169, 66); */
+                --or-lightgreen: #c1d72f; /* rgb(193, 215, 47); */
+                --or-darkgrey: #455a64; /* rgb(69, 90, 100); */
+                --or-mediumgrey: #919194; /* rgb(145, 145, 148); */
+                --or-lightgrey: #cccccc; /* rgb(204, 204, 204); */
+                --or-brightgrey: #f5f5f5; /* rgb(245, 245, 245); */
+                --or-red: #e64a19; /* rgb(230, 74, 25); */
+                --or-yellow: #fbc02d; /* rgb(251, 192, 45); */
+                --or-blue: #1976d2; /* rgb(25, 118, 210); */
+                --or-purple: #660092; /* rgb(102, 0, 146) */
 
-        --or-darkgreen: #006224; /* rgb(0, 98, 36); */
-        --or-mediumgreen: #49a942; /* rgb(73, 169, 66); */
-        --or-lightgreen: #c1d72f; /* rgb(193, 215, 47); */
-        --or-darkgrey: #455a64; /* rgb(69, 90, 100); */
-        --or-mediumgrey: #919194; /* rgb(145, 145, 148); */
-        --or-lightgrey: #cccccc; /* rgb(204, 204, 204); */
-        --or-brightgrey: #f5f5f5; /* rgb(245, 245, 245); */
-        --or-red: #e64a19; /* rgb(230, 74, 25); */
-        --or-yellow: #fbc02d; /* rgb(251, 192, 45); */
-        --or-blue: #1976d2; /* rgb(25, 118, 210); */
-        --or-purple: #660092; /* rgb(102, 0, 146) */
+                --or-console-background-color: var(--or-darkgrey);
+                --or-console-console-color: white;
+                --or-console-empty-color: var(--or-brightgrey);
 
-        --or-console-background-color: var(--or-darkgrey);
-        --or-console-console-color: white;
-        --or-console-empty-color: var(--or-brightgrey);
+                --or-console-widget-draggable-color: rgba(25, 118, 210, 0.8);
+                --or-console-widget-selected-color: rgba(193, 215, 47, 0.8);
 
-        --or-console-widget-draggable-color: var(--or-blue);
-        --or-console-widget-selected-color: var(--or-lightgreen);
-
-        /* ######################## END THEME ######################## */
-    }
-
-    html,
-    body {
-        height: 100vh;
-        width: 100vw;
-        max-width:100%;
-        max-height:100%;
-        overflow:hidden;
-        padding: 0;
-        margin: 0;
-    }
-
-    body {
-        font-family: Helvetica, sans-serif;
-        background-color: white;
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        cursor: default;
-        font-size: 14px;
-    }
-
-    * {
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    }
-
-</style>
-
+                /* ######################## END THEME ######################## */
+            }
+        </style>
+    </template>
+</dom-module>

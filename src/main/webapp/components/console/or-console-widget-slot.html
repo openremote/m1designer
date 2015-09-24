@@ -1,9 +1,12 @@
+<link rel="import" href="../shared/or-component-behaviors.html"/>
+
 <link rel="import" href="or-console-widget-behaviors.html">
 
 <dom-module id="or-console-widget-slot">
     <script>
         Polymer({
             is: "or-console-widget-slot",
+            behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,

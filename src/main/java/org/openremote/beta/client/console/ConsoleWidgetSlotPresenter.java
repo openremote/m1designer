@@ -6,8 +6,10 @@ import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.js.util.JsArrayOfString;
+import org.openremote.beta.client.event.ConsoleLoopDetectedEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shared.Component;
+import org.openremote.beta.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.beta.shared.event.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,18 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
     public ConsoleWidgetSlotPresenter(com.google.gwt.dom.client.Element gwtView) {
         super(gwtView);
 
-        addEventListener(Message.class, this::onMessage);
+        // TODO this might not be the most efficient way, but is a DOM query to find the slot for a message faster?
+        addPrepareListener(MessageReceivedEvent.class, event -> {
+            Message message = event.getMessage();
+            String slotId = (String) getViewComponent().get("slotId");
+            String instanceId = (String) getViewComponent().get("instanceId");
+            if (!message.getSlotId().equals(slotId))
+                return;
+            if (message.getInstanceId() != null && !message.getInstanceId().equals(instanceId))
+                return;
+            LOG.debug("Message received from server for slot " + slotId + ", instance " + instanceId + ": " + message);
+            onMessage(event.getMessage());
+        });
     }
 
     protected void onMessage(Message message) {
@@ -48,7 +61,7 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
             );
 
             if (visitedWidgets.contains(nodeId)) {
-                dispatchEvent(new ConsoleLoopDetectedEvent(nodeId, nodeLabel));
+                dispatch(new ConsoleLoopDetectedEvent(nodeId, nodeLabel));
             }
 
             if (visitedWidgets.size() > 0) {

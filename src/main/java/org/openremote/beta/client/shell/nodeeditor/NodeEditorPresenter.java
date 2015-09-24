@@ -7,7 +7,7 @@ import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import org.openremote.beta.client.shared.Component;
 import org.openremote.beta.client.shared.session.event.MessageSendEvent;
-import org.openremote.beta.client.shell.event.*;
+import org.openremote.beta.client.event.*;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.openremote.beta.client.shell.floweditor.FlowDesignerConstants;
 import org.openremote.beta.shared.event.Message;
@@ -36,7 +36,7 @@ public class NodeEditorPresenter extends AbstractPresenter {
     public NodeEditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
 
-        addEventListener(NodeSelectedEvent.class, event -> {
+        addListener(NodeEditEvent.class, event -> {
             this.flow = event.getFlow();
             notifyPath("flow");
 
@@ -56,40 +56,40 @@ public class NodeEditorPresenter extends AbstractPresenter {
 
         });
 
-        addEventListener(NodeDeletedEvent.class, event -> {
+        addListener(NodeDeletedEvent.class, event -> {
             closeEditor();
         });
 
-        addEventListener(NodePropertiesRefreshEvent.class, event -> {
+        addListener(NodePropertiesRefreshEvent.class, event -> {
             if (node != null && node.getId().equals(event.getNodeId())) {
                 updateEditorComponents();
             }
         });
 
-        addEventListener(NodePropertiesUpdatedEvent.class, true, event -> {
+        addListener(NodePropertiesModifiedEvent.class, event -> {
             if (node != null && node.getId().equals(event.getNodeId())) {
                 node.setProperties(event.getNodeProperties());
                 nodeChanged();
             }
         });
 
-        addEventListener(FlowEditEvent.class, event -> closeEditor());
-        addEventListener(FlowDeletedEvent.class, event -> closeEditor());
+        addListener(FlowEditEvent.class, event -> closeEditor());
+        addListener(FlowDeletedEvent.class, event -> closeEditor());
 
     }
 
     public void editSubflow() {
         if (!isSubflow)
             return;
-        dispatchEvent(new FlowLoadEvent(node.getSubflowId()));
+        dispatch(new FlowLoadEvent(node.getSubflowId()));
     }
 
     public void duplicateNode() {
-        dispatchEvent(new NodeDuplicateEvent(flow, node));
+        dispatch(new NodeDuplicateEvent(flow, node));
     }
 
     public void deleteNode() {
-        dispatchEvent(new NodeDeleteEvent(flow, node));
+        dispatch(new NodeDeleteEvent(flow, node));
     }
 
     public String getSinkLabel(Slot sink) {
@@ -107,8 +107,8 @@ public class NodeEditorPresenter extends AbstractPresenter {
         setFlowNodeTitle();
         debounce("NodeChange", () -> {
             if (flowNodeDirty && flow != null && node != null) {
-                dispatchEvent(new FlowModifiedEvent(flow, true));
-                dispatchEvent(new NodeModifiedEvent(flow, node));
+                dispatch(new FlowModifiedEvent(flow, true));
+                dispatch(new NodeModifiedEvent(flow, node));
                 setSinkSlots();
                 setFlowNodeDirty(false);
             }
@@ -123,7 +123,7 @@ public class NodeEditorPresenter extends AbstractPresenter {
         }
 
         Message message = new Message(sink, instanceId, body);
-        dispatchEvent(new MessageSendEvent(message));
+        dispatch(new MessageSendEvent(message));
     }
 
     protected void closeEditor() {

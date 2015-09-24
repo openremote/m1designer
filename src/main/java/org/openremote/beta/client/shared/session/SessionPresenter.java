@@ -6,7 +6,6 @@ import elemental.client.Browser;
 import elemental.events.CloseEvent;
 import elemental.html.WebSocket;
 import org.openremote.beta.client.shared.ShowFailureEvent;
-import org.openremote.beta.client.shared.ShowInfoEvent;
 import org.openremote.beta.client.shared.request.RequestPresenter;
 import org.openremote.beta.client.shared.session.SessionClosedErrorEvent.Error;
 import org.slf4j.Logger;
@@ -26,13 +25,12 @@ public abstract class SessionPresenter extends RequestPresenter {
     final protected String serviceUrl;
     protected WebSocket webSocket;
     protected int failureCount;
-    protected int currentReconnectAttempt = -1;
 
     public SessionPresenter(com.google.gwt.dom.client.Element view, String serviceUrl) {
         super(view);
         this.serviceUrl = serviceUrl;
 
-        addEventListener(SessionConnectEvent.class, event -> {
+        addListener(SessionConnectEvent.class, event -> {
 
             if (webSocket != null) {
                 if (webSocket.getReadyState() != WebSocket.CLOSED) {
@@ -51,17 +49,17 @@ public abstract class SessionPresenter extends RequestPresenter {
             webSocket.setOnopen(evt -> {
                 if (webSocket.getReadyState() == WebSocket.OPEN) {
                     LOG.debug("WebSocket open: " + webSocket.getUrl());
-                    dispatchEvent(new SessionOpenedEvent());
+                    dispatch(new SessionOpenedEvent());
                 }
             });
             webSocket.setOnclose(evt -> {
                 CloseEvent closeEvent = (CloseEvent) evt;
                 if (closeEvent.isWasClean() && closeEvent.getCode() == 1000) {
                     LOG.debug("WebSocket closed: " + webSocket.getUrl());
-                    dispatchEvent(new SessionClosedCleanEvent());
+                    dispatch(new SessionClosedCleanEvent());
                 } else {
                     LOG.debug("WebSocket '" + webSocket.getUrl() + "' closed with error: " + closeEvent.getCode());
-                    dispatchEvent(new SessionClosedErrorEvent(
+                    dispatch(new SessionClosedErrorEvent(
                         new Error(closeEvent.getCode(), closeEvent.getReason())
                     ));
                 }
@@ -74,35 +72,27 @@ public abstract class SessionPresenter extends RequestPresenter {
             });
         });
 
-        addEventListener(SessionCloseEvent.class, event -> {
+        addListener(SessionCloseEvent.class, event -> {
             if (webSocket != null) {
                 webSocket.close(1000, "SessionCloseEvent");
             }
         });
 
-        addEventListener(SessionOpenedEvent.class, event -> {
-            if (currentReconnectAttempt != -1) {
-                LOG.debug("Session opened successfully, resetting failure count...");
-                dispatchEvent(new ShowInfoEvent("Reconnected successfully to server: " + serviceUrl));
-                failureCount = 0;
-                currentReconnectAttempt = -1;
-            }
+        addListener(SessionOpenedEvent.class, event -> {
+            LOG.debug("Session opened successfully, resetting failure count...");
+            failureCount = 0;
         });
 
-        addEventListener(SessionClosedErrorEvent.class, event -> {
-            dispatchEvent(new ShowFailureEvent("Dropped server connection, will try a few more times to reach: " + serviceUrl, 3000));
+        addListener(SessionClosedErrorEvent.class, event -> {
+            dispatch(new ShowFailureEvent("Dropped server connection, will try a few more times to reach: " + serviceUrl, 3000));
             LOG.debug("Session closed with error, incrementing failure count: " + failureCount);
             failureCount++;
             if (failureCount < MAX_ATTEMPTS) {
                 LOG.debug("Session reconnection attempt '" + serviceUrl + "' with delay milliseconds: " + DELAY_MILLIS);
-                currentReconnectAttempt = dispatchEvent(
-                    new SessionConnectEvent(),
-                    DELAY_MILLIS,
-                    currentReconnectAttempt
-                );
+                dispatch(new SessionConnectEvent(), DELAY_MILLIS);
             } else {
                 String failureMessage = "Giving up connecting to service after " + failureCount + " failures: " + serviceUrl;
-                dispatchEvent(new ShowFailureEvent(failureMessage, ShowFailureEvent.DURABLE));
+                dispatch(new ShowFailureEvent(failureMessage, ShowFailureEvent.DURABLE));
                 LOG.error(failureMessage);
             }
         });

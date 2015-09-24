@@ -5,7 +5,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.json.client.JSONObject;
 import org.openremote.beta.client.shared.AbstractPresenter;
-import org.openremote.beta.client.shell.event.NodePropertiesUpdatedEvent;
+import org.openremote.beta.client.event.NodePropertiesModifiedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class NodePropertiesPresenter extends AbstractPresenter {
 
     public void nodePropertiesChanged(String nodeId, JavaScriptObject jso) {
         String nodeProperties = new JSONObject(jso).toString();
-        dispatchEvent(new NodePropertiesUpdatedEvent(nodeId, nodeProperties));
+        dispatch(new NodePropertiesModifiedEvent(nodeId, nodeProperties));
     }
 
 }

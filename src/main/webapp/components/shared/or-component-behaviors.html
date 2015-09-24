@@ -14,7 +14,13 @@
 
                 });
             }
+        },
+        detached: function() {
+            if (this._presenter) {
+                this._presenter.detached();
+            }
         }
+
     };
 
 </script>

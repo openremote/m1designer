@@ -11,26 +11,27 @@
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
 
+<link rel="import" href="../../styles/console-widget-style.html">
+
 <dom-module id="or-console-widget-pushbutton">
-
-    <link rel="import" type="css" href="../../styles/console-widget-style.css">
-
-    <style>
-        :host {
-            display: block;
-            position: absolute;
-        }
-
-        #button {
-            color: var(--or-console-widget-pushbutton-color, black);
-            background-color: var(--or-console-widget-pushbutton-background-color, lightgrey);
-            font-size: var(--or-console-widget-pushbutton-font-size, 10px);
-            --paper-button: {
-                min-width: 0;
-            }
-        }
-    </style>
     <template>
+        <style include="console-widget-style"></style>
+        <style>
+            :host {
+                display: block;
+                position: absolute;
+            }
+
+            #button {
+                color: var(--or-console-widget-pushbutton-color, black);
+                background-color: var(--or-console-widget-pushbutton-background-color, lightgrey);
+                font-size: var(--or-console-widget-pushbutton-font-size, 10px);
+                --paper-button: {
+                    min-width: 0;
+                }
+            }
+        </style>
+
         <paper-button id="button"
                       class="control"
                       raised$="[[isTrue(widgetProperties.raised)]]"

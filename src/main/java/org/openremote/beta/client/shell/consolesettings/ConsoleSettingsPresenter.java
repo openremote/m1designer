@@ -2,9 +2,9 @@ package org.openremote.beta.client.shell.consolesettings;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.beta.client.console.ConsoleEditModeEvent;
-import org.openremote.beta.client.console.ConsoleMaximizeEvent;
-import org.openremote.beta.client.console.ConsoleZoomEvent;
+import org.openremote.beta.client.event.ConsoleEditModeEvent;
+import org.openremote.beta.client.event.ShellCloseEvent;
+import org.openremote.beta.client.event.ConsoleZoomEvent;
 import org.openremote.beta.client.shared.AbstractPresenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +20,14 @@ public class ConsoleSettingsPresenter extends AbstractPresenter {
     }
 
     public void switchEditMode(boolean editMode) {
-        dispatchEvent(new ConsoleEditModeEvent(editMode));
+        dispatch(new ConsoleEditModeEvent(editMode));
     }
 
     public void zoom(double factor) {
-        dispatchEvent(new ConsoleZoomEvent(factor));
+        dispatch(new ConsoleZoomEvent(factor));
     }
     
     public void exit() {
-        dispatchEvent(new ConsoleMaximizeEvent());
+        dispatch(new ShellCloseEvent());
     }
 }

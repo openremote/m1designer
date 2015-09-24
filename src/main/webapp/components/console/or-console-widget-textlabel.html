@@ -1,21 +1,22 @@
 <link rel="import" href="or-console-widget-behaviors.html">
 
+<link rel="import" href="../../styles/console-widget-style.html">
+
 <dom-module id="or-console-widget-textlabel">
-
-    <link rel="import" type="css" href="../../styles/console-widget-style.css">
-
-    <style>
-        :host {
-            display: block;
-            position: absolute;
-        }
-
-        #text {
-            color: var(--or-console-widget-textlabel-color, grey);
-            font-size: var(--or-console-widget-textlabel-font-size, 10px);
-        }
-    </style>
     <template>
+        <style include="console-widget-style"></style>
+        <style>
+            :host {
+                display: block;
+                position: absolute;
+            }
+
+            #text {
+                color: var(--or-console-widget-textlabel-color, grey);
+                font-size: var(--or-console-widget-textlabel-font-size, 10px);
+            }
+        </style>
+
         <div id="text">
             <template is="dom-if" if="[[!isEmpty(widgetProperties.text)]]">
                 <span>[[widgetProperties.text]]</span>

@@ -22,21 +22,21 @@ public class EventSessionPresenter extends SessionPresenter {
     public EventSessionPresenter(com.google.gwt.dom.client.Element view) {
         super(view, getWebSocketUrl("events"));
 
-        addEventListener(SessionClosedCleanEvent.class, event -> {
+        addListener(SessionClosedCleanEvent.class, event -> {
             // We want to stay connected indefinitely, even if the server
             // drops the connection clean after maxIdleTime
-            dispatchEvent(new SessionConnectEvent());
+            dispatch(new SessionConnectEvent());
         });
 
-        addEventListener(EventSessionConnectEvent.class, event -> {
-            dispatchEvent(new SessionConnectEvent());
+        addListener(EventSessionConnectEvent.class, event -> {
+            dispatch(new SessionConnectEvent());
         });
 
-        addEventListener(MessageSendEvent.class, event -> {
-            dispatchEvent(false, new ServerSendEvent(event.getMessage()));
+        addListener(MessageSendEvent.class, event -> {
+            dispatch(new ServerSendEvent(event.getMessage()));
         });
 
-        addEventListener(ServerSendEvent.class, event -> {
+        addListener(ServerSendEvent.class, event -> {
             sendData(EVENT_CODEC.encode(event.getEvent()).toString());
         });
     }
@@ -46,9 +46,9 @@ public class EventSessionPresenter extends SessionPresenter {
         Event event = EVENT_CODEC.decode(data);
         if (event.getType().equals(Event.getType(Message.class))) {
             Message message = (Message) event;
-            dispatchEvent(new MessageReceivedEvent(message));
+            dispatch(new MessageReceivedEvent(message));
         } else {
-            dispatchEvent(new ServerReceivedEvent(event));
+            dispatch(event);
         }
     }
 }
