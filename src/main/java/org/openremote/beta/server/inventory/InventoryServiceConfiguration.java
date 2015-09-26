@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.openremote.beta.shared.Constants.REST_SERVICE_CONTEXT_PATH;
+import static org.openremote.beta.server.util.UrlUtil.url;
 
 public class InventoryServiceConfiguration implements Configuration {
 
@@ -26,25 +28,39 @@ public class InventoryServiceConfiguration implements Configuration {
                 .bean(getContext().hasService(InventoryService.class), "getClientPresets")
                 .endRest()
 
-                .put("{name}")
+                .get("{id}")
+                .route().id("GET client preset by ID")
+                .bean(getContext().hasService(InventoryService.class), "getClientPreset")
+                .to("direct:restStatusNotFound")
+                .endRest()
+
+                .post()
                 .consumes("application/json")
                 .type(ClientPreset.class)
-                .route().id("PUT client preset by name")
+                .route().id("POST new client preset")
                 .process(exchange -> {
                     ClientPreset clientPreset = exchange.getIn().getBody(ClientPreset.class);
-                    try {
-                        boolean found = getContext().hasService(InventoryService.class).putClientPreset(clientPreset);
-                        if (!found) {
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 404);
-                            return;
-                        }
-                    } catch (Exception ex) {
-                        LOG.info("Error putting client preset '" + clientPreset.getName() + "'", ex);
-                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
-                        return;
-                    }
-                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
+                    Long id = getContext().hasService(InventoryService.class).postClientPreset(clientPreset);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
+                    exchange.getOut().setHeader("Location", url(exchange, REST_SERVICE_CONTEXT_PATH, "inventory", "preset", id.toString()));
                 })
+                .endRest()
+
+                .put("{id}")
+                .consumes("application/json")
+                .type(ClientPreset.class)
+                .route().id("PUT client preset by ID")
+                .process(exchange -> {
+                    Long id = exchange.getIn().getHeader("id", Long.class);
+                    ClientPreset clientPreset = exchange.getIn().getBody(ClientPreset.class);
+                    boolean found = getContext().hasService(InventoryService.class).putClientPreset(id, clientPreset);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, found ? 204 : 404);
+                })
+                .endRest()
+
+                .delete("{id}")
+                .route().id("DELETE client preset by ID")
+                .bean(getContext().hasService(InventoryService.class), "deleteClientPreset")
                 .endRest();
         }
     }

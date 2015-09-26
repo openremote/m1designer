@@ -11,17 +11,7 @@
     </root>
 
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
-    <logger name="org.openremote.beta" level="INFO"/>
-    <logger name="org.openremote.beta.server" level="INFO"/>
-    <logger name="org.openremote.beta.server.ServerCamelContext" level="INFO"/>
-    <logger name="org.openremote.beta.server.web" level="DEBUG"/>
-    <logger name="org.openremote.beta.server.event" level="DEBUG"/>
-    <logger name="org.openremote.beta.server.flow" level="DEBUG"/>
-    <logger name="org.openremote.beta.server.route" level="DEBUG"/>
-    <logger name="org.openremote.beta.server.catalog" level="DEBUG"/>
-    <logger name="org.openremote.beta.json" level="WARN"/>
-    <logger name="org.openremote.beta.test" level="DEBUG"/>
-
+    <logger name="org.openremote.beta" level="DEBUG"/>
     <logger name="org.apache.camel" level="INFO"/>
     <logger name="org.apache.camel.main" level="WARN"/>
     <logger name="org.apache.camel.impl.converter" level="WARN"/>

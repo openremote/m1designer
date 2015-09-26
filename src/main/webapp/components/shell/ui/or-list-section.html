@@ -1,13 +1,25 @@
+<link rel="import" href="../../shared/or-component-behaviors.html">
+
+<link rel="import" href="or-list-item.html"/>
+
+<link rel="import" href="../../../bower_components/iron-selector/iron-selector.html">
+
 <dom-module id="or-list-section">
     <template>
         <style>
             :host {
+                display: block;
+                margin-bottom: 0.4em;
             }
 
             #label {
                 font-weight: bold;
                 font-size: smaller;
                 color: var(--or-list-section-label-color);
+            }
+
+            :host.selected #label {
+                color: var(--or-list-section-selected-label-color);
             }
 
             #items {
@@ -18,27 +30,51 @@
                 flex-wrap: wrap;
                 -webkit-flex-wrap: wrap;
             }
+
+            #items[stacked] {
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                flex-wrap: nowrap;
+                -webkit-flex-wrap: nowrap;
+            }
         </style>
 
         <template is="dom-if" if="[[label]]">
             <div id="label">[[label]]</div>
         </template>
 
-        <div id="items">
+        <iron-selector id="items"
+                       stacked$="[[stacked]]"
+                       on-iron-activate="onActivate"
+                       selected-class="selected">
             <content select="or-list-item"></content>
-        </div>
+        </iron-selector>
 
     </template>
     <script>
         Polymer({
             is: "or-list-section",
+            behaviors: [openremote.ConfirmableSelectableBehavior],
             properties: {
                 label: {
                     type: String,
                     value: false,
                     notify: true,
                     reflectToAttribute: true
+                },
+                stacked: {
+                    type: Boolean,
+                    value: false
+                },
+                selectedItem: {
+                    type: String,
+                    notify: true,
+                    reflectToAttribute: true
                 }
+            },
+            select: function(index) {
+                this.$.items.select(index);
+                this.set("selectedItem", index);
             }
         });
     </script>

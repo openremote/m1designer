@@ -14,6 +14,7 @@ public class CatalogServiceConfiguration implements Configuration {
     class CatalogServiceRouteBuilder extends RestRouteBuilder {
         @Override
         public void configure() throws Exception {
+            super.configure();
 
             rest("/catalog")
 

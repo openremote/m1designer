@@ -1,5 +1,6 @@
 package org.openremote.beta.server.inventory.discovery;
 
+import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.beta.shared.inventory.Adapter;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
@@ -27,12 +28,15 @@ public class InboxService implements StaticService {
 
     public void addAdapter(Adapter adapter) throws Exception {
         synchronized (adapters) {
+            if (adapter == null) {
+                throw new IllegalArgumentException("Adapter is null");
+            }
             adapterDiscoveryService.updateDiscoveryRoute(adapter, true);
             adapters.add(adapter);
         }
     }
 
-    public void removeAdapter(String id) throws Exception {
+    public void removeAdapter(@Header("adapterId") String id) throws Exception {
         synchronized (adapters) {
             Iterator<Adapter> it = adapters.iterator();
             while (it.hasNext()) {

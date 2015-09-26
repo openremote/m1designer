@@ -11,11 +11,11 @@ import org.openremote.beta.client.shared.session.SessionClosedErrorEvent.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.openremote.beta.shared.Constants.WEBSOCKET_SERVICE_CONTEXT_PATH;
+
 @JsType
 @JsExport
 public abstract class SessionPresenter extends RequestPresenter {
-
-    public static final String WEBSOCKET_CONTEXT_PATH = "ws";
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionPresenter.class);
 
@@ -110,7 +110,7 @@ public abstract class SessionPresenter extends RequestPresenter {
 
     protected static String getWebSocketUrl(String... pathElement) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ws://").append(hostname()).append(":").append(port()).append("/").append(WEBSOCKET_CONTEXT_PATH);
+        sb.append("ws://").append(hostname()).append(":").append(port()).append(WEBSOCKET_SERVICE_CONTEXT_PATH);
         if (pathElement != null) {
             for (String pe : pathElement) {
                 sb.append("/").append(pe);

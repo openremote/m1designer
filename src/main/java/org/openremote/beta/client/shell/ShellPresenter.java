@@ -60,6 +60,10 @@ public class ShellPresenter extends EventSessionPresenter {
         addListener(ConfirmationEvent.class, event-> {
             getViewChildComponent("#confirmationDialog").fire(event.getType(), event);
         });
+
+        addListener(InventoryManagerOpenEvent.class, event -> {
+            getViewComponent().fire(event.getType(), event);
+        });
     }
 
     @Override
@@ -75,7 +79,7 @@ public class ShellPresenter extends EventSessionPresenter {
         loadPresetFlow(clientPresetVariant);
 
         // TODO Dispatch to open shell/editor by default
-        // dispatch(new ShellOpenEvent(null));
+        dispatch(new ShellOpenEvent(null));
     }
 
     protected void loadPresetFlow(ClientPresetVariant clientPresetVariant) {

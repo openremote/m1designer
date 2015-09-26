@@ -32,9 +32,9 @@ public class EventServiceTest extends IntegrationTest {
             public void configure() throws Exception {
 
                 from("direct:sendFlowEvent")
-                    .to(createWebSocketUri("events"));
+                    .to(websocketClientUrl("events"));
 
-                from(createWebSocketUri("events"))
+                from(websocketClientUrl("events"))
                     .to("log:EVENT_RECEIVED: ${body}")
                     .to("mock:eventReceiver");
 
@@ -51,7 +51,7 @@ public class EventServiceTest extends IntegrationTest {
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody(createWebSocketUri("events"), flowDeployEvent);
+        producerTemplate.sendBody(websocketClientUrl("events"), flowDeployEvent);
         mockEventReceiver.assertIsSatisfied();
 
         mockEventReceiver.reset();
@@ -60,7 +60,7 @@ public class EventServiceTest extends IntegrationTest {
             toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
         );
         FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody(createWebSocketUri("events"), flowStopEvent);
+        producerTemplate.sendBody(websocketClientUrl("events"), flowStopEvent);
         mockEventReceiver.assertIsSatisfied();
     }
 

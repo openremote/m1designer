@@ -5,8 +5,50 @@
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 
-<script>
-    document.addEventListener("gwtReadyClient", function () {
+<dom-module id="or-confirmation">
+    <template>
+        <style>
+            #toolbox {
+                position: fixed;
+                z-index: 20;
+                top: 50vh;
+                left: 50vw;
+                width: 30em;
+                height: 12em;
+                margin-left: -15em;
+                margin-top: -6em;
+            }
+
+            .panelContent {
+                text-align: center;
+            }
+
+        </style>
+
+        <or-toolbox id="toolbox"
+                    no-cancel-on-esc-key no-cancel-on-outside-click with-backdrop
+                    hidden>
+
+            <or-text class="toolboxTitle">[[_confirmationTitle]]</or-text>
+
+            <or-panel id="panel" class="toolboxContent">
+
+                <div class="panelContent">[[_confirmationText]]</div>
+
+                <or-button class="panelBottomToolbarItem" icon="close" on-tap="_cancel">Cancel</or-button>
+
+                <template is="dom-if" if="[[_otherAction]]">
+                    <or-button class="panelBottomToolbarItem" icon="done-all" on-tap="_other">[[_otherActionText]]
+                    </or-button>
+                </template>
+
+                <or-button class="panelBottomToolbarItem" icon="check" primary on-tap="_confirm">OK</or-button>
+
+            </or-panel>
+
+        </or-toolbox>
+    </template>
+    <script>
         Polymer({
             is: 'or-confirmation',
             properties: {
@@ -80,51 +122,6 @@
                 this._otherAction = undefined;
             }
         });
-    });
-</script>
-
-<dom-module id="or-confirmation">
-    <template>
-        <style>
-            #toolbox {
-                position: fixed;
-                z-index: 12;
-                top: 50vh;
-                left: 50vw;
-                width: 30em;
-                height: 12em;
-                margin-left: -15em;
-                margin-top: -6em;
-            }
-
-            .panelContent {
-                text-align: center;
-            }
-
-        </style>
-
-        <or-toolbox id="toolbox"
-                    modal
-                    hidden>
-
-            <or-text class="toolboxTitle">[[_confirmationTitle]]</or-text>
-
-            <or-panel id="panel" class="toolboxContent">
-
-                <div class="panelContent">[[_confirmationText]]</div>
-
-                <or-button class="panelBottomToolbarItem" icon="close" on-tap="_cancel">Cancel</or-button>
-
-                <template is="dom-if" if="[[_otherAction]]">
-                    <or-button class="panelBottomToolbarItem" icon="done-all" on-tap="_other">[[_otherActionText]]
-                    </or-button>
-                </template>
-
-                <or-button class="panelBottomToolbarItem" icon="check" primary on-tap="_confirm">OK</or-button>
-
-            </or-panel>
-
-        </or-toolbox>
-    </template>
+    </script>
 </dom-module>
 

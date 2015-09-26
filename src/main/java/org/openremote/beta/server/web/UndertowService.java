@@ -14,6 +14,7 @@ import io.undertow.util.MimeMappings;
 import org.apache.camel.StaticService;
 import org.apache.camel.component.servlet.CamelHttpTransportServlet;
 import org.apache.camel.component.servlet.DefaultHttpRegistry;
+import org.openremote.beta.shared.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,6 @@ import java.io.File;
 public class UndertowService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(UndertowService.class);
-
-    public static final String SERVICE_CONTEXT_PATH = "/svc";
 
     final protected boolean devMode;
     final protected String host;
@@ -62,7 +61,7 @@ public class UndertowService implements StaticService {
     public void start() throws Exception {
         pathHandler = Handlers.path()
             .addPrefixPath("/", getStaticResourceHandler())
-            .addPrefixPath(SERVICE_CONTEXT_PATH, getCamelServletHandler());
+            .addPrefixPath(Constants.REST_SERVICE_CONTEXT_PATH, getCamelServletHandler());
 
         server = Undertow.builder()
             .addHttpListener(port, host)
@@ -110,7 +109,7 @@ public class UndertowService implements StaticService {
 
         DeploymentInfo deploymentInfo = new DeploymentInfo()
             .addServlet(camelServlet)
-            .setContextPath(SERVICE_CONTEXT_PATH)
+            .setContextPath(Constants.REST_SERVICE_CONTEXT_PATH)
             .setDeploymentName("CamelServlet")
             .setClassLoader(WebserverConfiguration.class.getClassLoader());
 

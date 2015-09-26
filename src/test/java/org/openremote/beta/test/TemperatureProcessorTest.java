@@ -35,9 +35,9 @@ public class TemperatureProcessorTest extends IntegrationTest {
             public void configure() throws Exception {
 
                 from("direct:sendEvent")
-                    .to(createWebSocketUri("events"));
+                    .to(websocketClientUrl("events"));
 
-                from(createWebSocketUri("events"))
+                from(websocketClientUrl("events"))
                     .to("log:EVENT_RECEIVED: ${body}")
                     .to("mock:eventReceiver");
             }

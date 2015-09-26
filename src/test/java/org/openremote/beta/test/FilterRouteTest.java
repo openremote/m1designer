@@ -42,9 +42,9 @@ public class FilterRouteTest extends IntegrationTest {
             public void configure() throws Exception {
 
                 from("direct:sendEvent")
-                    .to(createWebSocketUri("events"));
+                    .to(websocketClientUrl("events"));
 
-                from(createWebSocketUri("events"))
+                from(websocketClientUrl("events"))
                     .to("log:EVENT_RECEIVED: ${body}")
                     .to("mock:eventReceiver");
             }
@@ -53,14 +53,14 @@ public class FilterRouteTest extends IntegrationTest {
 
     protected Flow createFlow() throws Exception {
         return fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", "template"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
             Flow.class
         );
     }
 
     protected Node createFilterNode(Flow flow) throws Exception {
         Node filterNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", FilterNodeDescriptor.TYPE), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", FilterNodeDescriptor.TYPE), null, String.class),
             Node.class
         );
 
@@ -73,7 +73,7 @@ public class FilterRouteTest extends IntegrationTest {
 
     protected Node createProducerNode(Node filterNode, Flow flow) throws Exception {
         Node producerNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", Node.TYPE_PRODUCER), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", Node.TYPE_PRODUCER), null, String.class),
             Node.class
         );
 
@@ -87,7 +87,7 @@ public class FilterRouteTest extends IntegrationTest {
 
     protected void startFlow(Flow flow) throws Exception {
         Exchange postFlowExchange = producerTemplate.request(
-            createWebClientUri("flow"),
+            restClientUrl("flow"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flow));

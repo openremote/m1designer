@@ -5,6 +5,7 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.*;
 import io.undertow.websockets.jsr.DefaultContainerConfigurator;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import org.openremote.beta.shared.Constants;
 import org.openremote.beta.server.web.socket.WebsocketAdapter;
 import org.openremote.beta.server.web.socket.WebsocketCORSFilter;
 import org.openremote.beta.server.web.socket.WebsocketComponent;
@@ -20,8 +21,6 @@ import java.util.Map;
 public class UndertowWebsocketComponent extends WebsocketComponent {
 
     private static final Logger LOG = LoggerFactory.getLogger(UndertowWebsocketComponent.class);
-
-    public static final String SERVICE_CONTEXT_PATH = "/ws";
 
     final protected ServletContainer servletContainer = Servlets.defaultContainer();
     protected DeploymentInfo deploymentInfo;
@@ -56,7 +55,7 @@ public class UndertowWebsocketComponent extends WebsocketComponent {
 
         deploymentInfo = new DeploymentInfo()
             .setDeploymentName("WebSocket Deployment")
-            .setContextPath(SERVICE_CONTEXT_PATH)
+            .setContextPath(Constants.WEBSOCKET_SERVICE_CONTEXT_PATH)
             .addServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, websocketDeploymentInfo)
             .setClassLoader(WebsocketComponent.class.getClassLoader());
 
@@ -82,7 +81,7 @@ public class UndertowWebsocketComponent extends WebsocketComponent {
 
         HttpHandler handler = deploymentManager.start();
 
-        getUndertowService().getPathHandler().addPrefixPath(SERVICE_CONTEXT_PATH, handler);
+        getUndertowService().getPathHandler().addPrefixPath(Constants.WEBSOCKET_SERVICE_CONTEXT_PATH, handler);
     }
 
     @Override
@@ -91,7 +90,7 @@ public class UndertowWebsocketComponent extends WebsocketComponent {
             deploymentManager.stop();
             deploymentManager.undeploy();
             servletContainer.removeDeployment(deploymentInfo);
-            getUndertowService().getPathHandler().removePrefixPath(SERVICE_CONTEXT_PATH);
+            getUndertowService().getPathHandler().removePrefixPath(Constants.WEBSOCKET_SERVICE_CONTEXT_PATH);
 
             deploymentInfo = null;
             deploymentManager = null;

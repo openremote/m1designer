@@ -1,13 +1,17 @@
 package org.openremote.beta.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gumi.builders.UrlBuilder;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
-import org.openremote.beta.server.*;
+import org.openremote.beta.server.Configuration;
+import org.openremote.beta.server.Environment;
+import org.openremote.beta.server.Server;
+import org.openremote.beta.server.SystemConfiguration;
 import org.openremote.beta.server.catalog.CatalogServiceConfiguration;
 import org.openremote.beta.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.beta.server.event.EventServiceConfiguration;
@@ -16,20 +20,19 @@ import org.openremote.beta.server.flow.FlowServiceConfiguration;
 import org.openremote.beta.server.inventory.InventoryServiceConfiguration;
 import org.openremote.beta.server.route.RouteManagementServiceConfiguration;
 import org.openremote.beta.server.util.JsonUtil;
-import org.openremote.beta.server.web.UndertowService;
-import org.openremote.beta.server.web.UndertowWebsocketComponent;
 import org.openremote.beta.server.web.WebserverConfiguration;
-import org.openremote.beta.server.web.socket.WebsocketComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.Inet4Address;
 import java.net.ServerSocket;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static org.openremote.beta.server.util.UrlUtil.url;
+import static org.openremote.beta.shared.Constants.REST_SERVICE_CONTEXT_PATH;
+import static org.openremote.beta.shared.Constants.WEBSOCKET_SERVICE_CONTEXT_PATH;
 
 public class IntegrationTest extends CamelTestSupport {
 
@@ -114,32 +117,22 @@ public class IntegrationTest extends CamelTestSupport {
         return serverEphemeralPort;
     }
 
-    protected String createWebClientUri(String... pathSegments) {
-        // Throw exception on failure, don't swallow OUT message with status code > 400
-        return createClientUri(getWebServerScheme(), UndertowService.SERVICE_CONTEXT_PATH, "?throwExceptionOnFailure=false", pathSegments);
+    protected String restClientUrl(String... pathSegments) {
+        return restClientUrlBuilder(pathSegments).toString();
     }
 
-    protected String createWebSocketUri(String... pathSegments) {
-        return createClientUri(getWebSocketScheme(), UndertowWebsocketComponent.SERVICE_CONTEXT_PATH, "", pathSegments);
+    protected UrlBuilder restClientUrlBuilder(String... pathSegments) {
+        return url(getWebServerScheme(), getServerHost(), getServerPort(), REST_SERVICE_CONTEXT_PATH, pathSegments)
+            // Throw exception on failure, don't swallow OUT message with status code > 400
+            .addParameter("throwExceptionOnFailure", "false");
     }
 
-    protected String createClientUri(String scheme, String contextPath, String queryParams, String... pathSegments) {
-        StringBuilder path = new StringBuilder();
-        path.append(contextPath);
-        if (pathSegments != null) {
-            for (String pathSegment : pathSegments) {
-                path
-                    .append(pathSegment.startsWith("/") ? "" : "/")
-                    .append(pathSegment);
-            }
-        }
-        try {
-            URI uri = new URI(scheme, null, getServerHost(), Integer.valueOf(getServerPort()), path.toString(), null, null);
-            System.err.println(uri);
-            return uri.toString() + queryParams;
-        } catch (URISyntaxException ex) {
-            throw new RuntimeException(ex);
-        }
+    protected String websocketClientUrl(String... pathSegments) {
+        return websocketClientUrlBuilder(pathSegments).toString();
+    }
+
+    protected UrlBuilder websocketClientUrlBuilder(String... pathSegments) {
+        return url(getWebSocketScheme(), getServerHost(), getServerPort(), WEBSOCKET_SERVICE_CONTEXT_PATH, pathSegments);
     }
 
     protected <T> T fromJson(String json, Class<T> type) throws Exception {

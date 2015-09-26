@@ -23,4 +23,31 @@
 
     };
 
+    window.openremote.ConfirmableSelectableBehavior = {
+        properties: {
+            confirmSelection: {
+                type: Boolean,
+                value: false
+            }
+        },
+        select: function(index) {
+        },
+        deselect: function() {
+            this.onActivate({detail: {selected: null}})
+        },
+        onActivate: function(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            if (this.confirmSelection) {
+                var event = this.fire("activate", {selected: e.detail.selected});
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+            } else {
+                this.select(e.detail.selected);
+            }
+        }
+    }
+
 </script>

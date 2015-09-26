@@ -15,6 +15,9 @@
                         return new openremote.shell.inventory.InventoryDevicesPresenter(this);
                     }
                 }
+            },
+            _openManager: function() {
+                this._presenter.openManager();
             }
         });
     });
@@ -35,7 +38,7 @@
         </style>
 
         <or-panel>
-            <or-button class="panelTopToolbarItem" icon="build" on-tap="_manageDevices">Manage</or-button>
+            <or-button class="panelTopToolbarItem" icon="build" on-tap="_openManager">Manage</or-button>
             <or-button class="panelTopToolbarItem" icon="filter-list" on-tap="_filterList">Filter</or-button>
 
             <div class="panelContent">

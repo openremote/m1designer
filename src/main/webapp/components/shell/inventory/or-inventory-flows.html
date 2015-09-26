@@ -47,14 +47,6 @@
                 overflow: hidden;
             }
 
-            .flow {
-                background-color: var(--or-flow-item-background-color);
-            }
-
-            .flow .label {
-                color: var(--or-flow-item-label-color);
-            }
-
             .flow .label.unlabeled {
                 font-style: italic;
             }
@@ -71,7 +63,7 @@
                     No flows in inventory.
                 </template>
 
-                <or-list-section>
+                <or-list-section confirm-selection>
                     <template is="dom-repeat" items="[[_presenter.flowItems]]" as="flowItem">
                         <or-list-item
                                 class="flow"

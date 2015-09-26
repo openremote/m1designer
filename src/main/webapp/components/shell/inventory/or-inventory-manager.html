@@ -1,0 +1,67 @@
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-button.html">
+
+<link rel="import" href="or-inventory-manager-client-presets.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/paper-tabs/paper-tab.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory-manager',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryManagerPresenter(this);
+                    }
+                }
+            },
+            open: function () {
+                this.$.toolbox.open();
+            },
+            close: function () {
+                this.$.toolbox.close();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-inventory-manager">
+    <template>
+        <style>
+            #toolbox {
+                top: 2%;
+                left: 2%;
+                width: 96%;
+                height: 96%;
+                z-index: 12;
+            }
+        </style>
+
+        <or-toolbox id="toolbox"
+                    with-backdrop
+                    confirm-selection
+                    selected-tab="2">
+
+            <div class="toolboxTitle flex layout horizontal center">
+                <div class="flex">Inventory</div>
+                <or-button icon="close" on-tap="close">Close</or-button>
+            </div>
+
+            <paper-tab noink>Devices</paper-tab>
+            <paper-tab noink>Assets</paper-tab>
+            <paper-tab noink>Client Presets</paper-tab>
+
+            <div tab-index="0" style="background: red;">TODO</div>
+            <div tab-index="1" style="background: red;">TODO</div>
+            <or-inventory-manager-client-presets tab-index="2"></or-inventory-manager-client-presets>
+
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

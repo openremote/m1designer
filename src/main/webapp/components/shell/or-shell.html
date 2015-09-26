@@ -9,11 +9,13 @@
 <link rel="import" href="ui/or-toast.html">
 
 <link rel="import" href="inventory/or-inventory.html">
+<link rel="import" href="inventory/or-inventory-manager.html">
 <link rel="import" href="flowcontrol/or-flow-control.html">
 <link rel="import" href="floweditor/or-flow-editor.html">
 <link rel="import" href="nodeeditor/or-node-editor.html">
 <link rel="import" href="consolesettings/or-console-settings.html">
 <link rel="import" href="messagelog/or-messagelog.html">
+
 
 <link rel="import" href="../console/or-console.html">
 
@@ -55,7 +57,8 @@
             listeners: {
                 "show-info": "_onShowInfo",
                 "show-failure": "_onShowFailure",
-                "request-complete": "_onShowInfo"
+                "request-complete": "_onShowInfo",
+                "inventory-manager-open": "_onInventoryManagerOpen"
             },
             ready: function () {
                 this.addEventListener("mousemove", this._centerResizeMove.bind(this), false);
@@ -125,6 +128,9 @@
             },
             _onShowFailure: function (e, event) {
                 this.$.toast.show(true, event.text, event.durationMillis);
+            },
+            _onInventoryManagerOpen: function() {
+                this.$$("#inventoryManager").open();
             }
         });
 
@@ -235,6 +241,7 @@
                  class="layout horizontal center">
                 <div id="north1" class="flex layout horizontal center">
                     <or-inventory id="inventory"></or-inventory>
+                    <or-inventory-manager id="inventoryManager"></or-inventory-manager>
                 </div>
                 <div id="north2" class="layout horizontal center">
                     <or-flow-control id="flowControl"

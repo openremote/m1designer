@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import com.google.gwt.http.client.Response;
 import elemental.js.util.JsMapFromStringTo;
 import org.openremote.beta.client.event.*;
 import org.openremote.beta.client.shared.*;
@@ -504,7 +505,7 @@ public class FlowControlPresenter extends RequestPresenter {
                         resource("flow").post().json(FLOW_CODEC.encode(flowToSave)),
                         new RequestPresenter.StatusResponseCallback("Save new flow", 201) {
                             @Override
-                            protected void onResponse() {
+                            protected void onResponse(Response response) {
                                 saveSuccess();
                                 if (success != null)
                                     success.accept(flowToSave);
@@ -521,7 +522,7 @@ public class FlowControlPresenter extends RequestPresenter {
                         resource("flow", flowToSave.getId()).put().json(FLOW_CODEC.encode(flowToSave)),
                         new RequestPresenter.StatusResponseCallback("Save flow", 204) {
                             @Override
-                            protected void onResponse() {
+                            protected void onResponse(Response response) {
                                 saveSuccess();
                                 if (success != null)
                                     success.accept(flowToSave);
@@ -592,7 +593,7 @@ public class FlowControlPresenter extends RequestPresenter {
                                 resource("flow", flowToDelete.getId()).delete(),
                                 new RequestPresenter.StatusResponseCallback("Delete flow", 204) {
                                     @Override
-                                    protected void onResponse() {
+                                    protected void onResponse(Response response) {
                                         deleteSuccess();
                                     }
 
@@ -667,7 +668,7 @@ public class FlowControlPresenter extends RequestPresenter {
         }
 
         protected void dependencyFailure(RequestFailure requestFailure) {
-            if (requestFailure.statusCode == 400) {
+            if (requestFailure.statusCode == 409) {
                 dispatch(new ShowFailureEvent(
                     "Can't create an endless loop between flows.",
                     5000

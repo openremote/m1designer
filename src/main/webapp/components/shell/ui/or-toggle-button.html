@@ -33,6 +33,17 @@
                 --paper-toggle-button-unchecked-ink-color: var(--or-toggle-button-unchecked-color);
             }
 
+            :host[border] #button {
+                --paper-toggle-button-checked-bar: {
+                    box-sizing: border-box;
+                    border: 1px solid var(--or-toggle-button-border-color);
+                };
+                --paper-toggle-button-unchecked-bar: {
+                    box-sizing: border-box;
+                    border: 1px solid var(--or-toggle-button-border-color);
+                };
+            }
+
             #label {
                 border-radius: 0.2em;
                 margin-left: 0.25em;

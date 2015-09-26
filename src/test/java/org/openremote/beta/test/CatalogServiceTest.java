@@ -23,7 +23,7 @@ public class CatalogServiceTest extends IntegrationTest {
     @Test
     public void getItemsCreateNode() throws Exception {
         CatalogItem[] catalogItems = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog"), null, String.class),
             CatalogItem[].class
         );
         assertTrue(catalogItems.length > 0);
@@ -39,7 +39,7 @@ public class CatalogServiceTest extends IntegrationTest {
         assertNotNull(textLabelItem);
 
         Node textLabelNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", textLabelItem.getNodeType()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", textLabelItem.getNodeType()), null, String.class),
             Node.class
         );
 

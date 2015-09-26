@@ -27,6 +27,9 @@ repositories {
     maven {
         url "http://4thline.org/m2"
     }
+    maven {
+        url "http://maven2.gueck.com/releases"
+    }
 }
 
 configurations {
@@ -39,6 +42,7 @@ dependencies {
     serverDependencies "org.slf4j:jcl-over-slf4j:$slf4jVersion"
     serverDependencies "org.slf4j:jul-to-slf4j:$slf4jVersion"
     serverDependencies "ch.qos.logback:logback-classic:$logbackVersion"
+    serverDependencies "mikaelhg:urlbuilder:$urlbuilderVersion"
 
     serverDependencies "io.undertow:undertow-servlet:$undertowVersion"
     serverDependencies "io.undertow:undertow-websockets-jsr:$undertowVersion"

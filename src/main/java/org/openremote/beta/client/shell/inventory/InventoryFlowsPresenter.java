@@ -27,7 +27,7 @@ public class InventoryFlowsPresenter extends RequestPresenter {
 
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
-    public FlowItem[] flowItems;
+    public FlowItem[] flowItems = new FlowItem[0];
 
     public InventoryFlowsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);

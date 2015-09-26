@@ -1,7 +1,6 @@
 <link rel="import" href="../ui/or-panel.html">
 <link rel="import" href="../ui/or-button.html">
-<link rel="import" href="../ui/or-list-section.html">
-<link rel="import" href="../ui/or-list-item.html">
+<link rel="import" href="../ui/or-list.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
@@ -19,25 +18,8 @@
                     }
                 }
             },
-            _itemSelected: function (e) {
-                // Deselecting all others is a bit difficult...
-                var items = this.$.content.querySelectorAll("or-list-item");
-                var deselected = false;
-                for (var i = 0; i < items.length; i++) {
-                    var item = items[i];
-                    if (item == e.currentTarget && item.classList.contains("selected")) {
-                        this.toggleClass("selected", false, item);
-                        deselected = true;
-                    } else {
-                        this.toggleClass("selected", item == e.currentTarget, item);
-                    }
-                }
-
-                if (!deselected) {
-                    this._presenter.itemSelected(e.model.catalogItem);
-                } else {
-                    this._presenter.itemDeselected();
-                }
+            _onItemSelected: function (e) {
+                this._presenter.itemSelected(e.model.catalogItem);
             },
             _itemDragStart: function (e) {
                 e.dataTransfer.setData("nodeType", e.model.catalogItem.nodeType);
@@ -82,7 +64,6 @@
 
             or-list-item.selected {
                 background-color: var(--or-catalog-item-selected-background-color);
-                box-shadow: 1px 1px 7px 0px rgba(50,50,50,0.75);
             }
 
             or-list-item.selected .label {
@@ -99,19 +80,21 @@
                     No elements in inventory.
                 </template>
 
-                <template is="dom-repeat" items="[[_presenter.categorizedItems]]" as="categorizedItem">
-                    <or-list-section label="[[categorizedItem.category.label]]">
-                        <template is="dom-repeat" items="[[categorizedItem.catalogItems]]" as="catalogItem">
-                            <or-list-item
-                                    class$="[[catalogItem.nodeColor]]"
-                                    draggable="true"
-                                    on-dragstart="_itemDragStart"
-                                    on-tap="_itemSelected">
-                                <span class="label">[[catalogItem.label]]</span>
-                            </or-list-item>
-                        </template>
-                    </or-list-section>
-                </template>
+                <or-list>
+                    <template is="dom-repeat" items="[[_presenter.categorizedItems]]" as="categorizedItem">
+                        <or-list-section label="[[categorizedItem.category.label]]">
+                            <template is="dom-repeat" items="[[categorizedItem.catalogItems]]" as="catalogItem">
+                                <or-list-item
+                                        class$="[[catalogItem.nodeColor]]"
+                                        draggable="true"
+                                        on-dragstart="_itemDragStart"
+                                        on-tap="_onItemSelected">
+                                    <span class="label">[[catalogItem.label]]</span>
+                                </or-list-item>
+                            </template>
+                        </or-list-section>
+                    </template>
+                </or-list>
 
             </div>
 

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.openremote.beta.shared.Constants.REST_SERVICE_CONTEXT_PATH;
+import static org.openremote.beta.server.util.UrlUtil.url;
 
 public class DiscoveryServiceConfiguration implements Configuration {
 
@@ -56,24 +58,21 @@ public class DiscoveryServiceConfiguration implements Configuration {
                 .route().id("POST adapter into discovery inbox")
                 .process(exchange -> {
                     Adapter adapter = exchange.getIn().getBody(Adapter.class);
-                    if (adapter == null) {
-                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 400);
-                        return;
-                    }
+
                     getContext().hasService(InboxService.class).addAdapter(adapter);
                     getContext().hasService(InboxService.class).triggerDiscovery(adapter);
                     exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
-                    exchange.getOut().setHeader("Location", "/discovery/inbox/adapter/" + adapter.getId());
+
+                    exchange.getOut().setHeader(
+                        "Location",
+                        url(exchange, REST_SERVICE_CONTEXT_PATH, "discovery", "inbox", "adapter", adapter.getId())
+                    );
                 })
                 .endRest()
 
                 .delete("/adapter/{adapterId}")
                 .route().id("DELETE adapter from discovery inbox")
-                .process(exchange -> {
-                    String adapterId = exchange.getIn().getHeader("adapterId", String.class);
-                    getContext().hasService(InboxService.class).removeAdapter(adapterId);
-                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
-                })
+                .bean(getContext().hasService(InboxService.class), "removeAdapter")
                 .endRest();
         }
     }

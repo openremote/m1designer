@@ -28,7 +28,7 @@ public class FlowServiceTest extends IntegrationTest {
     protected void postFlow(Flow flow) throws Exception {
         flow.clearDependencies();
         Exchange postFlowExchange = producerTemplate.request(
-            createWebClientUri("flow"),
+            restClientUrl("flow"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flow));
@@ -40,7 +40,7 @@ public class FlowServiceTest extends IntegrationTest {
     protected void putFlow(Flow flow) throws Exception {
         flow.clearDependencies();
         Exchange putFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", flow.getId()),
+            restClientUrl("flow", flow.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
                 exchange.getIn().setBody(toJson(flow));
@@ -52,7 +52,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void getFlows() throws Exception {
         Flow[] flows = fromJson(
-            template.requestBody(createWebClientUri("flow"), null, String.class),
+            template.requestBody(restClientUrl("flow"), null, String.class),
             Flow[].class
         );
         assertEquals(flows.length, 3);
@@ -75,7 +75,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void createDeleteFlow() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", "template"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
             Flow.class
         );
         assertNotNull(flow.getId());
@@ -87,7 +87,7 @@ public class FlowServiceTest extends IntegrationTest {
         postFlow(flow);
 
         flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flow.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flow.getId()), null, String.class),
             Flow.class
         );
         assertNotNull(flow.getId());
@@ -98,7 +98,7 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getSubDependencies().length, 0);
 
         Exchange deleteFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", flow.getId()),
+            restClientUrl("flow", flow.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE);
             }
@@ -106,7 +106,7 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(deleteFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
 
         Exchange getFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", flow.getId()),
+            restClientUrl("flow", flow.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.GET);
             }
@@ -117,7 +117,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void readWriteFlow() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
             Flow.class
         );
         assertEquals(flow.getId(), SampleTemperatureProcessor.FLOW.getId());
@@ -128,7 +128,7 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getSubDependencies().length, 0);
 
         flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
         assertEquals(flow.getId(), SampleThermostatControl.FLOW.getId());
@@ -146,7 +146,7 @@ public class FlowServiceTest extends IntegrationTest {
         putFlow(updateFlow);
 
         flow = fromJson(
-            template.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            template.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
         assertEquals(flow.getId(), SampleThermostatControl.FLOW.getId());
@@ -160,7 +160,7 @@ public class FlowServiceTest extends IntegrationTest {
 
         // The label of the subflow nodes in the super flow should be unchanged
         flow = fromJson(
-            template.requestBody(createWebClientUri("flow", SampleEnvironmentWidget.FLOW.getId()), null, String.class),
+            template.requestBody(restClientUrl("flow", SampleEnvironmentWidget.FLOW.getId()), null, String.class),
             Flow.class
         );
         assertEquals(flow.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId()).getLabel(), SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getLabel());
@@ -176,7 +176,7 @@ public class FlowServiceTest extends IntegrationTest {
         Node node = SampleTemperatureProcessor.FAHRENHEIT_CONVERTER;
 
         Exchange duplicateNodeExchange = producerTemplate.request(
-            createWebClientUri("flow", "duplicate", "node"),
+            restClientUrl("flow", "duplicate", "node"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(node));
@@ -201,7 +201,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void createSubflowNode() throws Exception {
         Node subflowNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId(), "subflow"), null, String.class),
             Node.class
         );
         assertNotNull(subflowNode.getId());
@@ -230,14 +230,14 @@ public class FlowServiceTest extends IntegrationTest {
         Flow flow = new Flow("Test Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
 
         Node subflowNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         flow.addNode(subflowNode);
 
         Exchange resolveFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flow));
@@ -255,7 +255,7 @@ public class FlowServiceTest extends IntegrationTest {
 
         // Again but hydrate sub dependencies
         resolveFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setHeader("hydrateSubs", true);
@@ -271,7 +271,7 @@ public class FlowServiceTest extends IntegrationTest {
         // Now attach a wire to test hard super-dependencies
 
         Node textLabelNode = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", TextLabelNodeDescriptor.TYPE), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", TextLabelNodeDescriptor.TYPE), null, String.class),
             Node.class
         );
         flow.addNode(textLabelNode);
@@ -284,7 +284,7 @@ public class FlowServiceTest extends IntegrationTest {
         // This guy should now have a new hard super-dependency
         Flow sampleThermostatControl = SampleThermostatControl.getCopy();
         resolveFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(sampleThermostatControl));
@@ -305,7 +305,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void readWriteDependenciesRemoveFlow() throws Exception {
         Exchange deleteFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()),
+            restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.DELETE);
             }
@@ -314,7 +314,7 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(deleteFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
 
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -329,7 +329,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void readWriteDependenciesRemoveConsumer() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -342,7 +342,7 @@ public class FlowServiceTest extends IntegrationTest {
         putFlow(updateFlow);
 
         flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -358,7 +358,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void readWriteDependenciesRenameConsumer() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -371,7 +371,7 @@ public class FlowServiceTest extends IntegrationTest {
         putFlow(updateFlow);
 
         flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -388,14 +388,14 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void readWriteDependenciesAddConsumer() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
             Flow.class
         );
 
         final Flow updateFlow = flow;
 
         Node newConsumer = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", Node.TYPE_CONSUMER), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", Node.TYPE_CONSUMER), null, String.class),
             Node.class
         );
         newConsumer.setLabel("New Consumer");
@@ -404,7 +404,7 @@ public class FlowServiceTest extends IntegrationTest {
         putFlow(updateFlow);
 
         flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
             Flow.class
         );
 
@@ -425,20 +425,20 @@ public class FlowServiceTest extends IntegrationTest {
         postFlow(flowA);
 
         Node subflowNodeA = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowA.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowA.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         flowA.addNode(subflowNodeA);
 
         Exchange resolveFlowAExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flowA));
             }
         );
-        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 400);
+        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409);
     }
 
     @Test
@@ -451,12 +451,12 @@ public class FlowServiceTest extends IntegrationTest {
         postFlow(flowB);
 
         Node subflowNodeA = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowA.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowA.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         Node subflowNodeB = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowB.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowB.getId(), "subflow"), null, String.class),
             Node.class
         );
 
@@ -466,13 +466,13 @@ public class FlowServiceTest extends IntegrationTest {
         flowB.addNode(subflowNodeA);
 
         Exchange resolveFlowAExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flowB));
             }
         );
-        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 400);
+        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409);
     }
 
     @Test
@@ -485,12 +485,12 @@ public class FlowServiceTest extends IntegrationTest {
         postFlow(flowB);
 
         Node subflowNodeA = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowA.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowA.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         Node subflowNodeB = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowB.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowB.getId(), "subflow"), null, String.class),
             Node.class
         );
 
@@ -501,13 +501,13 @@ public class FlowServiceTest extends IntegrationTest {
 
         flowB.clearDependencies();
         Exchange postFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", flowB.getId()),
+            restClientUrl("flow", flowB.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
                 exchange.getIn().setBody(toJson(flowB));
             }
         );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 400);
+        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409);
     }
 
     @Test
@@ -523,17 +523,17 @@ public class FlowServiceTest extends IntegrationTest {
         postFlow(flowC);
 
         Node subflowNodeA = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowA.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowA.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         Node subflowNodeB = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowB.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowB.getId(), "subflow"), null, String.class),
             Node.class
         );
 
         Node subflowNodeC = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", flowC.getId(), "subflow"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", flowC.getId(), "subflow"), null, String.class),
             Node.class
         );
 
@@ -545,24 +545,24 @@ public class FlowServiceTest extends IntegrationTest {
 
         flowC.addNode(subflowNodeA);
         Exchange resolveFlowAExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flowC));
             }
         );
-        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 400);
+        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409);
         flowC.removeNode(subflowNodeA);
 
         flowC.addNode(subflowNodeB);
         resolveFlowAExchange = producerTemplate.request(
-            createWebClientUri("flow", "resolve"),
+            restClientUrl("flow", "resolve"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flowC));
             }
         );
-        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 400);
+        assertEquals(resolveFlowAExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 409);
     }
 
 }

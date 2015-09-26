@@ -1,0 +1,194 @@
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-list-section.html">
+<link rel="import" href="../ui/or-list-item.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory-manager-client-presets',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryManagerClientPresetsPresenter(this);
+                    }
+                },
+                hidden: {
+                    type: Boolean,
+                    value: true,
+                    reflectToAttribute: true,
+                    observer: "_onHiddenChanged"
+                }
+            },
+            listeners: {
+                "container-closing": "_onContainerClosing"
+            },
+            observers: [
+                "_onSelectedIndexChanged(_presenter.selectedIndex)",
+                "_onPresetModified(_presenter.clientPreset.*)"
+            ],
+            _onHiddenChanged: function (hidden) {
+                if (hidden) {
+                    this._presenter.close();
+                } else {
+                    this.$.presetList.deselect();
+                    this._presenter.open();
+                }
+            },
+            _onContainerClosing: function (e) {
+                this._presenter.closing(
+                        function () {
+                            this.fire("container-switch", {index: e.detail.opening});
+                        }.bind(this)
+                );
+            },
+            _onSelectedIndexChanged: function (e) {
+                if (this._presenter.selectedIndex) {
+                    this._presenter.selectedIndexChanged();
+                }
+            },
+            _createPreset: function () {
+                this.$.presetList.deselect();
+                this._presenter.create();
+            },
+            _deletePreset: function () {
+                this._presenter.delete();
+            },
+            _savePreset: function () {
+                this._presenter.save();
+            },
+            _onPresetModified: function (e) {
+                if (e.path == "_presenter.clientPresets" || e.path == "_presenter.clientPreset") {
+                    return;
+                }
+                this._presenter.modified();
+            },
+            _onListActivate: function (e) {
+                this._presenter.onListActivate(
+                        e.detail.selected != null ? e.detail.selected : -1,
+                        function () {
+                            this.$.presetListSection.select(e.detail.selected);
+                        }.bind(this)
+                );
+            }
+        })
+    });
+</script>
+
+<dom-module id="or-inventory-manager-client-presets">
+    <template>
+        <style>
+            :host {
+                flex: auto;
+                -webkit-flex: auto;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                overflow: hidden;
+            }
+
+            .panelContent {
+                padding: 0;
+                overflow: hidden;
+                background: red;
+            }
+
+            #presetList {
+                width: 20em;
+            }
+
+        </style>
+
+        <or-panel>
+
+            <or-button class="panelTopToolbarItem"
+                       disabled$="[[!_presenter.dirty]]"
+                       icon="save"
+                       on-tap="_savePreset">Save
+            </or-button>
+
+            <or-button class="panelTopToolbarItem"
+                       disabled$="[[!_presenter.resourceLocation]]"
+                       icon="delete"
+                       on-tap="_deletePreset">Remove
+            </or-button>
+
+            <or-button class="panelTopToolbarItem"
+                       icon="add-box"
+                       on-tap="_createPreset">New
+            </or-button>
+
+            <template is="dom-if" if="{{!_presenter.clientPresets.length}}">
+                <div id="presetList" class="panelSidebar">
+                    No client presets found.
+                </div>
+            </template>
+
+            <or-list id="presetList" class="panelSidebar">
+                <or-list-section id="presetListSection"
+                                 stacked
+                                 confirm-selection
+                                 on-activate="_onListActivate">
+                    <template is="dom-repeat" items="[[_presenter.clientPresets]]" as="clientPreset">
+                        <or-list-item>[[clientPreset.name]]</or-list-item>
+                    </template>
+                </or-list-section>
+            </or-list>
+
+            <div class="panelContent">
+
+                <template is="dom-if" if="[[_presenter.clientPreset]]">
+
+                    <div class="layout horizontal center">
+                        <or-input class="flex"
+                                  label="Unique Preset Name"
+                                  value="{{_presenter.clientPreset.name}}"></or-input>
+                    </div>
+                    <div class="layout horizontal center">
+                        <or-input class="flex"
+                                  label="User Agent Like (matches substring case-insensitive)"
+                                  value="{{_presenter.clientPreset.agentLike}}"></or-input>
+                    </div>
+
+                    <div class="layout horizontal center">
+                        <or-input class="flex"
+                                  label="Minimum Screen Width (Pixels)"
+                                  preventInvalidInput="true"
+                                  type="number" min="0" max="5000"
+                                  value="{{_presenter.clientPreset.minWidth}}"></or-input>
+                        <div style="width:1em"></div>
+                        <or-input class="flex"
+                                  label="Maximum Screen Width (Pixels)"
+                                  preventInvalidInput="true"
+                                  type="number" min="0" max="5000"
+                                  value="{{_presenter.clientPreset.maxWidth}}"></or-input>
+                    </div>
+
+                    <div class="layout horizontal center">
+                        <or-input class="flex"
+                                  label="Minimum Screen Height (Pixels)"
+                                  preventInvalidInput="true"
+                                  type="number" min="0" max="5000"
+                                  value="{{_presenter.clientPreset.minHeight}}"></or-input>
+                        <div style="width:1em"></div>
+                        <or-input class="flex"
+                                  label="Maximum Screen Height (Pixels)"
+                                  preventInvalidInput="true"
+                                  type="number" min="0" max="5000"
+                                  value="{{_presenter.clientPreset.maxHeight}}"></or-input>
+                    </div>
+
+                </template>
+            </div>
+        </or-panel>
+
+    </template>
+</dom-module>
+

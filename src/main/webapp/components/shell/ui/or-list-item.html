@@ -4,7 +4,7 @@
             :host {
                 display: inline-block;
                 margin: 0.2em;
-                padding: 0.2em 0.4em;
+                padding: 0.4em;
                 border-radius: 0.4em;
                 cursor: pointer;
                 background-color: var(--or-list-item-background-color);
@@ -16,9 +16,15 @@
                 background-color: #888 !important;
             }
 
+            :host.selected {
+                background-color: var(--or-list-item-selected-background-color);
+                color: var(--or-list-item-selected-color);
+                box-shadow: 1px 1px 2px 0px rgba(50,50,50,0.75);
+            }
+
             #container {
-                font-size: smaller;
-                font-weight: bold;
+                font-size: 0.9em;
+                font-weight: 500;
                 white-space: nowrap;
             }
 

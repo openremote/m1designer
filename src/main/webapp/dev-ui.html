@@ -16,6 +16,8 @@
     <link rel="import" href="bower_components/iron-icons/iron-icons.html"/>
     <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
 
+    <link rel="import" href="components/shell/ui/or-confirmation.html"/>
+    <link rel="import" href="components/shell/ui/or-text.html"/>
     <link rel="import" href="components/shell/ui/or-toolbox.html"/>
     <link rel="import" href="components/shell/ui/or-tab-content.html"/>
     <link rel="import" href="components/shell/ui/or-panel.html"/>
@@ -23,8 +25,7 @@
     <link rel="import" href="components/shell/ui/or-toggle-button.html"/>
     <link rel="import" href="components/shell/ui/or-menu.html"/>
     <link rel="import" href="components/shell/ui/or-input.html"/>
-    <link rel="import" href="components/shell/ui/or-list-section.html"/>
-    <link rel="import" href="components/shell/ui/or-list-item.html"/>
+    <link rel="import" href="components/shell/ui/or-list.html"/>
 
     <link rel="import" href="styles/shell-style.html"/>
 
@@ -44,7 +45,7 @@
         #testbox {
             top: 4em;
             left: 4em;
-            width: 50vw;
+            width: 70vw;
             max-height: 70vh;
         }
 
@@ -65,6 +66,14 @@
     window.addEventListener('WebComponentsReady', function (e) {
         document.body.querySelector('#testbox').open();
     });
+
+    function openConfirmation() {
+        var confirmationDialog = document.body.querySelector('#testconfirmation');
+        confirmationDialog.fire("confirmation", {
+            title: "Test Confirmation",
+            text: "This is a test confirmation dialog."
+        });
+    }
 </script>
 
 <div id="mainToolbar">
@@ -76,6 +85,8 @@
     <or-button icon="code" onclick="document.body.querySelector('#testpanel').scrollToBottom();">Scroll</or-button>
 
     <or-toggle-button checked>Toggle</or-toggle-button>
+
+    <or-button icon="check" onclick="openConfirmation();">Confirm</or-button>
 
     <or-button>No Icon</or-button>
 
@@ -100,13 +111,19 @@
 
 </div>
 
-<or-toolbox id="testbox" selected-tab="2" nocancel>
+<or-confirmation id="testconfirmation"></or-confirmation>
 
-    <or-text class="toolboxTitle">This is a toolbox title</or-text>
+<or-toolbox id="testbox" selected-tab="2" no-cancel-on-esc-key no-cancel-on-outside-click>
 
-    <paper-tab>One</paper-tab>
-    <paper-tab>Two</paper-tab>
-    <paper-tab>Three</paper-tab>
+    <div class="toolboxTitle flex layout horizontal center">
+        <or-text class="flex">This is a toolbox title</or-text>
+        <or-toggle-button border checked>Foo</or-toggle-button>
+        <or-button icon="close">Bar</or-button>
+    </div>
+
+    <paper-tab noink>One</paper-tab>
+    <paper-tab noink>Two</paper-tab>
+    <paper-tab noink>Three</paper-tab>
 
     <div tab-index="0">
         ONE
@@ -142,6 +159,45 @@
             <or-menu-item icon="delete">Foo</or-menu-item>
         </or-menu>
 
+        <or-list class="panelSidebar" style="width: 20em;">
+
+            <or-list-section label="Sidebar: Wrapped List Section">
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+            </or-list-section>
+
+            <or-list-section label="Sidebar: Stacked List Section" stacked>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+                <or-list-item>Third Item</or-list-item>
+                <or-list-item>Some Item</or-list-item>
+                <or-list-item>Other Item</or-list-item>
+            </or-list-section>
+        </or-list>
+
         <div class="panelContent">
 
             <div class="layout horizontal center">
@@ -160,15 +216,15 @@
             </div>
 
             <div class="layout horizontal center">
-                            <or-menu class="flex"
-                                     label="Single Select"
-                                     icon="menu"
-                                     selectable-value
-                                     selected="This is option two">
-                                <or-menu-item value="This is option one">Foo with a long title</or-menu-item>
-                                <or-menu-item value="This is option two">Bar</or-menu-item>
-                                <or-menu-item value="This is option three">Baz</or-menu-item>
-                            </or-menu>
+                <or-menu class="flex"
+                         label="Single Select"
+                         icon="menu"
+                         selectable-value
+                         selected="This is option two">
+                    <or-menu-item value="This is option one">Foo with a long title</or-menu-item>
+                    <or-menu-item value="This is option two">Bar</or-menu-item>
+                    <or-menu-item value="This is option three">Baz</or-menu-item>
+                </or-menu>
                 <or-menu class="flex"
                          label="Another disabled menu"
                          disabled
@@ -184,54 +240,26 @@
                 <or-button class="flex">Another button without icon</or-button>
             </div>
 
-            <or-list-section label="Some List Section">
-                <or-list-item>Some Item</or-list-item>
-                <or-list-item>Other Item</or-list-item>
-                <or-list-item>Third Item</or-list-item>
-                <or-list-item>Some Item</or-list-item>
-                <or-list-item>Other Item</or-list-item>
-                <or-list-item>Third Item</or-list-item>
-                <or-list-item>Some Item</or-list-item>
-                <or-list-item>Other Item</or-list-item>
-                <or-list-item>Third Item</or-list-item>
-                <or-list-item>Some Item</or-list-item>
-                <or-list-item>Other Item</or-list-item>
-                <or-list-item>Third Item</or-list-item>
-                <or-list-item>Some Item</or-list-item>
-                <or-list-item>Other Item</or-list-item>
-                <or-list-item>Third Item</or-list-item>
-            </or-list-section>
-
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
-            <div>Dialog Content</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
+            <div>More panel content...</div>
 
         </div>
 

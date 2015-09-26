@@ -48,12 +48,12 @@
         </or-button>
 
         <or-toolbox id="toolbox"
-                    nocancel
-                    selected-tab="1">
+                    no-cancel-on-esc-key no-cancel-on-outside-click
+                    selected-tab="0">
 
-            <paper-tab>DEVICES</paper-tab>
-            <paper-tab>FLOWS</paper-tab>
-            <paper-tab>ELEMENTS</paper-tab>
+            <paper-tab noink>Devices</paper-tab>
+            <paper-tab noink>Flows</paper-tab>
+            <paper-tab noink>Elements</paper-tab>
 
             <or-inventory-devices id="devices" tab-index="0"></or-inventory-devices>
             <or-inventory-flows id="flows" tab-index="1"></or-inventory-flows>

@@ -1,9 +1,13 @@
 package org.openremote.beta.shared.inventory;
 
+import com.google.gwt.core.client.js.JsType;
+
 import java.util.Locale;
 
+@JsType
 public class ClientPreset {
 
+    public Long id;
     public String name;
     public String agentLike;
     public int minWidth;
@@ -12,21 +16,31 @@ public class ClientPreset {
     public int maxHeight;
     public String initialFlowId;
 
-    protected ClientPreset() {
+    public ClientPreset() {
     }
 
-    public ClientPreset(String name, String agentLike) {
+    public ClientPreset(Long id, String name, String agentLike) {
+        this.id = id;
         this.name = name;
         this.agentLike = agentLike;
     }
 
-    public ClientPreset(String name, String agentLike, int minWidth, int maxWidth, int minHeight, int maxHeight) {
+    public ClientPreset(Long id, String name, String agentLike, int minWidth, int maxWidth, int minHeight, int maxHeight) {
+        this.id = id;
         this.name = name;
         this.agentLike = agentLike;
         this.minWidth = minWidth;
         this.maxWidth = maxWidth;
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

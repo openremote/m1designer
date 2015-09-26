@@ -40,9 +40,9 @@ public class RoutingTest extends IntegrationTest {
             public void configure() throws Exception {
 
                 from("direct:sendEvent")
-                    .to(createWebSocketUri("events"));
+                    .to(websocketClientUrl("events"));
 
-                from(createWebSocketUri("events"))
+                from(websocketClientUrl("events"))
                     .to("log:EVENT_RECEIVED: ${body}")
                     .to("mock:eventReceiver");
             }
@@ -52,7 +52,7 @@ public class RoutingTest extends IntegrationTest {
     protected void postFlow(Flow flow) throws Exception {
         flow.clearDependencies();
         Exchange postFlowExchange = producerTemplate.request(
-            createWebClientUri("flow"),
+            restClientUrl("flow"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
                 exchange.getIn().setBody(toJson(flow));
@@ -64,7 +64,7 @@ public class RoutingTest extends IntegrationTest {
     protected void putFlow(Flow flow) throws Exception {
         flow.clearDependencies();
         Exchange putFlowExchange = producerTemplate.request(
-            createWebClientUri("flow", flow.getId()),
+            restClientUrl("flow", flow.getId()),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
                 exchange.getIn().setBody(toJson(flow));
@@ -76,26 +76,26 @@ public class RoutingTest extends IntegrationTest {
     @Test
     public void serverSideLoop() throws Exception {
         Flow flow = fromJson(
-            producerTemplate.requestBody(createWebClientUri("flow", "template"), null, String.class),
+            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
             Flow.class
         );
 
         Node nodeA = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
             Node.class
         );
         nodeA.setLabel("TestNodeA");
         nodeA.setClientAccess(true);
 
         Node nodeB = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
             Node.class
         );
         nodeB.setLabel("TestNodeB");
         nodeB.setClientAccess(true);
 
         Node nodeC = fromJson(
-            producerTemplate.requestBody(createWebClientUri("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
+            producerTemplate.requestBody(restClientUrl("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
             Node.class
         );
         nodeC.setLabel("TestNodeC");

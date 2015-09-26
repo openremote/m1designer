@@ -3,6 +3,7 @@ package org.openremote.beta.server.flow;
 import org.apache.camel.CamelContext;
 import org.openremote.beta.server.Configuration;
 import org.openremote.beta.server.Environment;
+import org.openremote.beta.server.route.procedure.FlowProcedureException;
 import org.openremote.beta.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.beta.server.inventory.InventoryService;
 import org.openremote.beta.server.route.RouteManagementService;
@@ -20,6 +21,7 @@ public class FlowServiceConfiguration implements Configuration {
     class FlowServiceRouteBuilder extends RestRouteBuilder {
         @Override
         public void configure() throws Exception {
+            super.configure();
 
             rest("/flow")
 
@@ -65,17 +67,12 @@ public class FlowServiceConfiguration implements Configuration {
                 .route().id("POST node to duplicate")
                 .process(exchange -> {
                     Node node = exchange.getIn().getBody(Node.class);
-                    try {
-                        if (node != null) {
-                            getContext().hasService(FlowService.class).resetCopy(node);
-                            exchange.getOut().setBody(node);
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
-                        } else {
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
-                        }
-                    } catch (Exception ex) {
-                        LOG.info("Error duplicating node '" + node + "'", ex);
-                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
+                    if (node != null) {
+                        getContext().hasService(FlowService.class).resetCopy(node);
+                        exchange.getOut().setBody(node);
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
+                    } else {
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
                     }
                 })
                 .endRest()
@@ -86,21 +83,15 @@ public class FlowServiceConfiguration implements Configuration {
                 .route().id("POST flow to resolve its dependencies")
                 .process(exchange -> {
                     Flow flow = exchange.getIn().getBody(Flow.class);
-                    try {
-                        if (flow != null) {
+                    if (flow != null) {
+                        boolean hydrateSubs = exchange.getIn().getHeader("hydrateSubs", false, Boolean.class);
 
-                            boolean hydrateSubs = exchange.getIn().getHeader("hydrateSubs", false, Boolean.class);
-
-                            exchange.getOut().setBody(
-                                getContext().hasService(FlowService.class).getResolvedFlow(flow, hydrateSubs)
-                            );
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
-                        } else {
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
-                        }
-                    } catch (Exception ex) {
-                        LOG.debug("Error resolving dependencies of '" + flow + "'", ex);
-                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 400);
+                        exchange.getOut().setBody(
+                            getContext().hasService(FlowService.class).getResolvedFlow(flow, hydrateSubs)
+                        );
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 200);
+                    } else {
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
                     }
                 })
                 .endRest()
@@ -113,7 +104,7 @@ public class FlowServiceConfiguration implements Configuration {
                         FlowService flowService = getContext().hasService(FlowService.class);
                         flowService.deleteFlow(flowId);
                         exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
-                    } catch (Exception ex) {
+                    } catch (FlowProcedureException ex) {
                         LOG.debug("Error deleting/stopping flow '" + flowId + "'", ex);
                         exchange.getIn().setBody("Error stopping flow '" + flowId + ":" + ex.getMessage());
                         exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 409);
@@ -127,18 +118,8 @@ public class FlowServiceConfiguration implements Configuration {
                 .route().id("PUT flow by ID")
                 .process(exchange -> {
                     Flow flow = exchange.getIn().getBody(Flow.class);
-                    try {
-                        boolean found = getContext().hasService(FlowService.class).putFlow(flow);
-                        if (!found) {
-                            exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 404);
-                            return;
-                        }
-                    } catch (Exception ex) {
-                        LOG.info("Error putting flow '" + flow.getId() + "'", ex);
-                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 400);
-                        return;
-                    }
-                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
+                    boolean found = getContext().hasService(FlowService.class).putFlow(flow);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, found ? 204 : 404);
                 })
                 .endRest();
         }

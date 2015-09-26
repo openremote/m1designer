@@ -5,6 +5,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import org.openremote.beta.client.event.ConfirmationEvent;
 import org.openremote.beta.shared.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ public abstract class AbstractPresenter {
 
     final protected Element view;
     final protected List<EventRegistration> eventRegistrations = new ArrayList<>();
+
+    public boolean dirty;
 
     public AbstractPresenter(com.google.gwt.dom.client.Element gwtView) {
         this.view = gwtView.cast(); // TODO No idea why this is necessary, without this we can only use superdevmode...
@@ -95,7 +98,7 @@ public abstract class AbstractPresenter {
         return this.@AbstractPresenter::view.notifyPath("_presenter." + path, null);
     }-*/;
 
-    // TODO: This is dangerous, not sure if that always works, sometimes Polymer uses this value
+    // TODO: This is dangerous, if the path is a JS Object you must access one of its keys to get the real value!
     protected native boolean notifyPath(String path) /*-{
         return this.@AbstractPresenter::view.notifyPath("_presenter." + path, Math.random()); // Always trigger an update inside Polymer!
     }-*/;
@@ -159,6 +162,39 @@ public abstract class AbstractPresenter {
 
     protected String getWindowQueryArgument(String parameter) {
         return JsUtil.getQueryArgument(parameter);
+    }
+
+    protected void setDirty(boolean dirty) {
+        this.dirty = dirty;
+        notifyPath("dirty", dirty);
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    protected void confirmIfDirty(Callback confirmAction) {
+        confirmIfDirty(confirmAction, null);
+    }
+
+    protected void confirmIfDirty(Callback confirmAction, Callback cancelAction) {
+        if (dirty) {
+            dispatchDirtyConfirmation(() -> {
+                setDirty(false);
+                confirmAction.call();
+            }, cancelAction);
+        } else {
+            confirmAction.call();
+        }
+    }
+
+    protected void dispatchDirtyConfirmation(Callback confirmAction, Callback cancelAction) {
+        dispatch(new ConfirmationEvent(
+            "Unsaved Changes",
+            "You have not saved your modifications. Continue without saving?",
+            confirmAction,
+            cancelAction
+        ));
     }
 
 }

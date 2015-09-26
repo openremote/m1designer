@@ -61,10 +61,6 @@ public class InventoryCatalogPresenter extends RequestPresenter {
         dispatch(new ShowInfoEvent("TODO: Implement help display for selected: " + item));
     }
 
-    public void itemDeselected() {
-        // TODO
-    }
-
     protected CategorizedCatalogItem[] createCategorizedItems(List<CatalogItem> items) {
         List<CategorizedCatalogItem> list = new ArrayList<>();
         for (CatalogItem item : items) {

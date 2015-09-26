@@ -8,6 +8,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http.HttpHeaderFilterStrategy;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.openremote.beta.server.Configuration;
+import org.openremote.beta.shared.Constants;
 import org.openremote.beta.server.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.openremote.beta.server.Environment.DEV_MODE;
 import static org.openremote.beta.server.Environment.DEV_MODE_DEFAULT;
+import static org.openremote.beta.server.util.UrlUtil.url;
 
 public class WebserverConfiguration implements Configuration {
 
@@ -52,7 +54,7 @@ public class WebserverConfiguration implements Configuration {
 
                     .component("servlet")
 
-                    .contextPath(UndertowService.SERVICE_CONTEXT_PATH).port(port)
+                    .contextPath(Constants.REST_SERVICE_CONTEXT_PATH).port(port)
 
                     .enableCORS(true)
                     .corsHeaderProperty(
@@ -78,6 +80,14 @@ public class WebserverConfiguration implements Configuration {
             onException(JsonProcessingException.class)
                 .process(new JsonProcessingExceptionHandler())
                 .handled(true);
+
+            onException(IllegalStateException.class)
+                .process(new ConflictExceptionHandler())
+                .handled(true);
+
+            onException(IllegalArgumentException.class)
+                .process(new BadRequestExceptionHandler())
+                .handled(true);
         }
     }
 
@@ -93,6 +103,30 @@ public class WebserverConfiguration implements Configuration {
             exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
             exchange.getContext().createProducerTemplate()
                 .send("log:org.openremote.beta.json?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+        }
+    }
+
+    /**
+     * This handles conflicts/409 responses (unique key violations, concurrent modifications, etc.)
+     */
+    public static class ConflictExceptionHandler implements Processor {
+        @Override
+        public void process(Exchange exchange) throws Exception {
+            exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 409);
+            exchange.getContext().createProducerTemplate()
+                .send("log:org.openremote.beta.conflict?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+        }
+    }
+
+    /**
+     * This handles bad request/400 responses (model validation errors, etc.)
+     */
+    public static class BadRequestExceptionHandler implements Processor {
+        @Override
+        public void process(Exchange exchange) throws Exception {
+            exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+            exchange.getContext().createProducerTemplate()
+                .send("log:org.openremote.beta.badrequest?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
         }
     }
 

@@ -1,0 +1,55 @@
+<link rel="import" href="../../shared/or-component-behaviors.html">
+
+<link rel="import" href="or-list-section.html"/>
+
+<dom-module id="or-list">
+    <template>
+        <style>
+            :host, #sections {
+                display: block;
+            }
+
+            #sections ::content > :last-child {
+                margin: 0;
+            }
+        </style>
+
+        <iron-selector id="sections"
+                       on-iron-activate="onActivate"
+                       selected-class="selected">
+            <content select="or-list-section"></content>
+        </iron-selector>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-list",
+            behaviors: [openremote.ConfirmableSelectableBehavior],
+            properties: {
+                selectedSection: {
+                    type: String,
+                    notify: true,
+                    reflectToAttribute: true
+                }
+            },
+            listeners: {
+                "activate": "_onActivate"
+            },
+            select: function(index) {
+                this.$.sections.select(index);
+                this.set("selectedSection", index);
+
+                var sections = this.$.sections.items;
+                for (var i = 0; i < sections.length; i++) {
+                    var section = sections[i];
+                    if (i != index) {
+                        section.deselect();
+                    }
+                }
+            },
+            _onActivate: function(e) {
+                e.stopPropagation();
+            }
+        });
+    </script>
+</dom-module>

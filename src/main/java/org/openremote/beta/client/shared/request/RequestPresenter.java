@@ -1,8 +1,8 @@
 package org.openremote.beta.client.shared.request;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -19,13 +19,15 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.openremote.beta.shared.Constants.REST_SERVICE_CONTEXT_PATH;
+
 @JsExport
 @JsType
 public abstract class RequestPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestPresenter.class);
 
-    public static final String SERVICE_CONTEXT_PATH = "svc/";
+    public String resourceLocation;
 
     public RequestPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -108,13 +110,13 @@ public abstract class RequestPresenter extends AbstractPresenter {
                 if (method.getResponse().getStatusCode() != expectedStatusCode) {
                     throw new IllegalArgumentException("Response status code must be " + expectedStatusCode);
                 }
-                onResponse();
+                onResponse(method.getResponse());
             } catch (Exception ex) {
                 onFailure(method, ex);
             }
         }
 
-        protected abstract void onResponse();
+        protected abstract void onResponse(Response response);
     }
 
     protected abstract class ObjectResponseCallback<T> extends ResponseCallback<T> {
@@ -193,14 +195,15 @@ public abstract class RequestPresenter extends AbstractPresenter {
         protected abstract void onResponse(JSONArray arra);
     }
 
-    protected Resource resource(String base, String... pathElement) {
-        Resource resource = new Resource("http://" + hostname() + ":" + port() + "/" + SERVICE_CONTEXT_PATH + base);
+    protected Resource resource(String... pathElement) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://").append(hostname()).append(":").append(port()).append(REST_SERVICE_CONTEXT_PATH);
         if (pathElement != null) {
             for (String pe : pathElement) {
-                resource = resource.resolve(pe);
+                sb.append("/").append(pe);
             }
         }
-        return resource;
+        return new Resource(sb.toString());
     }
 
     protected <T> void sendRequest(Method method, ResponseCallback<T> callback) {
@@ -219,6 +222,19 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
     protected static String port() {
         return Window.Location.getPort();
+    }
+
+    public String getResourceLocation() {
+        return resourceLocation;
+    }
+
+    public void setResourceLocation(String resourceLocation) {
+        this.resourceLocation = resourceLocation;
+        if (resourceLocation != null) {
+            notifyPath("resourceLocation", resourceLocation);
+        } else {
+            notifyPathNull("resourceLocation");
+        }
     }
 
 }
