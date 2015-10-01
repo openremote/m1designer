@@ -1,4 +1,4 @@
-# OR3 Controller/Designer
+# OpenRemote Controller & Web Editor/Console
 
 * Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
 
@@ -12,10 +12,6 @@ Development
 ---
 
 * Install JDK 1.8
-
-* Checkout `or3-zwave` project and follow its build instructions
-
-* Edit `gradle.properties` and set `zwaveProjectDirectory` to path of `or3-zwave` project
 
 * Run GWT super dev mode code-server: `./gradlew gwtSuperDev`
 
@@ -38,7 +34,7 @@ Optimize for production:
 Run production
 ---
 
-    WEBSERVER_DOCUMENT_ROOT='/Users/cb/work/openremote/gh/or3-controller/build/libs/or3-controller-client.jar' \
+    WEBSERVER_DOCUMENT_ROOT='/Users/cb/work/openremote/gh/or-controller/build/libs/or-controller-client.jar' \
     WEBSERVER_ADDRESS=0.0.0.0 \
     WEBSERVER_PORT=8080 \
     DEV_MODE=false \
