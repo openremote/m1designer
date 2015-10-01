@@ -1,0 +1,67 @@
+package org.openremote.test;
+
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.openremote.server.testdata.SampleTemperatureProcessor;
+import org.openremote.shared.event.FlowDeployEvent;
+import org.openremote.shared.event.FlowStatusEvent;
+import org.openremote.shared.event.FlowStopEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.annotations.Test;
+
+import static org.openremote.shared.event.FlowDeploymentPhase.*;
+
+public class EventServiceTest extends IntegrationTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EventServiceTest.class);
+
+    @Produce
+    ProducerTemplate producerTemplate;
+
+    @EndpointInject(uri = "mock:eventReceiver")
+    MockEndpoint mockEventReceiver;
+
+    @Override
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        return new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+
+                from("direct:sendFlowEvent")
+                    .to(websocketClientUrl("events"));
+
+                from(websocketClientUrl("events"))
+                    .to("log:EVENT_RECEIVED: ${body}")
+                    .to("mock:eventReceiver");
+
+            }
+        };
+    }
+
+    @Test
+    public void echo() throws Exception {
+
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceived(
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
+        );
+        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
+        producerTemplate.sendBody(websocketClientUrl("events"), flowDeployEvent);
+        mockEventReceiver.assertIsSatisfied();
+
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceived(
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPING)),
+            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STOPPED))
+        );
+        FlowStopEvent flowStopEvent = new FlowStopEvent(SampleTemperatureProcessor.FLOW.getId());
+        producerTemplate.sendBody(websocketClientUrl("events"), flowStopEvent);
+        mockEventReceiver.assertIsSatisfied();
+    }
+
+}

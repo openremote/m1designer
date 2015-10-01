@@ -30,6 +30,9 @@ repositories {
     maven {
         url "http://maven2.gueck.com/releases"
     }
+    maven {
+        url "http://nexus.seamless.org/content/groups/public/"
+    }
 }
 
 configurations {
@@ -39,6 +42,8 @@ configurations {
 }
 
 dependencies {
+    serverDependencies "org.openremote:or-zwave:3.0-SNAPSHOT"
+
     serverDependencies "org.slf4j:jcl-over-slf4j:$slf4jVersion"
     serverDependencies "org.slf4j:jul-to-slf4j:$slf4jVersion"
     serverDependencies "ch.qos.logback:logback-classic:$logbackVersion"
@@ -56,8 +61,6 @@ dependencies {
     serverDependencies "org.apache.camel:camel-groovy:$camelVersion"
     serverDependencies "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     serverDependencies "org.fourthline.cling:cling-core:$clingVersion"
-
-    serverDependencies fileTree("${zwaveProjectDirectory}/build/libs")
 
     clientDependencies "com.google.gwt:gwt-user:$gwtVersion"
     clientDependencies "com.google.gwt:gwt-elemental:$gwtVersion"
@@ -77,7 +80,7 @@ dependencies {
 }
 
 task serverRun(type: JavaExec, dependsOn: "classes") {
-    main = "org.openremote.beta.server.Server"
+    main = "org.openremote.server.Server"
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -87,7 +90,7 @@ gwt {
     sourceLevel = JavaVersion.VERSION_1_8
     maxHeapSize = "1024M"
 
-    modules("org.openremote.beta.Client")
+    modules("org.openremote.Client")
 
     test {
         hasGwtTests = false
@@ -134,7 +137,7 @@ test {
 }
 
 jar {
-    exclude("org/openremote/beta/client")
+    exclude("org/openremote/client")
     exclude("**/*.gwt.xml")
     archiveName = "${rootProject.name}-server.jar"
 }

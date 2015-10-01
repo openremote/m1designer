@@ -11,7 +11,7 @@
     </root>
 
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
-    <logger name="org.openremote.beta" level="DEBUG"/>
+    <logger name="org.openremote" level="DEBUG"/>
     <logger name="org.apache.camel" level="INFO"/>
     <logger name="org.apache.camel.main" level="WARN"/>
     <logger name="org.apache.camel.impl.converter" level="WARN"/>

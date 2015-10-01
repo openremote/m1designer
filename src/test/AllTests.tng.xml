@@ -1,9 +1,9 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="OpenRemote - Beta - AllTests">
+<suite name="OpenRemote - AllTests">
 
     <test name="All">
         <packages>
-            <package name="org.openremote.beta.test"/>
+            <package name="org.openremote.test"/>
         </packages>
     </test>
 

@@ -1,0 +1,11 @@
+org.openremote.server.SystemConfiguration
+org.openremote.server.web.WebserverConfiguration
+org.openremote.server.catalog.NodeDescriptorConfiguration
+org.openremote.server.catalog.CatalogServiceConfiguration
+org.openremote.server.inventory.InventoryServiceConfiguration
+org.openremote.server.route.RouteManagementServiceConfiguration
+org.openremote.server.flow.FlowServiceConfiguration
+org.openremote.server.event.EventServiceConfiguration
+org.openremote.server.event.WebSocketEventServiceConfiguration
+org.openremote.server.inventory.discovery.DiscoveryServiceConfiguration
+org.openremote.server.announce.ControllerAnnounceConfiguration

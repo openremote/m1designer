@@ -1,1 +1,1 @@
-class=org.openremote.beta.server.util.CustomJacksonDataFormat
+class=org.openremote.server.util.CustomJacksonDataFormat

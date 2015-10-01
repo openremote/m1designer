@@ -1,1 +1,1 @@
-class=org.openremote.beta.server.web.UndertowWebsocketComponent
+class=org.openremote.server.web.UndertowWebsocketComponent

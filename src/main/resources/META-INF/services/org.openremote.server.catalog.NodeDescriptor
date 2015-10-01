@@ -1,0 +1,15 @@
+org.openremote.server.route.ActuatorRoute$Descriptor
+org.openremote.server.route.SensorRoute$Descriptor
+org.openremote.server.route.ConsumerRoute$Descriptor
+org.openremote.server.route.ProducerRoute$Descriptor
+org.openremote.server.route.SubflowRoute$Descriptor
+
+org.openremote.server.catalog.change.ChangeNodeDescriptor
+org.openremote.server.catalog.filter.FilterNodeDescriptor
+org.openremote.server.catalog.function.FunctionNodeDescriptor
+org.openremote.server.catalog.storage.StorageNodeDescriptor
+
+org.openremote.server.catalog.widget.TextLabelNodeDescriptor
+org.openremote.server.catalog.widget.PushButtonNodeDescriptor
+org.openremote.server.catalog.widget.ToggleButtonNodeDescriptor
+org.openremote.server.catalog.widget.SliderNodeDescriptor

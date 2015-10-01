@@ -32,7 +32,7 @@ All JARs can be found in `build/libs/`.
 
 Optimize for production:
 
-* Disable client DEBUG logging in `src/main/resources/org/openremote/beta/Client.gwt.xml`
+* Disable client DEBUG logging in `src/main/resources/org/openremote/Client.gwt.xml`
 * Disable server DEBUG logging in `src/main/resources/logback.xml`
 
 Run production
@@ -42,7 +42,7 @@ Run production
     WEBSERVER_ADDRESS=0.0.0.0 \
     WEBSERVER_PORT=8080 \
     DEV_MODE=false \
-    java -cp 'build/libs/*' org.openremote.beta.server.Server
+    java -cp 'build/libs/*' org.openremote.server.Server
 
 For quick turnaround when debugging client in production, recompile only the client portion between server restarts:
 
