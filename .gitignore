@@ -11,3 +11,5 @@ build/
 
 src/main/webapp/gwt
 src/main/generated
+bin/
+.settings/

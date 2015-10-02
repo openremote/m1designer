@@ -43,6 +43,8 @@ configurations {
 
 dependencies {
     serverDependencies "org.openremote:or-zwave:3.0-SNAPSHOT"
+    
+    serverDependencies "javax.jmdns:jmdns:$jmDNSVersion"
 
     serverDependencies "org.slf4j:jcl-over-slf4j:$slf4jVersion"
     serverDependencies "org.slf4j:jul-to-slf4j:$slf4jVersion"

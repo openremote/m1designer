@@ -5,6 +5,20 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.InstanceHandle;
 import io.undertow.servlet.api.ServletInfo;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.camel.StaticService;
 import org.fourthline.cling.DefaultUpnpServiceConfiguration;
 import org.fourthline.cling.UpnpService;
@@ -23,14 +37,8 @@ import org.fourthline.cling.transport.spi.NetworkAddressFactory;
 import org.fourthline.cling.transport.spi.ServletContainerAdapter;
 import org.fourthline.cling.transport.spi.StreamServer;
 import org.openremote.server.web.UndertowService;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Broadcast our host and port as a UPnP device with some details, but no actual UPnP services.
@@ -38,6 +46,8 @@ import java.util.concurrent.ExecutorService;
 public class ControllerAnnounceService implements StaticService {
 
     public static final String SERVICE_CONTEXT_PATH = "/upnp";
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ControllerAnnounceService.class);
 
     // Use the already running Undertow server as the UPnP webserver
     class UndertowAdapter implements ServletContainerAdapter {
@@ -103,6 +113,7 @@ public class ControllerAnnounceService implements StaticService {
     final protected UndertowService undertowService;
 
     protected UpnpService upnpService;
+    protected JmDNS jmDNSService;
 
     public ControllerAnnounceService(UndertowService undertowService) {
         this.undertowService = undertowService;
@@ -124,7 +135,25 @@ public class ControllerAnnounceService implements StaticService {
     @Override
     public void start() throws Exception {
 
-        upnpService = new UpnpServiceImpl(new DefaultUpnpServiceConfiguration() {
+        startUpnpService();
+        startJmDNSService();
+    }
+
+    private void startJmDNSService() throws Exception {
+        LOG.debug(">>> Starting JmDNS service...");
+        URI presentationUri = new URI("http", null, getHostAddress(undertowService.getHost()), undertowService.getPort(), null, null, null);
+        jmDNSService = JmDNS.create();
+        ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "OpenRemote Controller", undertowService.getPort(), "");
+        Map<String, String> a = new HashMap<>();
+        a.put("URL", presentationUri.toURL().toExternalForm());
+        a.put("Vendor", "OpenRemote");
+        serviceInfo.setText(a);
+        jmDNSService.registerService(serviceInfo);
+        LOG.debug("<<< JmDNS service started successfully");
+    }
+    
+	private void startUpnpService() throws Exception {
+		upnpService = new UpnpServiceImpl(new DefaultUpnpServiceConfiguration() {
 
             @Override
             protected Namespace createNamespace() {
@@ -145,13 +174,18 @@ public class ControllerAnnounceService implements StaticService {
             }
         });
         upnpService.getRegistry().addDevice(createDevice());
-    }
+	}
 
     @Override
     public void stop() throws Exception {
         if (upnpService != null) {
             upnpService.shutdown();
             upnpService = null;
+        }
+        
+        if (jmDNSService != null) {
+        	jmDNSService.unregisterAllServices();
+        	jmDNSService = null;
         }
     }
 
