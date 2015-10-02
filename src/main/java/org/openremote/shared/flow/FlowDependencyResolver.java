@@ -165,7 +165,7 @@ public abstract class FlowDependencyResolver {
             if (!added.contains(subflow.getId())) {
                 dependencyList.add(new FlowDependency(subflow.getLabel(), subflow.getIdentifier(), hydrate ? subflow : null, level));
                 added.add(subflow.getId());
-                populateSubDependencies(subflow, hydrate, ++level, dependencyList);
+                populateSubDependencies(subflow, hydrate, level+1, dependencyList);
             }
 
         }

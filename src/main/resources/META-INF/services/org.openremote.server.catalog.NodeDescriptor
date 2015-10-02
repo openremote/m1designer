@@ -13,3 +13,4 @@ org.openremote.server.catalog.widget.TextLabelNodeDescriptor
 org.openremote.server.catalog.widget.PushButtonNodeDescriptor
 org.openremote.server.catalog.widget.ToggleButtonNodeDescriptor
 org.openremote.server.catalog.widget.SliderNodeDescriptor
+org.openremote.server.catalog.widget.ColorPickerNodeDescriptor

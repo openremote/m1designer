@@ -1,0 +1,38 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<link rel="import" href="../../bower_components/color-picker-element/dist/color-picker.html">
+
+<link rel="import" href="../../styles/console-widget-style.html">
+
+<dom-module id="or-console-widget-colorpicker">
+    <template>
+        <style include="console-widget-style"></style>
+        <style>
+            :host {
+                display: block;
+                position: absolute;
+            }
+
+        </style>
+
+        <color-picker class="control"
+                      width="200" height="200" on-colorselected="_onColorSelected"></color-picker>
+        <div id="container">
+            You selected: <span>[[_selectedColor]]</span>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-console-widget-colorpicker",
+            behaviors: [openremote.VisibleWidget],
+            _onColorSelected: function(e) {
+                this.set("_selectedColor", e.detail.hex);
+                this.$.container.style.backgroundColor = e.detail.hex;
+                this.set("widgetProperties.color", e.detail.hex);
+            }
+        });
+    </script>
+</dom-module>
+
+
