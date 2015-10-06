@@ -33,16 +33,30 @@ public class ConsoleWidgetPresenter extends AbstractPresenter {
     public void widgetPropertiesChanged(JavaScriptObject jso, String path, Object value) {
         LOG.debug("Change on widget '" + getView().getLocalName() + "' path '" + path + "': " + value);
 
+        String nodeId = (String) getViewComponent().get("nodeId");
+
+        // Get the list of visited widgets so we can set it as a header on outgoing messages
+        String visitedWidgetsHeader = null;
+        JsArrayOfString visitedWidgetsArray = (JsArrayOfString)getViewComponent().get("visitedWidgets");
+        if (visitedWidgetsArray != null && visitedWidgetsArray.length() > 0) {
+            List<String> visitedWidgets = new ArrayList<>();
+            for (int j = 0; j < visitedWidgetsArray.length(); j++) {
+                visitedWidgets.add(visitedWidgetsArray.get(j));
+            }
+            visitedWidgetsHeader = Joiner.on(",").join(visitedWidgets);
+        }
+
         String[] persistentPaths = (String[]) getViewComponent().get("persistentPropertyPaths");
         if (persistentPaths == null)
             persistentPaths = new String[0];
         boolean persistentPathChange = Arrays.asList(persistentPaths).contains(path);
 
-        String nodeId = (String) getViewComponent().get("nodeId");
-
-        if (persistentPathChange) {
+        // If this is a persistent property change _NOT_ triggered by a message (we would
+        // have a visited widgets header) but by direct manipulation of the property value
+        // in the editor (e.g. user dragged a widget)...
+        if (persistentPathChange && visitedWidgetsHeader == null) {
             LOG.debug("Persistent path changed, dispatching widget node update event: " + path);
-            // This updates the editor's flow and node state
+            // ... update the editor's flow and node state
             String widgetProperties = new JSONObject(jso).toString();
             dispatch(new ConsoleWidgetModifiedEvent(nodeId, widgetProperties));
         }
@@ -52,33 +66,20 @@ public class ConsoleWidgetPresenter extends AbstractPresenter {
         NodeList sourceNodes = getView().querySelectorAll(sourceSelector);
         LOG.debug("Found source slots matching property path: " + sourceNodes.getLength());
 
-        // Now send a message to these slots
+        // Send a message to slots
         for (int i = 0; i < sourceNodes.getLength(); i++) {
             Component slotComponent = (Component) sourceNodes.item(i);
             String slotId = (String) slotComponent.get("slotId");
             String instanceId = (String) slotComponent.get("instanceId");
 
-            // Add this widget to the list of visited nodes
-            JsArrayOfString visitedWidgetsArray = (JsArrayOfString)getViewComponent().get("visitedWidgets");
+            LOG.debug("Preparing outgoing message for slot: " + slotId);
 
-            // Null the flag so it's gone after this JS event loop
-            getViewComponent().set("visitedWidgets", JsArrayOfString.create());
-
-            // Preserve existing path
-            List<String> visitedWidgets = new ArrayList<>();
-            if (visitedWidgetsArray != null && visitedWidgetsArray.length() > 0) {
-                for (int j = 0; j < visitedWidgetsArray.length(); j++) {
-                    visitedWidgets.add(visitedWidgetsArray.get(j));
-                }
-            }
-
-            // Add myself
-            visitedWidgets.add(nodeId);
-
-            // Send it along with the message as a comma separated string
             Map<String, Object> headers = new HashMap<>();
-            headers.put(VISITED_WIDGETS, Joiner.on(",").join(visitedWidgets));
-            LOG.debug("Setting visited widgets header: " + headers.get(VISITED_WIDGETS));
+
+            if (visitedWidgetsHeader != null) {
+                LOG.debug("Setting visited widgets header: " + visitedWidgetsHeader);
+                headers.put(VISITED_WIDGETS, visitedWidgetsHeader);
+            }
 
             Message message = new Message(
                 slotId,

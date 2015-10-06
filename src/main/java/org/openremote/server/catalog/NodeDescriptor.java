@@ -74,6 +74,12 @@ public abstract class NodeDescriptor {
         return node;
     }
 
+    public List<String> getPersistentPropertyPaths() {
+        List<String> persistentPaths = new ArrayList<>();
+        addPersistentPropertyPaths(persistentPaths);
+        return persistentPaths;
+    }
+
     public void addSlots(List<Slot> slots) {
         // Subclass
     }

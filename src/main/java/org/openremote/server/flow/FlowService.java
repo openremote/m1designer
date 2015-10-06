@@ -265,7 +265,9 @@ public class FlowService implements StaticService {
         }
 
         if (node.getLabel() != null) {
-            node.setLabel(node.getLabel() + " (Copy)");
+            if (!node.getLabel().endsWith("(Copy)")) {
+                node.setLabel(node.getLabel() + " (Copy)");
+            }
         } else {
             node.setLabel("(Copy)");
         }
@@ -276,14 +278,17 @@ public class FlowService implements StaticService {
             for (Node node : flow.getNodes()) {
                 if (node.getProperties() != null && node.getProperties() != null) {
 
-                    List<String> persistentPaths = node.getPersistentPropertyPaths() != null
-                        ? Arrays.asList(node.getPersistentPropertyPaths())
-                        : Collections.EMPTY_LIST;
+                    // Don't believe what the node says about its persistent property paths,
+                    // must ask the node descriptor what those properties are
+                    NodeDescriptor nodeDescriptor = context.getRegistry().lookupByNameAndType(
+                        node.getIdentifier().getType(),
+                        NodeDescriptor.class
+                    );
+                    List<String> persistentPaths = nodeDescriptor.getPersistentPropertyPaths();
 
+                    // Find all non-persistent properties
                     List<String> nonPersistentPaths = new ArrayList<>();
-
                     ObjectNode propertiesNode = JSON.readValue(node.getProperties(), ObjectNode.class);
-
                     Iterator<String> it = propertiesNode.fieldNames();
                     while (it.hasNext()) {
                         String path = it.next();
@@ -291,10 +296,10 @@ public class FlowService implements StaticService {
                             nonPersistentPaths.add(path);
                     }
 
+                    // Filter all non-persistent properties
                     for (String nonPersistentPath : nonPersistentPaths) {
                         propertiesNode.remove(nonPersistentPath);
                     }
-
                     node.setProperties(JSON.writeValueAsString(propertiesNode));
                 }
             }

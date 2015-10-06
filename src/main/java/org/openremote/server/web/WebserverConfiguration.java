@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.openremote.server.Environment.DEV_MODE;
 import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
-import static org.openremote.server.util.UrlUtil.url;
 
 public class WebserverConfiguration implements Configuration {
 

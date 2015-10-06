@@ -45,6 +45,12 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
 
     protected void onMessage(Message message) {
 
+        String propertyPath = (String) getViewComponent().get("propertyPath");
+        if (propertyPath == null || propertyPath.length() == 0) {
+            LOG.debug("Slot without property path, don't know how to handle message: " + getView().getOuterHTML());
+            return;
+        }
+
         // Get the parent of the slot and set its widgetProperties value (use the host element, not the document fragment)
         Node parentNode = getDOM(getView()).getParentNode();
         Component parentWidget = host(parentNode);
@@ -52,35 +58,44 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
         String nodeId = (String) parentWidget.get("nodeId");
         String nodeLabel = (String) parentWidget.get("nodeLabel");
 
+        List<String> visitedWidgets = new ArrayList<>();
+
         if (message.hasHeaders()) {
-            LOG.debug("Received visited widgets header: " + message.getHeaders().get(VISITED_WIDGETS));
+            // Do we have a correlation list in the message?
+            String visitedWidgetsHeader = (String) message.getHeaders().get(VISITED_WIDGETS);
+            LOG.debug("Received visited widgets header: " + visitedWidgetsHeader);
+            if (visitedWidgetsHeader != null && visitedWidgetsHeader.length() > 0) {
+                visitedWidgets.addAll(Splitter.on(",").splitToList(visitedWidgetsHeader));
+            }
 
-            // Do we have a correlation path in the message
-            List<String> visitedWidgets = new ArrayList<>(
-                Splitter.on(",").splitToList((String)message.getHeaders().get(VISITED_WIDGETS))
-            );
-
+            // If this node has already been visited, that's a loop
             if (visitedWidgets.contains(nodeId)) {
                 dispatch(new ConsoleLoopDetectedEvent(nodeId, nodeLabel));
             }
-
-            if (visitedWidgets.size() > 0) {
-                // Preserve the correlation path for the next outgoing property change message
-                JsArrayOfString jsArray = JsArrayOfString.create();
-                for (String visitedNode : visitedWidgets) {
-                    jsArray.push(visitedNode);
-                }
-                // Set the flag so it's available later in this JS event loop
-                parentWidget.set("visitedWidgets", jsArray);
-            }
         }
 
-        String propertyPath = (String) getViewComponent().get("propertyPath");
-        if (propertyPath == null || propertyPath.length() == 0) {
-            LOG.debug("Slot without property path, don't know how to handle message: " + getView().getOuterHTML());
+        // Add this node to the correlation list
+        visitedWidgets.add(nodeId);
+
+        // Preserve the correlation list for the next outgoing property change message
+        JsArrayOfString jsArray = JsArrayOfString.create();
+        for (String visitedNode : visitedWidgets) {
+            jsArray.push(visitedNode);
         }
-        String value = message.getBody();
-        LOG.debug("Setting widget '" + ((Element) parentWidget).getLocalName() + "' property path '" + propertyPath + "': " + value);
-        parentWidget.set("widgetProperties." + propertyPath, value);
+
+        try {
+            // Set the flag so it's available later in this JS event loop
+            parentWidget.set("visitedWidgets", jsArray);
+
+            String value = message.getBody();
+            LOG.debug("Setting widget '" + ((Element) parentWidget).getLocalName() + "' property path '" + propertyPath + "': " + value);
+            // This _might_ trigger property change events and send messages, then
+            // the visited widgets list will be set as header on each message
+            parentWidget.set("widgetProperties." + propertyPath, value);
+
+        } finally {
+            // Null the flag so it's gone after this JS event loop
+            parentWidget.set("visitedWidgets", JsArrayOfString.create());
+        }
     }
 }
