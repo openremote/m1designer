@@ -24,7 +24,7 @@
                     }
                 }
             },
-            _toggleInventory: function () {
+            toggleInventory: function () {
                 this.$.toolbox.toggle();
             }
         });
@@ -42,7 +42,7 @@
             }
         </style>
 
-        <or-button on-tap="_toggleInventory">
+        <or-button on-tap="toggleInventory">
             <iron-icon icon="or:logo" style="width: 2.2em; height: 2.2em; margin-right: 0.5em;"></iron-icon>
             <or-text style="max-width: 25vw;">Inventory</or-text>
         </or-button>

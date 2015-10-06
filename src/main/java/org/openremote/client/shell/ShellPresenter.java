@@ -82,6 +82,15 @@ public class ShellPresenter extends EventSessionPresenter {
         //dispatch(new ShellOpenEvent(null));
     }
 
+    public void onShortcutKey(int key) {
+        LOG.debug("Shortcut key pressed: " + key);
+        dispatch(new ShortcutEvent(key));
+    }
+
+    public void exit() {
+        dispatch(new ShellCloseEvent());
+    }
+
     protected void loadPresetFlow(ClientPresetVariant clientPresetVariant) {
         sendRequest(
             false,

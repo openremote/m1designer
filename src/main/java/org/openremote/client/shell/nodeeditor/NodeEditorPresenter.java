@@ -25,6 +25,11 @@ public class NodeEditorPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeEditorPresenter.class);
 
+    @JsType
+    public interface NodeEditorView extends Component {
+        void toggleNodeEditor();
+    }
+
     public Flow flow;
     public Node node;
     public boolean isSubflow;
@@ -35,6 +40,18 @@ public class NodeEditorPresenter extends AbstractPresenter {
 
     public NodeEditorPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
+
+        addListener(ShortcutEvent.class, event -> {
+            if (node == null)
+                return;
+            if (event.getKey() == 68) {
+                ((NodeEditorView) getViewComponent()).toggleNodeEditor();
+            } else if (event.getKey() == 67) {
+                duplicateNode();
+            } else if (event.getKey() == 46 || event.getKey() == 8) {
+                deleteNode();
+            }
+        });
 
         addListener(NodeEditEvent.class, event -> {
             this.flow = event.getFlow();

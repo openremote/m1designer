@@ -32,6 +32,11 @@ public class FlowControlPresenter extends RequestPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowControlPresenter.class);
 
+    @JsType
+    public interface FlowControlView extends Component {
+        void toggleFlowControl();
+    }
+
     private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
     private static final NodeCodec NODE_CODEC = GWT.create(NodeCodec.class);
 
@@ -46,6 +51,16 @@ public class FlowControlPresenter extends RequestPresenter {
 
     public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
+
+        addListener(ShortcutEvent.class, event -> {
+            if (flow == null)
+                return;
+            if (event.getKey() == 82) {
+                ((FlowControlView) getViewComponent()).toggleFlowControl();
+            } else if (event.getKey() == 83) {
+                redeployFlow();
+            }
+        });
 
         addPrepareListener(ShellCloseEvent.class, this::vetoIfDirty);
 

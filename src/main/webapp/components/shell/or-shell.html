@@ -15,6 +15,7 @@
 <link rel="import" href="nodeeditor/or-node-editor.html">
 <link rel="import" href="consolesettings/or-console-settings.html">
 <link rel="import" href="messagelog/or-messagelog.html">
+<link rel="import" href="help/or-help.html">
 
 
 <link rel="import" href="../console/or-console.html">
@@ -52,6 +53,10 @@
                 },
                 _centerResizeInProgress: {
                     type: Object
+                },
+                _shortcutWhitelist: {
+                    type: Array,
+                    value: ['text', 'password', 'search', 'email', 'number', 'date']
                 }
             },
             listeners: {
@@ -61,11 +66,50 @@
                 "inventory-manager-open": "_onInventoryManagerOpen"
             },
             ready: function () {
+                window.addEventListener("keydown", this._onShortcutKey.bind(this), false);
                 this.addEventListener("mousemove", this._centerResizeMove.bind(this), false);
                 this.addEventListener("mouseup", this._centerResizeEnd.bind(this), false);
                 this.addEventListener("touchmove", this._centerResizeMove.bind(this), false);
                 this.addEventListener("touchcancel", this._centerResizeEnd.bind(this), false);
                 this.addEventListener("touchend", this._centerResizeEnd.bind(this), false);
+            },
+            _onShortcutKey: function (e) {
+                // Check if focus is on an input field etc. were shortcuts are not possible
+                if (this._shortcutDisabled(e.target)) {
+                    return;
+                }
+                var key = 'which' in e ? e.which : e.keyCode;
+                if (key == 17) {
+                    // CTRL key down, do nothing
+                    return;
+                }
+                if (key == 8) {
+                    // Handle backspace, disable navigation
+                    e.preventDefault();
+                    this._presenter.onShortcutKey(key);
+                } else if (key == 46) {
+                    // Handle delete
+                    this._presenter.onShortcutKey(key);
+                } else if (e.ctrlKey) {
+                    // All other shortcuts use CTRL + <key>
+                    this._presenter.onShortcutKey(key);
+                }
+            },
+            _shortcutDisabled: function (elem) {
+                var isFrozen = elem.readOnly || elem.disabled;
+                if (isFrozen)
+                    return false;
+                else {
+                    var tagName = elem.tagName.toLowerCase();
+                    if (elem instanceof HTMLTextAreaElement)
+                        return true;
+                    if (tagName == 'input') {
+                        var inputType = elem.type.toLowerCase();
+                        if (this._shortcutWhitelist.indexOf(inputType) > -1)
+                            return true;
+                    }
+                    return false;
+                }
             },
             _centerResizeStart: function (e, detail) {
                 this._centerResizeInProgress = {startX: detail.x, originalWest: this.$$("#west").offsetWidth};
@@ -123,13 +167,16 @@
                     this.toggleClass("active", false, this.$$("#centerResizeHandle"));
                 }
             },
+            _exit: function () {
+                this._presenter.exit();
+            },
             _onShowInfo: function (e, event) {
                 this.$.toast.show(false, event.text, 3000);
             },
             _onShowFailure: function (e, event) {
                 this.$.toast.show(true, event.text, event.durationMillis);
             },
-            _onInventoryManagerOpen: function() {
+            _onInventoryManagerOpen: function () {
                 this.$$("#inventoryManager").open();
             }
         });
@@ -284,6 +331,12 @@
                 <div class="flex layout horizontal center end-justified">
                     <or-console-settings id="consoleSettings"
                                          console-has-widgets$="{{_presenter.consoleHasWidgets}}"></or-console-settings>
+
+                    <or-help id="help"></or-help>
+
+                    <or-button id="exit"
+                               icon="exit-to-app" on-tap="_exit"></or-button>
+
                 </div>
             </div>
         </template>

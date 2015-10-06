@@ -23,7 +23,7 @@
             observers: [
                 "_onMessageLogUpdate(_presenter.log.splices)"
             ],
-            _toggleMessageLog: function () {
+            toggleMessageLog: function () {
                 this.$.toolbox.toggle();
             },
             _clearMessageLog: function () {
@@ -101,7 +101,7 @@
             }
         </style>
 
-        <or-button icon="menu" on-tap="_toggleMessageLog">
+        <or-button icon="menu" on-tap="toggleMessageLog">
             <or-text style="max-width: 25vw;">[[_presenter.messageLogTitle]]</or-text>
         </or-button>
 

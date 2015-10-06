@@ -2,7 +2,9 @@ package org.openremote.client.shell.messagelog;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.client.event.ShortcutEvent;
 import org.openremote.client.shared.AbstractPresenter;
+import org.openremote.client.shared.Component;
 import org.openremote.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.client.shared.session.event.MessageSendEvent;
 import org.openremote.client.event.FlowDeletedEvent;
@@ -21,6 +23,11 @@ public class MessageLogPresenter extends AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageLogPresenter.class);
 
+    @JsType
+    public interface MessageLogView extends Component {
+        void toggleMessageLog();
+    }
+
     public static final int MAX_LOG = 1000;
 
     public Flow flow;
@@ -30,6 +37,11 @@ public class MessageLogPresenter extends AbstractPresenter {
 
     public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
+
+        addListener(ShortcutEvent.class, event -> {
+            if (event.getKey() == 77)
+                ((MessageLogView)getViewComponent()).toggleMessageLog();
+        });
 
         addListener(FlowEditEvent.class, event -> {
             flow = event.getFlow();

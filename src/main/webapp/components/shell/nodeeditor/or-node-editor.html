@@ -52,7 +52,7 @@
             _nodeChanged: function () {
                 this._presenter.nodeChanged();
             },
-            _toggleNodeEditor: function () {
+            toggleNodeEditor: function () {
                 this.$.toolbox.toggle();
                 this.set("_wasToggledByUser", true);
             },
@@ -112,7 +112,7 @@
             <or-button icon="content-copy" on-tap="_duplicateNode"></or-button>
             <or-button icon="delete" on-tap="_deleteNode"></or-button>
 
-            <or-button on-tap="_toggleNodeEditor">
+            <or-button on-tap="toggleNodeEditor">
                 <or-text style="max-width: 25vw;">[[_presenter.flowNodeTitle]]</or-text>
             </or-button>
         </div>

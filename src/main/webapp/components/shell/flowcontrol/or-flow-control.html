@@ -38,7 +38,7 @@
                 "_flowUnsavedUpdated(_presenter.flowUnsaved)",
                 "_flowPropertyChanged(_presenter.flow.label)"
             ],
-            _toggleFlowControl: function () {
+            toggleFlowControl: function () {
                 this.$.toolbox.toggle();
             },
             _flowUpdated: function(flow) {
@@ -175,7 +175,7 @@
              class="layout horizontal center">
 
             <or-flow-statusindicator id="statusIndicator"
-                                     on-tap="_toggleFlowControl"
+                                     on-tap="toggleFlowControl"
                                      dirty$="[[_presenter.flowDirty]]"
                                      status="[[_presenter.flowStatusDetail.mark]]"></or-flow-statusindicator>
 
@@ -223,7 +223,7 @@
 
             </or-menu>
 
-            <or-button on-tap="_toggleFlowControl">
+            <or-button on-tap="toggleFlowControl">
                 <or-text style="max-width: 25vw;">[[_presenter.flowControlTitle]]</or-text>
             </or-button>
 

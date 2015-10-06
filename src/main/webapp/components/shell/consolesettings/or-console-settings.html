@@ -46,14 +46,6 @@
                     value: 1.0
                 }
             },
-            ready: function() {
-                window.addEventListener("keypress", this._toggleEditModeShortcut.bind(this), false);
-            },
-            _toggleEditModeShortcut: function(e) {
-                if (this.consoleHasWidgets && e.keyCode == 5) { // TODO ctrl + e?
-                    this._presenter.toggleEditMode();
-                }
-            },
             _onGuideFrameSwitched: function (e) {
                 this._selectGuideFrame(e.model.frame);
             },
@@ -78,9 +70,6 @@
             _zoomReset: function() {
                 this.set("_zoomFactor", 1.0);
                 this._presenter.zoom(this.get("_zoomFactor"));
-            },
-            _exit: function() {
-                this._presenter.exit();
             }
         });
     });
@@ -113,7 +102,7 @@
 
         <div class="layout horizontal center">
             <or-toggle-button hidden$="[[!consoleHasWidgets]]"
-                              checked="{{_presenter.editMode}}">Console Edit Mode (CTRL+e)</or-toggle-button>
+                              checked="{{_presenter.editMode}}">Console Edit Mode</or-toggle-button>
 
             <div id="zoomOptions"
                  class="flex layout horizontal center">
@@ -133,9 +122,6 @@
                 </template>
             </or-menu>
             -->
-
-            <or-button id="exit"
-                       icon="exit-to-app" on-tap="_exit"></or-button>
         </div>
 
     </template>

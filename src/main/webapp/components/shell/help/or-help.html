@@ -1,0 +1,110 @@
+<link rel="import" href="../ui/or-text.html">
+<link rel="import" href="../ui/or-toolbox.html">
+<link rel="import" href="../ui/or-panel.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-help',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.help.HelpPresenter(this);
+                    }
+                }
+            },
+            toggleHelp: function () {
+                this.$.toolbox.toggle();
+            }
+        });
+    });
+</script>
+
+<dom-module id="or-help">
+    <template>
+        <style>
+            #toolbox {
+                right: 0;
+                bottom: 2.75em;
+                width: 300px;
+                max-height: 30vh;
+            }
+
+            .section {
+                font-weight: bold;
+                font-size: smaller;
+                color: var(--or-list-section-label-color);
+            }
+
+            .shortcut {
+                font-size: smaller;
+            }
+
+            .shortcut .key {
+                font-style: italic;
+                font-weight: bold;
+                margin: 0.4em 1em;
+            }
+
+        </style>
+
+        <or-button style="margin: 0 1em;" icon="help" on-tap="toggleHelp"></or-button>
+
+        <or-toolbox id="toolbox" no-cancel-on-esc-key no-cancel-on-outside-click>
+            <or-panel id="help">
+                <div class="panelContent">
+
+                    <div class="section">Keyboard Shorcuts</div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + W</div>
+                        <div class="description">Toggle inventory</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + E</div>
+                        <div class="description">Toggle console edit mode</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + R</div>
+                        <div class="description">Toggle flow control</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + D</div>
+                        <div class="description">Toggle node details</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + M</div>
+                        <div class="description">Toggle message log</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + S</div>
+                        <div class="description">Redeploy flow</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">CTRL + C</div>
+                        <div class="description">Duplicate selected node</div>
+                    </div>
+
+                    <div class="shortcut layout horizontal center">
+                        <div class="key">Backspace or DEL</div>
+                        <div class="description">Remove selected node</div>
+                    </div>
+
+                </div>
+            </or-panel>
+        </or-toolbox>
+
+    </template>
+</dom-module>
+

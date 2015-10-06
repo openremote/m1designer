@@ -3,8 +3,8 @@ package org.openremote.client.shell.consolesettings;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import org.openremote.client.event.ConsoleEditModeEvent;
-import org.openremote.client.event.ShellCloseEvent;
 import org.openremote.client.event.ConsoleZoomEvent;
+import org.openremote.client.event.ShortcutEvent;
 import org.openremote.client.shared.AbstractPresenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,11 @@ public class ConsoleSettingsPresenter extends AbstractPresenter {
 
     public ConsoleSettingsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
+
+        addListener(ShortcutEvent.class, event -> {
+            if (event.getKey() == 69)
+                toggleEditMode();
+        });
     }
 
     public void toggleEditMode() {
@@ -33,9 +38,5 @@ public class ConsoleSettingsPresenter extends AbstractPresenter {
 
     public void zoom(double factor) {
         dispatch(new ConsoleZoomEvent(factor));
-    }
-    
-    public void exit() {
-        dispatch(new ShellCloseEvent());
     }
 }
