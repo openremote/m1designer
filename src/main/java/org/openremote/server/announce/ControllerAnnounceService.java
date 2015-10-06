@@ -136,7 +136,9 @@ public class ControllerAnnounceService implements StaticService {
     public void start() throws Exception {
 
         startUpnpService();
-        startJmDNSService();
+
+        // TODO This takes several seconds to start, need to profile/optimize
+        // startJmDNSService();
     }
 
     private void startJmDNSService() throws Exception {
