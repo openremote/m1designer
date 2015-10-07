@@ -34,7 +34,7 @@ public abstract class FlowDependencyResolver {
             Flow superFlow = findFlow(superDependency.getId());
 
             boolean superFlowModified = false;
-            boolean superFlowShouldBeStopped= false;
+            boolean superFlowShouldBeStopped = false;
 
             for (Node subflowNode : superFlow.findSubflowNodes()) {
                 if (!subflowNode.getSubflowId().equals(flow.getId()))
@@ -50,6 +50,11 @@ public abstract class FlowDependencyResolver {
                     // Find slots we no longer have and delete them and their wires
                     Slot[] slotsWithoutPeer = superFlow.findSlotsWithoutPeer(subflowNode, flow);
                     for (Slot slotWithoutPeer : slotsWithoutPeer) {
+
+                        // Slots with a property path must be ignored, they are not mapped to peers by definition
+                        if (slotWithoutPeer.getPropertyPath() != null)
+                            continue;
+
                         if (superFlow.removeSlot(subflowNode, slotWithoutPeer.getId())) {
                             superFlowModified = true;
                             superFlowShouldBeStopped = true;
@@ -58,6 +63,11 @@ public abstract class FlowDependencyResolver {
 
                     // All other slots which are still valid, update the label
                     for (Slot subflowSlot : subflowNode.getSlots()) {
+
+                        // Slots with a property path must be ignored, they are not mapped to peers by definition
+                        if (subflowSlot.getPropertyPath() != null)
+                            continue;
+
                         Node peerNode = flow.findOwnerNode(subflowSlot.getPeerId());
                         if (peerNode.getLabel() != null && !peerNode.getLabel().equals(subflowSlot.getLabel())) {
                             subflowSlot.setLabel(peerNode.getLabel());
@@ -130,7 +140,7 @@ public abstract class FlowDependencyResolver {
                 new FlowDependency(subflowDependent.getLabel(), subflowDependent.getIdentifier(), level, flowHasWiresAttached, flowHasInvalidPeers)
             );
 
-            populateSuperDependencies(subflowDependent, level+1, dependencyList);
+            populateSuperDependencies(subflowDependent, level + 1, dependencyList);
         }
     }
 
@@ -165,7 +175,7 @@ public abstract class FlowDependencyResolver {
             if (!added.contains(subflow.getId())) {
                 dependencyList.add(new FlowDependency(subflow.getLabel(), subflow.getIdentifier(), hydrate ? subflow : null, level));
                 added.add(subflow.getId());
-                populateSubDependencies(subflow, hydrate, level+1, dependencyList);
+                populateSubDependencies(subflow, hydrate, level + 1, dependencyList);
             }
 
         }

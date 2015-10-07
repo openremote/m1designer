@@ -87,6 +87,8 @@
         onWidgetPropertiesChanged: function () {
             this.style.left = this.widgetProperties.positionX + "px";
             this.style.top = this.widgetProperties.positionY + "px";
+            this.style.zIndex = this.widgetProperties.positionZ;
+            this.style.opacity = this.widgetProperties.opacity;
             this.onVisibleWidgetPropertiesChanged();
         },
         onVisibleWidgetPropertiesChanged: function() {

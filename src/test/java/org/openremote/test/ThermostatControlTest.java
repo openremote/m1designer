@@ -85,6 +85,11 @@ public class ThermostatControlTest extends IntegrationTest {
                 "75"
             )),
             toJson(new Message(
+                SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK,
+                INSTANCE_ID,
+                "75"
+            )),
+            toJson(new Message(
                 SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK,
                 INSTANCE_ID,
                 "75"
@@ -106,6 +111,11 @@ public class ThermostatControlTest extends IntegrationTest {
             )),
             toJson(new Message(
                 SampleThermostatControl.SETPOINT_CONSUMER_SINK,
+                INSTANCE_ID,
+                "70"
+            )),
+            toJson(new Message(
+                SampleThermostatControl.SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK,
                 INSTANCE_ID,
                 "70"
             )),

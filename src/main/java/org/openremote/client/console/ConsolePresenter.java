@@ -232,13 +232,11 @@ public class ConsolePresenter extends AbstractPresenter {
         // Continue manipulating the local DOM of the widget!
         DOM widgetDOM = getDOMRoot((Element) widget);
 
-        if (!node.isOfTypeSubflow()) {
-            for (Slot slot : node.findPropertySlots()) {
-                // If this is a source slot without any wires attached, we don't need to add it
-                if (slot.isOfType(Slot.TYPE_SOURCE) && flow.findWiresAttachedToSlot(slot.getId()).length == 0)
-                    continue;
-                widgetDOM.appendChild(createWidgetSlot(slot, instanceId));
-            }
+        for (Slot slot : node.findPropertySlots()) {
+            // If this is a source slot without any wires attached, we don't need to add it
+            if (slot.isOfType(Slot.TYPE_SOURCE) && flow.findWiresAttachedToSlot(slot.getId()).length == 0)
+                continue;
+            widgetDOM.appendChild(createWidgetSlot(slot, instanceId));
         }
 
         return widgetDOM;

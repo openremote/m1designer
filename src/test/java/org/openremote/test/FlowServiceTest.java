@@ -4,6 +4,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.http.HttpMethods;
+import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.server.route.SubflowRoute;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
@@ -208,16 +209,14 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(subflowNode.getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
         assertEquals(subflowNode.getIdentifier().getType(), Node.TYPE_SUBFLOW);
         assertEquals(subflowNode.getEditorSettings().getTypeLabel(), Node.TYPE_SUBFLOW_LABEL);
-        assertEquals(subflowNode.getEditorSettings().getComponents(), new String[] {SubflowRoute.EDITOR_COMPONENT});
+        assertEquals(subflowNode.getEditorSettings().getComponents(), new String[] {WidgetNodeDescriptor.WIDGET_EDITOR_COMPONENT});
         assertEquals(subflowNode.getEditorSettings().getNodeColor(), NodeColor.VIRTUAL);
 
-        assertEquals(subflowNode.getSlots().length, 3);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 1);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 2);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 1);
+        assertEquals(subflowNode.getSlots().length, 11);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 5);
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 2);
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 6);
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
@@ -349,7 +348,7 @@ public class FlowServiceTest extends IntegrationTest {
         Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
         Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
         Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
-        assertEquals(temperatureSubflowNode.getSlots().length, 2);
+        assertEquals(temperatureSubflowNode.getSlots().length, 10);
         assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 1);
         assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 0);
         assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
@@ -379,7 +378,7 @@ public class FlowServiceTest extends IntegrationTest {
         Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
         Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
         assertEquals(temperatureSubflowNode.findSlot(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK.getId()).getLabel(), "New Consumer Name");
-        assertEquals(temperatureSubflowNode.getSlots().length, 3);
+        assertEquals(temperatureSubflowNode.getSlots().length, 11);
         assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 2);
         assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 1);
         assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
@@ -412,7 +411,7 @@ public class FlowServiceTest extends IntegrationTest {
         Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
         Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
         assertEquals(temperatureSubflowNode.findSlotWithPeer(newConsumer.findSlots(Slot.TYPE_SINK)[0].getId()).getLabel(), "New Consumer");
-        assertEquals(temperatureSubflowNode.getSlots().length, 4);
+        assertEquals(temperatureSubflowNode.getSlots().length, 12);
         assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 2);
         assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 1);
         assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);

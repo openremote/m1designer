@@ -76,10 +76,18 @@ public class SampleThermostatControl {
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK);
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE);
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE);
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
         }.initialize(TEMPERATURE_PROCESSOR_FLOW);
         TEMPERATURE_PROCESSOR_FLOW.getEditorSettings().setPositionX((double) 300);
-        TEMPERATURE_PROCESSOR_FLOW.getEditorSettings().setPositionY((double) 110);
+        TEMPERATURE_PROCESSOR_FLOW.getEditorSettings().setPositionY((double) 20);
     }
 
     /* ###################################################################################### */
@@ -96,10 +104,18 @@ public class SampleThermostatControl {
                 slots.add(SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK);
                 slots.add(SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE);
                 slots.add(SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE);
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
         }.initialize(SETPOINT_PROCESSOR_FLOW);
         SETPOINT_PROCESSOR_FLOW.getEditorSettings().setPositionX((double) 300);
-        SETPOINT_PROCESSOR_FLOW.getEditorSettings().setPositionY((double) 260);
+        SETPOINT_PROCESSOR_FLOW.getEditorSettings().setPositionY((double) 300);
     }
 
     /* ###################################################################################### */
@@ -117,6 +133,12 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSize"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -126,7 +148,9 @@ public class SampleThermostatControl {
                     .put("emptyValue", "0 \u00B0C")
                     .put("fontSizePixels", 40)
                     .put("positionX", 80)
-                    .put("positionY", 0);
+                    .put("positionY", 0)
+                    .put("positionZ", 0)
+                    .put("opacity", 1.0);
             }
 
         }.initialize(TEMPERATURE_LABEL);
@@ -151,6 +175,12 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSize"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -160,12 +190,14 @@ public class SampleThermostatControl {
                     .put("emptyValue", "0 \u00B0C")
                     .put("fontSizePixels", 30)
                     .put("positionX", 90)
-                    .put("positionY", 55);
+                    .put("positionY", 55)
+                    .put("positionZ", 0)
+                    .put("opacity", 1.0);
             }
         }.initialize(SETPOINT_LABEL);
         SETPOINT_LABEL.setPostEndpoint("mock:labelSetpoint");
         SETPOINT_LABEL.getEditorSettings().setPositionX((double) 700);
-        SETPOINT_LABEL.getEditorSettings().setPositionY((double) 350);
+        SETPOINT_LABEL.getEditorSettings().setPositionY((double) 370);
     }
 
     /* ###################################################################################### */
@@ -183,6 +215,12 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -217,6 +255,12 @@ public class SampleThermostatControl {
                 slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
                 slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
                 slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -233,7 +277,7 @@ public class SampleThermostatControl {
             }
         }.initialize(SETPOINT_MINUS_BUTTON);
         SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionX((double) 20);
-        SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionY((double) 800);
+        SETPOINT_MINUS_BUTTON.getEditorSettings().setPositionY((double) 820);
     }
 
     /* ###################################################################################### */
@@ -259,7 +303,7 @@ public class SampleThermostatControl {
             }
         }.initialize(SETPOINT_PLUS_FILTER);
         SETPOINT_PLUS_FILTER.getEditorSettings().setPositionX((double) 450);
-        SETPOINT_PLUS_FILTER.getEditorSettings().setPositionY((double) 520);
+        SETPOINT_PLUS_FILTER.getEditorSettings().setPositionY((double) 620);
     }
 
     /* ###################################################################################### */
@@ -285,7 +329,7 @@ public class SampleThermostatControl {
             }
         }.initialize(SETPOINT_MINUS_FILTER);
         SETPOINT_MINUS_FILTER.getEditorSettings().setPositionX((double) 450);
-        SETPOINT_MINUS_FILTER.getEditorSettings().setPositionY((double) 690);
+        SETPOINT_MINUS_FILTER.getEditorSettings().setPositionY((double) 790);
     }
 
     /* ###################################################################################### */

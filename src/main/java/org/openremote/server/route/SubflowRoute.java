@@ -4,28 +4,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.ProcessorDefinition;
-import org.openremote.server.catalog.VirtualNodeDescriptor;
-import org.openremote.shared.flow.Flow;
-import org.openremote.shared.flow.Node;
-import org.openremote.shared.flow.Slot;
-import org.openremote.shared.flow.Wire;
+import org.openremote.server.catalog.WidgetNodeDescriptor;
+import org.openremote.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
-import static org.openremote.server.catalog.WidgetNodeDescriptor.PROPERTY_COMPONENT;
-import static org.openremote.server.catalog.WidgetNodeDescriptor.WIDGET_INITIAL_PROPERTIES;
-import static org.openremote.server.catalog.WidgetNodeDescriptor.WIDGET_PERSISTENT_PROPERTY_PATHS;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 public class SubflowRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubflowRoute.class);
 
-    public static final String EDITOR_COMPONENT = "or-node-editor-widget";
     public static final String WIDGET_COMPONENT = "or-console-widget-composite";
 
-    public static class Descriptor extends VirtualNodeDescriptor {
+    public static class Descriptor extends WidgetNodeDescriptor {
+
+        @Override
+        public NodeColor getColor() {
+            return NodeColor.VIRTUAL;
+        }
 
         @Override
         public boolean isInternal() {
@@ -43,33 +42,14 @@ public class SubflowRoute extends NodeRoute {
         }
 
         @Override
-        public NodeRoute createRoute(CamelContext context, Flow flow, Node node) {
-            return new SubflowRoute(context, flow, node);
-        }
-
-        @Override
-        public Node initialize(Node node) {
-            node = super.initialize(node);
-            node.setClientWidget(true);
-            return node;
-        }
-
-        @Override
-        public void addEditorComponents(List<String> editorComponents) {
-            super.addEditorComponents(editorComponents);
-            editorComponents.add(EDITOR_COMPONENT);
-        }
-
-        @Override
         protected ObjectNode getInitialProperties() {
             return WIDGET_INITIAL_PROPERTIES.deepCopy()
                 .put(PROPERTY_COMPONENT, WIDGET_COMPONENT);
         }
 
         @Override
-        protected void addPersistentPropertyPaths(List<String> propertyPaths) {
-            super.addPersistentPropertyPaths(propertyPaths);
-            propertyPaths.addAll(Arrays.asList(WIDGET_PERSISTENT_PROPERTY_PATHS));
+        public NodeRoute createRoute(CamelContext context, Flow flow, Node node) {
+            return new SubflowRoute(context, flow, node);
         }
     }
 
@@ -134,11 +114,6 @@ public class SubflowRoute extends NodeRoute {
 
     public SubflowRoute(CamelContext context, Flow flow, Node node) {
         super(context, flow, node);
-    }
-
-    @Override
-    protected boolean isPublishingMessageEvents() {
-        return false;
     }
 
     @Override
@@ -208,8 +183,4 @@ public class SubflowRoute extends NodeRoute {
         }
     }
 
-    @Override
-    protected void configureDestination(ProcessorDefinition routeDefinition) throws Exception {
-        // Do nothing, internal wiring of queues!
-    }
 }

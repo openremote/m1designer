@@ -46,6 +46,12 @@
                     value: 1.0
                 }
             },
+            observers: [
+                    "_onSwitchEditMode(_presenter.editMode)"
+            ],
+            _onSwitchEditMode: function(v) {
+                this._presenter.switchEditMode(v);
+            },
             _onGuideFrameSwitched: function (e) {
                 this._selectGuideFrame(e.model.frame);
             },

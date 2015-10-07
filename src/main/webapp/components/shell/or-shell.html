@@ -74,20 +74,16 @@
                 this.addEventListener("touchend", this._centerResizeEnd.bind(this), false);
             },
             _onShortcutKey: function (e) {
-                // Check if focus is on an input field etc. were shortcuts are not possible
-                if (this._shortcutDisabled(e.target)) {
-                    return;
-                }
                 var key = 'which' in e ? e.which : e.keyCode;
                 if (key == 17) {
                     // CTRL key down, do nothing
                     return;
                 }
-                if (key == 8) {
+                if (key == 8 && !this._shortcutDisabled(e.target)) {
                     // Handle backspace, disable navigation
                     e.preventDefault();
                     this._presenter.onShortcutKey(key);
-                } else if (key == 46) {
+                } else if (key == 46 && !this._shortcutDisabled(e.target)) {
                     // Handle delete
                     this._presenter.onShortcutKey(key);
                 } else if (e.ctrlKey) {
@@ -221,6 +217,7 @@
                 -webkit-flex: 1 1 auto;
                 /* TODO one line background artifact on top in safari */
                 background-color: var(--or-toolbar-background-color);
+                overflow: hidden;
             }
 
             #console {

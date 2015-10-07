@@ -80,7 +80,16 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 "75"
             )),
             toJson(new Message(
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK,
+                "75"
+            )),
+            toJson(new Message(
                 SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
+                "75"
+            )),
+            toJson(new Message(
+                SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK,
                 SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "75"
             )),
@@ -109,7 +118,16 @@ public class EnvironmentWidgetTest extends IntegrationTest {
                 "70"
             )),
             toJson(new Message(
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT_SETPOINT_SINK,
+                "70"
+            )),
+            toJson(new Message(
                 SampleThermostatControl.SETPOINT_CONSUMER_SINK,
+                SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
+                "70"
+            )),
+            toJson(new Message(
+                SampleThermostatControl.SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK,
                 SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
                 "70"
             )),

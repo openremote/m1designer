@@ -17,15 +17,20 @@ import static org.openremote.server.util.JsonUtil.JSON;
 public abstract class WidgetNodeDescriptor extends ClientNodeDescriptor {
 
     public static final String PROPERTY_COMPONENT = "component";
+    public static final String WIDGET_EDITOR_COMPONENT = "or-node-editor-widget";
 
     public static final ObjectNode WIDGET_INITIAL_PROPERTIES = JSON.createObjectNode()
-        .put("positionX", 0)
-        .put("positionY", 0);
+        .put("positionX", 25)
+        .put("positionY", 25)
+        .put("positionZ", 0)
+        .put("opacity", 1.0);
 
     public static final String[] WIDGET_PERSISTENT_PROPERTY_PATHS = new String[]{
         "component",
         "positionX",
-        "positionY"
+        "positionY",
+        "positionZ",
+        "opacity"
     };
 
     @Override
@@ -40,14 +45,18 @@ public abstract class WidgetNodeDescriptor extends ClientNodeDescriptor {
         super.addSlots(slots);
         slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
         slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+        slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+        slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
         slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
         slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+        slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+        slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
     }
 
     @Override
     public void addEditorComponents(List<String> editorComponents) {
         super.addEditorComponents(editorComponents);
-        editorComponents.add("or-node-editor-widget");
+        editorComponents.add(WIDGET_EDITOR_COMPONENT);
     }
 
     @Override

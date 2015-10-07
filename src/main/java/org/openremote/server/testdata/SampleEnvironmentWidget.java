@@ -69,6 +69,14 @@ public class SampleEnvironmentWidget {
                 slots.add(LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK);
                 slots.add(LIVINGROOM_THERMOSTAT_SETPOINT_SINK);
                 slots.add(LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE);
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -79,7 +87,7 @@ public class SampleEnvironmentWidget {
             }
         }.initialize(LIVINGROOM_THERMOSTAT);
         LIVINGROOM_THERMOSTAT.getEditorSettings().setPositionX((double) 400);
-        LIVINGROOM_THERMOSTAT.getEditorSettings().setPositionY((double) 200);
+        LIVINGROOM_THERMOSTAT.getEditorSettings().setPositionY((double) 100);
     }
 
     /* ###################################################################################### */
@@ -114,7 +122,7 @@ public class SampleEnvironmentWidget {
             }
         }.initialize(BEDROOM_TEMPERATURE_SENSOR);
         BEDROOM_TEMPERATURE_SENSOR.getEditorSettings().setPositionX((double) 50);
-        BEDROOM_TEMPERATURE_SENSOR.getEditorSettings().setPositionY((double) 400);
+        BEDROOM_TEMPERATURE_SENSOR.getEditorSettings().setPositionY((double) 500);
     }
 
     /* ###################################################################################### */
@@ -132,7 +140,7 @@ public class SampleEnvironmentWidget {
             }
         }.initialize(BEDROOM_SETPOINT_SENSOR);
         BEDROOM_SETPOINT_SENSOR.getEditorSettings().setPositionX((double) 50);
-        BEDROOM_SETPOINT_SENSOR.getEditorSettings().setPositionY((double) 520);
+        BEDROOM_SETPOINT_SENSOR.getEditorSettings().setPositionY((double) 620);
     }
 
     /* ###################################################################################### */
@@ -149,6 +157,14 @@ public class SampleEnvironmentWidget {
                 slots.add(BEDROOM_THERMOSTAT_TEMPERATURE_SINK);
                 slots.add(BEDROOM_THERMOSTAT_SETPOINT_SINK);
                 slots.add(BEDROOM_THERMOSTAT_SETPOINT_SOURCE);
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
+                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
+                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
+                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
+                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
             }
 
             @Override
@@ -159,7 +175,7 @@ public class SampleEnvironmentWidget {
             }
         }.initialize(BEDROOM_THERMOSTAT);
         BEDROOM_THERMOSTAT.getEditorSettings().setPositionX((double) 400);
-        BEDROOM_THERMOSTAT.getEditorSettings().setPositionY((double) 450);
+        BEDROOM_THERMOSTAT.getEditorSettings().setPositionY((double) 520);
     }
 
     /* ###################################################################################### */
@@ -176,7 +192,7 @@ public class SampleEnvironmentWidget {
         }.initialize(BEDROOM_SETPOINT_ACTUATOR);
         BEDROOM_SETPOINT_ACTUATOR.setPostEndpoint("mock:bedroomSetpointActuator");
         BEDROOM_SETPOINT_ACTUATOR.getEditorSettings().setPositionX((double) 700);
-        BEDROOM_SETPOINT_ACTUATOR.getEditorSettings().setPositionY((double) 450);
+        BEDROOM_SETPOINT_ACTUATOR.getEditorSettings().setPositionY((double) 550);
     }
 
 
@@ -217,7 +233,7 @@ public class SampleEnvironmentWidget {
             }
         }.initialize(BEDROOM_LABEL);
         BEDROOM_LABEL.getEditorSettings().setPositionX((double) 950);
-        BEDROOM_LABEL.getEditorSettings().setPositionY((double) 380);
+        BEDROOM_LABEL.getEditorSettings().setPositionY((double) 500);
     }
 
     /* ###################################################################################### */

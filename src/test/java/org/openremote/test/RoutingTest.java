@@ -9,6 +9,8 @@ import org.apache.camel.component.http.HttpMethods;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.server.catalog.change.ChangeNodeDescriptor;
+import org.openremote.server.catalog.widget.TextLabelNodeDescriptor;
+import org.openremote.server.catalog.widget.ToggleButtonNodeDescriptor;
 import org.openremote.shared.event.FlowDeployEvent;
 import org.openremote.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.shared.event.FlowStatusEvent;
@@ -158,6 +160,60 @@ public class RoutingTest extends IntegrationTest {
         );
         exchange = new DefaultExchange(context());
         exchange.getIn().setBody(new Message(nodeA.getSlots()[1], "abc")); // Source slot!
+        producerTemplate.send("direct:sendEvent", exchange);
+        eventReceiver.assertIsSatisfied();
+    }
+
+    @Test
+    public void serverSideLoop2() throws Exception {
+
+        Flow flow = fromJson(
+            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
+            Flow.class
+        );
+
+        Node nodeA = fromJson(
+            producerTemplate.requestBody(restClientUrl("catalog", "node", ToggleButtonNodeDescriptor.TYPE), null, String.class),
+            Node.class
+        );
+        nodeA.setLabel("TestNodeA");
+
+        Node nodeB = fromJson(
+            producerTemplate.requestBody(restClientUrl("catalog", "node", TextLabelNodeDescriptor.TYPE), null, String.class),
+            Node.class
+        );
+        nodeB.setLabel("TestNodeB");
+
+        flow.addNode(nodeA);
+        flow.addNode(nodeB);
+
+        flow.addWireBetweenSlots(nodeA.getSlots()[1], nodeB.getSlots()[0]);
+        flow.addWireBetweenSlots(nodeA.getSlots()[1], nodeB.getSlots()[7]);
+
+        postFlow(flow);
+
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceived(
+            toJson(new FlowStatusEvent(flow.getId(), STARTING)),
+            toJson(new FlowStatusEvent(flow.getId(), DEPLOYED))
+        );
+        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(flow.getId());
+        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
+        eventReceiver.assertIsSatisfied();
+
+        eventReceiver.reset();
+        eventReceiver.expectedBodiesReceivedInAnyOrder(
+            toJson(new Message(
+                nodeB.getSlots()[0],
+                "1"
+            )),
+            toJson(new Message(
+                nodeB.getSlots()[7],
+                "1"
+            ))
+        );
+        Exchange exchange = new DefaultExchange(context());
+        exchange.getIn().setBody(new Message(nodeA.getSlots()[1], "1"));
         producerTemplate.send("direct:sendEvent", exchange);
         eventReceiver.assertIsSatisfied();
     }

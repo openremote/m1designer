@@ -153,25 +153,6 @@ public abstract class NodeRoute extends RouteBuilder {
 
         routeDefinition
             .process(exchange -> {
-                Set<String> visitedNodes = exchange.getIn().getHeader(VISITED_NODES, new HashSet<>(), Set.class);
-                if (visitedNodes.contains(getNode().getId())) {
-                    LOG.debug("Exchange stopped, loop detected. Message has already been processed by: " + getNode());
-                    getContext().hasService(EventService.class).sendEvent(
-                        new FlowRuntimeFailureEvent(
-                            getFlow().getId(),
-                            "Exchange stopped, loop detected. Message has already been processed by: " + getNode().getDefaultedLabel(),
-                            getNode().getId()
-                        )
-                    );
-                    exchange.setProperty(Exchange.ROUTE_STOP, true);
-                } else {
-                    visitedNodes.add(getNode().getId());
-                    exchange.getIn().setHeader(VISITED_NODES, visitedNodes);
-                }
-            }).id(getProcessorId("checkSeenNodes"));
-
-        routeDefinition
-            .process(exchange -> {
                 Slot slot = getNode().findSlot(getSlotId(exchange));
                 if (slot == null) {
                     LOG.debug("Slot '" + getSlotId(exchange) + "' not found on node, stopping exchange: " + getNode());
@@ -210,24 +191,43 @@ public abstract class NodeRoute extends RouteBuilder {
 
         // ###################### SINK ROUTING BEGIN ######################
 
-        // Optional sending message event to clients
-        if (isPublishingMessageEvents()) {
-            sinkProcessingDefinition
-                .process(exchange -> {
-                    LOG.debug("Sending message event to clients: " + getNode());
-                    Slot slot = getNode().findSlot(getSlotId(exchange));
-                    Map<String, Object> headers = new HashMap<>(exchange.getIn().getHeaders());
-                    // Cleanup the copy of the map
-                    headers.remove(RouteConstants.SLOT_ID);
-                    headers.remove(RouteConstants.INSTANCE_ID);
-                    headers.remove(VISITED_NODES);
-                    String body = getInput(exchange);
-                    getContext().hasService(EventService.class).sendMessageEvent(
-                        getNode(), slot, body, headers
+        // Check correlation header, each time a sink processes a message, it must push onto the list of visited nodes
+        sinkProcessingDefinition
+            .process(exchange -> {
+                Set<String> visitedNodes = exchange.getIn().getHeader(VISITED_NODES, new HashSet<>(), Set.class);
+                if (visitedNodes.contains(getNode().getId())) {
+                    LOG.debug("Exchange stopped, loop detected. Message has already been processed by: " + getNode());
+                    getContext().hasService(EventService.class).sendEvent(
+                        new FlowRuntimeFailureEvent(
+                            getFlow().getId(),
+                            "Exchange stopped, loop detected. Message has already been processed by: " + getNode().getDefaultedLabel(),
+                            getNode().getId()
+                        )
                     );
-                })
-                .id(getProcessorId("toClients"));
-        }
+                    exchange.setProperty(Exchange.ROUTE_STOP, true);
+                } else {
+                    visitedNodes.add(getNode().getId());
+                    exchange.getIn().setHeader(VISITED_NODES, visitedNodes);
+                }
+            }).id(getProcessorId("checkSeenNodes"));
+
+
+        // Send message event to clients (more fine-grained control through node client access)
+        sinkProcessingDefinition
+            .process(exchange -> {
+                LOG.debug("Sending message event to clients: " + getNode());
+                Slot slot = getNode().findSlot(getSlotId(exchange));
+                Map<String, Object> headers = new HashMap<>(exchange.getIn().getHeaders());
+                // Cleanup the copy of the map
+                headers.remove(RouteConstants.SLOT_ID);
+                headers.remove(RouteConstants.INSTANCE_ID);
+                headers.remove(VISITED_NODES);
+                String body = getInput(exchange);
+                getContext().hasService(EventService.class).sendMessageEvent(
+                    getNode(), slot, body, headers
+                );
+            })
+            .id(getProcessorId("toClients"));
 
         // Optional sending exchange to an endpoint before node processing
         if (getNode().getPreEndpoint() != null) {
@@ -274,12 +274,6 @@ public abstract class NodeRoute extends RouteBuilder {
 
         // Send the cleaned exchange through the wires to the next node(s)
         configureDestination(finalizeDefinition);
-    }
-
-    // This can then be selectively enabled in the event service with clientAccess property
-    // on the node, so we don't spam the client event bus.
-    protected boolean isPublishingMessageEvents() {
-        return true;
     }
 
     protected void configureDestination(ProcessorDefinition routeDefinition) throws Exception {
