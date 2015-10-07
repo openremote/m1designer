@@ -305,7 +305,11 @@ public class FlowControlPresenter extends RequestPresenter {
         new UpdateDependenciesProcedure(
             dupe,
             true,
-            () -> dispatch(new ConsoleRefreshEvent(dupe, selectedNodeId))
+            () -> Timeout.debounce(
+                "Console Refresh",
+                () -> dispatch(new ConsoleRefreshEvent(dupe, selectedNodeId)),
+                20
+            )
         ).call();
     }
 

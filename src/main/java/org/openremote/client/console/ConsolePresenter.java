@@ -41,6 +41,7 @@ public class ConsolePresenter extends AbstractPresenter {
         super(view);
 
         addListener(ConsoleRefreshEvent.class, event -> {
+            getViewComponent().fire(event.getType(), event);
             flow = event.getFlow();
             notifyPath("flow");
             refreshConsole(event.getSelectedNodeId());

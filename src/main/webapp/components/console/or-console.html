@@ -12,6 +12,7 @@
 <link rel="import" href="or-console-widget-slider.html"/>
 <link rel="import" href="or-console-widget-togglebutton.html"/>
 <link rel="import" href="or-console-widget-colorpicker.html"/>
+<link rel="import" href="or-console-widget-screen.html"/>
 
 <link rel="import" href="../../styles/console-style.html">
 
@@ -38,6 +39,7 @@
                 }
             },
             listeners: {
+                "console-refresh": "_onConsoleRefresh",
                 "console-refreshed": "_onConsoleRefreshed",
                 "dragenter": "_onDragEnter",
                 "dragleave": "_onDragLeave",
@@ -49,6 +51,10 @@
                 "_onEditMode(_presenter.editMode)",
                 "_onZoomFactor(_presenter.zoomFactor)"
             ],
+            _onConsoleRefresh: function (e, event) {
+                // Reset any element style set by widgets
+                this.removeAttribute("style");
+            },
             _onConsoleRefreshed: function (e, event) {
                 this.set("_haveWidgets", event.renderedWidgets);
 

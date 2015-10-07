@@ -16,17 +16,17 @@
             #slider {
                 width: var(--or-console-widget-slider-width, 250px);
 
-                --paper-progress-container-color: var(--or-console-widget-slider-color, #919194);
-                --paper-slider-active-color: var(--or-console-widget-slider-progress-color, #c1d72f);
-                --paper-slider-knob-color: var(--or-console-widget-slider-knob-color, #c1d72f);
-                --paper-slider-knob-start-border-color: var(--or-console-widget-slider-knob-color, #c1d72f);
-                --paper-slider-pin-color: var(--or-console-widget-slider-pin-color, #c1d72f);
-                --paper-slider-pin-start-color: var(--or-console-widget-slider-pin-color, #c1d72f);
-                --paper-slider-font-color: var(--or-console-widget-slider-pin-text-color, #455a64);
+                --paper-progress-container-color: var(--or-console-widget-slider-color);
+                --paper-slider-active-color: var(--or-console-widget-slider-progress-color);
+                --paper-slider-knob-color: var(--or-console-widget-slider-knob-color);
+                --paper-slider-knob-start-border-color: var(--or-console-widget-slider-knob-color);
+                --paper-slider-pin-color: var(--or-console-widget-slider-pin-color);
+                --paper-slider-pin-start-color: var(--or-console-widget-slider-pin-color);
+                --paper-slider-font-color: var(--or-console-widget-slider-pin-text-color);
 
-                --paper-input-container-color: var(--or-console-widget-slider-color, #919194);
-                --paper-input-container-input-color: var(--or-console-widget-slider-color, #c1d72f);
-                --paper-input-container-underline-focus: var(--or-console-widget-slider-color, #c1d72f);
+                --paper-input-container-color: var(--or-console-widget-slider-color);
+                --paper-input-container-input-color: var(--or-console-widget-slider-color);
+                --paper-input-container-underline-focus: var(--or-console-widget-slider-color);
                 --paper-input-container: {
                     padding: 15px 0 0 0;
                 };
@@ -70,7 +70,7 @@
             },
             _onSliderValueChange: function (newValue, oldValue) {
                 if (oldValue !== undefined) {
-                    this.debounce("Slider Update Buffer", function () {
+                    this.updateJob = this.debounce(this.updateJob, function () {
                         this.set("widgetProperties.value", this.getString(newValue));
                     }, 50);
                 }

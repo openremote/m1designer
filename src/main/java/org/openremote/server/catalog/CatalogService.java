@@ -17,8 +17,6 @@ public class CatalogService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
 
-    public static final int ID_MAX_BATCH_SIZE = 10000;
-
     final protected CamelContext context;
     final protected List<CatalogItem> catalogItems = new ArrayList<>();
 
@@ -35,8 +33,9 @@ public class CatalogService implements StaticService {
                 if (nodeDescriptor.isInternal())
                     continue;
 
+                // TODO this type discrimination is not pretty
                 CatalogCategory catalogCategory;
-                if (nodeDescriptor instanceof WidgetNodeDescriptor) {
+                if (nodeDescriptor.getType().startsWith("urn:openremote:widget:")) {
                     catalogCategory = CatalogCategory.WIDGETS;
                 } else if (nodeDescriptor instanceof VirtualNodeDescriptor) {
                     catalogCategory = CatalogCategory.WIRING;

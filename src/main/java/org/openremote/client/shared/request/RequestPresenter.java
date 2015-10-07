@@ -63,6 +63,9 @@ public abstract class RequestPresenter extends AbstractPresenter {
 
         @Override
         public void onFailure(Method method, Throwable exception) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Request failure: " + requestText, exception);
+            }
             if (!dispatchedComplete && notifyUserOnSuccess) {
                 dispatchedComplete = true;
                 dispatch(new RequestCompleteEvent(requestText));

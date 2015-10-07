@@ -5,6 +5,7 @@ org.openremote.server.route.ProducerRoute$Descriptor
 org.openremote.server.route.SubflowRoute$Descriptor
 
 org.openremote.server.catalog.change.ChangeNodeDescriptor
+org.openremote.server.catalog.flip.FlipNodeDescriptor
 org.openremote.server.catalog.filter.FilterNodeDescriptor
 org.openremote.server.catalog.function.FunctionNodeDescriptor
 org.openremote.server.catalog.storage.StorageNodeDescriptor
@@ -14,3 +15,4 @@ org.openremote.server.catalog.widget.PushButtonNodeDescriptor
 org.openremote.server.catalog.widget.ToggleButtonNodeDescriptor
 org.openremote.server.catalog.widget.SliderNodeDescriptor
 org.openremote.server.catalog.widget.ColorPickerNodeDescriptor
+org.openremote.server.catalog.widget.ScreenNodeDescriptor

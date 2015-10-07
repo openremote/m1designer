@@ -1,0 +1,22 @@
+<link rel="import" href="or-console-widget-behaviors.html">
+
+<dom-module id="or-console-widget-screen">
+    <template>
+        <!-- Empty but required, we must have host element -->
+    </template>
+    <script>
+        Polymer({
+            is: "or-console-widget-screen",
+            behaviors: [openremote.Widget],
+            onWidgetPropertiesChanged: function () {
+                var consoleElement = window.document.querySelector("#console");
+                if (consoleElement) {
+                    consoleElement.style.backgroundColor = this.widgetProperties.backgroundColor;
+                    consoleElement.style.color = this.widgetProperties.textColor;
+                }
+            }
+        });
+    </script>
+</dom-module>
+
+

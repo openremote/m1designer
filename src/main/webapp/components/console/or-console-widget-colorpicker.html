@@ -13,23 +13,49 @@
                 position: absolute;
             }
 
+            #preview {
+                height: 1em;
+            }
         </style>
 
         <color-picker class="control"
+                      id="picker"
                       width="200" height="200" on-colorselected="_onColorSelected"></color-picker>
-        <div id="container">
-            You selected: <span>[[_selectedColor]]</span>
-        </div>
+        <div id="preview"></div>
 
     </template>
     <script>
         Polymer({
             is: "or-console-widget-colorpicker",
             behaviors: [openremote.VisibleWidget],
-            _onColorSelected: function(e) {
+            properties: {
+                _selectedColor: {
+                    type: String,
+                    observer: "_onSelectedColorChanged"
+                }
+            },
+            _onColorSelected: function (e) {
                 this.set("_selectedColor", e.detail.hex);
-                this.$.container.style.backgroundColor = e.detail.hex;
-                this.set("widgetProperties.color", e.detail.hex);
+            },
+            onVisibleWidgetPropertiesChanged: function () {
+                this.set("_selectedColor", this.widgetProperties.color);
+            },
+            _hexToRgb: function (hex) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            },
+            _onSelectedColorChanged: function(newValue, oldValue) {
+                this.$.picker.setColor(this._hexToRgb(newValue));
+                this.$.preview.style.backgroundColor = newValue;
+                if (oldValue !== undefined) {
+                    this.job = this.debounce(this.job, function () {
+                        this.set("widgetProperties.color", newValue);
+                    }, 250);
+                }
             }
         });
     </script>
