@@ -9,6 +9,8 @@ import org.openremote.client.event.ConfirmationEvent;
 import org.openremote.client.shared.Callback;
 import org.openremote.client.shared.request.RequestFailure;
 import org.openremote.client.shared.request.RequestPresenter;
+import org.openremote.client.shell.FlowCodec;
+import org.openremote.shared.flow.Flow;
 import org.openremote.shared.inventory.ClientPreset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +24,11 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
     private static final Logger LOG = LoggerFactory.getLogger(InventoryManagerClientPresetsPresenter.class);
 
     private static final ClientPresetCodec CLIENT_PRESET_CODEC = GWT.create(ClientPresetCodec.class);
+    private static final FlowCodec FLOW_CODEC = GWT.create(FlowCodec.class);
 
     public ClientPreset[] clientPresets = new ClientPreset[0];
     public ClientPreset clientPreset;
+    public Flow[] flows = new Flow[0];
 
     public InventoryManagerClientPresetsPresenter(com.google.gwt.dom.client.Element view) {
         super(view);
@@ -147,6 +151,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
                 protected void onResponse(ClientPreset result) {
                     clientPreset = result;
                     notifyPath("clientPreset");
+                    loadFlows();
                 }
 
                 @Override
@@ -154,6 +159,19 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
                     super.onFailure(requestFailure);
                     clientPreset = null;
                     notifyPathNull("clientPreset");
+                }
+            }
+        );
+    }
+
+    protected void loadFlows() {
+        sendRequest(
+            resource("flow").get(),
+            new ListResponseCallback<Flow>("Load all flows", FLOW_CODEC) {
+                @Override
+                protected void onResponse(List<Flow> result) {
+                    flows = result.toArray(new Flow[result.size()]);
+                    notifyPath("flows", flows);
                 }
             }
         );

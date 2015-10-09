@@ -38,6 +38,9 @@
             <iron-icon id="icon"
                        hidden$="[[!icon]]"
                        icon="[[icon]]"></iron-icon>
+            <template is="dom-if" if="[[label]]">
+                <span>[[label]]</span>
+            </template>
             <content></content>
         </div>
 
@@ -47,6 +50,12 @@
             is: "or-menu-item",
             properties: {
                 icon: {
+                    type: String,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                },
+                label: {
                     type: String,
                     value: false,
                     notify: true,

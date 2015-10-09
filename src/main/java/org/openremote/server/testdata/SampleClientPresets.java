@@ -17,6 +17,10 @@ public class SampleClientPresets {
 
     /* ###################################################################################### */
 
+    {
+        NEXUS_5.setInitialFlowId(SampleEnvironmentWidget.FLOW.getId());
+    }
+
     public static final List<ClientPreset> PRESETS = new ArrayList<ClientPreset>() {
         {
             add(IPAD_LANDSCAPE);

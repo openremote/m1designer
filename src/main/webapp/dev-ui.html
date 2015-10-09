@@ -220,10 +220,11 @@
                          label="Single Select"
                          icon="menu"
                          selectable-value
-                         selected="This is option two">
-                    <or-menu-item value="This is option one">Foo with a long title</or-menu-item>
-                    <or-menu-item value="This is option two">Bar</or-menu-item>
-                    <or-menu-item value="This is option three">Baz</or-menu-item>
+                         empty-allowed
+                         empty-label="Nothing selected...">
+                    <or-menu-item value="1" label="Foo with a long title"></or-menu-item>
+                    <or-menu-item value="2" label="Bar"></or-menu-item>
+                    <or-menu-item value="3" label="Baz"></or-menu-item>
                 </or-menu>
                 <or-menu class="flex"
                          label="Another disabled menu"

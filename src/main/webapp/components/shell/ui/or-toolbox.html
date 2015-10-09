@@ -107,6 +107,9 @@
                 "activate": "_onTabActivate",
                 "container-switch": "_onContainerSwitch"
             },
+            observers: [
+                "_onToolboxOpened(opened)"
+            ],
             attached: function () {
                 this.async(function () {
                     this._hideIfEmpty(this.$.tabs);
@@ -125,30 +128,82 @@
             _getDistributedNodes: function (element) {
                 return Polymer.dom(Polymer.dom(element).querySelector("content")).getDistributedNodes();
             },
-            select: function(index) {
+            toggle: function() {
+                if (this.opened && this.confirmSelection && this.selectedTab !== undefined) {
+                    this._doContainerClosing();
+                } else {
+                    this.opened = !this.opened;
+                }
+            },
+            close: function() {
+                if (this.opened && this.confirmSelection && this.selectedTab !== undefined) {
+                    this._doContainerClosing();
+                } else {
+                    this.opened = false;
+                    this._setCanceled(false);
+                }
+            },
+            cancel: function() {
+                if (this.opened && this.confirmSelection && this.selectedTab !== undefined) {
+                    this._doContainerClosing();
+                } else {
+                    this.opened = false;
+                    this._setCanceled(true);
+                }
+            },
+            _onToolboxOpened: function (opened) {
+                if (this.selectedTab === undefined) {
+                    return;
+                }
+                if (opened) {
+                    this._onTabSelected(this.selectedTab);
+                } else {
+                    this.async(function () {
+                        this._forEachContentElement(function (tabIndex, element) {
+                            this.toggleAttribute("hidden", true, element);
+                        });
+                    });
+                }
+            },
+            select: function (index) {
                 this.set("selectedTab", index);
             },
             _onTabSelected: function (index) {
-                this.async(function() {
-                    this._forEachContentElement(function(tabIndex, element) {
+                if (!this.opened) {
+                    return;
+                }
+                this.async(function () {
+                    this._forEachContentElement(function (tabIndex, element) {
                         this.toggleAttribute("hidden", tabIndex != index, element);
                     });
                 });
             },
-            _onTabActivate: function(e) {
+            _onTabActivate: function (e) {
                 e.stopPropagation();
                 var selectedIndex = e.detail.selected;
-                this._forEachContentElement(function(tabIndex, element) {
+                this._forEachContentElement(function (tabIndex, element) {
                     if (tabIndex == this.selectedTab && element.fire) {
                         element.fire("container-closing", {opening: selectedIndex}, {bubbles: false});
                     }
                 });
             },
-            _onContainerSwitch: function(e) {
+            _onContainerSwitch: function (e) {
                 e.stopPropagation();
-                this.set("selectedTab", e.detail.index);
+                if (e.detail.index) {
+                    this.set("selectedTab", e.detail.index);
+                } else {
+                    this.opened = false;
+                    this._setCanceled(false);
+                }
             },
-            _forEachContentElement: function(f) {
+            _doContainerClosing: function() {
+                this._forEachContentElement(function (tabIndex, element) {
+                    if (tabIndex == this.selectedTab && element.fire) {
+                        element.fire("container-closing", {}, {bubbles: false});
+                    }
+                });
+            },
+            _forEachContentElement: function (f) {
                 var contentNodes = this._getDistributedNodes(this.$.contentWrapper);
                 for (var i = 0; i < contentNodes.length; i++) {
                     var contentNode = contentNodes[i];

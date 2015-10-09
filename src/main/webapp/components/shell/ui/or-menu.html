@@ -64,10 +64,15 @@
 
                     <template is="dom-if" if="[[selectableValue]]">
                         <template is="dom-if" if="[[selectedDefined]]">
-                            <or-text>[[selected]]</or-text>
+                            <template is="dom-if" if="[[selectedLabel]]">
+                                <or-text>[[selectedLabel]]</or-text>
+                            </template>
+                            <template is="dom-if" if="[[!selectedLabel]]">
+                                <or-text>[[selected]]</or-text>
+                            </template>
                         </template>
                         <template is="dom-if" if="[[!selectedDefined]]">
-                            <or-text>-</or-text>
+                            <or-text>[[emptyLabel]]</or-text>
                         </template>
                     </template>
                 </span>
@@ -76,8 +81,12 @@
 
             <template is="dom-if" if="[[selectableValue]]">
                 <paper-menu class="dropdown-content"
+                            on-selected-item-changed="_onSelectedItemChanged"
                             attr-for-selected="{{attrForSelected}}"
                             selected="{{selected}}">
+                    <template is="dom-if" if="[[emptyAllowed]]">
+                        <or-menu-item label="[[emptyLabel]]"></or-menu-item>
+                    </template>
                     <content></content>
                 </paper-menu>
             </template>
@@ -134,6 +143,14 @@
                     type: Boolean,
                     value: false
                 },
+                emptyAllowed: {
+                    type: Boolean,
+                    value: false
+                },
+                emptyLabel: {
+                    type: String,
+                    value: "-"
+                },
                 selected: {
                     type: String,
                     reflectToAttribute: true,
@@ -143,6 +160,12 @@
                     type: Boolean,
                     value: false,
                     computed: "_getSelectedDefined(selected)"
+                },
+                selectedLabel: {
+                    type: String,
+                    value: false,
+                    reflectToAttribute: true,
+                    notify: true
                 }
             },
             _getAttrForSelected: function (selectableValue) {
@@ -150,6 +173,11 @@
             },
             _getSelectedDefined: function (selected) {
                 return selected != undefined;
+            },
+            _onSelectedItemChanged: function(e) {
+                if (e.detail.value && e.detail.value.label) {
+                    this.set("selectedLabel", e.detail.value.label);
+                }
             }
         });
     </script>

@@ -1,8 +1,8 @@
 <link rel="import" href="../ui/or-panel.html">
 <link rel="import" href="../ui/or-button.html">
 <link rel="import" href="../ui/or-input.html">
-<link rel="import" href="../ui/or-list-section.html">
-<link rel="import" href="../ui/or-list-item.html">
+<link rel="import" href="../ui/or-list.html">
+<link rel="import" href="../ui/or-menu.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
@@ -76,6 +76,9 @@
                             this.$.presetListSection.select(e.detail.selected);
                         }.bind(this)
                 );
+            },
+            _getFlowLabel: function(flow) {
+                return flow.getDefaultedLabel();
             }
         })
     });
@@ -150,8 +153,7 @@
                         <or-input class="flex"
                                   label="Unique Preset Name"
                                   value="{{_presenter.clientPreset.name}}"></or-input>
-                    </div>
-                    <div class="layout horizontal center">
+                        <div style="width:1em"></div>
                         <or-input class="flex"
                                   label="User Agent Like (matches substring case-insensitive)"
                                   value="{{_presenter.clientPreset.agentLike}}"></or-input>
@@ -169,9 +171,7 @@
                                   preventInvalidInput="true"
                                   type="number" min="0" max="5000"
                                   value="{{_presenter.clientPreset.maxWidth}}"></or-input>
-                    </div>
-
-                    <div class="layout horizontal center">
+                        <div style="width:1em"></div>
                         <or-input class="flex"
                                   label="Minimum Screen Height (Pixels)"
                                   preventInvalidInput="true"
@@ -183,6 +183,20 @@
                                   preventInvalidInput="true"
                                   type="number" min="0" max="5000"
                                   value="{{_presenter.clientPreset.maxHeight}}"></or-input>
+                    </div>
+
+                    <div class="layout horizontal center">
+                        <or-menu class="flex"
+                                 label="Initial flow"
+                                 icon="menu"
+                                 selectable-value
+                                 selected="{{_presenter.clientPreset.initialFlowId}}"
+                                 empty-allowed
+                                 empty-label="No initial flow">
+                            <template is="dom-repeat" items="[[_presenter.flows]]" as="flow">
+                                <or-menu-item value="[[flow.identifier.id]]" label="[[_getFlowLabel(flow)]]"></or-menu-item>
+                            </template>
+                        </or-menu>
                     </div>
 
                 </template>
