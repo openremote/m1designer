@@ -35,7 +35,8 @@
         <paper-button id="button"
                       class="control"
                       raised$="[[isTrue(widgetProperties.raised)]]"
-                      on-down="_onDown" on-up="_onUp">
+                      on-down="_onDown"
+                      on-up="_onUp">
             <div style$="[[_getWrapperStyle(widgetProperties)]]">
                 <template is="dom-if" if="[[!isEmpty(widgetProperties.icon)]]">
                     <iron-icon icon="[[widgetProperties.icon]]"
@@ -58,22 +59,26 @@
                 this.updateStyles();
             },
             _onDown: function () {
-                this.set("widgetProperties.click", "1");
+                this.async(function() {
+                    this.set("widgetProperties.click", "1");
+                }, 1);
             },
             _onUp: function () {
-                this.set("widgetProperties.click", "0");
+                this.async(function() {
+                    this.set("widgetProperties.click", "0");
+               }, 1)
             },
-            _getWrapperStyle: function(widgetProperties) {
+            _getWrapperStyle: function (widgetProperties) {
                 switch (widgetProperties.iconPosition) {
                     case "top":
                     case "bottom":
-                            return "display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; align-items:center; -webkit-align-items: center";
+                        return "display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; align-items:center; -webkit-align-items: center";
                         break;
                     default:
                         return "display: flex; display: -webkit-flex; flex-direction: row; -webkit-flex-direction: row; align-items:center; -webkit-align-items:center";
                 }
             },
-            _getIconStyle: function(widgetProperties) {
+            _getIconStyle: function (widgetProperties) {
                 var dimensions =
                         "width: " + widgetProperties.fontSizePixels + "px;" +
                         "height: " + widgetProperties.fontSizePixels + "px;";
@@ -92,7 +97,7 @@
                         return "order: 1; margin-right: 0.25em;" + dimensions;
                 }
             },
-            _getTextStyle: function(widgetProperties) {
+            _getTextStyle: function (widgetProperties) {
                 switch (widgetProperties.iconPosition) {
                     case "bottom":
                     case "right":

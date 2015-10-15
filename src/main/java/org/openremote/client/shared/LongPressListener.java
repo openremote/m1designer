@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Timer;
+import org.openremote.shared.func.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

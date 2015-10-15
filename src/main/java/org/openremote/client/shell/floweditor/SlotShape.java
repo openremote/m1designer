@@ -9,8 +9,8 @@ import org.openremote.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.openremote.client.shell.floweditor.FlowDesignerConstants.*;
 import static org.openremote.client.shared.Timeout.debounce;
+import static org.openremote.client.shell.floweditor.FlowDesignerConstants.*;
 
 public class SlotShape {
 

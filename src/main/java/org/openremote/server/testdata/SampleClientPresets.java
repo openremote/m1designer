@@ -17,7 +17,7 @@ public class SampleClientPresets {
 
     /* ###################################################################################### */
 
-    {
+    static {
         NEXUS_5.setInitialFlowId(SampleEnvironmentWidget.FLOW.getId());
     }
 

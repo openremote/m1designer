@@ -1,6 +1,7 @@
 package org.openremote.client.shared;
 
 import elemental.client.Browser;
+import org.openremote.shared.func.Callback;
 
 import java.util.HashMap;
 import java.util.Map;

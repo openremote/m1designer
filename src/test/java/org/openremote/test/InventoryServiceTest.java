@@ -153,7 +153,7 @@ public class InventoryServiceTest extends IntegrationTest {
             restClientUrl("flow", "preset"),
             exchange -> {
                 exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.GET);
-                exchange.getIn().setHeader("agent", "iPad");
+                exchange.getIn().setHeader("agent", "ipAD");
                 exchange.getIn().setHeader("width", "1024");
                 exchange.getIn().setHeader("height", "768");
             }

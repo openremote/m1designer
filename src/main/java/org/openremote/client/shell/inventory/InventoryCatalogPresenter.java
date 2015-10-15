@@ -3,12 +3,12 @@ package org.openremote.client.shell.inventory;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
+import org.openremote.client.event.RequestFailure;
 import org.openremote.client.shared.JsUtil;
-import org.openremote.client.shared.ShowInfoEvent;
-import org.openremote.client.shared.request.RequestFailure;
-import org.openremote.client.shared.request.RequestPresenter;
+import org.openremote.client.shared.RequestPresenter;
 import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.catalog.CatalogItem;
+import org.openremote.shared.event.client.ShowInfoEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -17,6 +17,7 @@ version = projectVersion
 
 repositories {
     jcenter();
+    mavenLocal();
     mavenCentral()
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots/"
@@ -42,7 +43,8 @@ configurations {
 }
 
 dependencies {
-    serverDependencies "org.openremote:or-zwave:3.0-SNAPSHOT"
+    serverDependencies "org.openremote:or-shared:$orSharedVersion"
+    serverDependencies "org.openremote:or-zwave:$orZwaveVersion"
     
     serverDependencies "javax.jmdns:jmdns:$jmDNSVersion"
 

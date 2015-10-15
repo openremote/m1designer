@@ -4,6 +4,7 @@ import org.openremote.server.flow.FlowService;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
+import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.*;
 import org.openremote.shared.model.Identifier;
 import org.slf4j.Logger;
@@ -41,6 +42,11 @@ public class FlowModelTest {
             @Override
             protected void stopFlowIfRunning(Flow flow) {
                 // NOOP, no server running
+            }
+
+            @Override
+            protected String generateGlobalUniqueId() {
+                return IdentifierUtil.generateGlobalUniqueId();
             }
         };
     }

@@ -1,8 +1,8 @@
 package org.openremote.client.event;
 
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.client.shared.Callback;
 import org.openremote.shared.event.Event;
+import org.openremote.shared.func.Callback;
 
 @JsType
 public class ConfirmationEvent extends Event {

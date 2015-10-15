@@ -4,8 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.json.client.JSONObject;
-import org.openremote.client.shared.AbstractPresenter;
 import org.openremote.client.event.NodePropertiesModifiedEvent;
+import org.openremote.client.shared.AbstractPresenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

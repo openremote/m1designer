@@ -41,6 +41,11 @@ public class FlowService implements StaticService {
                 }
             }
         }
+
+        @Override
+        protected String generateGlobalUniqueId() {
+            return IdentifierUtil.generateGlobalUniqueId();
+        }
     };
 
     public static abstract class MapFlowDependencyResolver extends FlowDependencyResolver {

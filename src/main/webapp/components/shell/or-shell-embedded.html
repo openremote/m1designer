@@ -1,0 +1,73 @@
+<script src="../util.js"></script>
+<script src="../../gwt/Client/Client.nocache.js"></script>
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/or-component-behaviors.html">
+
+<link rel="import" href="../console/or-console.html">
+
+<script>
+    // One-time initialization, this MUST be a script in an imported file! The
+    // GWT entry point will poll for this function indefinitely and call it when
+    // imports are loaded. Horrible, and not sure this means ALL imports are loaded.
+    // Must still wait for Polymer to initialize itself first. It's not compatible
+    // with RequireJS either.
+    // TODO Is there no better solution?
+    function onGwtReadyClient() {
+        waitUntil(function () {
+            return window.Polymer;
+        }, 100, 50, function () {
+            document.dispatchEvent(new CustomEvent("gwtReadyClient"));
+        });
+    }
+
+    // This function is called by the native WebView bridge
+    function publishShellEvent(msg) {
+        var embeddedShell = document.querySelector("or-shell-embedded");
+        if (embeddedShell) {
+            embeddedShell._presenter.onShellEvent(msg);
+        }
+    }
+
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-shell-embedded',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.ShellEmbeddedPresenter(this);
+                    }
+                }
+            },
+            publishShellEvent: function(msg) {
+                // This function is provided by the native WebView bridge
+                ShellMessageBus.onShellEvent(msg);
+            }
+        });
+    });
+</script>
+
+
+<dom-module id="or-shell-embedded">
+    <template>
+        <style>
+
+            :host {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                overflow: hidden;
+            }
+
+        </style>
+
+        <or-console id="console"></or-console>
+
+    </template>
+</dom-module>

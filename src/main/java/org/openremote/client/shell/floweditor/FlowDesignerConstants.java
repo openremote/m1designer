@@ -3,7 +3,8 @@ package org.openremote.client.shell.floweditor;
 import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.IColor;
 
-import static com.ait.lienzo.shared.core.types.ColorName.*;
+import static com.ait.lienzo.shared.core.types.ColorName.BLACK;
+import static com.ait.lienzo.shared.core.types.ColorName.WHITE;
 
 public interface FlowDesignerConstants {
 

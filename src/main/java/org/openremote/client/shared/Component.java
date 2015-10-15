@@ -6,6 +6,7 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.CustomEvent;
 import elemental.js.util.JsArrayOf;
+import org.openremote.shared.func.Callback;
 
 @JsType
 public interface Component {

@@ -7,6 +7,10 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import org.openremote.client.event.ConfirmationEvent;
 import org.openremote.shared.event.Event;
+import org.openremote.shared.event.bus.EventBus;
+import org.openremote.shared.event.bus.EventListener;
+import org.openremote.shared.event.bus.EventRegistration;
+import org.openremote.shared.func.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,38 +111,55 @@ public abstract class AbstractPresenter {
         this.@AbstractPresenter::view.push("_presenter." + array, obj);
     }-*/;
 
-    protected <E extends Event> void addPrepareListener(Class<E> eventClass,
-                                                        EventListener<E> listener) {
-        addListener(true, eventClass, listener);
+    protected <E extends Event> EventRegistration<E> addPrepareListener(Class<E> eventClass,
+                                                                        EventListener<E> listener) {
+        return addListener(true, eventClass, listener);
     }
 
-    protected <E extends Event> void addListener(Class<E> eventClass,
+    protected <E extends Event> EventRegistration<E> addPrepareListener(EventListener<E> listener) {
+        return addListener(true, null, listener);
+    }
+
+    protected <E extends Event> EventRegistration<E> addListener(Class<E> eventClass,
                                                  EventListener<E> listener) {
-        addListener(false, eventClass, listener);
+        return addListener(false, eventClass, listener);
+    }
+
+    protected <E extends Event> EventRegistration<E> addListener(EventListener<E> listener) {
+        return addListener(false, null, listener);
     }
 
     @SuppressWarnings("unchecked")
-    public <E extends Event> void addListener(boolean prepare,
+    public <E extends Event> EventRegistration<E> addListener(boolean prepare,
                                               Class<E> eventClass,
                                               EventListener<E> listener) {
-        String eventType = Event.getType(eventClass);
-        if (prepare) {
-            LOG.debug("Adding event prepare listener: " + eventType);
+        EventRegistration<E> registration;
+        if (eventClass != null) {
+            String eventType = Event.getType(eventClass);
+            if (prepare) {
+                LOG.debug("Adding event prepare listener: " + eventType);
+            } else {
+                LOG.debug("Adding event listener: " + eventType);
+            }
+            registration = new EventRegistration(prepare, eventClass, listener);
         } else {
-            LOG.debug("Adding event listener: " + eventType);
+            LOG.debug("Adding catchall event listener: " + listener.getClass().getName());
+            registration = new EventRegistration(prepare, listener);
         }
-        eventRegistrations.add(new EventRegistration(prepare, eventClass, listener));
+        eventRegistrations.add(registration);
+        return registration;
     }
 
-    protected void dispatch(Event event, int debounceMillis) {
+    protected void dispatch(Event event, int debounceMillis, EventRegistration... skipRegistrations) {
         Timeout.debounce(event.getType(), () -> {
-            dispatch(event);
+            dispatch(event, skipRegistrations);
         }, debounceMillis);
     }
 
     @SuppressWarnings("unchecked")
-    protected void dispatch(Event event) {
-        EventBus.dispatch(event);
+    protected void dispatch(Event event, EventRegistration... skipRegistrations) {
+        LOG.debug("Dispatching event: " + event.getType());
+        EventBus.dispatch(event, skipRegistrations);
     }
 
     protected boolean hasViewElement(String selector) {

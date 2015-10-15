@@ -2,10 +2,10 @@ package org.openremote.client.shell.consolesettings;
 
 import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
-import org.openremote.client.event.ConsoleEditModeEvent;
-import org.openremote.client.event.ConsoleZoomEvent;
 import org.openremote.client.event.ShortcutEvent;
 import org.openremote.client.shared.AbstractPresenter;
+import org.openremote.shared.event.client.ConsoleEditModeEvent;
+import org.openremote.shared.event.client.ConsoleZoomEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

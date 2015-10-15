@@ -6,11 +6,11 @@ import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.js.util.JsArrayOfString;
-import org.openremote.client.event.ConsoleLoopDetectedEvent;
 import org.openremote.client.shared.AbstractPresenter;
 import org.openremote.client.shared.Component;
-import org.openremote.client.shared.session.event.MessageReceivedEvent;
 import org.openremote.shared.event.Message;
+import org.openremote.shared.event.client.ConsoleLoopDetectedEvent;
+import org.openremote.shared.event.client.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
