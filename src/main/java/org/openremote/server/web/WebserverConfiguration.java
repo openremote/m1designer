@@ -30,7 +30,7 @@ public class WebserverConfiguration implements Configuration {
     public static final String WEBSERVER_DOCUMENT_CACHE_SECONDS = "WEBSERVER_DOCUMENT_CACHE_SECONDS";
     public static final String WEBSERVER_DOCUMENT_CACHE_SECONDS_DEFAULT = "300";
     public static final String WEBSERVER_ALLOW_ORIGIN = "WEBSERVER_ALLOW_ORIGIN";
-    public static final String WEBSERVER_ALLOW_ORIGIN_DEFAULT = "*";
+    public static final String WEBSERVER_ALLOW_ORIGIN_DEFAULT = "http://localhost:8080";
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
@@ -153,6 +153,7 @@ public class WebserverConfiguration implements Configuration {
             getOutFilter().add("user-agent");
             getOutFilter().add("upgrade-insecure-requests");
             getOutFilter().add("vary");
+            getOutFilter().add("X-HTTP-Method-Override");
         }
     }
 }

@@ -37,6 +37,7 @@ Run production
     WEBSERVER_DOCUMENT_ROOT='/Users/cb/work/openremote/gh/or-controller/build/libs/or-controller-client.jar' \
     WEBSERVER_ADDRESS=0.0.0.0 \
     WEBSERVER_PORT=8080 \
+    WEBSERVER_ALLOW_ORIGIN=http://localhost:8080 \
     DEV_MODE=false \
     java -cp 'build/libs/*' org.openremote.server.Server
 

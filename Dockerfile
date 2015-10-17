@@ -7,6 +7,7 @@ EXPOSE 8080
 ENV DEV_MODE false
 ENV WEBSERVER_DOCUMENT_ROOT /opt/orc3/or-controller-client.jar
 ENV WEBSERVER_ADDRESS 0.0.0.0
+ENV WEBSERVER_ALLOW_ORIGIN http://orc3.christianbauer.name
 
 ADD *.jar /opt/orc3/
 
