@@ -21,6 +21,8 @@ Development
 
 * Edit (but don't commit) the TODO in `ShellPresenter.java` to open editor immediately on page load
 
+* Configure ZWave component with environment variable `ZWAVE_SERIAL_PORT=/dev/tty.SLAB_USBtoUART`
+
 Build tested archives
 ---
 

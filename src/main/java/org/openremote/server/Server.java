@@ -2,6 +2,7 @@ package org.openremote.server;
 
 import org.apache.camel.CamelContext;
 import org.openremote.server.event.EventService;
+import org.openremote.server.testdata.ExampleLight;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
@@ -59,5 +60,6 @@ public class Server {
         context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
         context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
 
+        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(ExampleLight.FLOW.getId()));
     }
 }

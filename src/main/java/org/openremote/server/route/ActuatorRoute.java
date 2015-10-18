@@ -2,6 +2,7 @@ package org.openremote.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.ProcessorDefinition;
+import org.apache.camel.support.RoutePolicySupport;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Flow;
@@ -9,10 +10,16 @@ import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.NodeColor;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.model.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static org.openremote.beta.zwave.component.ZWComponent.HEADER_COMMAND;
+
 public class ActuatorRoute extends NodeRoute {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ActuatorRoute.class);
 
     public static final String NODE_TYPE = "urn:openremote:flow:node:actuator";
     public static final String NODE_TYPE_LABEL = "Actuator";
@@ -56,6 +63,13 @@ public class ActuatorRoute extends NodeRoute {
             super.addSlots(slots);
             slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
         }
+
+        @Override
+        protected void addPersistentPropertyPaths(List<String> propertyPaths) {
+            super.addPersistentPropertyPaths(propertyPaths);
+            propertyPaths.add("producerEndpoint");
+            propertyPaths.add("zwaveCommand");
+        }
     }
 
     public ActuatorRoute(CamelContext context, Flow flow, Node node) {
@@ -64,6 +78,21 @@ public class ActuatorRoute extends NodeRoute {
 
     @Override
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
-        // Nothing to do
+
+        // TODO Quick and dirty hack
+
+        LOG.info("### TODO Configure actuator route, with node properties: " + getNodeProperties());
+        if (getNodeProperties() == null || !getNodeProperties().has("producerEndpoint"))
+            return;
+
+        routeDefinition.process(exchange -> {
+            String producerEndpoint = getNodeProperties().get("producerEndpoint").asText();
+            LOG.info("### TODO Using actuator producer endpoint: " + producerEndpoint);
+            String zwaveCommand = getNodeProperties().get("zwaveCommand").asText();
+            LOG.info("### TODO Using zwave command: " + zwaveCommand);
+            producerTemplate.sendBodyAndHeader(
+                producerEndpoint, exchange.getIn().getBody(String.class), HEADER_COMMAND, zwaveCommand
+            );
+        });
     }
 }

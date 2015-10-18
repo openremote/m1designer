@@ -8,6 +8,7 @@ import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.inventory.InventoryService;
 import org.openremote.server.route.RouteManagementService;
 import org.openremote.server.route.procedure.FlowProcedureException;
+import org.openremote.server.testdata.ExampleLight;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
@@ -113,6 +114,8 @@ public class FlowService implements StaticService {
             SAMPLE_FLOWS.put(SampleEnvironmentWidget.FLOW.getId(), SampleEnvironmentWidget.getCopy());
             SAMPLE_FLOWS.put(SampleThermostatControl.FLOW.getId(), SampleThermostatControl.getCopy());
             SAMPLE_FLOWS.put(SampleTemperatureProcessor.FLOW.getId(), SampleTemperatureProcessor.getCopy());
+
+            SAMPLE_FLOWS.put(ExampleLight.FLOW.getId(), ExampleLight.getCopy());
         }
     }
 

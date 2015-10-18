@@ -9,3 +9,5 @@ org.openremote.server.event.EventServiceConfiguration
 org.openremote.server.event.WebSocketEventServiceConfiguration
 org.openremote.server.inventory.discovery.DiscoveryServiceConfiguration
 org.openremote.server.announce.ControllerAnnounceConfiguration
+
+org.openremote.server.HackZwaveConfiguration
