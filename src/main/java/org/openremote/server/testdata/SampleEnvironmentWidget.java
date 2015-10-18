@@ -9,7 +9,6 @@ import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.flow.Wire;
-import org.openremote.shared.model.Identifier;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,9 +20,9 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node LIVINGROOM_TEMPERATURE_SENSOR = new Node("Livingroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE));
+    public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot LIVINGROOM_TEMPERATURE_SENSOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node LIVINGROOM_TEMPERATURE_SENSOR = new Node("Livingroom Temperature", generateGlobalUniqueId(), SensorRoute.NODE_TYPE);
 
     static {
         new SensorRoute.Descriptor() {
@@ -39,9 +38,9 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot LIVINGROOM_SETPOINT_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot LIVINGROOM_SETPOINT_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node LIVINGROOM_SETPOINT_SENSOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE));
+    public static Slot LIVINGROOM_SETPOINT_SENSOR_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot LIVINGROOM_SETPOINT_SENSOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node LIVINGROOM_SETPOINT_SENSOR = new Node("Livingroom Setpoint", generateGlobalUniqueId(), SensorRoute.NODE_TYPE);
 
     static {
         new SensorRoute.Descriptor() {
@@ -60,7 +59,7 @@ public class SampleEnvironmentWidget {
     public static Slot LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK, SampleThermostatControl.TEMPERATURE_CONSUMER.getLabel());
     public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK, SampleThermostatControl.SETPOINT_CONSUMER.getLabel());
     public static Slot LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE, SampleThermostatControl.SETPOINT_PRODUCER.getLabel());
-    public static Node LIVINGROOM_THERMOSTAT = new Node("Livingroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), SampleThermostatControl.FLOW.getId());
+    public static Node LIVINGROOM_THERMOSTAT = new Node("Livingroom Thermostat", generateGlobalUniqueId(), Node.TYPE_SUBFLOW, SampleThermostatControl.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -69,14 +68,14 @@ public class SampleEnvironmentWidget {
                 slots.add(LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK);
                 slots.add(LIVINGROOM_THERMOSTAT_SETPOINT_SINK);
                 slots.add(LIVINGROOM_THERMOSTAT_SETPOINT_SOURCE);
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -92,8 +91,8 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot LIVINGROOM_SETPOINT_ACTUATOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node LIVINGROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE));
+    public static Slot LIVINGROOM_SETPOINT_ACTUATOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Node LIVINGROOM_SETPOINT_ACTUATOR = new Node("Livingroom Setpoint", generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE);
 
     static {
         new ActuatorRoute.Descriptor() {
@@ -109,9 +108,9 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot BEDROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot BEDROOM_TEMPERATURE_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node BEDROOM_TEMPERATURE_SENSOR = new Node("Bedroom Temperature", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE));
+    public static Slot BEDROOM_TEMPERATURE_SENSOR_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot BEDROOM_TEMPERATURE_SENSOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node BEDROOM_TEMPERATURE_SENSOR = new Node("Bedroom Temperature", generateGlobalUniqueId(), SensorRoute.NODE_TYPE);
 
     static {
         new SensorRoute.Descriptor() {
@@ -127,9 +126,9 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot BEDROOM_SETPOINT_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot BEDROOM_SETPOINT_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node BEDROOM_SETPOINT_SENSOR = new Node("Bedroom Setpoint", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE));
+    public static Slot BEDROOM_SETPOINT_SENSOR_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot BEDROOM_SETPOINT_SENSOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node BEDROOM_SETPOINT_SENSOR = new Node("Bedroom Setpoint", generateGlobalUniqueId(), SensorRoute.NODE_TYPE);
 
     static {
         new SensorRoute.Descriptor() {
@@ -148,7 +147,7 @@ public class SampleEnvironmentWidget {
     public static Slot BEDROOM_THERMOSTAT_TEMPERATURE_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.TEMPERATURE_CONSUMER_SINK, SampleThermostatControl.TEMPERATURE_CONSUMER.getLabel());
     public static Slot BEDROOM_THERMOSTAT_SETPOINT_SINK = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_CONSUMER_SINK, SampleThermostatControl.SETPOINT_CONSUMER.getLabel());
     public static Slot BEDROOM_THERMOSTAT_SETPOINT_SOURCE = new Slot(generateGlobalUniqueId(), SampleThermostatControl.SETPOINT_PRODUCER_SOURCE, SampleThermostatControl.SETPOINT_PRODUCER.getLabel());
-    public static Node BEDROOM_THERMOSTAT = new Node("Bedroom Thermostat", new Identifier(generateGlobalUniqueId(), Node.TYPE_SUBFLOW), SampleThermostatControl.FLOW.getId());
+    public static Node BEDROOM_THERMOSTAT = new Node("Bedroom Thermostat", generateGlobalUniqueId(), Node.TYPE_SUBFLOW, SampleThermostatControl.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -157,14 +156,14 @@ public class SampleEnvironmentWidget {
                 slots.add(BEDROOM_THERMOSTAT_TEMPERATURE_SINK);
                 slots.add(BEDROOM_THERMOSTAT_SETPOINT_SINK);
                 slots.add(BEDROOM_THERMOSTAT_SETPOINT_SOURCE);
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -180,8 +179,8 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Slot BEDROOM_SETPOINT_ACTUATOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node BEDROOM_SETPOINT_ACTUATOR = new Node("Bedroom Setpoint", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE));
+    public static Slot BEDROOM_SETPOINT_ACTUATOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Node BEDROOM_SETPOINT_ACTUATOR = new Node("Bedroom Setpoint", generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE);
 
     static {
         new ActuatorRoute.Descriptor() {
@@ -198,7 +197,7 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Node LIVINGROOM_LABEL = new Node("Livingroom", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE));
+    public static Node LIVINGROOM_LABEL = new Node("Livingroom", generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE);
 
     static {
         new TextLabelNodeDescriptor() {
@@ -218,7 +217,7 @@ public class SampleEnvironmentWidget {
 
     /* ###################################################################################### */
 
-    public static Node BEDROOM_LABEL = new Node("Bedroom", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE));
+    public static Node BEDROOM_LABEL = new Node("Bedroom", generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE);
 
     static {
         new TextLabelNodeDescriptor() {
@@ -256,7 +255,7 @@ public class SampleEnvironmentWidget {
 
     public static Flow FLOW = new Flow(
         "Environment Widget",
-        new Identifier(generateGlobalUniqueId(), Flow.TYPE),
+        generateGlobalUniqueId(),
         FLOW_NODES,
         new Wire[]{
             new Wire(LIVINGROOM_TEMPERATURE_SENSOR_SOURCE, LIVINGROOM_THERMOSTAT_TEMPERATURE_SINK),

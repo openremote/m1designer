@@ -13,3 +13,5 @@ src/main/webapp/gwt
 src/main/generated
 bin/
 .settings/
+
+or-controller-database.mv.db

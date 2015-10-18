@@ -10,7 +10,6 @@ import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.flow.Wire;
-import org.openremote.shared.model.Identifier;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,9 +21,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER));
+    public static Slot FAHRENHEIT_CONSUMER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot FAHRENHEIT_CONSUMER_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node FAHRENHEIT_CONSUMER = new Node("Fahrenheit", generateGlobalUniqueId(), Node.TYPE_CONSUMER);
 
     static {
         new ConsumerRoute.Descriptor() {
@@ -40,9 +39,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot FAHRENHEIT_CONVERTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot FAHRENHEIT_CONVERTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE));
+    public static Slot FAHRENHEIT_CONVERTER_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Slot FAHRENHEIT_CONVERTER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Node FAHRENHEIT_CONVERTER = new Node("Fahrenheit to Celcius", generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE);
 
     static {
         new FunctionNodeDescriptor() {
@@ -64,8 +63,8 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot TEMPERATURE_DATABASE_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", new Identifier(generateGlobalUniqueId(), StorageNodeDescriptor.TYPE));
+    public static Slot TEMPERATURE_DATABASE_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Node TEMPERATURE_DATABASE = new Node("Temperature Database", generateGlobalUniqueId(), StorageNodeDescriptor.TYPE);
 
     static {
         new StorageNodeDescriptor() {
@@ -81,9 +80,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot CELCIUS_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot CELCIUS_PRODUCER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
-    public static Node CELCIUS_PRODUCER = new Node("Celcius", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER));
+    public static Slot CELCIUS_PRODUCER_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Slot CELCIUS_PRODUCER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE, false);
+    public static Node CELCIUS_PRODUCER = new Node("Celcius", generateGlobalUniqueId(), Node.TYPE_PRODUCER);
 
     static {
         new ProducerRoute.Descriptor() {
@@ -100,9 +99,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot CELCIUS_APPENDER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot CELCIUS_APPENDER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", new Identifier(generateGlobalUniqueId(), ChangeNodeDescriptor.TYPE));
+    public static Slot CELCIUS_APPENDER_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Slot CELCIUS_APPENDER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Node CELCIUS_APPENDER = new Node("Append Celcius Symbol", generateGlobalUniqueId(), ChangeNodeDescriptor.TYPE);
 
     static {
         new ChangeNodeDescriptor() {
@@ -123,9 +122,9 @@ public class SampleTemperatureProcessor {
 
     /* ###################################################################################### */
 
-    public static Slot LABEL_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK));
-    public static Slot LABEL_PRODUCER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), false);
-    public static Node LABEL_PRODUCER = new Node("Label", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER));
+    public static Slot LABEL_PRODUCER_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK);
+    public static Slot LABEL_PRODUCER_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE, false);
+    public static Node LABEL_PRODUCER = new Node("Label", generateGlobalUniqueId(), Node.TYPE_PRODUCER);
 
     static {
         new ProducerRoute.Descriptor() {
@@ -155,7 +154,7 @@ public class SampleTemperatureProcessor {
 
     public static Flow FLOW = new Flow(
         "Temperature Processor",
-        new Identifier(generateGlobalUniqueId(), Flow.TYPE),
+        generateGlobalUniqueId(),
         FLOW_NODES,
         new Wire[]{
             new Wire(FAHRENHEIT_CONSUMER_SOURCE, FAHRENHEIT_CONVERTER_SINK),

@@ -6,16 +6,21 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.http.HttpMethods;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.catalog.widget.TextLabelNodeDescriptor;
-import org.openremote.server.route.SubflowRoute;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.*;
-import org.openremote.shared.model.Identifier;
+import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.Node;
+import org.openremote.shared.flow.NodeColor;
+import org.openremote.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import javax.persistence.EntityManager;
+import javax.transaction.UserTransaction;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
@@ -25,6 +30,28 @@ public class FlowServiceTest extends IntegrationTest {
 
     @Produce
     ProducerTemplate producerTemplate;
+
+    @BeforeMethod
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
+        UserTransaction tx = getTransactionManagerService().getUserTransaction();
+        tx.begin();
+        try {
+            EntityManager em = getPersistenceService().createEntityManager();
+
+            em.persist(SampleTemperatureProcessor.FLOW);
+
+
+
+            tx.commit();
+            em.close();
+        } finally {
+            getTransactionManagerService().rollback();
+        }
+
+    }
 
     protected void postFlow(Flow flow) throws Exception {
         flow.clearDependencies();
@@ -81,7 +108,7 @@ public class FlowServiceTest extends IntegrationTest {
         );
         assertNotNull(flow.getId());
         assertEquals(flow.getLabel(), "My Flow");
-        assertEquals(flow.getIdentifier().getType(), Flow.TYPE);
+        assertEquals(flow.getType(), Flow.TYPE);
 
         flow.setLabel("TEST LABEL");
 
@@ -207,7 +234,7 @@ public class FlowServiceTest extends IntegrationTest {
         );
         assertNotNull(subflowNode.getId());
         assertEquals(subflowNode.getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
-        assertEquals(subflowNode.getIdentifier().getType(), Node.TYPE_SUBFLOW);
+        assertEquals(subflowNode.getType(), Node.TYPE_SUBFLOW);
         assertEquals(subflowNode.getEditorSettings().getTypeLabel(), Node.TYPE_SUBFLOW_LABEL);
         assertEquals(subflowNode.getEditorSettings().getComponents(), new String[] {WidgetNodeDescriptor.WIDGET_EDITOR_COMPONENT});
         assertEquals(subflowNode.getEditorSettings().getNodeColor(), NodeColor.VIRTUAL);
@@ -226,7 +253,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void resolveDependencies() throws Exception {
 
-        Flow flow = new Flow("Test Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flow = new Flow("Test Flow", IdentifierUtil.generateGlobalUniqueId());
 
         Node subflowNode = fromJson(
             producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId(), "subflow"), null, String.class),
@@ -264,8 +291,8 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(resolveFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 200);
         resolvedFlow = fromJson(resolveFlowExchange.getOut().getBody(String.class), Flow.class);
 
-        assertEquals(resolvedFlow.getSubDependencies()[0].getFlow().getIdentifier(), SampleThermostatControl.FLOW.getIdentifier());
-        assertEquals(resolvedFlow.getSubDependencies()[1].getFlow().getIdentifier(), SampleTemperatureProcessor.FLOW.getIdentifier());
+        assertEquals(resolvedFlow.getSubDependencies()[0].getFlow(), SampleThermostatControl.FLOW);
+        assertEquals(resolvedFlow.getSubDependencies()[1].getFlow(), SampleTemperatureProcessor.FLOW);
 
         // Now attach a wire to test hard super-dependencies
 
@@ -420,7 +447,7 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void resolveDependenciesSelf() throws Exception {
 
-        Flow flowA = new Flow("A", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowA = new Flow("A", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowA);
 
         Node subflowNodeA = fromJson(
@@ -443,10 +470,10 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void resolveDependenciesLoop() throws Exception {
 
-        Flow flowA = new Flow("A", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowA = new Flow("A", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowA);
 
-        Flow flowB = new Flow("B", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowB = new Flow("B", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowB);
 
         Node subflowNodeA = fromJson(
@@ -477,10 +504,10 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void resolveDependenciesLoopPut() throws Exception {
 
-        Flow flowA = new Flow("A", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowA = new Flow("A", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowA);
 
-        Flow flowB = new Flow("B", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowB = new Flow("B", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowB);
 
         Node subflowNodeA = fromJson(
@@ -512,13 +539,13 @@ public class FlowServiceTest extends IntegrationTest {
     @Test
     public void resolveDependenciesLoop2() throws Exception {
 
-        Flow flowA = new Flow("A", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowA = new Flow("A", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowA);
 
-        Flow flowB = new Flow("B", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowB = new Flow("B", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowB);
 
-        Flow flowC = new Flow("C", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        Flow flowC = new Flow("C", IdentifierUtil.generateGlobalUniqueId());
         postFlow(flowC);
 
         Node subflowNodeA = fromJson(

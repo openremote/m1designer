@@ -46,18 +46,17 @@ public class Server {
     public static void main(String[] args) throws Exception {
         LOG.info("Starting server...");
         CamelContext context = new ServerCamelContext();
-        Server server = new Server(context);
-        if (Boolean.valueOf(server.environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
-            LOG.info("######################## DEV MODE ########################");
-        }
+        new Server(context);
         LOG.info("Starting CamelContext...");
         context.start();
         LOG.info("Server ready");
 
         // TODO sample data
+/*
         context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
         context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
         context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+*/
 
     }
 }

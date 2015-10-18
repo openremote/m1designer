@@ -112,7 +112,7 @@ public class DiscoveryTest extends IntegrationTest {
             Adapter.class
         );
 
-        assertEquals(adapter.getIdentifier().getId(), "zwaveMock");
+        assertEquals(adapter.getId(), "zwaveMock");
         assertEquals(adapter.getDiscoveryEndpoint(), "zwaveMock://discovery");
         assertEquals(adapter.getLabel(), "ZWave Mock Adapter");
         assertEquals(adapter.getProperties().get("serialPort").getDescriptor().getLabel(), "Serial Port");

@@ -51,7 +51,7 @@ public abstract class NodeRoute extends RouteBuilder {
             try {
                 this.nodeProperties = JSON.readValue(node.getProperties(), ObjectNode.class);
             } catch (IOException ex) {
-                throw new RuntimeException("Error reading properties of '" + node.getIdentifier() + "'", ex);
+                throw new RuntimeException("Error reading properties of '" + node.toTypeIdString() + "'", ex);
             }
         } else {
             nodeProperties = JSON.createObjectNode();
@@ -75,19 +75,19 @@ public abstract class NodeRoute extends RouteBuilder {
     }
 
     public String getRouteId() {
-        return getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+        return getNode().toTypeIdString() + ";" + getFlow().toTypeIdString();
     }
 
     public String getRouteId(Slot slot) {
-        return slot.getIdentifier() + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+        return slot.toTypeIdString() + ";" + getNode().toTypeIdString() + ";" + getFlow().toTypeIdString();
     }
 
     public String getProcessorId(String processorLabel) {
-        return processorLabel + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+        return processorLabel + ";" + getNode().toTypeIdString() + ";" + getFlow().toTypeIdString();
     }
 
     public String getProcessorId(Slot slot, String processorLabel) {
-        return processorLabel + ";" + slot.getIdentifier() + ";" + getNode().getIdentifier() + ";" + getFlow().getIdentifier();
+        return processorLabel + ";" + slot.toTypeIdString() + ";" + getNode().toTypeIdString() + ";" + getFlow().toTypeIdString();
     }
 
     public String getRouteDescription() {

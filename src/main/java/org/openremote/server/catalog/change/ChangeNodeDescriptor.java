@@ -7,7 +7,6 @@ import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.List;
 
@@ -34,8 +33,8 @@ public class ChangeNodeDescriptor extends NodeDescriptor {
     @Override
     public void addSlots(List<Slot> slots) {
         super.addSlots(slots);
-        slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK)));
-        slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE)));
+        slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK));
+        slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     }
 
     @Override

@@ -247,7 +247,7 @@ public class ConsolePresenter extends AbstractPresenter {
         Component component = (Component) getView().getOwnerDocument().createElement("or-console-widget-slot");
         if (!slot.isLabelEmpty())
             component.set("label", slot.getLabel());
-        component.set("type", slot.getIdentifier().getType());
+        component.set("type", slot.getType());
         component.set("slotId", slot.getId());
         if (instanceId != null)
             component.set("instanceId", instanceId);

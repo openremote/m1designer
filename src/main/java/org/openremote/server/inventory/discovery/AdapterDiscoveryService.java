@@ -9,7 +9,6 @@ import org.apache.camel.util.CamelContextHelper;
 import org.openremote.server.route.RouteManagementUtil;
 import org.openremote.shared.component.ValidationGroupDiscovery;
 import org.openremote.shared.inventory.Adapter;
-import org.openremote.shared.model.Identifier;
 import org.openremote.shared.model.Property;
 import org.openremote.shared.model.PropertyDescriptor;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
@@ -142,7 +141,7 @@ public class AdapterDiscoveryService implements StaticService {
         }
         // TODO: handle required properties
 
-        Adapter adapter = new Adapter(label, new Identifier(name, componentType), discoveryEndpoint);
+        Adapter adapter = new Adapter(label, name, componentType, discoveryEndpoint);
 
         ComponentConfiguration config = component.createComponentConfiguration();
         for (Map.Entry<String, ParameterConfiguration> configEntry : config.getParameterConfigurationMap().entrySet()) {

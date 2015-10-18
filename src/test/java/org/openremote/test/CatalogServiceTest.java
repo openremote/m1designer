@@ -45,7 +45,7 @@ public class CatalogServiceTest extends IntegrationTest {
 
         assertNotNull(textLabelNode.getId());
         assertNull(textLabelNode.getLabel());
-        assertEquals(textLabelNode.getIdentifier().getType(), TextLabelNodeDescriptor.TYPE);
+        assertEquals(textLabelNode.getType(), TextLabelNodeDescriptor.TYPE);
 
         assertTrue(textLabelNode.isClientAccess());
         assertTrue(textLabelNode.isClientWidget());

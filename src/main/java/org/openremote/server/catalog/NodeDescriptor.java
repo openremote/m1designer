@@ -8,7 +8,6 @@ import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.NodeColor;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,7 @@ public abstract class NodeDescriptor {
 
     public Node createNode() {
         return initialize(
-            new Node(null, new Identifier(IdentifierUtil.generateGlobalUniqueId(), getType()))
+            new Node(null, IdentifierUtil.generateGlobalUniqueId(), getType())
         );
     }
 

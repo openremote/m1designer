@@ -6,7 +6,6 @@ import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.*;
-import org.openremote.shared.model.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
@@ -53,7 +52,7 @@ public class FlowModelTest {
 
     @Test
     public void duplicateWires() throws Exception {
-        Flow flow = new Flow("Test Flow", new Identifier("123"));
+        Flow flow = new Flow("Test Flow", "123");
         flow.addWire(new Wire("a", "b"));
         flow.addWire(new Wire("a", "b"));
         assertEquals(flow.getWires().length, 1);
@@ -61,7 +60,7 @@ public class FlowModelTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void duplicateWiresException() throws Exception {
-        new Flow("foo", new Identifier("123"), new Node[0], new Wire[]{new Wire("a", "b"), new Wire("a", "b")});
+        new Flow("foo", "123", new Node[0], new Wire[]{new Wire("a", "b"), new Wire("a", "b")});
     }
 
     @Test
@@ -73,14 +72,14 @@ public class FlowModelTest {
         assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLabel(), sampleEnvironmentWidget.getLabel());
-        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getIdentifier(), sampleEnvironmentWidget.getIdentifier());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getId(), sampleEnvironmentWidget.getId());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[0].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLevel(), 1);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[0].isWired());
         assertFalse(sampleTemperatureProcessor.getSuperDependencies()[0].isPeersInvalid());
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLabel(), sampleThermostatControl.getLabel());
-        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getIdentifier(), sampleThermostatControl.getIdentifier());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getId(), sampleThermostatControl.getId());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[1].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLevel(), 0);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[1].isWired());
@@ -95,14 +94,14 @@ public class FlowModelTest {
         assertEquals(sampleTemperatureProcessor.getSuperDependencies().length, 2);
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLabel(), sampleEnvironmentWidget.getLabel());
-        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getIdentifier(), sampleEnvironmentWidget.getIdentifier());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getId(), sampleEnvironmentWidget.getId());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[0].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[0].getLevel(), 1);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[0].isWired());
         assertFalse(sampleTemperatureProcessor.getSuperDependencies()[0].isPeersInvalid());
 
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLabel(), sampleThermostatControl.getLabel());
-        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getIdentifier(), sampleThermostatControl.getIdentifier());
+        assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getId(), sampleThermostatControl.getId());
         assertNull(sampleTemperatureProcessor.getSuperDependencies()[1].getFlow());
         assertEquals(sampleTemperatureProcessor.getSuperDependencies()[1].getLevel(), 0);
         assertTrue(sampleTemperatureProcessor.getSuperDependencies()[1].isWired());
@@ -117,17 +116,17 @@ public class FlowModelTest {
         assertEquals(sampleEnvironmentWidget.getSubDependencies().length, 2);
 
         assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getLabel(), sampleThermostatControl.getLabel());
-        assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getIdentifier(), sampleThermostatControl.getIdentifier());
+        assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getId(), sampleThermostatControl.getId());
         assertNull(sampleEnvironmentWidget.getSubDependencies()[0].getFlow());
         assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getLevel(), 0);
 
         assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getLabel(), sampleTemperatureProcessor.getLabel());
-        assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getIdentifier(), sampleTemperatureProcessor.getIdentifier());
+        assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getId(), sampleTemperatureProcessor.getId());
         assertNull(sampleEnvironmentWidget.getSubDependencies()[1].getFlow());
         assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getLevel(), 1);
 
-        assertEquals(sampleEnvironmentWidget.findSubDependency(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).getIdentifier(), SampleThermostatControl.FLOW.getIdentifier());
-        assertEquals(sampleEnvironmentWidget.findSubDependency(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW).getIdentifier(), SampleTemperatureProcessor.FLOW.getIdentifier());
+        assertEquals(sampleEnvironmentWidget.findSubDependency(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT).getId(), SampleThermostatControl.FLOW.getId());
+        assertEquals(sampleEnvironmentWidget.findSubDependency(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW).getId(), SampleTemperatureProcessor.FLOW.getId());
     }
 
     @Test
@@ -137,8 +136,8 @@ public class FlowModelTest {
 
         assertEquals(sampleEnvironmentWidget.getSubDependencies().length, 2);
 
-        assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getFlow().getIdentifier(), sampleThermostatControl.getIdentifier());
-        assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getFlow().getIdentifier(), sampleTemperatureProcessor.getIdentifier());
+        assertEquals(sampleEnvironmentWidget.getSubDependencies()[0].getFlow().getId(), sampleThermostatControl.getId());
+        assertEquals(sampleEnvironmentWidget.getSubDependencies()[1].getFlow().getId(), sampleTemperatureProcessor.getId());
     }
 
     @Test

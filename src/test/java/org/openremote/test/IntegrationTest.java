@@ -18,11 +18,16 @@ import org.openremote.server.event.EventServiceConfiguration;
 import org.openremote.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.server.flow.FlowServiceConfiguration;
 import org.openremote.server.inventory.InventoryServiceConfiguration;
+import org.openremote.server.persistence.PersistenceConfiguration;
+import org.openremote.server.persistence.PersistenceService;
+import org.openremote.server.persistence.TransactionManagerService;
 import org.openremote.server.route.RouteManagementServiceConfiguration;
 import org.openremote.server.util.JsonUtil;
 import org.openremote.server.web.WebserverConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -63,6 +68,22 @@ public class IntegrationTest extends CamelTestSupport {
         return context;
     }
 
+    @BeforeMethod
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        PersistenceService persistenceService = getPersistenceService();
+        persistenceService.createSchema();
+    }
+
+    @AfterMethod
+    @Override
+    public void tearDown() throws Exception {
+        PersistenceService persistenceService = getPersistenceService();
+        persistenceService.dropSchema();
+        super.tearDown();
+    }
+
     protected void configure(Properties properties,
                              List<Configuration> configurations,
                              CamelContext context) throws Exception {
@@ -73,6 +94,9 @@ public class IntegrationTest extends CamelTestSupport {
         properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
         configurations.add(new WebserverConfiguration());
 
+        properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:mem:test");
+        configurations.add(new PersistenceConfiguration());
+
         configurations.add(new NodeDescriptorConfiguration());
         configurations.add(new CatalogServiceConfiguration());
         configurations.add(new InventoryServiceConfiguration());
@@ -81,7 +105,6 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new EventServiceConfiguration());
 
         configurations.add(new WebSocketEventServiceConfiguration());
-
     }
 
     @Override
@@ -115,6 +138,14 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected String getServerPort() {
         return serverEphemeralPort;
+    }
+
+    protected TransactionManagerService getTransactionManagerService() {
+        return context().hasService(TransactionManagerService.class);
+    }
+
+    protected PersistenceService getPersistenceService() {
+        return context().hasService(PersistenceService.class);
     }
 
     protected String restClientUrl(String... pathSegments) {

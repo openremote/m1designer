@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.List;
 
@@ -35,10 +34,10 @@ public class PushButtonNodeDescriptor extends WidgetNodeDescriptor {
 
     @Override
     public void addSlots(List<Slot> slots) {
-        slots.add(new Slot("Click", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "click"));
-        slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
-        slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
-        slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
+        slots.add(new Slot("Click", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE, "click"));
+        slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "text"));
+        slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "backgroundColor"));
+        slots.add(new Slot("Text Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "color"));
         super.addSlots(slots);
     }
 

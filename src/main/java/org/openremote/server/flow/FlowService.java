@@ -12,9 +12,11 @@ import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.*;
+import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.FlowDependencyResolver;
+import org.openremote.shared.flow.Node;
+import org.openremote.shared.flow.Slot;
 import org.openremote.shared.inventory.ClientPreset;
-import org.openremote.shared.model.Identifier;
 import org.openremote.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +132,7 @@ public class FlowService implements StaticService {
             Flow[] flowsInfo = new Flow[SAMPLE_FLOWS.size()];
             int i = 0;
             for (Flow flow : SAMPLE_FLOWS.values()) {
-                flowsInfo[i++] = new Flow(flow.getLabel(), flow.getIdentifier());
+                flowsInfo[i++] = new Flow(flow.getLabel(), flow.getId());
             }
             return flowsInfo;
         }
@@ -138,7 +140,7 @@ public class FlowService implements StaticService {
 
     public Flow getFlowTemplate() {
         LOG.debug("Getting flow template");
-        return new Flow("My Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        return new Flow("My Flow", IdentifierUtil.generateGlobalUniqueId());
     }
 
     public Node createSubflowNode(@Header("id") String id) {
@@ -266,10 +268,10 @@ public class FlowService implements StaticService {
     }
 
     public void resetCopy(Node node) {
-        node.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+        node.setId(IdentifierUtil.generateGlobalUniqueId());
 
         for (Slot slot : node.getSlots()) {
-            slot.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+            slot.setId(IdentifierUtil.generateGlobalUniqueId());
         }
 
         if (node.getLabel() != null) {
@@ -289,7 +291,7 @@ public class FlowService implements StaticService {
                     // Don't believe what the node says about its persistent property paths,
                     // must ask the node descriptor what those properties are
                     NodeDescriptor nodeDescriptor = context.getRegistry().lookupByNameAndType(
-                        node.getIdentifier().getType(),
+                        node.getType(),
                         NodeDescriptor.class
                     );
                     List<String> persistentPaths = nodeDescriptor.getPersistentPropertyPaths();

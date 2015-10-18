@@ -13,7 +13,6 @@ import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.flow.Wire;
-import org.openremote.shared.model.Identifier;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,9 +27,9 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot TEMPERATURE_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Slot TEMPERATURE_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
-    public static Node TEMPERATURE_CONSUMER = new Node("Temperature", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER));
+    public static Slot TEMPERATURE_CONSUMER_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Slot TEMPERATURE_CONSUMER_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK, false);
+    public static Node TEMPERATURE_CONSUMER = new Node("Temperature", generateGlobalUniqueId(), Node.TYPE_CONSUMER);
 
     static {
         new ConsumerRoute.Descriptor() {
@@ -46,9 +45,9 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_CONSUMER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Slot SETPOINT_CONSUMER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK), false);
-    public static Node SETPOINT_CONSUMER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_CONSUMER));
+    public static Slot SETPOINT_CONSUMER_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Slot SETPOINT_CONSUMER_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK, false);
+    public static Node SETPOINT_CONSUMER = new Node("Setpoint", generateGlobalUniqueId(), Node.TYPE_CONSUMER);
 
     static {
         new ConsumerRoute.Descriptor() {
@@ -67,7 +66,7 @@ public class SampleThermostatControl {
     public static Slot TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
     public static Slot TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE, SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
     public static Slot TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE, SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
-    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), SampleTemperatureProcessor.FLOW.getId());
+    public static Node TEMPERATURE_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), generateGlobalUniqueId(), TYPE_SUBFLOW, SampleTemperatureProcessor.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -76,14 +75,14 @@ public class SampleThermostatControl {
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK);
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_CELCIUS_SOURCE);
                 slots.add(TEMPERATURE_PROCESSOR_FLOW_LABEL_SOURCE);
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
         }.initialize(TEMPERATURE_PROCESSOR_FLOW);
         TEMPERATURE_PROCESSOR_FLOW.getEditorSettings().setPositionX((double) 300);
@@ -95,7 +94,7 @@ public class SampleThermostatControl {
     public static Slot SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK, SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
     public static Slot SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE, SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
     public static Slot SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE = new Slot(generateGlobalUniqueId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE, SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
-    public static Node SETPOINT_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), new Identifier(generateGlobalUniqueId(), TYPE_SUBFLOW), SampleTemperatureProcessor.FLOW.getId());
+    public static Node SETPOINT_PROCESSOR_FLOW = new Node(SampleTemperatureProcessor.FLOW.getLabel(), generateGlobalUniqueId(), TYPE_SUBFLOW, SampleTemperatureProcessor.FLOW.getId());
 
     static {
         new SubflowRoute.Descriptor() {
@@ -104,14 +103,14 @@ public class SampleThermostatControl {
                 slots.add(SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK);
                 slots.add(SETPOINT_PROCESSOR_FLOW_CELCIUS_SOURCE);
                 slots.add(SETPOINT_PROCESSOR_FLOW_LABEL_SOURCE);
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
         }.initialize(SETPOINT_PROCESSOR_FLOW);
         SETPOINT_PROCESSOR_FLOW.getEditorSettings().setPositionX((double) 300);
@@ -120,25 +119,25 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot TEMPERATURE_LABEL_SINK = new Slot("Text", new Identifier(generateGlobalUniqueId(), TYPE_SINK), "text");
-    public static Node TEMPERATURE_LABEL = new Node("Temperature Label", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE));
+    public static Slot TEMPERATURE_LABEL_SINK = new Slot("Text", generateGlobalUniqueId(), TYPE_SINK, "text");
+    public static Node TEMPERATURE_LABEL = new Node("Temperature Label", generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE);
 
     static {
         new TextLabelNodeDescriptor() {
             @Override
             public void addSlots(List<Slot> slots) {
                 slots.add(TEMPERATURE_LABEL_SINK);
-                slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "text"));
-                slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "textColor"));
-                slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSize"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE, "text"));
+                slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "textColor"));
+                slots.add(new Slot("Font Size", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "fontSize"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -161,8 +160,8 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_LABEL_SINK = new Slot("Text", new Identifier(generateGlobalUniqueId(), TYPE_SINK), "text");
-    public static Node SETPOINT_LABEL = new Node("Setpoint Label", new Identifier(generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE));
+    public static Slot SETPOINT_LABEL_SINK = new Slot("Text", generateGlobalUniqueId(), TYPE_SINK, "text");
+    public static Node SETPOINT_LABEL = new Node("Setpoint Label", generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE);
 
     static {
         new TextLabelNodeDescriptor() {
@@ -170,17 +169,17 @@ public class SampleThermostatControl {
             @Override
             public void addSlots(List<Slot> slots) {
                 slots.add(SETPOINT_LABEL_SINK);
-                slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "text"));
-                slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "textColor"));
-                slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSize"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE, "text"));
+                slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "textColor"));
+                slots.add(new Slot("Font Size", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "fontSize"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -202,25 +201,25 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_PLUS_BUTTON_SOURCE = new Slot("Click", new Identifier(generateGlobalUniqueId(), TYPE_SOURCE), "click");
-    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", new Identifier(generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE));
+    public static Slot SETPOINT_PLUS_BUTTON_SOURCE = new Slot("Click", generateGlobalUniqueId(), TYPE_SOURCE, "click");
+    public static Node SETPOINT_PLUS_BUTTON = new Node("Increase Temperature Button", generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE);
 
     static {
         new PushButtonNodeDescriptor() {
             @Override
             public void addSlots(List<Slot> slots) {
                 slots.add(SETPOINT_PLUS_BUTTON_SOURCE);
-                slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
-                slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
-                slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "text"));
+                slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "backgroundColor"));
+                slots.add(new Slot("Text Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "color"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -242,25 +241,25 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_MINUS_BUTTON_SOURCE = new Slot("Click", new Identifier(generateGlobalUniqueId(), TYPE_SOURCE), "click");
-    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", new Identifier(generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE));
+    public static Slot SETPOINT_MINUS_BUTTON_SOURCE = new Slot("Click", generateGlobalUniqueId(), TYPE_SOURCE, "click");
+    public static Node SETPOINT_MINUS_BUTTON = new Node("Decrease Temperature Button", generateGlobalUniqueId(), PushButtonNodeDescriptor.TYPE);
 
     static {
         new PushButtonNodeDescriptor() {
             @Override
             public void addSlots(List<Slot> slots) {
                 slots.add(SETPOINT_MINUS_BUTTON_SOURCE);
-                slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
-                slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
-                slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "color"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-                slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-                slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-                slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-                slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+                slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "text"));
+                slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "backgroundColor"));
+                slots.add(new Slot("Text Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "color"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+                slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+                slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+                slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+                slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
             }
 
             @Override
@@ -282,10 +281,10 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_PLUS_FILTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_PLUS_FILTER_TRIGGER_SINK = new Slot("Trigger", new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_PLUS_FILTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Node SETPOINT_PLUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), FilterNodeDescriptor.TYPE));
+    public static Slot SETPOINT_PLUS_FILTER_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_PLUS_FILTER_TRIGGER_SINK = new Slot("Trigger", generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_PLUS_FILTER_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Node SETPOINT_PLUS_FILTER = new Node("Forward on trigger", generateGlobalUniqueId(), FilterNodeDescriptor.TYPE);
 
     static {
         new FilterNodeDescriptor() {
@@ -308,10 +307,10 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_MINUS_FILTER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_MINUS_FILTER_TRIGGER_SINK = new Slot("Trigger", new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_MINUS_FILTER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Node SETPOINT_MINUS_FILTER = new Node("Forward on trigger", new Identifier(generateGlobalUniqueId(), FilterNodeDescriptor.TYPE));
+    public static Slot SETPOINT_MINUS_FILTER_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_MINUS_FILTER_TRIGGER_SINK = new Slot("Trigger", generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_MINUS_FILTER_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Node SETPOINT_MINUS_FILTER = new Node("Forward on trigger", generateGlobalUniqueId(), FilterNodeDescriptor.TYPE);
 
     static {
         new FilterNodeDescriptor() {
@@ -334,9 +333,9 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_INCREMENT_FUNCTION_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_INCREMENT_FUNCTION_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Node SETPOINT_INCREMENT_FUNCTION = new Node("Increment by 1", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE));
+    public static Slot SETPOINT_INCREMENT_FUNCTION_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_INCREMENT_FUNCTION_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Node SETPOINT_INCREMENT_FUNCTION = new Node("Increment by 1", generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE);
 
     static {
         new FunctionNodeDescriptor() {
@@ -358,9 +357,9 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_DECREMENT_FUNCTION_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_DECREMENT_FUNCTION_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE));
-    public static Node SETPOINT_DECREMENT_FUNCTION = new Node("Decrement by 1", new Identifier(generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE));
+    public static Slot SETPOINT_DECREMENT_FUNCTION_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_DECREMENT_FUNCTION_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE);
+    public static Node SETPOINT_DECREMENT_FUNCTION = new Node("Decrement by 1", generateGlobalUniqueId(), FunctionNodeDescriptor.TYPE);
 
     static {
         new FunctionNodeDescriptor() {
@@ -382,9 +381,9 @@ public class SampleThermostatControl {
 
     /* ###################################################################################### */
 
-    public static Slot SETPOINT_PRODUCER_SINK = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SINK));
-    public static Slot SETPOINT_PRODUCER_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), TYPE_SOURCE), false);
-    public static Node SETPOINT_PRODUCER = new Node("Setpoint", new Identifier(generateGlobalUniqueId(), Node.TYPE_PRODUCER));
+    public static Slot SETPOINT_PRODUCER_SINK = new Slot(generateGlobalUniqueId(), TYPE_SINK);
+    public static Slot SETPOINT_PRODUCER_SOURCE = new Slot(generateGlobalUniqueId(), TYPE_SOURCE, false);
+    public static Node SETPOINT_PRODUCER = new Node("Setpoint", generateGlobalUniqueId(), Node.TYPE_PRODUCER);
 
     static {
         new ProducerRoute.Descriptor() {
@@ -421,7 +420,7 @@ public class SampleThermostatControl {
 
     public static Flow FLOW = new Flow(
         "Thermostat Control",
-        new Identifier(generateGlobalUniqueId(), Flow.TYPE),
+        generateGlobalUniqueId(),
         FLOW_NODES,
         new Wire[]{
             new Wire(TEMPERATURE_CONSUMER_SOURCE, TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK),

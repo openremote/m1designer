@@ -31,7 +31,7 @@ public class FlowStartProcedure extends FlowProcedure {
                 clearProcessed();
                 NodeRoute nodeRoute;
                 NodeDescriptor nodeDescriptor =
-                    (NodeDescriptor) getContext().getRegistry().lookupByName(node.getIdentifier().getType());
+                    (NodeDescriptor) getContext().getRegistry().lookupByName(node.getType());
                 if (nodeDescriptor == null) {
                     throw new UnsupportedOperationException("No descriptor for type of node: " + node);
                 }

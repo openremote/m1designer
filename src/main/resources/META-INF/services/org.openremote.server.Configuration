@@ -1,5 +1,6 @@
 org.openremote.server.SystemConfiguration
 org.openremote.server.web.WebserverConfiguration
+org.openremote.server.persistence.PersistenceConfiguration
 org.openremote.server.catalog.NodeDescriptorConfiguration
 org.openremote.server.catalog.CatalogServiceConfiguration
 org.openremote.server.inventory.InventoryServiceConfiguration
