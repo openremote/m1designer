@@ -169,7 +169,7 @@ public class FlowEditorPresenter extends AbstractPresenter {
 
             @Override
             protected void onMoved(Node node) {
-                dispatch(new FlowModifiedEvent(flow, true));
+                dispatch(new FlowModifiedEvent(flow, false));
             }
 
             @Override

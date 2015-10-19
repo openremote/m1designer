@@ -19,6 +19,8 @@ Development
 
 * Open [http://localhost:8080/](http://localhost:8080/) in browser
 
+* Edit (but don't commit) the TODO in `ShellPresenter.java` to open editor immediately on page load
+
 Build tested archives
 ---
 
