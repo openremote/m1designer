@@ -13,6 +13,7 @@ import org.openremote.server.route.RouteManagementService;
 import org.openremote.server.route.procedure.FlowProcedureException;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.FlowDependencyResolver;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.inventory.ClientPreset;
@@ -168,7 +169,10 @@ public class FlowService implements StaticService {
             if (flow == null)
                 return null;
 
-            new FlowDependencyResolverImpl(ps, em).updateDependencies(flow, true);
+            FlowDependencyResolver flowDependencyResolver = new FlowDependencyResolverImpl(ps, em);
+
+            flowDependencyResolver.populateDependencies(flow, false);
+            flowDependencyResolver.updateDependencies(flow, true);
 
             // TODO: Exception handling
             try {
