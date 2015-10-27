@@ -14,4 +14,4 @@ src/main/generated
 bin/
 .settings/
 
-or-controller-database.mv.db
+or-controller-database.*.db

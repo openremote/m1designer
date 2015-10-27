@@ -3,8 +3,12 @@ package org.openremote.server.persistence;
 import org.apache.camel.CamelContext;
 import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistenceConfiguration implements Configuration {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PersistenceConfiguration.class);
 
     public static final String TRANSACTION_SERVER_ID = "TRANSACTION_SERVER_ID";
     public static final String TRANSACTION_SERVER_ID_DEFAULT = "MyOpenRemoteController123";
@@ -41,7 +45,8 @@ public class PersistenceConfiguration implements Configuration {
                 Integer.parseInt(environment.getProperty(DATABASE_STATEMENT_CACHE_SIZE, DATABASE_STATEMENT_CACHE_SIZE_DEFAULT))
             );
 
-        PersistenceService persistenceService = new PersistenceService(databaseProduct);
+        PersistenceService persistenceService =
+            new PersistenceService(transactionManagerService, databaseProduct);
 
         context.addService(transactionManagerService);
         context.addService(persistenceService);

@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        jcenter();
+        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -63,6 +63,7 @@ dependencies {
     serverDependencies "org.apache.camel:camel-jackson:$camelVersion"
     serverDependencies "org.apache.camel:camel-script:$camelVersion"
     serverDependencies "org.apache.camel:camel-groovy:$camelVersion"
+    serverDependencies "org.apache.camel:camel-spring:$camelVersion"
     serverDependencies "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     serverDependencies "org.fourthline.cling:cling-core:$clingVersion"
 
@@ -143,6 +144,30 @@ test {
         !it.absolutePath.contains("ru.finam")
     }
 }
+
+/* TODO Remove this if we don't need APT
+compileJava {
+    // This configures the annotation processing tool in javac to use a separate output
+    // directory for generated source - the default is the same as for .class files. We
+    // need them in a different folder so we can add it as a source path in the IDE and
+    // still hide the .class/binary directories. This sucks, Gradle sucks.
+    def generatedSourceDirectory = "$project.buildDir/generated-source-apt"
+
+    doFirst {
+        if (new File(generatedSourceDirectory).exists()) {
+            delete generatedSourceDirectory
+        }
+        new File(generatedSourceDirectory).mkdirs()
+    }
+
+    sourceSets.main.java {
+        srcDir generatedSourceDirectory
+    }
+
+    it.options.compilerArgs += ['-s', generatedSourceDirectory]
+}
+*/
+
 
 jar {
     exclude("org/openremote/client")

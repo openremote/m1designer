@@ -1,17 +1,21 @@
 package org.openremote.test;
 
-import org.openremote.server.flow.FlowService;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.*;
+import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.FlowDependencyResolver;
+import org.openremote.shared.flow.Node;
+import org.openremote.shared.flow.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.*;
@@ -19,6 +23,45 @@ import static org.testng.Assert.*;
 public class FlowModelTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowModelTest.class);
+    public static abstract class MapFlowDependencyResolver extends FlowDependencyResolver {
+
+        final Map<String, Flow> flows;
+
+        public MapFlowDependencyResolver(Map<String, Flow> flows) {
+            this.flows = flows;
+        }
+
+        @Override
+        protected Flow findFlow(String flowId) {
+            synchronized (flows) {
+                return flows.get(flowId);
+            }
+        }
+
+        @Override
+        protected Flow[] findSubflowDependents(String flowId) {
+            synchronized (flows) {
+                List<Flow> list = new ArrayList<>();
+                for (Flow flow : flows.values()) {
+                    Node[] subflowNodes = flow.findSubflowNodes();
+                    for (Node subflowNode : subflowNodes) {
+                        if (flowId.equals(subflowNode.getSubflowId())) {
+                            list.add(flow);
+                            break;
+                        }
+                    }
+                }
+                return list.toArray(new Flow[list.size()]);
+            }
+        }
+
+        @Override
+        protected void storeFlow(Flow flow) {
+            synchronized (flows) {
+                flows.put(flow.getId(), flow);
+            }
+        }
+    }
 
     Flow sampleEnvironmentWidget;
     Flow sampleThermostatControl;
@@ -37,7 +80,7 @@ public class FlowModelTest {
         sampleTemperatureProcessor = SampleTemperatureProcessor.getCopy();
         sampleFlows.put(sampleTemperatureProcessor.getId(), sampleTemperatureProcessor);
 
-        flowDependencyResolver = new FlowService.MapFlowDependencyResolver(sampleFlows) {
+        flowDependencyResolver = new MapFlowDependencyResolver(sampleFlows) {
             @Override
             protected void stopFlowIfRunning(Flow flow) {
                 // NOOP, no server running

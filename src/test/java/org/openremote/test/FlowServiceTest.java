@@ -16,11 +16,7 @@ import org.openremote.shared.flow.NodeColor;
 import org.openremote.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
@@ -30,28 +26,6 @@ public class FlowServiceTest extends IntegrationTest {
 
     @Produce
     ProducerTemplate producerTemplate;
-
-    @BeforeMethod
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        UserTransaction tx = getTransactionManagerService().getUserTransaction();
-        tx.begin();
-        try {
-            EntityManager em = getPersistenceService().createEntityManager();
-
-            em.persist(SampleTemperatureProcessor.FLOW);
-
-
-
-            tx.commit();
-            em.close();
-        } finally {
-            getTransactionManagerService().rollback();
-        }
-
-    }
 
     protected void postFlow(Flow flow) throws Exception {
         flow.clearDependencies();
@@ -84,20 +58,6 @@ public class FlowServiceTest extends IntegrationTest {
             Flow[].class
         );
         assertEquals(flows.length, 3);
-        assertEquals(flows[0].getId(), SampleEnvironmentWidget.FLOW.getId());
-        assertEquals(flows[0].getLabel(), SampleEnvironmentWidget.FLOW.getLabel());
-        assertEquals(flows[0].getNodes().length, 0);
-        assertEquals(flows[0].getWires().length, 0);
-        assertEquals(flows[0].getSuperDependencies().length, 0);
-        assertEquals(flows[0].getSubDependencies().length, 0);
-        assertEquals(flows[1].getId(), SampleThermostatControl.FLOW.getId());
-        assertEquals(flows[1].getLabel(), SampleThermostatControl.FLOW.getLabel());
-        assertEquals(flows[1].getNodes().length, 0);
-        assertEquals(flows[1].getWires().length, 0);
-        assertEquals(flows[2].getId(), SampleTemperatureProcessor.FLOW.getId());
-        assertEquals(flows[2].getLabel(), SampleTemperatureProcessor.FLOW.getLabel());
-        assertEquals(flows[2].getNodes().length, 0);
-        assertEquals(flows[2].getWires().length, 0);
     }
 
     @Test

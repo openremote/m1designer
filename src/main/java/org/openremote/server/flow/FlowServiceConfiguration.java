@@ -13,12 +13,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.openremote.server.Environment.DEV_MODE;
+import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
 
 public class FlowServiceConfiguration implements Configuration {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowServiceConfiguration.class);
 
     class FlowServiceRouteBuilder extends RestRouteBuilder {
+
+        public FlowServiceRouteBuilder(boolean debug) {
+            super(debug);
+        }
+
         @Override
         public void configure() throws Exception {
             super.configure();
@@ -104,10 +111,12 @@ public class FlowServiceConfiguration implements Configuration {
                         FlowService flowService = getContext().hasService(FlowService.class);
                         flowService.deleteFlow(flowId);
                         exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 204);
-                    } catch (FlowProcedureException ex) {
-                        LOG.debug("Error deleting/stopping flow '" + flowId + "'", ex);
-                        exchange.getIn().setBody("Error stopping flow '" + flowId + ":" + ex.getMessage());
-                        exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 409);
+                    } catch (RuntimeException ex) {
+                        if (ex.getCause() != null && ex.getCause() instanceof FlowProcedureException) {
+                            LOG.debug("Error deleting/stopping flow '" + flowId + "'", ex);
+                            exchange.getIn().setBody("Error stopping flow '" + flowId + ":" + ex.getMessage());
+                            exchange.getIn().setHeader(HTTP_RESPONSE_CODE, 409);
+                        }
                     }
                 })
                 .endRest()
@@ -135,7 +144,11 @@ public class FlowServiceConfiguration implements Configuration {
         );
         context.addService(flowService);
 
-        context.addRoutes(new FlowServiceRouteBuilder());
+        context.addRoutes(
+            new FlowServiceRouteBuilder(
+                Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))
+            )
+        );
     }
 
 }

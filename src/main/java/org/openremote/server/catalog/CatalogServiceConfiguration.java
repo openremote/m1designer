@@ -7,11 +7,19 @@ import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.openremote.server.Environment.DEV_MODE;
+import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
+
 public class CatalogServiceConfiguration implements Configuration {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogServiceConfiguration.class);
 
     class CatalogServiceRouteBuilder extends RestRouteBuilder {
+
+        public CatalogServiceRouteBuilder(boolean debug) {
+            super(debug);
+        }
+
         @Override
         public void configure() throws Exception {
             super.configure();
@@ -38,7 +46,11 @@ public class CatalogServiceConfiguration implements Configuration {
         CatalogService catalogService = new CatalogService(context);
         context.addService(catalogService);
 
-        context.addRoutes(new CatalogServiceRouteBuilder());
+        context.addRoutes(
+            new CatalogServiceRouteBuilder(
+                Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))
+            )
+        );
     }
 
 }

@@ -73,19 +73,26 @@ public class WebserverConfiguration implements Configuration {
     }
 
     public static abstract class RestRouteBuilder extends RouteBuilder {
+
+        final boolean debug;
+
+        public RestRouteBuilder(boolean debug) {
+            this.debug = debug;
+        }
+
         @Override
         public void configure() throws Exception {
 
             onException(JsonProcessingException.class)
-                .process(new JsonProcessingExceptionHandler())
+                .process(new JsonProcessingExceptionHandler(debug))
                 .handled(true);
 
             onException(IllegalStateException.class)
-                .process(new ConflictExceptionHandler())
+                .process(new ConflictExceptionHandler(debug))
                 .handled(true);
 
             onException(IllegalArgumentException.class)
-                .process(new BadRequestExceptionHandler())
+                .process(new BadRequestExceptionHandler(debug))
                 .handled(true);
         }
     }
@@ -94,6 +101,13 @@ public class WebserverConfiguration implements Configuration {
      * This handles JSON unmarshalling errors when we receive JSON and can't convert it to POJO.
      */
     public static class JsonProcessingExceptionHandler implements Processor {
+
+        final boolean debug;
+
+        public JsonProcessingExceptionHandler(boolean debug) {
+            this.debug = debug;
+        }
+
         @Override
         public void process(Exchange exchange) throws Exception {
             Throwable cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
@@ -101,7 +115,7 @@ public class WebserverConfiguration implements Configuration {
             exchange.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
             exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
             exchange.getContext().createProducerTemplate()
-                .send("log:org.openremote.json?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+                .send("log:org.openremote.json?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false&showStackTrace=" + debug, exchange);
         }
     }
 
@@ -109,11 +123,18 @@ public class WebserverConfiguration implements Configuration {
      * This handles conflicts/409 responses (unique key violations, concurrent modifications, etc.)
      */
     public static class ConflictExceptionHandler implements Processor {
+
+        final boolean debug;
+
+        public ConflictExceptionHandler(boolean debug) {
+            this.debug = debug;
+        }
+
         @Override
         public void process(Exchange exchange) throws Exception {
             exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 409);
             exchange.getContext().createProducerTemplate()
-                .send("log:org.openremote.conflict?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+                .send("log:org.openremote.conflict?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false&showStackTrace=" + debug, exchange);
         }
     }
 
@@ -121,11 +142,18 @@ public class WebserverConfiguration implements Configuration {
      * This handles bad request/400 responses (model validation errors, etc.)
      */
     public static class BadRequestExceptionHandler implements Processor {
+
+        final boolean debug;
+
+        public BadRequestExceptionHandler(boolean  debug) {
+            this.debug = debug;
+        }
+
         @Override
         public void process(Exchange exchange) throws Exception {
             exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
             exchange.getContext().createProducerTemplate()
-                .send("log:org.openremote.badrequest?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false", exchange);
+                .send("log:org.openremote.badrequest?level=WARN&showCaughtException=true&showBodyType=false&showExchangePattern=false&showStackTrace=" + debug, exchange);
         }
     }
 
