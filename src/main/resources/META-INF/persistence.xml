@@ -8,10 +8,14 @@
     <persistence-unit name="ControllerPU">
         <jta-data-source>ControllerDS</jta-data-source>
 
+        <!-- package-info -->
+        <class>org.openremote.shared</class>
+
         <class>org.openremote.shared.flow.Flow</class>
         <class>org.openremote.shared.flow.Node</class>
         <class>org.openremote.shared.flow.Slot</class>
         <class>org.openremote.shared.flow.Wire</class>
+        <class>org.openremote.shared.inventory.ClientPreset</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>

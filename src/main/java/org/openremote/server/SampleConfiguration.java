@@ -5,7 +5,8 @@ import org.openremote.server.event.EventService;
 import org.openremote.server.persistence.PersistenceService;
 import org.openremote.server.persistence.TransactionManagerService;
 import org.openremote.server.persistence.flow.FlowDAO;
-import org.openremote.server.persistence.flow.FlowDAOImpl;
+import org.openremote.server.persistence.inventory.ClientPresetDAO;
+import org.openremote.server.testdata.SampleClientPresets;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
@@ -52,11 +53,15 @@ public class SampleConfiguration implements Configuration {
                 tx.begin();
                 try {
                     EntityManager em = ps.createEntityManager();
-                    FlowDAO flowDAO = new FlowDAOImpl(em);
 
+                    FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
                     flowDAO.makePersistent(SampleTemperatureProcessor.FLOW, false);
                     flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
                     flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
+
+                    ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
+                    clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
+                    clientPresetDAO.makePersistent(SampleClientPresets.NEXUS_5);
 
                     tx.commit();
                     em.close();

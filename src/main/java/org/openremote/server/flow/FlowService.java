@@ -158,7 +158,7 @@ public class FlowService implements StaticService {
                 break;
             }
         }
-        return getFlow(flowId, true);
+        return flowId != null ? getFlow(flowId, true) : null;
     }
 
     public void deleteFlow(String id) throws FlowProcedureException {

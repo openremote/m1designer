@@ -12,6 +12,7 @@ import org.openremote.server.*;
 import org.openremote.server.catalog.CatalogServiceConfiguration;
 import org.openremote.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.server.event.EventServiceConfiguration;
+import org.openremote.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.server.flow.FlowServiceConfiguration;
 import org.openremote.server.inventory.InventoryServiceConfiguration;
 import org.openremote.server.persistence.PersistenceConfiguration;
@@ -72,7 +73,9 @@ public class IntegrationTest extends CamelTestSupport {
         properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
         configurations.add(new WebserverConfiguration());
 
-        properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:tcp://localhost/mem:test");
+        // External DB instance (run 'java -jar h2.jar')
+        //properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:tcp://localhost/mem:test");
+        properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:mem:test");
         configurations.add(new PersistenceConfiguration());
 
         configurations.add(new NodeDescriptorConfiguration());
@@ -81,6 +84,8 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new RouteManagementServiceConfiguration());
         configurations.add(new FlowServiceConfiguration());
         configurations.add(new EventServiceConfiguration());
+
+        configurations.add(new WebSocketEventServiceConfiguration());
 
         properties.put(SampleConfiguration.START_SAMPLE_FLOWS, "false");
         configurations.add(new SampleConfiguration());

@@ -21,6 +21,8 @@ Development
 
 * Edit (but don't commit) the TODO in `ShellPresenter.java` to open editor immediately on page load
 
+* The application uses a temporary in-memory database with sample data. If you like to switch to an external database instance, set `DATABASE_CONNECTION_URL=jdbc:h2:file:</some/database/file/path>` or `jdbc:h2:tcp://localhost/mem:test` for an already running external database instance (`java -jar h2.jar`).
+
 Build tested archives
 ---
 
