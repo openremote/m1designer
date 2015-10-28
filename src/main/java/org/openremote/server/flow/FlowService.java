@@ -259,6 +259,7 @@ public class FlowService implements StaticService {
         try {
             for (Node node : flow.getNodes()) {
                 if (node.getProperties() != null && node.getProperties() != null) {
+                    LOG.debug("Filtering non-persistent properties of: " + node);
 
                     // Don't believe what the node says about its persistent property paths,
                     // must ask the node descriptor what those properties are
@@ -280,6 +281,7 @@ public class FlowService implements StaticService {
 
                     // Filter all non-persistent properties
                     for (String nonPersistentPath : nonPersistentPaths) {
+                        LOG.debug("Removing non-persistent property: " + nonPersistentPath);
                         propertiesNode.remove(nonPersistentPath);
                     }
                     node.setProperties(JSON.writeValueAsString(propertiesNode));

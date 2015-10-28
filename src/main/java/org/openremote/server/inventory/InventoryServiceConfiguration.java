@@ -73,7 +73,7 @@ public class InventoryServiceConfiguration implements Configuration {
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
-        InventoryService service = new InventoryService();
+        InventoryService service = new InventoryService(context);
         context.addService(service);
 
         context.addRoutes(
