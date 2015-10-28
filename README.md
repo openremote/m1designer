@@ -1,12 +1,11 @@
 # OpenRemote Controller & Web Editor/Console
 
-* Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
+Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
 
 Concept
 ---
 
-Combining UI/UX ideas of [Origami/Quartz UI Composer](http://facebook.github.io/origami/tutorials/)
-and [Node-RED](http://nodered.org/) with an [Apache Camel](http://camel.apache.org/) backend.
+Combining UI/UX ideas of [Origami/Quartz UI Composer](http://facebook.github.io/origami/tutorials/) and [Node-RED](http://nodered.org/) with an [Apache Camel](http://camel.apache.org/) backend.
 
 Development
 ---
@@ -15,7 +14,7 @@ Development
 
 * Run GWT super dev mode code-server: `./gradlew gwtSuperDev`
 
-* Run server: `./gradlew serverRun`
+* Run server: `./gradlew serverRun` or start `org.openremote.server.Server#main()` in your IDE
 
 * Open [http://localhost:8080/](http://localhost:8080/) in browser
 
@@ -43,11 +42,15 @@ Run production
     WEBSERVER_PORT=8080 \
     WEBSERVER_ALLOW_ORIGIN=http://localhost:8080 \
     DEV_MODE=false \
+    CREATE_DATABASE_SCHEMA=true \
     java -cp 'build/libs/*' org.openremote.server.Server
+
+If `CREATE_DATABASE_SCHEMA` is enabled, the application will drop and recreate its database on startup. Set to `false` or remove the option if you want to keep all data in the file `or-controller-database.mv.db`. You may have to remove the database after incompatible code changes by removing the file `or-controller-database.mv.db` and recreating it.
 
 For quick turnaround when debugging client in production, recompile only the client portion between server restarts:
 
     ./gradlew assembleClient
+    
 
 Build image and run Docker container
 ---

@@ -24,18 +24,29 @@ public class SampleConfiguration implements Configuration {
 
     private static final Logger LOG = LoggerFactory.getLogger(SampleConfiguration.class);
 
+    public static final String IMPORT_SAMPLE_FLOWS = "IMPORT_SAMPLE_FLOWS";
+    public static final String IMPORT_SAMPLE_FLOWS_DEFAULT = "false";
+
     public static final String START_SAMPLE_FLOWS = "START_SAMPLE_FLOWS";
     public static final String START_SAMPLE_FLOWS_DEFAULT = "true";
 
     public static final String CREATE_DATABASE_SCHEMA = "CREATE_DATABASE_SCHEMA";
-    public static final String CREATE_DATABASE_SCHEMA_DEFAULT = "true";
+    public static final String CREATE_DATABASE_SCHEMA_DEFAULT = "false";
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
 
-        if (!Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
-            return;
-        }
+        final boolean createDatabaseSchema =
+            Boolean.valueOf(environment.getProperty(CREATE_DATABASE_SCHEMA, CREATE_DATABASE_SCHEMA_DEFAULT));
+
+        final boolean devMode =
+            Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT));
+
+        final boolean importSampleFlows =
+            Boolean.valueOf(environment.getProperty(IMPORT_SAMPLE_FLOWS, IMPORT_SAMPLE_FLOWS_DEFAULT));
+
+        final boolean startSampleFlows =
+            Boolean.valueOf(environment.getProperty(START_SAMPLE_FLOWS, START_SAMPLE_FLOWS_DEFAULT));
 
         context.addStartupListener((camelContext, alreadyStarted) -> {
             if (!alreadyStarted) {
@@ -44,35 +55,38 @@ public class SampleConfiguration implements Configuration {
                 TransactionManagerService tm = camelContext.hasService(TransactionManagerService.class);
                 PersistenceService ps = camelContext.hasService(PersistenceService.class);
 
-                if (Boolean.valueOf(environment.getProperty(CREATE_DATABASE_SCHEMA, CREATE_DATABASE_SCHEMA_DEFAULT))) {
+                if (devMode || createDatabaseSchema) {
                     ps.dropSchema();
                     ps.createSchema();
                 }
 
-                UserTransaction tx = tm.getUserTransaction();
-                tx.begin();
-                try {
-                    EntityManager em = ps.createEntityManager();
+                if (devMode || importSampleFlows) {
+                    UserTransaction tx = tm.getUserTransaction();
+                    tx.begin();
+                    try {
+                        EntityManager em = ps.createEntityManager();
 
-                    FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
-                    flowDAO.makePersistent(SampleTemperatureProcessor.FLOW, false);
-                    flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
-                    flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
+                        FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+                        flowDAO.makePersistent(SampleTemperatureProcessor.FLOW, false);
+                        flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
+                        flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
 
-                    ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
-                    clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
-                    clientPresetDAO.makePersistent(SampleClientPresets.NEXUS_5);
+                        ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
+                        clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
+                        clientPresetDAO.makePersistent(SampleClientPresets.NEXUS_5);
 
-                    tx.commit();
-                    em.close();
-                } finally {
-                    tm.rollback();
-                }
+                        tx.commit();
+                        em.close();
 
-                if (Boolean.valueOf(environment.getProperty(START_SAMPLE_FLOWS, START_SAMPLE_FLOWS_DEFAULT))) {
-                    camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
-                    camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
-                    camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+                        if (startSampleFlows) {
+                            camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
+                            camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
+                            camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+                        }
+
+                    } finally {
+                        tm.rollback();
+                    }
                 }
             }
         });
