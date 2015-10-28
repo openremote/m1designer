@@ -59,6 +59,13 @@ public class SensorRoute extends NodeRoute {
             super.addSlots(slots);
             slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE)));
         }
+
+        @Override
+        protected void addPersistentPropertyPaths(List<String> propertyPaths) {
+            super.addPersistentPropertyPaths(propertyPaths);
+            propertyPaths.add("consumerEndpoint");
+            propertyPaths.add("discoveryEndpoint");
+        }
     }
 
     public SensorRoute(CamelContext context, Flow flow, Node node) {
