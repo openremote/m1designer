@@ -5,10 +5,7 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.support.RoutePolicySupport;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.Flow;
-import org.openremote.shared.flow.Node;
-import org.openremote.shared.flow.NodeColor;
-import org.openremote.shared.flow.Slot;
+import org.openremote.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -7,7 +7,6 @@ import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 import org.openremote.shared.flow.Wire;
-import org.openremote.shared.model.Identifier;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,9 +18,9 @@ public class ExampleLight {
 
     /* ###################################################################################### */
 
-    public static Slot LIGHT_SENSOR_SOURCE = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE));
-    public static Slot LIGHT_SENSOR_SINK = new Slot(new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), false);
-    public static Node LIGHT_SENSOR = new Node("Light Switch Status", new Identifier(generateGlobalUniqueId(), SensorRoute.NODE_TYPE));
+    public static Slot LIGHT_SENSOR_SOURCE = new Slot(generateGlobalUniqueId(), Slot.TYPE_SOURCE);
+    public static Slot LIGHT_SENSOR_SINK = new Slot(generateGlobalUniqueId(), Slot.TYPE_SINK, false);
+    public static Node LIGHT_SENSOR = new Node("Light Switch Status", generateGlobalUniqueId(), SensorRoute.NODE_TYPE);
 
     static {
         new SensorRoute.Descriptor() {
@@ -52,7 +51,7 @@ public class ExampleLight {
 
     /* ###################################################################################### */
 
-    public static Node LIGHT_ACTUATOR = new Node("Light Switch Actuator", new Identifier(generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE));
+    public static Node LIGHT_ACTUATOR = new Node("Light Switch Actuator", generateGlobalUniqueId(), ActuatorRoute.NODE_TYPE);
 
     static {
         new ActuatorRoute.Descriptor() {
@@ -80,7 +79,7 @@ public class ExampleLight {
 
     public static Flow FLOW = new Flow(
         "Example Light",
-        new Identifier(generateGlobalUniqueId(), Flow.TYPE),
+        generateGlobalUniqueId(),
         FLOW_NODES,
         new Wire[0]
     );

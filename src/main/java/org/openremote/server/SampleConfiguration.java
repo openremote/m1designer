@@ -6,10 +6,7 @@ import org.openremote.server.persistence.PersistenceService;
 import org.openremote.server.persistence.TransactionManagerService;
 import org.openremote.server.persistence.flow.FlowDAO;
 import org.openremote.server.persistence.inventory.ClientPresetDAO;
-import org.openremote.server.testdata.SampleClientPresets;
-import org.openremote.server.testdata.SampleEnvironmentWidget;
-import org.openremote.server.testdata.SampleTemperatureProcessor;
-import org.openremote.server.testdata.SampleThermostatControl;
+import org.openremote.server.testdata.*;
 import org.openremote.shared.event.FlowDeployEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +68,8 @@ public class SampleConfiguration implements Configuration {
                         flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
                         flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
 
+                        flowDAO.makePersistent(ExampleLight.FLOW, false);
+
                         ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
                         clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
                         clientPresetDAO.makePersistent(SampleClientPresets.NEXUS_5);
@@ -82,6 +81,8 @@ public class SampleConfiguration implements Configuration {
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
+
+                            camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(ExampleLight.FLOW.getId()));
                         }
 
                     } finally {
