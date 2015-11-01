@@ -5,8 +5,10 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.support.RoutePolicySupport;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.*;
-import org.openremote.shared.model.Identifier;
+import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.Node;
+import org.openremote.shared.flow.NodeColor;
+import org.openremote.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +59,7 @@ public class SensorRoute extends NodeRoute {
         @Override
         public void addSlots(List<Slot> slots) {
             super.addSlots(slots);
-            slots.add(new Slot(new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE)));
+            slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE));
         }
 
         @Override

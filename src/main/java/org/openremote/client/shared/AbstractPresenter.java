@@ -5,6 +5,7 @@ import com.google.gwt.core.client.js.JsExport;
 import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import org.fusesource.restygwt.client.Defaults;
 import org.openremote.client.event.ConfirmationEvent;
 import org.openremote.shared.event.Event;
 import org.openremote.shared.event.bus.EventBus;
@@ -22,6 +23,11 @@ import java.util.List;
 public abstract class AbstractPresenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
+
+    static {
+        // Use unix timestamps when handling JSON and java.util.Date
+        Defaults.setDateFormat(null);
+    }
 
     final protected Element view;
     final protected List<EventRegistration> eventRegistrations = new ArrayList<>();

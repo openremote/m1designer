@@ -6,22 +6,27 @@ import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.inventory.InventoryService;
+import org.openremote.server.persistence.PersistenceService;
+import org.openremote.server.persistence.flow.DAOFlowDependencyResolver;
+import org.openremote.server.persistence.flow.FlowDAO;
 import org.openremote.server.route.RouteManagementService;
 import org.openremote.server.route.procedure.FlowProcedureException;
-import org.openremote.server.testdata.ExampleLight;
-import org.openremote.server.testdata.SampleEnvironmentWidget;
-import org.openremote.server.testdata.SampleTemperatureProcessor;
-import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.flow.*;
+import org.openremote.shared.flow.Flow;
+import org.openremote.shared.flow.FlowDependencyResolver;
+import org.openremote.shared.flow.Node;
+import org.openremote.shared.flow.Slot;
 import org.openremote.shared.inventory.ClientPreset;
-import org.openremote.shared.model.Identifier;
 import org.openremote.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.openremote.server.util.JsonUtil.JSON;
 
@@ -29,8 +34,12 @@ public class FlowService implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowService.class);
 
-    final static protected Map<String, Flow> SAMPLE_FLOWS = new LinkedHashMap<>();
-    final protected FlowDependencyResolver SAMPLE_DEPENDENCY_RESOLVER = new MapFlowDependencyResolver(SAMPLE_FLOWS) {
+    protected class FlowDependencyResolverImpl extends DAOFlowDependencyResolver {
+
+        public FlowDependencyResolverImpl(PersistenceService ps, EntityManager em) {
+            super(ps, em);
+        }
+
         @Override
         protected void stopFlowIfRunning(Flow flow) {
             if (FlowService.this.routeManagementService.isRunning(flow)) {
@@ -42,51 +51,18 @@ public class FlowService implements StaticService {
                 }
             }
         }
+    }
 
-        @Override
-        protected String generateGlobalUniqueId() {
-            return IdentifierUtil.generateGlobalUniqueId();
-        }
-    };
+    ;
 
-    public static abstract class MapFlowDependencyResolver extends FlowDependencyResolver {
+    @Override
+    public void start() {
 
-        final Map<String, Flow> flows;
+    }
 
-        public MapFlowDependencyResolver(Map<String, Flow> flows) {
-            this.flows = flows;
-        }
+    @Override
+    public void stop() {
 
-        @Override
-        protected Flow findFlow(String flowId) {
-            synchronized (flows) {
-                return flows.get(flowId);
-            }
-        }
-
-        @Override
-        protected Flow[] findSubflowDependents(String flowId) {
-            synchronized (flows) {
-                List<Flow> list = new ArrayList<>();
-                for (Flow flow : flows.values()) {
-                    Node[] subflowNodes = flow.findSubflowNodes();
-                    for (Node subflowNode : subflowNodes) {
-                        if (flowId.equals(subflowNode.getSubflowId())) {
-                            list.add(flow);
-                            break;
-                        }
-                    }
-                }
-                return list.toArray(new Flow[list.size()]);
-            }
-        }
-
-        @Override
-        protected void storeFlow(Flow flow) {
-            synchronized (flows) {
-                flows.put(flow.getId(), flow);
-            }
-        }
     }
 
     public static Flow getCopy(Flow flow) {
@@ -107,41 +83,18 @@ public class FlowService implements StaticService {
         this.inventoryService = inventoryService;
     }
 
-    @Override
-    public void start() throws Exception {
-        synchronized (SAMPLE_FLOWS) {
-            // TODO sample data
-            SAMPLE_FLOWS.put(SampleEnvironmentWidget.FLOW.getId(), SampleEnvironmentWidget.getCopy());
-            SAMPLE_FLOWS.put(SampleThermostatControl.FLOW.getId(), SampleThermostatControl.getCopy());
-            SAMPLE_FLOWS.put(SampleTemperatureProcessor.FLOW.getId(), SampleTemperatureProcessor.getCopy());
-
-            SAMPLE_FLOWS.put(ExampleLight.FLOW.getId(), ExampleLight.getCopy());
-        }
-    }
-
-    @Override
-    public void stop() throws Exception {
-        synchronized (SAMPLE_FLOWS) {
-            SAMPLE_FLOWS.clear();
-        }
-    }
-
     public Flow[] getFlows() {
         LOG.debug("Getting sample flows");
-        synchronized (SAMPLE_FLOWS) {
-            // Shallow copy, we only want the label and id of the flow
-            Flow[] flowsInfo = new Flow[SAMPLE_FLOWS.size()];
-            int i = 0;
-            for (Flow flow : SAMPLE_FLOWS.values()) {
-                flowsInfo[i++] = new Flow(flow.getLabel(), flow.getIdentifier());
-            }
-            return flowsInfo;
-        }
+        return context.hasService(PersistenceService.class).transactional((ps, em) -> {
+            FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+            List<Flow> flows = flowDAO.findAll();
+            return flows.toArray(new Flow[flows.size()]);
+        });
     }
 
     public Flow getFlowTemplate() {
         LOG.debug("Getting flow template");
-        return new Flow("My Flow", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Flow.TYPE));
+        return new Flow("My Flow", IdentifierUtil.generateGlobalUniqueId());
     }
 
     public Node createSubflowNode(@Header("id") String id) {
@@ -180,19 +133,20 @@ public class FlowService implements StaticService {
 
     public Flow getFlow(@Header("id") String id, @Header("hydrateSubs") Boolean hydrateSubs) {
         LOG.debug("Getting flow: " + id);
-        synchronized (SAMPLE_FLOWS) {
-
-            Flow flow = getCopy(SAMPLE_FLOWS.get(id));
+        return context.hasService(PersistenceService.class).transactional((ps, em) -> {
+            FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+            Flow flow = flowDAO.findById(id, true);
             if (flow == null)
                 return null;
-
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, hydrateSubs != null ? hydrateSubs : false);
-
+            new FlowDependencyResolverImpl(ps, em)
+                .populateDependencies(flow, hydrateSubs != null ? hydrateSubs : false);
             return flow;
-        }
+        });
     }
 
-    public Flow getPresetFlow(@Header("agent") String agent, @Header("width") Integer width, @Header("height") Integer height) {
+    public Flow getPresetFlow(@Header("agent") String agent,
+                              @Header("width") Integer width,
+                              @Header("height") Integer height) {
         ClientPresetVariant clientPresetVariant = new ClientPresetVariant(agent, width, height);
         LOG.debug("Getting preset flow: " + clientPresetVariant);
         String flowId = null;
@@ -204,75 +158,92 @@ public class FlowService implements StaticService {
                 break;
             }
         }
-        return getFlow(flowId, true);
+        return flowId != null ? getFlow(flowId, true) : null;
     }
 
-    public void deleteFlow(String id) throws Exception {
+    public void deleteFlow(String id) throws FlowProcedureException {
         LOG.debug("Delete flow: " + id);
-        synchronized (SAMPLE_FLOWS) {
-
-            Flow flow = getFlow(id, false);
+        context.hasService(PersistenceService.class).transactional((ps, em) -> {
+            FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+            Flow flow = flowDAO.findById(id, true);
             if (flow == null)
-                return;
+                return null;
 
-            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, true);
+            FlowDependencyResolver flowDependencyResolver = new FlowDependencyResolverImpl(ps, em);
+
+            flowDependencyResolver.populateDependencies(flow, false);
+            flowDependencyResolver.updateDependencies(flow, true);
 
             // TODO: Exception handling
-            routeManagementService.stopFlowRoutes(flow);
+            try {
+                routeManagementService.stopFlowRoutes(flow);
+            } catch (FlowProcedureException ex) {
+                throw new RuntimeException(ex);
+            }
 
-            SAMPLE_FLOWS.remove(id);
-        }
+            flowDAO.makeTransient(flow);
+
+            return null;
+        });
     }
 
     public void postFlow(Flow flow) {
         LOG.debug("Posting new flow: " + flow);
-        synchronized (SAMPLE_FLOWS) {
+        context.hasService(PersistenceService.class).transactional((ps, em) -> {
 
             if (flow.getSuperDependencies().length > 0 || flow.getSubDependencies().length > 0)
                 throw new IllegalArgumentException("Don't send dependencies when posting a flow");
 
-            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, false);
+            new FlowDependencyResolverImpl(ps, em).updateDependencies(flow, false);
 
             // TODO: Another consistency check, e.g. all wires good
-            SAMPLE_FLOWS.put(flow.getId(), flow);
-        }
+
+            FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+            flowDAO.makePersistent(flow, false);
+
+            return null;
+        });
     }
 
     public boolean putFlow(Flow flow) {
         LOG.debug("Putting flow: " + flow);
-        synchronized (SAMPLE_FLOWS) {
+        return context.hasService(PersistenceService.class).transactional((ps, em) -> {
 
-            if (!SAMPLE_FLOWS.containsKey(flow.getId()))
+            FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
+            Flow existingFlow = flowDAO.findById(flow.getId(), true);
+
+            if (existingFlow == null)
                 return false;
 
             if (flow.getSuperDependencies().length > 0 || flow.getSubDependencies().length > 0)
-                throw new IllegalArgumentException("Don't send dependencies when updating a flow");
+                throw new IllegalArgumentException("Don't send dependencies when posting a flow");
 
-            SAMPLE_DEPENDENCY_RESOLVER.updateDependencies(flow, false);
+            new FlowDependencyResolverImpl(ps, em).updateDependencies(flow, false);
+
+            // TODO: Another consistency check, e.g. all wires good
 
             // TODO cleaner solution
             filterNonPersistentProperties(flow);
 
-            // TODO: Another consistency check, e.g. all wires good
-            SAMPLE_FLOWS.put(flow.getId(), flow);
+            flowDAO.makePersistent(flow, true);
 
             return true;
-        }
+        });
     }
 
     public Flow getResolvedFlow(Flow flow, boolean hydrateSubs) {
         LOG.debug("Resolving dependencies of flow: " + flow);
-        synchronized (SAMPLE_FLOWS) {
-            SAMPLE_DEPENDENCY_RESOLVER.populateDependencies(flow, hydrateSubs);
+        return context.hasService(PersistenceService.class).transactional((ps, em) -> {
+            new FlowDependencyResolverImpl(ps, em).populateDependencies(flow, hydrateSubs);
             return flow;
-        }
+        });
     }
 
     public void resetCopy(Node node) {
-        node.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+        node.setId(IdentifierUtil.generateGlobalUniqueId());
 
         for (Slot slot : node.getSlots()) {
-            slot.getIdentifier().setId(IdentifierUtil.generateGlobalUniqueId());
+            slot.setId(IdentifierUtil.generateGlobalUniqueId());
         }
 
         if (node.getLabel() != null) {
@@ -288,11 +259,12 @@ public class FlowService implements StaticService {
         try {
             for (Node node : flow.getNodes()) {
                 if (node.getProperties() != null && node.getProperties() != null) {
+                    LOG.debug("Filtering non-persistent properties of: " + node);
 
                     // Don't believe what the node says about its persistent property paths,
                     // must ask the node descriptor what those properties are
                     NodeDescriptor nodeDescriptor = context.getRegistry().lookupByNameAndType(
-                        node.getIdentifier().getType(),
+                        node.getType(),
                         NodeDescriptor.class
                     );
                     List<String> persistentPaths = nodeDescriptor.getPersistentPropertyPaths();
@@ -309,6 +281,7 @@ public class FlowService implements StaticService {
 
                     // Filter all non-persistent properties
                     for (String nonPersistentPath : nonPersistentPaths) {
+                        LOG.debug("Removing non-persistent property: " + nonPersistentPath);
                         propertiesNode.remove(nonPersistentPath);
                     }
                     node.setProperties(JSON.writeValueAsString(propertiesNode));

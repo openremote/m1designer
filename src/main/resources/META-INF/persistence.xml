@@ -1,0 +1,35 @@
+<persistence
+        version="2.1"
+        xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+                            http://xmlns.jcp.org/xml/ns/persistence_2_1.xsd">
+
+    <persistence-unit name="ControllerPU">
+        <jta-data-source>ControllerDS</jta-data-source>
+
+        <!-- package-info -->
+        <class>org.openremote.shared</class>
+
+        <class>org.openremote.shared.flow.Flow</class>
+        <class>org.openremote.shared.flow.Node</class>
+        <class>org.openremote.shared.flow.Slot</class>
+        <class>org.openremote.shared.flow.Wire</class>
+        <class>org.openremote.shared.inventory.ClientPreset</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            <property name="hibernate.archive.autodetection" value="none"/>
+
+            <property name="hibernate.hbm2ddl.import_files_sql_extractor" value="org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor"/>
+            <property name="javax.persistence.schema-generation.create-source" value="script-then-metadata"/>
+            <property name="javax.persistence.schema-generation.drop-source" value="metadata-then-script"/>
+            <property name="javax.persistence.schema-generation.create-script-source" value="org/openremote/persistence/CreateScript.sql"/>
+            <property name="javax.persistence.schema-generation.drop-script-source" value="org/openremote/persistence/DropScript.sql"/>
+            <property name="javax.persistence.sql-load-script-source" value="org/openremote/persistence/LoadScript.sql"/>
+
+        </properties>
+    </persistence-unit>
+</persistence>

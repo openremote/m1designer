@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.List;
 
@@ -33,10 +32,10 @@ public class TextLabelNodeDescriptor extends WidgetNodeDescriptor {
 
     @Override
     public void addSlots(List<Slot> slots) {
-        slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "text"));
-        slots.add(new Slot("Text", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "text"));
-        slots.add(new Slot("Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "textColor"));
-        slots.add(new Slot("Font Size", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "fontSizePixels"));
+        slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "text"));
+        slots.add(new Slot("Text", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE, "text"));
+        slots.add(new Slot("Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "textColor"));
+        slots.add(new Slot("Font Size", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "fontSizePixels"));
         super.addSlots(slots);
     }
 

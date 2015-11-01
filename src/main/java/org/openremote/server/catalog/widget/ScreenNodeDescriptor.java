@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.ClientNodeDescriptor;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.server.util.JsonUtil;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.openremote.server.util.JsonUtil.JSON;
@@ -46,8 +43,8 @@ public class ScreenNodeDescriptor extends ClientNodeDescriptor {
 
     @Override
     public void addSlots(List<Slot> slots) {
-        slots.add(new Slot("Background Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "backgroundColor"));
-        slots.add(new Slot("Text Color", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "textColor"));
+        slots.add(new Slot("Background Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "backgroundColor"));
+        slots.add(new Slot("Text Color", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "textColor"));
         super.addSlots(slots);
     }
 

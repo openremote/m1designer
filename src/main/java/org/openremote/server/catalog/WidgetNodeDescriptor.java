@@ -3,7 +3,6 @@ package org.openremote.server.catalog;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,14 +42,14 @@ public abstract class WidgetNodeDescriptor extends ClientNodeDescriptor {
     @Override
     public void addSlots(List<Slot> slots) {
         super.addSlots(slots);
-        slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionX"));
-        slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionY"));
-        slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "positionZ"));
-        slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SINK), "opacity"));
-        slots.add(new Slot("Position X", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionX"));
-        slots.add(new Slot("Position Y", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionY"));
-        slots.add(new Slot("Position Z", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "positionZ"));
-        slots.add(new Slot("Opacity", new Identifier(generateGlobalUniqueId(), Slot.TYPE_SOURCE), "opacity"));
+        slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionX"));
+        slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionY"));
+        slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SINK, "positionZ"));
+        slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SINK, "opacity"));
+        slots.add(new Slot("Position X", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionX"));
+        slots.add(new Slot("Position Y", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionY"));
+        slots.add(new Slot("Position Z", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "positionZ"));
+        slots.add(new Slot("Opacity", generateGlobalUniqueId(), Slot.TYPE_SOURCE, "opacity"));
     }
 
     @Override

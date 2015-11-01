@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.flow.Slot;
-import org.openremote.shared.model.Identifier;
 
 import java.util.List;
 
@@ -42,9 +41,9 @@ public class SliderNodeDescriptor extends WidgetNodeDescriptor {
 
     @Override
     public void addSlots(List<Slot> slots) {
-        slots.add(new Slot("Value", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "value"));
-        slots.add(new Slot("Value", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE), "value"));
-        slots.add(new Slot("Width", new Identifier(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK), "widthPixels"));
+        slots.add(new Slot("Value", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "value"));
+        slots.add(new Slot("Value", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE, "value"));
+        slots.add(new Slot("Width", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK, "widthPixels"));
         super.addSlots(slots);
     }
 

@@ -8,16 +8,16 @@ import org.apache.camel.MessageHistory;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.testng.CamelTestSupport;
-import org.openremote.server.Configuration;
-import org.openremote.server.Environment;
-import org.openremote.server.Server;
-import org.openremote.server.SystemConfiguration;
+import org.openremote.server.*;
 import org.openremote.server.catalog.CatalogServiceConfiguration;
 import org.openremote.server.catalog.NodeDescriptorConfiguration;
 import org.openremote.server.event.EventServiceConfiguration;
 import org.openremote.server.event.WebSocketEventServiceConfiguration;
 import org.openremote.server.flow.FlowServiceConfiguration;
 import org.openremote.server.inventory.InventoryServiceConfiguration;
+import org.openremote.server.persistence.PersistenceConfiguration;
+import org.openremote.server.persistence.PersistenceService;
+import org.openremote.server.persistence.TransactionManagerService;
 import org.openremote.server.route.RouteManagementServiceConfiguration;
 import org.openremote.server.util.JsonUtil;
 import org.openremote.server.web.WebserverConfiguration;
@@ -73,6 +73,11 @@ public class IntegrationTest extends CamelTestSupport {
         properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
         configurations.add(new WebserverConfiguration());
 
+        // External DB instance (run 'java -jar h2.jar')
+        //properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:tcp://localhost/mem:test");
+        properties.put(PersistenceConfiguration.DATABASE_CONNECTION_URL, "jdbc:h2:mem:test");
+        configurations.add(new PersistenceConfiguration());
+
         configurations.add(new NodeDescriptorConfiguration());
         configurations.add(new CatalogServiceConfiguration());
         configurations.add(new InventoryServiceConfiguration());
@@ -82,6 +87,8 @@ public class IntegrationTest extends CamelTestSupport {
 
         configurations.add(new WebSocketEventServiceConfiguration());
 
+        properties.put(SampleConfiguration.START_SAMPLE_FLOWS, "false");
+        configurations.add(new SampleConfiguration());
     }
 
     @Override
@@ -115,6 +122,14 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected String getServerPort() {
         return serverEphemeralPort;
+    }
+
+    protected TransactionManagerService getTransactionManagerService() {
+        return context().hasService(TransactionManagerService.class);
+    }
+
+    protected PersistenceService getPersistenceService() {
+        return context().hasService(PersistenceService.class);
     }
 
     protected String restClientUrl(String... pathSegments) {

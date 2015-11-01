@@ -6,22 +6,32 @@ import org.apache.camel.builder.LoggingErrorHandlerBuilder;
 import org.apache.camel.impl.DefaultStreamCachingStrategy;
 import org.apache.camel.spi.RouteContext;
 import org.apache.camel.spi.StreamCachingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
+
+import static org.openremote.server.Environment.DEV_MODE;
+import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
 
 public class SystemConfiguration implements Configuration {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SystemConfiguration.class);
+
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
+
+        if (Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
+            LOG.info("######################## DEV MODE ########################");
+        }
 
         // Java's herpes
         LogManager.getLogManager().reset();
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
-        Logger.getGlobal().setLevel(Level.FINEST);
+        java.util.logging.Logger.getGlobal().setLevel(Level.FINEST);
 
         // TODO make configurable in environment
         context.disableJMX();

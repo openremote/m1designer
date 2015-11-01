@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.openremote.server.Environment.DEV_MODE;
+import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
 import static org.openremote.shared.Constants.REST_SERVICE_CONTEXT_PATH;
 import static org.openremote.server.util.UrlUtil.url;
 
@@ -17,6 +19,10 @@ public class InventoryServiceConfiguration implements Configuration {
     private static final Logger LOG = LoggerFactory.getLogger(InventoryServiceConfiguration.class);
 
     class InventoryServiceRouteBuilder extends RestRouteBuilder {
+
+        public InventoryServiceRouteBuilder(boolean debug) {
+            super(debug);
+        }
 
         @Override
         public void configure() throws Exception {
@@ -67,10 +73,14 @@ public class InventoryServiceConfiguration implements Configuration {
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
-        InventoryService service = new InventoryService();
+        InventoryService service = new InventoryService(context);
         context.addService(service);
 
-        context.addRoutes(new InventoryServiceRouteBuilder());
+        context.addRoutes(
+            new InventoryServiceRouteBuilder(
+                Boolean.valueOf(environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))
+            )
+        );
     }
 
 }

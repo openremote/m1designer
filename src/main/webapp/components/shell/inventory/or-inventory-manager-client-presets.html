@@ -194,7 +194,7 @@
                                  empty-allowed
                                  empty-label="No initial flow">
                             <template is="dom-repeat" items="[[_presenter.flows]]" as="flow">
-                                <or-menu-item value="[[flow.identifier.id]]" label="[[_getFlowLabel(flow)]]"></or-menu-item>
+                                <or-menu-item value="[[flow.id]]" label="[[_getFlowLabel(flow)]]"></or-menu-item>
                             </template>
                         </or-menu>
                     </div>

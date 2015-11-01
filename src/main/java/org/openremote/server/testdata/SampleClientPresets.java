@@ -2,9 +2,6 @@ package org.openremote.server.testdata;
 
 import org.openremote.shared.inventory.ClientPreset;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class SampleClientPresets {
 
         /* ###################################################################################### */
@@ -20,11 +17,4 @@ public class SampleClientPresets {
     static {
         NEXUS_5.setInitialFlowId(SampleEnvironmentWidget.FLOW.getId());
     }
-
-    public static final List<ClientPreset> PRESETS = new ArrayList<ClientPreset>() {
-        {
-            add(IPAD_LANDSCAPE);
-            add(NEXUS_5);
-        }
-    };
 }

@@ -1,12 +1,6 @@
 package org.openremote.server;
 
 import org.apache.camel.CamelContext;
-import org.openremote.server.event.EventService;
-import org.openremote.server.testdata.ExampleLight;
-import org.openremote.server.testdata.SampleEnvironmentWidget;
-import org.openremote.server.testdata.SampleTemperatureProcessor;
-import org.openremote.server.testdata.SampleThermostatControl;
-import org.openremote.shared.event.FlowDeployEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,19 +41,9 @@ public class Server {
     public static void main(String[] args) throws Exception {
         LOG.info("Starting server...");
         CamelContext context = new ServerCamelContext();
-        Server server = new Server(context);
-        if (Boolean.valueOf(server.environment.getProperty(DEV_MODE, DEV_MODE_DEFAULT))) {
-            LOG.info("######################## DEV MODE ########################");
-        }
+        new Server(context);
         LOG.info("Starting CamelContext...");
         context.start();
         LOG.info("Server ready");
-
-        // TODO sample data
-        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
-        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
-        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
-
-        context.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(ExampleLight.FLOW.getId()));
     }
 }
