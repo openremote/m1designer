@@ -1,4 +1,4 @@
-package org.openremote.server.catalog.flip;
+package org.openremote.server.catalog.gate;
 
 import org.apache.camel.CamelContext;
 import org.openremote.server.catalog.NodeDescriptor;
@@ -10,10 +10,10 @@ import org.openremote.shared.flow.Slot;
 
 import java.util.List;
 
-public class FlipNodeDescriptor extends NodeDescriptor {
+public class AndNodeDescriptor extends NodeDescriptor {
 
-    public static final String TYPE = "urn:openremote:flow:node:flip";
-    public static final String TYPE_LABEL = "Flip";
+    public static final String TYPE = "urn:openremote:flow:node:and";
+    public static final String TYPE_LABEL = "AND";
 
     @Override
     public String getType() {
@@ -27,13 +27,14 @@ public class FlipNodeDescriptor extends NodeDescriptor {
 
     @Override
     public NodeRoute createRoute(CamelContext context, Flow flow, Node node) {
-        return new FlipRoute(context, flow, node);
+        return new AndRoute(context, flow, node);
     }
 
     @Override
     public void addSlots(List<Slot> slots) {
         super.addSlots(slots);
-        slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK));
+        slots.add(new Slot("A", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK));
+        slots.add(new Slot("B", IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SINK));
         slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), Slot.TYPE_SOURCE));
     }
 }
