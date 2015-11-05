@@ -29,31 +29,31 @@ public class FlowDAOImpl extends GenericDAOImpl<Flow, String>
     }
 
     @Override
-    public Flow makePersistent(Flow instance, boolean attemptMerge) {
-        LOG.debug("Making flow persistent (attempt merge: " + attemptMerge + "): " + instance);
-        Flow flow = super.makePersistent(instance, attemptMerge);
+    public Flow makePersistent(Flow flow, boolean attemptMerge) {
+        LOG.debug("Making flow persistent (attempt merge: " + attemptMerge + "): " + flow);
+        Flow persistentFlow = super.makePersistent(flow, attemptMerge);
 
         // The following procedures are implementing what Hibernate would do when merging collections. We don't
         // have persistent collection mappings (need arrays for JS transpiler), so has to be done manually.
 
         // Persist nodes of flow
-        Map<Node, Set<Slot>> oldNodes = findNodesAndSlots(flow);
-        LOG.debug("Persisting nodes of flow: " + instance.nodes.length);
-        for (int i = 0; i < instance.nodes.length; i++) {
-            Node node = instance.nodes[i];
-            node.flow = flow;
+        Map<Node, Set<Slot>> oldNodes = findNodesAndSlots(persistentFlow);
+        LOG.debug("Persisting nodes of flow: " + flow.nodes.length);
+        for (int i = 0; i < flow.nodes.length; i++) {
+            Node node = flow.nodes[i];
+            node.flow = persistentFlow;
             LOG.debug("Persisting node: " + node);
             if (attemptMerge) {
-                instance.nodes[i] = em.merge(node);
+                flow.nodes[i] = em.merge(node);
             } else {
                 em.persist(node);
-                instance.nodes[i] = node;
+                flow.nodes[i] = node;
             }
 
             LOG.debug("Node has slots: " + node.slots.length);
             for (int j = 0; j < node.slots.length; j++) {
                 Slot slot = node.slots[j];
-                slot.node = instance.nodes[i];
+                slot.node = flow.nodes[i];
                 LOG.debug("Persisting slot: " + slot);
                 if (attemptMerge) {
                     node.slots[j] = em.merge(slot);
@@ -75,31 +75,47 @@ public class FlowDAOImpl extends GenericDAOImpl<Flow, String>
                 }
             }
         }
-        flow.nodes = instance.nodes;
+        persistentFlow.nodes = flow.nodes;
 
         // Remove nodes of the flow we no longer have
         LOG.debug("Checking existing nodes for obsoletes: " + oldNodes.size());
         for (Node oldNode: oldNodes.keySet()) {
-            if (flow.findNode(oldNode.getId()) == null) {
+            if (persistentFlow.findNode(oldNode.getId()) == null) {
+                for (Slot oldSlot : oldNode.getSlots()) {
+                    LOG.debug("Removing obsolete slot: " + oldSlot);
+                    em.remove(oldSlot);
+                }
                 LOG.debug("Removing obsolete node: " + oldNode);
                 em.remove(oldNode);
             }
         }
 
-        for (int i = 0; i < instance.wires.length; i++) {
-            Wire wire = instance.wires[i];
-            wire.flowId = flow.getId();
+        // Persist wires of flow
+        for (int i = 0; i < flow.wires.length; i++) {
+            Wire wire = flow.wires[i];
+            wire.flowId = persistentFlow.getId();
             LOG.debug("Persisting wire: " + wire);
             if (attemptMerge) {
-                instance.wires[i] = em.merge(wire);
+                flow.wires[i] = em.merge(wire);
             } else {
                 em.persist(wire);
-                instance.wires[i] = wire;
+                flow.wires[i] = wire;
             }
         }
-        flow.wires = instance.wires;
 
-        return flow;
+        persistentFlow.wires = flow.wires;
+
+        // Remove wires of the flow we no longer have
+        List<Wire> oldWires = Arrays.asList(findWires(persistentFlow));
+        List<Wire> currentWires = Arrays.asList(persistentFlow.getWires());
+        for (Wire oldWire : oldWires) {
+            if (!currentWires.contains(oldWire)) {
+                LOG.debug("Removing obsolete wire: " + oldWire);
+                em.remove(oldWire);
+            }
+        }
+
+        return persistentFlow;
     }
 
     @Override

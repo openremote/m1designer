@@ -17,12 +17,20 @@
     <logger name="org.apache.camel.component.mock" level="TRACE"/>
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
 
-    <!-- Debug persistence problems -->
-    <!--
-    <logger name="org.hibernate.SQL" level="TRACE"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
-    -->
+    <!-- Show JSON parsing problems with WARN -->
+    <logger name="org.openremote.json" level="OFF"/>
 
+    <!-- Show HTTP resource update conflicts with WARN -->
+    <logger name="org.openremote.conflict" level="WARN"/>
+
+    <!-- Show HTTP invalid requests/entity validation failures with WARN -->
+    <logger name="org.openremote.badrequest" level="OFF"/>
+
+    <!-- Debug persistence problems with TRACE -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+
+    <!-- Some defaults for noisy categories, usually don't need to change this -->
     <logger name="org.apache.camel.component.seda" level="INFO"/>
     <logger name="org.apache.camel.testng" level="WARN"/>
     <logger name="org.apache.camel.main" level="WARN"/>

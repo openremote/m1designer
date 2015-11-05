@@ -133,6 +133,44 @@ public class FlowServiceTest extends FlowIntegrationTest {
     }
 
     @Test
+    public void deleteAddWire() throws Exception {
+        Flow flow = fromJson(
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+        assertEquals(flow.getWires().length, 5);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 2);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 1);
+
+        final Flow updateFlow = flow;
+        updateFlow.removeWireBetweenSlots(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SOURCE, SampleTemperatureProcessor.TEMPERATURE_DATABASE_SINK);
+
+        putFlow(updateFlow);
+
+        flow = fromJson(
+            template.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        assertEquals(flow.getWires().length, 4);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 1);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 0);
+
+        updateFlow.addWireBetweenSlots(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SOURCE, SampleTemperatureProcessor.TEMPERATURE_DATABASE_SINK);
+
+        putFlow(updateFlow);
+
+        flow = fromJson(
+            template.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        assertEquals(flow.getWires().length, 5);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 2);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 1);
+    }
+
+    @Test
     public void duplicateNode() throws Exception {
         Node node = SampleTemperatureProcessor.FAHRENHEIT_CONVERTER;
 

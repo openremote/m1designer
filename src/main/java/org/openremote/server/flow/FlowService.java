@@ -84,7 +84,7 @@ public class FlowService implements StaticService {
     }
 
     public Flow[] getFlows() {
-        LOG.debug("Getting sample flows");
+        LOG.debug("Getting flows");
         return context.hasService(PersistenceService.class).transactional((ps, em) -> {
             FlowDAO flowDAO = ps.getDAO(em, FlowDAO.class);
             List<Flow> flows = flowDAO.findAll();
