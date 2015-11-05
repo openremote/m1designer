@@ -1,71 +1,25 @@
 package org.openremote.test;
 
-import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
 import org.openremote.server.util.IdentifierUtil;
-import org.openremote.shared.event.FlowDeployEvent;
 import org.openremote.shared.event.Message;
-import org.openremote.shared.event.FlowStatusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static org.openremote.shared.event.FlowDeploymentPhase.DEPLOYED;
-import static org.openremote.shared.event.FlowDeploymentPhase.STARTING;
-
-public class ThermostatControlTest extends IntegrationTest {
+public class ThermostatControlTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThermostatControlTest.class);
-
-    @Produce
-    ProducerTemplate producerTemplate;
-
-    @EndpointInject(uri = "mock:eventReceiver")
-    MockEndpoint eventReceiver;
-
-    @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
-        return new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-
-                from("direct:sendEvent")
-                    .to(websocketClientUrl("events"));
-
-                from(websocketClientUrl("events"))
-                    .to("log:EVENT_RECEIVED: ${body}")
-                    .to("mock:eventReceiver");
-            }
-        };
-    }
 
     @Test
     public void execute() throws Exception {
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceived(
-            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
-            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED))
-        );
-        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId());
-        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
-        eventReceiver.assertIsSatisfied();
-
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceived(
-            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), STARTING)),
-            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), DEPLOYED))
-        );
-        flowDeployEvent = new FlowDeployEvent(SampleThermostatControl.FLOW.getId());
-        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
-        eventReceiver.assertIsSatisfied();
+        startFlow(SampleTemperatureProcessor.FLOW.getId());
+        startFlow(SampleThermostatControl.FLOW.getId());
 
         LOG.info("##########################################################################");
 
@@ -77,8 +31,8 @@ public class ThermostatControlTest extends IntegrationTest {
 
         final String INSTANCE_ID = IdentifierUtil.generateGlobalUniqueId();
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 SampleThermostatControl.TEMPERATURE_CONSUMER_SINK,
                 INSTANCE_ID,
@@ -161,7 +115,7 @@ public class ThermostatControlTest extends IntegrationTest {
 
         mockLabelTemperature.assertIsSatisfied();
         mockLabelSetpoint.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         Thread.sleep(500);
 
@@ -170,8 +124,8 @@ public class ThermostatControlTest extends IntegrationTest {
         MockEndpoint mockProducerSetpoint = context().getEndpoint("mock:producerSetpoint", MockEndpoint.class);
         mockProducerSetpoint.expectedBodiesReceived("69", "69");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 INSTANCE_ID,
@@ -195,7 +149,7 @@ public class ThermostatControlTest extends IntegrationTest {
         LOG.info("##########################################################################");
 
         mockProducerSetpoint.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 
 }

@@ -20,36 +20,12 @@ import org.testng.annotations.Test;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
-public class FlowServiceTest extends IntegrationTest {
+public class FlowServiceTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowServiceTest.class);
 
     @Produce
     ProducerTemplate producerTemplate;
-
-    protected void postFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange postFlowExchange = producerTemplate.request(
-            restClientUrl("flow"),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
-    }
-
-    protected void putFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange putFlowExchange = producerTemplate.request(
-            restClientUrl("flow", flow.getId()),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
-    }
 
     @Test
     public void getFlows() throws Exception {
@@ -62,10 +38,7 @@ public class FlowServiceTest extends IntegrationTest {
 
     @Test
     public void createDeleteFlow() throws Exception {
-        Flow flow = fromJson(
-            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
-            Flow.class
-        );
+        Flow flow = createFlow();
         assertNotNull(flow.getId());
         assertEquals(flow.getLabel(), "My Flow");
         assertEquals(flow.getType(), Flow.TYPE);

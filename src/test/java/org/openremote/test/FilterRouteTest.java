@@ -3,15 +3,9 @@ package org.openremote.test;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.http.HttpMethods;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.server.catalog.filter.FilterNodeDescriptor;
-import org.openremote.shared.event.FlowDeployEvent;
-import org.openremote.shared.event.FlowStatusEvent;
 import org.openremote.shared.event.Message;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
@@ -19,44 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
-import static org.openremote.shared.event.FlowDeploymentPhase.*;
-
-public class FilterRouteTest extends IntegrationTest {
+public class FilterRouteTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterRouteTest.class);
-
-    @Produce
-    ProducerTemplate producerTemplate;
-
-    @EndpointInject(uri = "mock:eventReceiver")
-    MockEndpoint eventReceiver;
 
     @EndpointInject(uri = "mock:preFilter")
     MockEndpoint mockPreFilter;
 
-    @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
-        return new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-
-                from("direct:sendEvent")
-                    .to(websocketClientUrl("events"));
-
-                from(websocketClientUrl("events"))
-                    .to("log:EVENT_RECEIVED: ${body}")
-                    .to("mock:eventReceiver");
-            }
-        };
-    }
-
-    protected Flow createFlow() throws Exception {
-        return fromJson(
-            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
-            Flow.class
-        );
-    }
 
     protected Node createFilterNode(Flow flow) throws Exception {
         Node filterNode = fromJson(
@@ -85,31 +48,13 @@ public class FilterRouteTest extends IntegrationTest {
         return producerNode;
     }
 
-    protected void startFlow(Flow flow) throws Exception {
-        Exchange postFlowExchange = producerTemplate.request(
-            restClientUrl("flow"),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
-
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceived(
-            toJson(new FlowStatusEvent(flow.getId(), STARTING)),
-            toJson(new FlowStatusEvent(flow.getId(), DEPLOYED))
-        );
-        FlowDeployEvent flowDeployEvent = new FlowDeployEvent(flow.getId());
-        producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
-        eventReceiver.assertIsSatisfied();
-    }
 
     @Test
     public void filterPass() throws Exception {
         Flow flow = createFlow();
         Node filterNode = createFilterNode(flow);
         Node producerNode = createProducerNode(filterNode, flow);
+        postFlow(flow);
         startFlow(flow);
 
         LOG.info("##########################################################################");
@@ -117,8 +62,8 @@ public class FilterRouteTest extends IntegrationTest {
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("hello");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "hello"
@@ -134,7 +79,7 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 
     @Test
@@ -149,6 +94,7 @@ public class FilterRouteTest extends IntegrationTest {
                 .put("dropEmpty", true)
         ));
 
+        postFlow(flow);
         startFlow(flow);
 
         LOG.info("##########################################################################");
@@ -156,8 +102,8 @@ public class FilterRouteTest extends IntegrationTest {
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 ""
@@ -169,15 +115,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("hello");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "hello"
@@ -193,7 +139,7 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 
     @Test
@@ -208,6 +154,7 @@ public class FilterRouteTest extends IntegrationTest {
                 .put("dropFalse", true)
         ));
 
+        postFlow(flow);
         startFlow(flow);
 
         LOG.info("##########################################################################");
@@ -215,8 +162,8 @@ public class FilterRouteTest extends IntegrationTest {
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 ""
@@ -232,15 +179,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("hello");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "hello"
@@ -256,15 +203,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("false");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "false"
@@ -276,15 +223,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("0");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "0"
@@ -296,15 +243,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("true");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "true"
@@ -320,15 +267,15 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
         mockPreFilter.reset();
         mockPreFilter.expectedBodiesReceived("1");
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 filterNode.getSlots()[0],
                 "1"
@@ -344,6 +291,6 @@ public class FilterRouteTest extends IntegrationTest {
         producerTemplate.send("direct:sendEvent", exchange);
 
         mockPreFilter.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 }

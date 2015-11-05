@@ -1,12 +1,6 @@
 package org.openremote.test;
 
-import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.http.HttpMethods;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.server.catalog.change.ChangeNodeDescriptor;
 import org.openremote.server.catalog.widget.TextLabelNodeDescriptor;
@@ -21,66 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.openremote.shared.event.FlowDeploymentPhase.DEPLOYED;
 import static org.openremote.shared.event.FlowDeploymentPhase.STARTING;
 
-public class RoutingTest extends IntegrationTest {
+public class RoutingTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(RoutingTest.class);
-
-    @Produce
-    ProducerTemplate producerTemplate;
-
-    @EndpointInject(uri = "mock:eventReceiver")
-    MockEndpoint eventReceiver;
-
-    @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
-        return new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-
-                from("direct:sendEvent")
-                    .to(websocketClientUrl("events"));
-
-                from(websocketClientUrl("events"))
-                    .to("log:EVENT_RECEIVED: ${body}")
-                    .to("mock:eventReceiver");
-            }
-        };
-    }
-
-    protected void postFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange postFlowExchange = producerTemplate.request(
-            restClientUrl("flow"),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
-    }
-
-    protected void putFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange putFlowExchange = producerTemplate.request(
-            restClientUrl("flow", flow.getId()),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
-    }
-
+    
     @Test
     public void serverSideLoop() throws Exception {
-        Flow flow = fromJson(
-            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
-            Flow.class
-        );
+        Flow flow = createFlow();
 
         Node nodeA = fromJson(
             producerTemplate.requestBody(restClientUrl("catalog", "node", ChangeNodeDescriptor.TYPE), null, String.class),
@@ -113,17 +57,17 @@ public class RoutingTest extends IntegrationTest {
 
         postFlow(flow);
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceived(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(flow.getId(), STARTING)),
             toJson(new FlowStatusEvent(flow.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(flow.getId());
         producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 nodeB.getSlots()[0],
                 "abc"
@@ -140,10 +84,10 @@ public class RoutingTest extends IntegrationTest {
         Exchange exchange = new DefaultExchange(context());
         exchange.getIn().setBody(new Message(nodeB.getSlots()[0], "abc")); // Sink slot!
         producerTemplate.send("direct:sendEvent", exchange);
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 nodeB.getSlots()[0],
                 "abc"
@@ -161,16 +105,12 @@ public class RoutingTest extends IntegrationTest {
         exchange = new DefaultExchange(context());
         exchange.getIn().setBody(new Message(nodeA.getSlots()[1], "abc")); // Source slot!
         producerTemplate.send("direct:sendEvent", exchange);
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 
     @Test
     public void serverSideLoop2() throws Exception {
-
-        Flow flow = fromJson(
-            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
-            Flow.class
-        );
+        Flow flow = createFlow();
 
         Node nodeA = fromJson(
             producerTemplate.requestBody(restClientUrl("catalog", "node", ToggleButtonNodeDescriptor.TYPE), null, String.class),
@@ -192,17 +132,17 @@ public class RoutingTest extends IntegrationTest {
 
         postFlow(flow);
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceived(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceived(
             toJson(new FlowStatusEvent(flow.getId(), STARTING)),
             toJson(new FlowStatusEvent(flow.getId(), DEPLOYED))
         );
         FlowDeployEvent flowDeployEvent = new FlowDeployEvent(flow.getId());
         producerTemplate.sendBody("direct:sendEvent", flowDeployEvent);
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 nodeB.getSlots()[0],
                 "1"
@@ -215,6 +155,6 @@ public class RoutingTest extends IntegrationTest {
         Exchange exchange = new DefaultExchange(context());
         exchange.getIn().setBody(new Message(nodeA.getSlots()[1], "1"));
         producerTemplate.send("direct:sendEvent", exchange);
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 }

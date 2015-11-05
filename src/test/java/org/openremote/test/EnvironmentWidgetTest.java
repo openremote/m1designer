@@ -1,70 +1,27 @@
 package org.openremote.test;
 
-import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.openremote.server.testdata.SampleEnvironmentWidget;
 import org.openremote.server.testdata.SampleTemperatureProcessor;
 import org.openremote.server.testdata.SampleThermostatControl;
-import org.openremote.shared.event.FlowDeployEvent;
 import org.openremote.shared.event.Message;
-import org.openremote.shared.event.FlowStatusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static org.openremote.shared.event.FlowDeploymentPhase.DEPLOYED;
-import static org.openremote.shared.event.FlowDeploymentPhase.STARTING;
-
-public class EnvironmentWidgetTest extends IntegrationTest {
+public class EnvironmentWidgetTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentWidgetTest.class);
 
-    @Produce
-    ProducerTemplate producerTemplate;
-
-    @EndpointInject(uri = "mock:eventReceiver")
-    MockEndpoint eventReceiver;
-
-    @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
-        return new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-
-                from("direct:sendEvent")
-                    .to(websocketClientUrl("events"));
-
-                from(websocketClientUrl("events"))
-                    .to("log:EVENT_RECEIVED: ${body}")
-                    .to("mock:eventReceiver");
-            }
-        };
-    }
-
     @Test
     public void execute() throws Exception {
-
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
-            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), STARTING)),
-            toJson(new FlowStatusEvent(SampleTemperatureProcessor.FLOW.getId(), DEPLOYED)),
-            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), STARTING)),
-            toJson(new FlowStatusEvent(SampleThermostatControl.FLOW.getId(), DEPLOYED)),
-            toJson(new FlowStatusEvent(SampleEnvironmentWidget.FLOW.getId(), STARTING)),
-            toJson(new FlowStatusEvent(SampleEnvironmentWidget.FLOW.getId(), DEPLOYED))
-        );
-
-        producerTemplate.sendBody("direct:sendEvent", new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
-        producerTemplate.sendBody("direct:sendEvent", new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
-        producerTemplate.sendBody("direct:sendEvent", new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
-
-        eventReceiver.assertIsSatisfied();
-
+        
+        startFlow(SampleTemperatureProcessor.FLOW.getId());
+        startFlow(SampleThermostatControl.FLOW.getId());
+        startFlow(SampleEnvironmentWidget.FLOW.getId());
+        
         LOG.info("##########################################################################");
 
         MockEndpoint mockLivingroomSetpointActuator = context().getEndpoint("mock:livingroomSetpointActuator", MockEndpoint.class);
@@ -73,8 +30,8 @@ public class EnvironmentWidgetTest extends IntegrationTest {
         mockLivingroomSetpointActuator.expectedMessageCount(0);
         mockBedroomSetpointActuator.expectedMessageCount(0);
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 SampleEnvironmentWidget.LIVINGROOM_TEMPERATURE_SENSOR_SINK,
                 "75"
@@ -165,7 +122,7 @@ public class EnvironmentWidgetTest extends IntegrationTest {
 
         mockLivingroomSetpointActuator.assertIsSatisfied();
         mockBedroomSetpointActuator.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
 
         LOG.info("##########################################################################");
 
@@ -174,8 +131,8 @@ public class EnvironmentWidgetTest extends IntegrationTest {
         mockBedroomSetpointActuator.reset();
         mockBedroomSetpointActuator.expectedMessageCount(0);
 
-        eventReceiver.reset();
-        eventReceiver.expectedBodiesReceivedInAnyOrder(
+        mockEventReceiver.reset();
+        mockEventReceiver.expectedBodiesReceivedInAnyOrder(
             toJson(new Message(
                 SampleThermostatControl.SETPOINT_PRODUCER_SINK,
                 SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId(),
@@ -216,7 +173,7 @@ public class EnvironmentWidgetTest extends IntegrationTest {
 
         mockLivingroomSetpointActuator.assertIsSatisfied();
         mockBedroomSetpointActuator.assertIsSatisfied();
-        eventReceiver.assertIsSatisfied();
+        mockEventReceiver.assertIsSatisfied();
     }
 
 }
