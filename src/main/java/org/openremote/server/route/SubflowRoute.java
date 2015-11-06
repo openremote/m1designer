@@ -5,6 +5,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.model.ProcessorDefinition;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
+import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,8 @@ public class SubflowRoute extends NodeRoute {
         }
 
         @Override
-        public boolean isInternal() {
-            return true;
+        public CatalogCategory getCatalogCategory() {
+            return null;
         }
 
         @Override

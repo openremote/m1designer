@@ -30,18 +30,11 @@ public class CatalogService implements StaticService {
             Set<NodeDescriptor> nodeDescriptorSet = context.getRegistry().findByType(NodeDescriptor.class);
             for (NodeDescriptor nodeDescriptor : nodeDescriptorSet) {
 
-                if (nodeDescriptor.isInternal())
-                    continue;
+                CatalogCategory catalogCategory = nodeDescriptor.getCatalogCategory();
 
-                // TODO this type discrimination is not pretty
-                CatalogCategory catalogCategory;
-                if (nodeDescriptor.getType().startsWith("urn:openremote:widget:")) {
-                    catalogCategory = CatalogCategory.WIDGETS;
-                } else if (nodeDescriptor instanceof VirtualNodeDescriptor) {
-                    catalogCategory = CatalogCategory.WIRING;
-                } else {
-                    catalogCategory = CatalogCategory.PROCESSORS;
-                }
+                // Some node types are "internal only", they are not exposed in the user's element catalog
+                if (catalogCategory == null)
+                    continue;
 
                 CatalogItem catalogItem = new CatalogItem(
                     nodeDescriptor.getTypeLabel(),
