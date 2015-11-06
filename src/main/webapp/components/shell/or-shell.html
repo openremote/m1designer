@@ -57,6 +57,10 @@
                 _shortcutWhitelist: {
                     type: Array,
                     value: ['text', 'password', 'search', 'email', 'number', 'date']
+                },
+                _fullscreenEnabled: {
+                    type: Boolean,
+                    value: document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled
                 }
             },
             listeners: {
@@ -161,6 +165,29 @@
                 if (this._centerResizeInProgress) {
                     this._centerResizeInProgress = null;
                     this.toggleClass("active", false, this.$$("#centerResizeHandle"));
+                }
+            },
+            _toggleFullscreen: function () {
+                if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        document.documentElement.msRequestFullscreen();
+                    } else if (document.documentElement.mozRequestFullScreen) {
+                        document.documentElement.mozRequestFullScreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
                 }
             },
             _exit: function () {
@@ -329,9 +356,17 @@
                     <or-console-settings id="consoleSettings"
                                          console-has-widgets$="{{_presenter.consoleHasWidgets}}"></or-console-settings>
 
-                    <or-help id="help"></or-help>
+                    <or-help id="help"
+                             style="margin-left: 1em;"></or-help>
+
+                    <template is="dom-if" if="[[_fullscreenEnabled]]">
+                        <or-button id="fullscreen"
+                                   style="margin-left: 1em;"
+                                   icon="fullscreen" on-tap="_toggleFullscreen"></or-button>
+                    </template>
 
                     <or-button id="exit"
+                               style="margin-left: 1em;"
                                icon="exit-to-app" on-tap="_exit"></or-button>
 
                 </div>
