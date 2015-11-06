@@ -74,8 +74,9 @@ public class ShellPresenter extends EventSessionPresenter {
         );
         loadPresetFlow(clientPresetVariant);
 
-        // TODO Dispatch to open shell/editor by default
-        //dispatch(new ShellOpenEvent(null));
+        if (Browser.getWindow().getLocation().getHash().equals("#shell")) {
+            dispatch(new ShellOpenEvent(null));
+        }
     }
 
     public void onShortcutKey(int key) {
