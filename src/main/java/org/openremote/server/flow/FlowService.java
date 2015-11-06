@@ -123,10 +123,7 @@ public class FlowService implements StaticService {
             Slot firstSource = producer.findSlots(Slot.TYPE_SOURCE)[0];
             slots.add(new Slot(IdentifierUtil.generateGlobalUniqueId(), firstSource, producer.getLabel()));
         }
-
-        slots.addAll(Arrays.asList(subflowNode.getSlots()));
-
-        subflowNode.setSlots(slots.toArray(new Slot[slots.size()]));
+        subflowNode.addSlots(slots.toArray(new Slot[slots.size()]));
 
         return subflowNode;
     }

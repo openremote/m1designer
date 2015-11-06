@@ -100,6 +100,7 @@ public class FlowServiceTest extends FlowIntegrationTest {
         assertEquals(flow.getSuperDependencies()[0].getId(), SampleEnvironmentWidget.FLOW.getId());
         assertEquals(flow.getSubDependencies().length, 1);
         assertEquals(flow.getSubDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertEquals(flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId()).getEditorSettings().getComponents().length, 2);
 
         final Flow updateFlow = flow;
         updateFlow.setLabel("New Label");
@@ -212,13 +213,13 @@ public class FlowServiceTest extends FlowIntegrationTest {
 
         assertEquals(subflowNode.getSlots().length, 11);
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 5);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[4].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[4].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 6);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getPeerId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[4].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[4].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[5].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[5].getPeerId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId());
     }
 
     @Test
@@ -273,7 +274,7 @@ public class FlowServiceTest extends FlowIntegrationTest {
         );
         flow.addNode(textLabelNode);
         Slot textSink = textLabelNode.getSlots()[0];
-        Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[0];
+        Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[4];
         flow.addWireBetweenSlots(setpointSource, textSink);
 
         postFlow(flow);
