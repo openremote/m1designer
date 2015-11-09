@@ -1,10 +1,11 @@
 package org.openremote.client.shared;
 
 import elemental.dom.Element;
-import elemental.dom.Node;
+import elemental.dom.NodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO Evil monstrous hacks
 public class JsUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsUtil.class);
@@ -17,16 +18,32 @@ public class JsUtil {
         return a.localeCompare(b);
     }-*/;
 
-    static public native Component.DOM dom(Node n) /*-{
-        return $wnd.Polymer.dom(n);
+    static public native DOM dom(View v) /*-{
+        return $wnd.Polymer.dom(v);
     }-*/;
 
-    static public native Component.DOM domRoot(Element e) /*-{
-        return $wnd.Polymer.dom(e.root);
+    static public native DOM domRoot(View v) /*-{
+        return $wnd.Polymer.dom(v.root);
     }-*/;
 
-    static public native Component host(Node n) /*-{
-        return n.host;
+    static public native View host(View v) /*-{
+        return v.host;
+    }-*/;
+
+    static public native View createView(View v, String elementName) /*-{
+        return v.ownerDocument.createElement(elementName);
+    }-*/;
+
+    static public native NodeList querySelectorAll(View v, String selector) /*-{
+        return v.querySelectorAll(selector);
+    }-*/;
+
+    static public native com.google.gwt.dom.client.Element asGwtElement(Object o) /*-{
+        return o;
+    }-*/;
+
+    static public native Element asElementalElement(Object o) /*-{
+        return o;
     }-*/;
 
     static public native void pushArray(String array, Object obj) /*-{

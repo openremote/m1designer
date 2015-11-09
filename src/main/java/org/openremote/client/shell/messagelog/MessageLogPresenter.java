@@ -1,13 +1,13 @@
 package org.openremote.client.shell.messagelog;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.FlowDeletedEvent;
 import org.openremote.client.event.FlowEditEvent;
 import org.openremote.client.event.FlowModifiedEvent;
 import org.openremote.client.event.ShortcutEvent;
 import org.openremote.client.shared.AbstractPresenter;
-import org.openremote.client.shared.Component;
+import org.openremote.client.shared.View;
 import org.openremote.shared.event.Message;
 import org.openremote.shared.event.client.MessageReceivedEvent;
 import org.openremote.shared.event.client.MessageSendEvent;
@@ -17,14 +17,13 @@ import org.openremote.shared.flow.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsExport
 @JsType
-public class MessageLogPresenter extends AbstractPresenter {
+public class MessageLogPresenter extends AbstractPresenter<MessageLogPresenter.MessageLogView> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageLogPresenter.class);
 
-    @JsType
-    public interface MessageLogView extends Component {
+    @JsType(isNative = true)
+    public interface MessageLogView extends View {
         void toggleMessageLog();
     }
 
@@ -35,12 +34,12 @@ public class MessageLogPresenter extends AbstractPresenter {
     public MessageLogDetail[] log = new MessageLogDetail[0];
     public boolean watchAllFlows = true;
 
-    public MessageLogPresenter(com.google.gwt.dom.client.Element view) {
+    public MessageLogPresenter(MessageLogView view) {
         super(view);
 
         addListener(ShortcutEvent.class, event -> {
             if (event.getKey() == 77)
-                ((MessageLogView)getViewComponent()).toggleMessageLog();
+                getView().toggleMessageLog();
         });
 
         addListener(FlowEditEvent.class, event -> {

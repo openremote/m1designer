@@ -1,8 +1,7 @@
 package org.openremote.client.shared;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.shared.event.Event;
 import org.openremote.shared.event.Message;
@@ -11,15 +10,14 @@ import org.openremote.shared.event.client.MessageSendEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsExport
 @JsType
-public class EventSessionPresenter extends SessionPresenter {
+public class EventSessionPresenter<V extends View> extends SessionPresenter<V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventSessionPresenter.class);
 
     final protected EventCodec EVENT_CODEC = GWT.create(EventCodec.class);
 
-    public EventSessionPresenter(com.google.gwt.dom.client.Element view) {
+    public EventSessionPresenter(V view) {
         super(view, getWebSocketUrl("events"));
 
         addListener(SessionClosedCleanEvent.class, event -> {

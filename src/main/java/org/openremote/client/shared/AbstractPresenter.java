@@ -1,10 +1,8 @@
 package org.openremote.client.shared;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
-import elemental.dom.Node;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
 import org.fusesource.restygwt.client.Defaults;
 import org.openremote.client.event.ConfirmationEvent;
 import org.openremote.shared.event.Event;
@@ -18,9 +16,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsExport
 @JsType
-public abstract class AbstractPresenter {
+public abstract class AbstractPresenter<V extends View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPresenter.class);
 
@@ -29,41 +26,36 @@ public abstract class AbstractPresenter {
         Defaults.setDateFormat(null);
     }
 
-    final protected Element view;
+    final protected V view;
     final protected List<EventRegistration> eventRegistrations = new ArrayList<>();
 
     public boolean dirty;
 
-    public AbstractPresenter(com.google.gwt.dom.client.Element gwtView) {
-        this.view = gwtView.cast(); // TODO No idea why this is necessary, without this we can only use superdevmode...
-
+    public AbstractPresenter(V view) {
+        this.view = view;
         if (view == null)
             throw new IllegalArgumentException("Can't instantiate presenter without a view element: " + getClass().getName());
         LOG.debug("Creating presenter for view '" + view.getLocalName() + "': " + getClass().getName());
     }
 
-    public Element getView() {
+    public V getView() {
         return view;
     }
 
-    public Component getViewComponent() {
-        return (Component) view;
+    public View getViewChildComponent(String selector) {
+        return (View) getRequiredElement(selector);
     }
 
-    public Component getViewChildComponent(String selector) {
-        return (Component) getRequiredElement(selector);
-    }
-
-    public Component.DOM getViewRootDOM() {
+    public DOM getViewRootDOM() {
         return getDOMRoot(getView());
     }
 
-    public Component.DOM getDOM(Node node) {
-        return JsUtil.dom(node);
+    public DOM getDOM(View view) {
+        return JsUtil.dom(view);
     }
 
-    public Component.DOM getDOMRoot(Element element) {
-        return JsUtil.domRoot(element);
+    public DOM getDOMRoot(View view) {
+        return JsUtil.domRoot(view);
     }
 
     public void ready() {
@@ -135,6 +127,7 @@ public abstract class AbstractPresenter {
         return addListener(false, null, listener);
     }
 
+    @JsIgnore
     @SuppressWarnings("unchecked")
     public <E extends Event> EventRegistration<E> addListener(boolean prepare,
                                               Class<E> eventClass,
@@ -172,19 +165,19 @@ public abstract class AbstractPresenter {
         return getOptionalElement(selector) != null;
     }
 
-    protected Element getOptionalElement(String selector) {
-        return getViewComponent().$$(selector);
+    protected Object getOptionalElement(String selector) {
+        return getView().$$(selector);
     }
 
-    protected Element getRequiredElement(String selector) {
-        Element child = getOptionalElement(selector);
+    protected Object getRequiredElement(String selector) {
+        Object child = getOptionalElement(selector);
         if (child == null)
             throw new RuntimeException("Missing child element '" + selector + "' on: " + getView().getLocalName());
         return child;
     }
 
-    protected Component.DOM getRequiredElementDOM(String selector) {
-        return getDOM(getRequiredElement(selector));
+    protected DOM getRequiredElementDOM(String selector) {
+        return getDOM((View)getRequiredElement(selector));
     }
 
     protected String getWindowQueryArgument(String parameter) {

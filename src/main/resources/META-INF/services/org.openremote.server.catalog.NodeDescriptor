@@ -4,8 +4,12 @@ org.openremote.server.route.ConsumerRoute$Descriptor
 org.openremote.server.route.ProducerRoute$Descriptor
 org.openremote.server.route.SubflowRoute$Descriptor
 
+org.openremote.server.catalog.gate.NotNodeDescriptor
+org.openremote.server.catalog.gate.AndNodeDescriptor
+org.openremote.server.catalog.gate.OrNodeDescriptor
+org.openremote.server.catalog.gate.XorNodeDescriptor
+
 org.openremote.server.catalog.change.ChangeNodeDescriptor
-org.openremote.server.catalog.flip.FlipNodeDescriptor
 org.openremote.server.catalog.filter.FilterNodeDescriptor
 org.openremote.server.catalog.function.FunctionNodeDescriptor
 org.openremote.server.catalog.storage.StorageNodeDescriptor

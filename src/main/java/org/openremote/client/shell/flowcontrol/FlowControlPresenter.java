@@ -2,18 +2,17 @@ package org.openremote.client.shell.flowcontrol;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.http.client.Response;
 import elemental.js.util.JsMapFromStringTo;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
+import org.fusesource.restygwt.client.Method;
+import org.fusesource.restygwt.client.Resource;
 import org.openremote.client.event.*;
 import org.openremote.client.event.NodeCreateEvent;
-import org.openremote.client.shared.*;
-import org.openremote.client.event.RequestFailure;
-import org.openremote.client.event.RequestFailureEvent;
 import org.openremote.client.shared.RequestPresenter;
-import org.openremote.client.event.SessionOpenedEvent;
-import org.openremote.client.event.ServerSendEvent;
+import org.openremote.client.shared.Timeout;
+import org.openremote.client.shared.View;
 import org.openremote.client.shell.FlowCodec;
 import org.openremote.client.shell.NodeCodec;
 import org.openremote.shared.event.*;
@@ -32,14 +31,13 @@ import java.util.Locale;
 
 import static org.openremote.client.shared.Timeout.debounce;
 
-@JsExport
 @JsType
-public class FlowControlPresenter extends RequestPresenter {
+public class FlowControlPresenter extends RequestPresenter<FlowControlPresenter.FlowControlView> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowControlPresenter.class);
 
-    @JsType
-    public interface FlowControlView extends Component {
+    @JsType(isNative = true)
+    public interface FlowControlView extends View {
         void toggleFlowControl();
     }
 
@@ -55,14 +53,14 @@ public class FlowControlPresenter extends RequestPresenter {
     public FlowDependency[] flowSubDependencies;
     public String selectedNodeId;
 
-    public FlowControlPresenter(com.google.gwt.dom.client.Element view) {
+    public FlowControlPresenter(FlowControlView view) {
         super(view);
 
         addListener(ShortcutEvent.class, event -> {
             if (flow == null)
                 return;
             if (event.getKey() == 82) {
-                ((FlowControlView) getViewComponent()).toggleFlowControl();
+                getView().toggleFlowControl();
             } else if (event.getKey() == 83) {
                 redeployFlow();
             }
@@ -373,9 +371,8 @@ public class FlowControlPresenter extends RequestPresenter {
         @Override
         public void call() {
             LOG.debug("Creating node in flow designer: " + nodeType);
-            sendRequest(
-                false, true,
-                resource("catalog", "node", nodeType).get(),
+
+            ObjectResponseCallback<Node> responseCallback =
                 new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node node) {
@@ -383,7 +380,12 @@ public class FlowControlPresenter extends RequestPresenter {
                             success.accept(node);
                         }
                     }
-                }
+                };
+
+            sendRequest(
+                false, true,
+                resource("catalog", "node", nodeType).get(),
+                responseCallback
             );
         }
     }
@@ -433,9 +435,8 @@ public class FlowControlPresenter extends RequestPresenter {
 
         @Override
         public void call() {
-            sendRequest(
-                false, true,
-                resource("flow", "duplicate", "node").post().json(NODE_CODEC.encode(node)),
+
+            ObjectResponseCallback<Node> responseCallback =
                 new ObjectResponseCallback<Node>("Duplicate node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node dupe) {
@@ -450,7 +451,12 @@ public class FlowControlPresenter extends RequestPresenter {
                             ).accept(dupe);
                         }
                     }
-                }
+                };
+
+            sendRequest(
+                false, true,
+                resource("flow", "duplicate", "node").post().json(NODE_CODEC.encode(node)),
+                responseCallback
             );
         }
     }
@@ -470,15 +476,19 @@ public class FlowControlPresenter extends RequestPresenter {
         @Override
         public void call() {
             LOG.debug("Creating subflow in flow designer: " + subflowId);
-            sendRequest(
-                false, true,
-                resource("flow", subflowId, "subflow").get(),
+
+            ObjectResponseCallback<Node> responseCallback =
                 new ObjectResponseCallback<Node>("Create subflow node", NODE_CODEC) {
                     @Override
                     protected void onResponse(Node subflowNode) {
                         createSuccess(subflowNode);
                     }
-                }
+                };
+
+            sendRequest(
+                false, true,
+                resource("flow", subflowId, "subflow").get(),
+                responseCallback
             );
         }
 
@@ -526,16 +536,19 @@ public class FlowControlPresenter extends RequestPresenter {
                     // Don't send dependencies to the server
                     flowToSave.clearDependencies();
 
-                    sendRequest(
-                        resource("flow").post().json(FLOW_CODEC.encode(flowToSave)),
-                        new RequestPresenter.StatusResponseCallback("Save new flow", 201) {
+                    StatusResponseCallback responseCallback =
+                        new StatusResponseCallback("Save new flow", 201) {
                             @Override
                             protected void onResponse(Response response) {
                                 saveSuccess();
                                 if (success != null)
                                     success.accept(flowToSave);
                             }
-                        }
+                        };
+
+                    sendRequest(
+                        resource("flow").post().json(FLOW_CODEC.encode(flowToSave)),
+                        responseCallback
                     );
                 };
             } else {
@@ -543,16 +556,19 @@ public class FlowControlPresenter extends RequestPresenter {
                     // Don't send dependencies to the server
                     flowToSave.clearDependencies();
 
-                    sendRequest(
-                        resource("flow", flowToSave.getId()).put().json(FLOW_CODEC.encode(flowToSave)),
-                        new RequestPresenter.StatusResponseCallback("Save flow", 204) {
+                    StatusResponseCallback responseCallback =
+                        new StatusResponseCallback("Save flow", 204) {
                             @Override
                             protected void onResponse(Response response) {
                                 saveSuccess();
                                 if (success != null)
                                     success.accept(flowToSave);
                             }
-                        }
+                        };
+
+                    sendRequest(
+                        resource("flow", flowToSave.getId()).put().json(FLOW_CODEC.encode(flowToSave)),
+                        responseCallback
                     );
                 };
             }
@@ -614,9 +630,9 @@ public class FlowControlPresenter extends RequestPresenter {
                     new Callback() {
                         @Override
                         public void call() {
-                            sendRequest(false, false,
-                                resource("flow", flowToDelete.getId()).delete(),
-                                new RequestPresenter.StatusResponseCallback("Delete flow", 204) {
+
+                            StatusResponseCallback responseCallback =
+                                new StatusResponseCallback("Delete flow", 204) {
                                     @Override
                                     protected void onResponse(Response response) {
                                         deleteSuccess();
@@ -627,7 +643,11 @@ public class FlowControlPresenter extends RequestPresenter {
                                         super.onFailure(requestFailure);
                                         deleteFailure(requestFailure);
                                     }
-                                }
+                                };
+
+                            sendRequest(false, false,
+                                resource("flow", flowToDelete.getId()).delete(),
+                                responseCallback
                             );
                         }
                     }
@@ -669,12 +689,7 @@ public class FlowControlPresenter extends RequestPresenter {
             // Don't send dependencies to the server
             flowToUpdate.clearDependencies();
 
-            LOG.debug("Resolving and updating dependencies: " + flowToUpdate);
-            sendRequest(
-                false, false,
-                resource("flow", "resolve")
-                    .addQueryParam("hydrateSubs", Boolean.toString(hydrateSubs))
-                    .post().json(FLOW_CODEC.encode(flowToUpdate)),
+            ObjectResponseCallback<Flow> responseCallback =
                 new ObjectResponseCallback<Flow>("Get flow dependencies", FLOW_CODEC) {
                     @Override
                     protected void onResponse(Flow resolvedFlow) {
@@ -688,7 +703,15 @@ public class FlowControlPresenter extends RequestPresenter {
                         super.onFailure(requestFailure);
                         dependencyFailure(requestFailure);
                     }
-                }
+                };
+
+            LOG.debug("Resolving and updating dependencies: " + flowToUpdate);
+            sendRequest(
+                false, false,
+                resource("flow", "resolve")
+                    .addQueryParam("hydrateSubs", Boolean.toString(hydrateSubs))
+                    .post().json(FLOW_CODEC.encode(flowToUpdate)),
+                responseCallback
             );
         }
 

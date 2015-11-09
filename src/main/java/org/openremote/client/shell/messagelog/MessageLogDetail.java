@@ -1,6 +1,6 @@
 package org.openremote.client.shell.messagelog;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 import org.openremote.shared.event.Message;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;

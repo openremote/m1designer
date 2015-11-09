@@ -2,14 +2,15 @@ package org.openremote.client.shell.floweditor;
 
 import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.client.shared.AbstractPresenter;
+import org.openremote.client.shared.JsUtil;
+import org.openremote.client.shared.View;
 import org.openremote.shared.event.Message;
 import org.openremote.shared.event.client.MessageReceivedEvent;
 import org.openremote.shared.event.client.MessageSendEvent;
@@ -23,9 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.openremote.client.shell.floweditor.FlowDesignerConstants.*;
 
-@JsExport
 @JsType
-public class FlowEditorPresenter extends AbstractPresenter {
+public class FlowEditorPresenter extends AbstractPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowEditorPresenter.class);
 
@@ -35,7 +35,7 @@ public class FlowEditorPresenter extends AbstractPresenter {
     protected LienzoPanel flowDesignerPanel;
     protected Transform flowDesignerInitialTransform;
 
-    public FlowEditorPresenter(com.google.gwt.dom.client.Element view) {
+    public FlowEditorPresenter(View view) {
         super(view);
 
         Window.addResizeHandler(event -> onContainerResize());
@@ -119,7 +119,7 @@ public class FlowEditorPresenter extends AbstractPresenter {
 
     public void onContainerResize() {
         if (flowDesignerPanel != null) {
-            Element container = getRequiredElement("#flowDesigner");
+            Element container = JsUtil.asElementalElement(getRequiredElement("#flowDesigner"));
             flowDesignerPanel.setPixelSize(container.getClientWidth(), container.getClientHeight());
         }
     }
@@ -137,7 +137,7 @@ public class FlowEditorPresenter extends AbstractPresenter {
         stopFlowDesigner();
 
         if (flowDesignerPanel == null) {
-            Element container = getRequiredElement("#flowDesigner");
+            Element container = JsUtil.asElementalElement(getRequiredElement("#flowDesigner"));
             this.flowDesignerPanel = new LienzoPanel();
 
             flowDesignerPanel.setSelectCursor(Style.Cursor.MOVE);

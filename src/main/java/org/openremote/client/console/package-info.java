@@ -1,3 +1,3 @@
 
-@com.google.gwt.core.client.js.JsNamespace("openremote.console")
+@jsinterop.annotations.JsPackage(namespace = "openremote.console")
 package org.openremote.client.console;

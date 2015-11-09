@@ -20,36 +20,12 @@ import org.testng.annotations.Test;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
-public class FlowServiceTest extends IntegrationTest {
+public class FlowServiceTest extends FlowIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlowServiceTest.class);
 
     @Produce
     ProducerTemplate producerTemplate;
-
-    protected void postFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange postFlowExchange = producerTemplate.request(
-            restClientUrl("flow"),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(postFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 201);
-    }
-
-    protected void putFlow(Flow flow) throws Exception {
-        flow.clearDependencies();
-        Exchange putFlowExchange = producerTemplate.request(
-            restClientUrl("flow", flow.getId()),
-            exchange -> {
-                exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.PUT);
-                exchange.getIn().setBody(toJson(flow));
-            }
-        );
-        assertEquals(putFlowExchange.getOut().getHeader(HTTP_RESPONSE_CODE), 204);
-    }
 
     @Test
     public void getFlows() throws Exception {
@@ -62,10 +38,7 @@ public class FlowServiceTest extends IntegrationTest {
 
     @Test
     public void createDeleteFlow() throws Exception {
-        Flow flow = fromJson(
-            producerTemplate.requestBody(restClientUrl("flow", "template"), null, String.class),
-            Flow.class
-        );
+        Flow flow = createFlow();
         assertNotNull(flow.getId());
         assertEquals(flow.getLabel(), "My Flow");
         assertEquals(flow.getType(), Flow.TYPE);
@@ -127,6 +100,7 @@ public class FlowServiceTest extends IntegrationTest {
         assertEquals(flow.getSuperDependencies()[0].getId(), SampleEnvironmentWidget.FLOW.getId());
         assertEquals(flow.getSubDependencies().length, 1);
         assertEquals(flow.getSubDependencies()[0].getId(), SampleTemperatureProcessor.FLOW.getId());
+        assertEquals(flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId()).getEditorSettings().getComponents().length, 2);
 
         final Flow updateFlow = flow;
         updateFlow.setLabel("New Label");
@@ -157,6 +131,44 @@ public class FlowServiceTest extends IntegrationTest {
         // All wires should still be present
         assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleEnvironmentWidget.LIVINGROOM_THERMOSTAT.getId())).length, 3);
         assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleEnvironmentWidget.BEDROOM_THERMOSTAT.getId())).length, 3);
+    }
+
+    @Test
+    public void deleteAddWire() throws Exception {
+        Flow flow = fromJson(
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+        assertEquals(flow.getWires().length, 5);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 2);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 1);
+
+        final Flow updateFlow = flow;
+        updateFlow.removeWireBetweenSlots(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SOURCE, SampleTemperatureProcessor.TEMPERATURE_DATABASE_SINK);
+
+        putFlow(updateFlow);
+
+        flow = fromJson(
+            template.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        assertEquals(flow.getWires().length, 4);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 1);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 0);
+
+        updateFlow.addWireBetweenSlots(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SOURCE, SampleTemperatureProcessor.TEMPERATURE_DATABASE_SINK);
+
+        putFlow(updateFlow);
+
+        flow = fromJson(
+            template.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        assertEquals(flow.getWires().length, 5);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId())).length, 2);
+        assertEquals(flow.findWiresAttachedToNode(flow.findNode(SampleTemperatureProcessor.TEMPERATURE_DATABASE.getId())).length, 1);
     }
 
     @Test
@@ -201,13 +213,13 @@ public class FlowServiceTest extends IntegrationTest {
 
         assertEquals(subflowNode.getSlots().length, 11);
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK).length, 5);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[0].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[4].getLabel(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SINK)[4].getPeerId(), SampleTemperatureProcessor.FAHRENHEIT_CONSUMER_SINK.getId());
         assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE).length, 6);
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[0].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
-        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[1].getPeerId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[4].getLabel(), SampleTemperatureProcessor.CELCIUS_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[4].getPeerId(), SampleTemperatureProcessor.CELCIUS_PRODUCER_SOURCE.getId());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[5].getLabel(), SampleTemperatureProcessor.LABEL_PRODUCER.getLabel());
+        assertEquals(subflowNode.findConnectableSlots(Slot.TYPE_SOURCE)[5].getPeerId(), SampleTemperatureProcessor.LABEL_PRODUCER_SOURCE.getId());
     }
 
     @Test
@@ -262,7 +274,7 @@ public class FlowServiceTest extends IntegrationTest {
         );
         flow.addNode(textLabelNode);
         Slot textSink = textLabelNode.getSlots()[0];
-        Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[0];
+        Slot setpointSource = subflowNode.findSlots(Slot.TYPE_SOURCE)[4];
         flow.addWireBetweenSlots(setpointSource, textSink);
 
         postFlow(flow);

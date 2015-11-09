@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.ClientNodeDescriptor;
 import org.openremote.server.catalog.WidgetNodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
+import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Slot;
 
@@ -29,6 +30,11 @@ public class ScreenNodeDescriptor extends ClientNodeDescriptor {
         node = super.initialize(node);
         node.setClientWidget(true);
         return node;
+    }
+
+    @Override
+    public CatalogCategory getCatalogCategory() {
+        return CatalogCategory.WIDGETS;
     }
 
     @Override

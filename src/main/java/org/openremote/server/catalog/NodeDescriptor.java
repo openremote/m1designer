@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.openremote.server.route.NodeRoute;
 import org.openremote.server.util.IdentifierUtil;
+import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.NodeColor;
@@ -22,8 +23,8 @@ public abstract class NodeDescriptor {
 
     abstract public NodeRoute createRoute(CamelContext context, Flow flow, Node node);
 
-    public boolean isInternal() {
-        return false;
+    public CatalogCategory getCatalogCategory() {
+        return CatalogCategory.PROCESSORS;
     }
 
     public NodeColor getColor() {

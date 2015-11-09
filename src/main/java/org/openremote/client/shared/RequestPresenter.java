@@ -1,12 +1,11 @@
 package org.openremote.client.shared;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
+import jsinterop.annotations.JsType;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.JsonEncoderDecoder;
 import org.fusesource.restygwt.client.Method;
@@ -23,15 +22,14 @@ import java.util.List;
 
 import static org.openremote.shared.Constants.REST_SERVICE_CONTEXT_PATH;
 
-@JsExport
 @JsType
-public abstract class RequestPresenter extends AbstractPresenter {
+public abstract class RequestPresenter<V extends View> extends AbstractPresenter<V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestPresenter.class);
 
     public String resourceLocation;
 
-    public RequestPresenter(com.google.gwt.dom.client.Element view) {
+    public RequestPresenter(V view) {
         super(view);
 
         addListener(RequestFailureEvent.class, event -> {

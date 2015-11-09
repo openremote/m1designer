@@ -5,6 +5,7 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.support.RoutePolicySupport;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
+import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.NodeColor;
@@ -26,8 +27,8 @@ public class ActuatorRoute extends NodeRoute {
     public static class Descriptor extends NodeDescriptor {
 
         @Override
-        public boolean isInternal() {
-            return true;
+        public CatalogCategory getCatalogCategory() {
+            return null;
         }
 
         @Override

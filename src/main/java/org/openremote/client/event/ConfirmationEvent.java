@@ -1,6 +1,7 @@
 package org.openremote.client.event;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
 import org.openremote.shared.event.Event;
 import org.openremote.shared.func.Callback;
 
@@ -14,18 +15,22 @@ public class ConfirmationEvent extends Event {
     final public String otherActionText;
     final public Callback otherAction;
 
+    @JsIgnore
     public ConfirmationEvent(String title, String text, Callback confirmAction) {
         this(title, text, confirmAction, null);
     }
 
+    @JsIgnore
     public ConfirmationEvent(String title, String text, Callback confirmAction, String otherActionText, Callback otherAction) {
         this(title, text, confirmAction, null, otherActionText, otherAction);
     }
 
+    @JsIgnore
     public ConfirmationEvent(String title, String text, Callback confirmAction, Callback cancelAction) {
         this(title, text, confirmAction, cancelAction, null, null);
     }
 
+    @JsIgnore
     public ConfirmationEvent(String title, String text, Callback confirmAction, Callback cancelAction, String otherActionText, Callback otherAction) {
         this.title = title;
         this.text = text;

@@ -1,13 +1,13 @@
 package org.openremote.client.shell.inventory;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.http.client.Response;
+import jsinterop.annotations.JsType;
 import org.fusesource.restygwt.client.Resource;
 import org.openremote.client.event.ConfirmationEvent;
 import org.openremote.client.event.RequestFailure;
 import org.openremote.client.shared.RequestPresenter;
+import org.openremote.client.shared.View;
 import org.openremote.client.shell.FlowCodec;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.func.Callback;
@@ -17,9 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-@JsExport
 @JsType
-public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
+public class InventoryManagerClientPresetsPresenter extends RequestPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryManagerClientPresetsPresenter.class);
 
@@ -30,7 +29,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
     public ClientPreset clientPreset;
     public Flow[] flows = new Flow[0];
 
-    public InventoryManagerClientPresetsPresenter(com.google.gwt.dom.client.Element view) {
+    public InventoryManagerClientPresetsPresenter(View view) {
         super(view);
     }
 
@@ -78,7 +77,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
             () -> {
                 sendRequest(
                     new Resource(resourceLocation).delete(),
-                    new RequestPresenter.StatusResponseCallback("Delete client preset", 200) {
+                    new StatusResponseCallback("Delete client preset", 200) {
                         @Override
                         protected void onResponse(Response response) {
                             reset();
@@ -93,7 +92,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
         if (getResourceLocation() == null) {
             sendRequest(
                 resource("inventory", "preset").post().json(CLIENT_PRESET_CODEC.encode(clientPreset)),
-                new RequestPresenter.StatusResponseCallback("Save new client preset", 201) {
+                new StatusResponseCallback("Save new client preset", 201) {
                     @Override
                     protected void onResponse(Response response) {
                         setResourceLocation(response.getHeader("Location"));
@@ -105,7 +104,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
         } else {
             sendRequest(
                 new Resource(getResourceLocation()).put().json(CLIENT_PRESET_CODEC.encode(clientPreset)),
-                new RequestPresenter.StatusResponseCallback("Save client preset", 204) {
+                new StatusResponseCallback("Save client preset", 204) {
                     @Override
                     protected void onResponse(Response response) {
                         setDirty(false);
@@ -126,7 +125,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
     protected void loadClientPresets() {
         sendRequest(
             resource("inventory", "preset").get(),
-            new RequestPresenter.ListResponseCallback<ClientPreset>("Load client presets", CLIENT_PRESET_CODEC) {
+            new ListResponseCallback<ClientPreset>("Load client presets", CLIENT_PRESET_CODEC) {
                 @Override
                 protected void onResponse(List<ClientPreset> result) {
                     clientPresets = result.toArray(new ClientPreset[result.size()]);
@@ -146,7 +145,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
     protected void loadClientPreset() {
         sendRequest(
             new Resource(resourceLocation).get(),
-            new RequestPresenter.ObjectResponseCallback<ClientPreset>("Load client preset", CLIENT_PRESET_CODEC) {
+            new ObjectResponseCallback<ClientPreset>("Load client preset", CLIENT_PRESET_CODEC) {
                 @Override
                 protected void onResponse(ClientPreset result) {
                     clientPreset = result;
@@ -163,6 +162,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter {
             }
         );
     }
+
 
     protected void loadFlows() {
         sendRequest(

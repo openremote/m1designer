@@ -19,8 +19,8 @@ public class LongPressListener implements EventListener {
     final protected int longPressDelayMillis;
     protected Timer longPressTimer;
 
-    public LongPressListener(elemental.dom.Element element, int longPressDelayMillis, Callback callback) {
-        this((Element)element, longPressDelayMillis, callback);
+    public LongPressListener(View view, int longPressDelayMillis, Callback callback) {
+        this(JsUtil.asGwtElement(view), longPressDelayMillis, callback);
     }
 
     public LongPressListener(Element element, int longPressDelayMillis, Callback callback) {

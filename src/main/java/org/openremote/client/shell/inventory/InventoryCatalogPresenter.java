@@ -1,11 +1,11 @@
 package org.openremote.client.shell.inventory;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.RequestFailure;
 import org.openremote.client.shared.JsUtil;
 import org.openremote.client.shared.RequestPresenter;
+import org.openremote.client.shared.View;
 import org.openremote.shared.catalog.CatalogCategory;
 import org.openremote.shared.catalog.CatalogItem;
 import org.openremote.shared.event.client.ShowInfoEvent;
@@ -16,9 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@JsExport
 @JsType
-public class InventoryCatalogPresenter extends RequestPresenter {
+public class InventoryCatalogPresenter extends RequestPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryCatalogPresenter.class);
 
@@ -26,7 +25,7 @@ public class InventoryCatalogPresenter extends RequestPresenter {
 
     public CategorizedCatalogItem[] categorizedItems;
 
-    public InventoryCatalogPresenter(com.google.gwt.dom.client.Element view) {
+    public InventoryCatalogPresenter(View view) {
         super(view);
     }
 

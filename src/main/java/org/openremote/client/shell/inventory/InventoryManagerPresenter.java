@@ -1,18 +1,17 @@
 package org.openremote.client.shell.inventory;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 import org.openremote.client.shared.AbstractPresenter;
+import org.openremote.client.shared.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsExport
 @JsType
-public class InventoryManagerPresenter extends AbstractPresenter {
+public class InventoryManagerPresenter extends AbstractPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryManagerPresenter.class);
 
-    public InventoryManagerPresenter(com.google.gwt.dom.client.Element view) {
+    public InventoryManagerPresenter(View view) {
         super(view);
     }
 }

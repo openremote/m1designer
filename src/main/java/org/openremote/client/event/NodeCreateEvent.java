@@ -1,6 +1,7 @@
 package org.openremote.client.event;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
 import org.openremote.shared.event.FlowEvent;
 import org.openremote.shared.flow.Flow;
 
@@ -12,10 +13,12 @@ public class NodeCreateEvent extends FlowEvent {
     final public double positionY;
     final public boolean applyPositionAsProperties;
 
+    @JsIgnore
     public NodeCreateEvent(Flow flow, String nodeType, double positionX, double positionY) {
         this(flow, nodeType, positionX, positionY, false);
     }
 
+    @JsIgnore
     public NodeCreateEvent(Flow flow, String nodeType, double positionX, double positionY, boolean applyPositionAsProperties) {
         super(flow);
         this.nodeType = nodeType;

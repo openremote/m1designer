@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.builder.PredicateBuilder.not;
 
@@ -40,10 +41,10 @@ public class FilterRoute extends NodeRoute {
                 .choice()
                     .id(getProcessorId("inputChoice"))
                     .when(and(isNodePropertyTrue("dropEmpty"), isInputEmpty()))
-                        .log(LoggingLevel.DEBUG, LOG, "Dropping empty message, skipping filter")
+                        .log(DEBUG, LOG, "Dropping empty message, skipping filter")
                         .setHeader(FILTER_PASS, constant(false))
                     .when(and(isNodePropertyTrue("dropFalse"), isInputFalse()))
-                        .log(LoggingLevel.DEBUG, LOG, "Dropping false message, skipping filter")
+                        .log(DEBUG, LOG, "Dropping false message, skipping filter")
                         .setHeader(FILTER_PASS, constant(false))
                     .otherwise()
                         .process(exchange -> {
@@ -66,16 +67,16 @@ public class FilterRoute extends NodeRoute {
                 .choice()
                     .id(getProcessorId("triggerChoice"))
                     .when(not(isInputTrue()))
-                        .log(LoggingLevel.DEBUG, LOG, "Filter trigger wasn't true, skipping filter")
+                        .log(DEBUG, LOG, "Filter trigger wasn't true, skipping filter")
                         .setHeader(FILTER_PASS, constant(false))
                     .otherwise()
                         .process(exchange -> {
-                            log.debug("Filter received trigger on: " + node);
+                            LOG.debug("Filter received trigger on: " + node);
                             synchronized (instanceValues) {
                                 String instanceId = getInstanceId(exchange);
                                 if (instanceValues.containsKey(instanceId)) {
                                     // TODO: Should be able to optionally override with trigger value instead
-                                    log.debug("Filter has data for instance: " + instanceId);
+                                    LOG.debug("Filter has data for instance: " + instanceId);
                                     setInput(exchange, instanceValues.get(instanceId));
                                     exchange.getIn().setHeader(FILTER_PASS, true);
                                 } else {
