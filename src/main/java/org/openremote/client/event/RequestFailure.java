@@ -1,6 +1,6 @@
 package org.openremote.client.event;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 
 @JsType
 public class RequestFailure {

@@ -1,15 +1,10 @@
 package org.openremote.client.shell.inventory;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
-import org.openremote.client.event.FlowDeletedEvent;
-import org.openremote.client.event.FlowEditEvent;
-import org.openremote.client.event.FlowSavedEvent;
-import org.openremote.client.event.RequestFailure;
+import jsinterop.annotations.JsType;
+import org.openremote.client.event.*;
 import org.openremote.client.shared.RequestPresenter;
-import org.openremote.client.event.SessionOpenedEvent;
-import org.openremote.client.event.ServerSendEvent;
+import org.openremote.client.shared.View;
 import org.openremote.client.shell.FlowCodec;
 import org.openremote.client.shell.flowcontrol.FlowStatusDetail;
 import org.openremote.shared.event.FlowLoadEvent;
@@ -22,9 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsExport
 @JsType
-public class InventoryFlowsPresenter extends RequestPresenter {
+public class InventoryFlowsPresenter extends RequestPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryFlowsPresenter.class);
 
@@ -32,7 +26,7 @@ public class InventoryFlowsPresenter extends RequestPresenter {
 
     public FlowItem[] flowItems = new FlowItem[0];
 
-    public InventoryFlowsPresenter(com.google.gwt.dom.client.Element view) {
+    public InventoryFlowsPresenter(View view) {
         super(view);
 
         addListener(FlowLoadEvent.class, event -> loadFlow(event.getFlowId()));

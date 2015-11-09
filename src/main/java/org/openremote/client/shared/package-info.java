@@ -1,3 +1,3 @@
 
-@com.google.gwt.core.client.js.JsNamespace("openremote")
+@jsinterop.annotations.JsPackage(namespace = "openremote")
 package org.openremote.client.shared;

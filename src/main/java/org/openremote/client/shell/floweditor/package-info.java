@@ -1,3 +1,3 @@
 
-@com.google.gwt.core.client.js.JsNamespace("openremote.shell.floweditor")
+@jsinterop.annotations.JsPackage(namespace = "openremote.shell.floweditor")
 package org.openremote.client.shell.floweditor;

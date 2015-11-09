@@ -2,12 +2,14 @@ package org.openremote.client.shell.nodeeditor;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.client.shared.AbstractPresenter;
-import org.openremote.client.shared.Component;
+import org.openremote.client.shared.JsUtil;
+import org.openremote.client.shared.View;
+import org.openremote.client.shared.DOM;
 import org.openremote.client.shell.floweditor.FlowDesignerConstants;
 import org.openremote.shared.event.FlowLoadEvent;
 import org.openremote.shared.event.Message;
@@ -20,14 +22,13 @@ import org.slf4j.LoggerFactory;
 
 import static org.openremote.client.shared.Timeout.debounce;
 
-@JsExport
 @JsType
-public class NodeEditorPresenter extends AbstractPresenter {
+public class NodeEditorPresenter extends AbstractPresenter<NodeEditorPresenter.NodeEditorView> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeEditorPresenter.class);
 
-    @JsType
-    public interface NodeEditorView extends Component {
+    @JsType(isNative = true)
+    public interface NodeEditorView extends View {
         void toggleNodeEditor();
     }
 
@@ -39,14 +40,14 @@ public class NodeEditorPresenter extends AbstractPresenter {
     public Slot[] sinks = new Slot[0];
     public boolean hasMultipleSinks;
 
-    public NodeEditorPresenter(com.google.gwt.dom.client.Element view) {
+    public NodeEditorPresenter(NodeEditorView view) {
         super(view);
 
         addListener(ShortcutEvent.class, event -> {
             if (node == null)
                 return;
             if (event.getKey() == 68) {
-                ((NodeEditorView) getViewComponent()).toggleNodeEditor();
+                getView().toggleNodeEditor();
             } else if (event.getKey() == 67) {
                 duplicateNode();
             } else if (event.getKey() == 46 || event.getKey() == 8) {
@@ -154,23 +155,22 @@ public class NodeEditorPresenter extends AbstractPresenter {
         removeEditorComponents();
     }
 
-    protected Component.DOM getEditorComponentContainer() {
+    protected DOM getEditorComponentContainer() {
         return getRequiredElementDOM("#editorComponentContainer");
     }
 
     protected void createEditorComponents(String[] editorComponents) {
-        Component.DOM container = removeEditorComponents();
+        DOM container = removeEditorComponents();
 
         if (editorComponents == null)
             return;
 
         for (String editorComponent : editorComponents) {
             LOG.debug("Creating and adding editor component: " + editorComponent);
-            Component component =
-                (Component) getView().getOwnerDocument().createElement(editorComponent);
+            View view = JsUtil.createView(getView(), editorComponent);
             // TODO: error handling, how do we detect a missing editor component?
-            component.set("nodeId", node.getId());
-            container.appendChild((Element) component);
+            view.set("nodeId", node.getId());
+            container.appendChild(JsUtil.asElementalElement(view));
         }
 
         updateEditorComponents();
@@ -182,15 +182,15 @@ public class NodeEditorPresenter extends AbstractPresenter {
             nodeProperties = JsonUtils.safeEval(node.getProperties());
 
         // TODO: This was stripped out to null if I use the Component.DOM API by the GWT compiler...
-        Element container = getRequiredElement("#editorComponentContainer");
+        Element container = JsUtil.asElementalElement(getRequiredElement("#editorComponentContainer"));
         for (int i = 0; i < container.getChildNodes().getLength(); i++) {
-            Component component = (Component) container.getChildNodes().item(i);
-            component.set("nodeProperties", nodeProperties);
+            View view = (View) container.getChildNodes().item(i);
+            view.set("nodeProperties", nodeProperties);
         }
     }
 
-    protected Component.DOM removeEditorComponents() {
-        Component.DOM container = getEditorComponentContainer();
+    protected DOM removeEditorComponents() {
+        DOM container = getEditorComponentContainer();
         while (container.getLastChild() != null) {
             container.removeChild(container.getLastChild());
         }

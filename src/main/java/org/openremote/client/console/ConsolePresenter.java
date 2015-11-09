@@ -2,15 +2,11 @@ package org.openremote.client.console;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.js.util.JsMapFromStringTo;
-import org.openremote.client.shared.AbstractPresenter;
-import org.openremote.client.shared.Component;
-import org.openremote.client.shared.Component.DOM;
-import org.openremote.client.shared.LongPressListener;
+import jsinterop.annotations.JsType;
+import org.openremote.client.shared.*;
 import org.openremote.shared.event.FlowRuntimeFailureEvent;
 import org.openremote.shared.event.client.*;
 import org.openremote.shared.flow.Flow;
@@ -23,9 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * TODO: This approach of mixing light/shadow DOM manipulation only works with shady DOM, not real Shadow DOM!
  */
-@JsExport
 @JsType
-public class ConsolePresenter extends AbstractPresenter {
+public class ConsolePresenter extends AbstractPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsolePresenter.class);
 
@@ -37,18 +32,18 @@ public class ConsolePresenter extends AbstractPresenter {
 
     protected Flow flow;
 
-    public ConsolePresenter(com.google.gwt.dom.client.Element view) {
+    public ConsolePresenter(View view) {
         super(view);
 
         addListener(ConsoleRefreshEvent.class, event -> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
             flow = event.getFlow();
             notifyPath("flow");
             refreshConsole(event.getSelectedNodeId());
         });
 
         addListener(ConsoleRefreshedEvent.class, event-> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
         });
 
         addListener(ConsoleEditModeEvent.class, event -> {
@@ -115,16 +110,16 @@ public class ConsolePresenter extends AbstractPresenter {
 
     protected void selectWidget(String nodeId) {
         // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
-        NodeList widgetNodes = getView().querySelectorAll("#widgetComponentContainer > .consoleWidget");
+        NodeList widgetNodes = JsUtil.querySelectorAll(getView(), "#widgetComponentContainer > .consoleWidget");
         for (int i = 0; i < widgetNodes.getLength(); i++) {
-            Component widgetComponent = (Component) widgetNodes.item(i);
-            String widgetNodeId = (String) widgetComponent.get("nodeId");
-            widgetComponent.toggleClass("selected", nodeId.equals(widgetNodeId), (elemental.dom.Node)widgetComponent);
+            View widgetView = (View) widgetNodes.item(i);
+            String widgetNodeId = (String) widgetView.get("nodeId");
+            widgetView.toggleClass("selected", nodeId.equals(widgetNodeId), widgetView);
         }
     }
 
     protected void refreshConsole(String selectedNodeId) {
-        DOM container = getDOM(getWidgetComponentContainer());
+        DOM container = getDOM((View) getWidgetComponentContainer());
         clearWidgetContainer(container);
         if (flow != null) {
             updateWidgets(flow, container);
@@ -134,12 +129,12 @@ public class ConsolePresenter extends AbstractPresenter {
             selectWidget(selectedNodeId);
 
         // TODO: Weird CSS query hacks necessary because Component DOM API doesn't work properly
-        NodeList nonCompositeWidgets = getView().querySelectorAll("#widgetComponentContainer :not(or-console-widget-composite)");
+        NodeList nonCompositeWidgets = JsUtil.querySelectorAll(getView(), "#widgetComponentContainer :not(or-console-widget-composite)");
         dispatch(new ConsoleRefreshedEvent(nonCompositeWidgets.length() > 0));
     }
 
     protected Element getWidgetComponentContainer() {
-        return getRequiredElement("#widgetComponentContainer");
+        return JsUtil.asElementalElement(getRequiredElement("#widgetComponentContainer"));
     }
 
     protected void clearWidgetContainer(DOM container) {
@@ -154,11 +149,11 @@ public class ConsolePresenter extends AbstractPresenter {
         // Remove all composite widget trees that have only other (empty) composite widget children
         elemental.dom.Node[] compositeWidgets = container.querySelectorAll("or-console-widget-composite");
         for (elemental.dom.Node compositeWidgetNode : compositeWidgets) {
-            DOM compositeDOM = getDOMRoot((Element) compositeWidgetNode);
+            DOM compositeDOM = getDOMRoot((View)compositeWidgetNode);
             elemental.dom.Node[] nonCompositeChildren =
                 compositeDOM.querySelectorAll(":not(or-console-widget-composite)");
             if (nonCompositeChildren.length == 0) {
-                getDOM(compositeWidgetNode).getParentNode().removeChild(compositeWidgetNode);
+                getDOM((View) compositeWidgetNode).getParentNode().removeChild(compositeWidgetNode);
             }
         }
     }
@@ -217,7 +212,7 @@ public class ConsolePresenter extends AbstractPresenter {
         }
 
         LOG.debug("Creating widget component: " + widgetComponent);
-        Component widget = (Component) getView().getOwnerDocument().createElement(widgetComponent);
+        View widget = JsUtil.createView(getView(), widgetComponent);
 
         widget.toggleClass("consoleWidget", true, (elemental.dom.Node)widget);
         widget.set("nodeId", node.getId());
@@ -228,10 +223,10 @@ public class ConsolePresenter extends AbstractPresenter {
             widget.set("widgetProperties", widgetProperties);
         }
 
-        container.appendChild((Element) widget);
+        container.appendChild(JsUtil.asElementalElement(widget));
 
         // Continue manipulating the local DOM of the widget!
-        DOM widgetDOM = getDOMRoot((Element) widget);
+        DOM widgetDOM = getDOMRoot(widget);
 
         for (Slot slot : node.findPropertySlots()) {
             // If this is a source slot without any wires attached, we don't need to add it
@@ -244,14 +239,14 @@ public class ConsolePresenter extends AbstractPresenter {
     }
 
     protected Element createWidgetSlot(Slot slot, String instanceId) {
-        Component component = (Component) getView().getOwnerDocument().createElement("or-console-widget-slot");
+        View view = JsUtil.createView(getView(), "or-console-widget-slot");
         if (!slot.isLabelEmpty())
-            component.set("label", slot.getLabel());
-        component.set("type", slot.getType());
-        component.set("slotId", slot.getId());
+            view.set("label", slot.getLabel());
+        view.set("type", slot.getType());
+        view.set("slotId", slot.getId());
         if (instanceId != null)
-            component.set("instanceId", instanceId);
-        component.set("propertyPath", slot.getPropertyPath());
-        return (Element) component;
+            view.set("instanceId", instanceId);
+        view.set("propertyPath", slot.getPropertyPath());
+        return JsUtil.asElementalElement(view);
     }
 }

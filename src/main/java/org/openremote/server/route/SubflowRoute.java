@@ -43,6 +43,13 @@ public class SubflowRoute extends NodeRoute {
         }
 
         @Override
+        public Node initialize(Node node) {
+            node = super.initialize(node);
+            node.setClientAccess(false);
+            return node;
+        }
+
+        @Override
         protected ObjectNode getInitialProperties() {
             return WIDGET_INITIAL_PROPERTIES.deepCopy()
                 .put(PROPERTY_COMPONENT, WIDGET_COMPONENT);

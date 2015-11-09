@@ -1,10 +1,9 @@
 package org.openremote.client.shared;
 
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
 import elemental.events.CloseEvent;
 import elemental.html.WebSocket;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.client.event.SessionClosedErrorEvent.Error;
 import org.openremote.shared.event.client.ShowFailureEvent;
@@ -14,8 +13,7 @@ import org.slf4j.LoggerFactory;
 import static org.openremote.shared.Constants.WEBSOCKET_SERVICE_CONTEXT_PATH;
 
 @JsType
-@JsExport
-public abstract class SessionPresenter extends RequestPresenter {
+public abstract class SessionPresenter<V extends View> extends RequestPresenter<V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionPresenter.class);
 
@@ -26,7 +24,7 @@ public abstract class SessionPresenter extends RequestPresenter {
     protected WebSocket webSocket;
     protected int failureCount;
 
-    public SessionPresenter(com.google.gwt.dom.client.Element view, String serviceUrl) {
+    public SessionPresenter(V view, String serviceUrl) {
         super(view);
         this.serviceUrl = serviceUrl;
 

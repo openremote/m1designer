@@ -1,13 +1,11 @@
 package org.openremote.client.console;
 
 import com.google.common.base.Splitter;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
-import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.js.util.JsArrayOfString;
+import jsinterop.annotations.JsType;
 import org.openremote.client.shared.AbstractPresenter;
-import org.openremote.client.shared.Component;
+import org.openremote.client.shared.View;
 import org.openremote.shared.event.Message;
 import org.openremote.shared.event.client.ConsoleLoopDetectedEvent;
 import org.openremote.shared.event.client.MessageReceivedEvent;
@@ -20,20 +18,19 @@ import java.util.List;
 import static org.openremote.client.console.ConsoleWidgetPresenter.VISITED_WIDGETS;
 import static org.openremote.client.shared.JsUtil.host;
 
-@JsExport
 @JsType
-public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
+public class ConsoleWidgetSlotPresenter extends AbstractPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsoleWidgetSlotPresenter.class);
 
-    public ConsoleWidgetSlotPresenter(com.google.gwt.dom.client.Element gwtView) {
+    public ConsoleWidgetSlotPresenter(View gwtView) {
         super(gwtView);
 
         // TODO this might not be the most efficient way, but is a DOM query to find the slot for a message faster?
         addPrepareListener(MessageReceivedEvent.class, event -> {
             Message message = event.getMessage();
-            String slotId = (String) getViewComponent().get("slotId");
-            String instanceId = (String) getViewComponent().get("instanceId");
+            String slotId = (String) getView().get("slotId");
+            String instanceId = (String) getView().get("instanceId");
             if (!message.getSlotId().equals(slotId))
                 return;
             if (message.getInstanceId() != null && !message.getInstanceId().equals(instanceId))
@@ -45,15 +42,15 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
 
     protected void onMessage(Message message) {
 
-        String propertyPath = (String) getViewComponent().get("propertyPath");
+        String propertyPath = (String) getView().get("propertyPath");
         if (propertyPath == null || propertyPath.length() == 0) {
-            LOG.debug("Slot without property path, don't know how to handle message: " + getView().getOuterHTML());
+            LOG.debug("Slot without property path, don't know how to handle message: " + getView().getLocalName());
             return;
         }
 
         // Get the parent of the slot and set its widgetProperties value (use the host element, not the document fragment)
         Node parentNode = getDOM(getView()).getParentNode();
-        Component parentWidget = host(parentNode);
+        View parentWidget = host((View)parentNode);
 
         String nodeId = (String) parentWidget.get("nodeId");
         String nodeLabel = (String) parentWidget.get("nodeLabel");
@@ -88,7 +85,7 @@ public class ConsoleWidgetSlotPresenter extends AbstractPresenter {
             parentWidget.set("visitedWidgets", jsArray);
 
             String value = message.getBody();
-            LOG.debug("Setting widget '" + ((Element) parentWidget).getLocalName() + "' property path '" + propertyPath + "': " + value);
+            LOG.debug("Setting widget '" + parentWidget.getLocalName() + "' property path '" + propertyPath + "': " + value);
             // This _might_ trigger property change events and send messages, then
             // the visited widgets list will be set as header on each message
             parentWidget.set("widgetProperties." + propertyPath, value);

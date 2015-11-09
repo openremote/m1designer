@@ -1,6 +1,7 @@
 package org.openremote.client.shell.flowcontrol;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
 import org.openremote.shared.event.FlowDeploymentFailureEvent;
 import org.openremote.shared.event.FlowDeploymentPhase;
 
@@ -18,10 +19,12 @@ public class FlowStatusDetail {
     public boolean canStop;
     public String text;
 
+    @JsIgnore
     public FlowStatusDetail(String text) {
         this(null, false, false, text);
     }
 
+    @JsIgnore
     public FlowStatusDetail(String mark, boolean canStart, boolean canStop, String text) {
         this.mark = mark;
         this.canStart = canStart;
@@ -29,6 +32,7 @@ public class FlowStatusDetail {
         this.text = text;
     }
 
+    @JsIgnore
     public FlowStatusDetail(FlowDeploymentPhase phase) {
         switch (phase) {
             case STARTING:
@@ -70,6 +74,7 @@ public class FlowStatusDetail {
         }
     }
 
+    @JsIgnore
     public FlowStatusDetail(FlowDeploymentFailureEvent failureEvent) {
         // TODO More details in event
         this(failureEvent.getPhase());

@@ -1,6 +1,6 @@
 package org.openremote.client.shell.inventory;
 
-import com.google.gwt.core.client.js.JsType;
+import jsinterop.annotations.JsType;
 import org.openremote.client.shell.flowcontrol.FlowStatusDetail;
 import org.openremote.shared.flow.Flow;
 import org.slf4j.Logger;

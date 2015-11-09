@@ -1,20 +1,19 @@
 package org.openremote.client.shell;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.js.JsExport;
-import com.google.gwt.core.client.js.JsType;
 import elemental.client.Browser;
+import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.client.shared.EventSessionPresenter;
+import org.openremote.client.shared.View;
 import org.openremote.shared.event.client.*;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.inventory.ClientPresetVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsExport
 @JsType
-public class ShellPresenter extends EventSessionPresenter {
+public class ShellPresenter extends EventSessionPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShellPresenter.class);
 
@@ -23,7 +22,7 @@ public class ShellPresenter extends EventSessionPresenter {
     public boolean shellOpened = false;
     public boolean consoleHasWidgets = false;
 
-    public ShellPresenter(com.google.gwt.dom.client.Element view) {
+    public ShellPresenter(View view) {
         super(view);
 
         addListener(ShellOpenEvent.class, event -> {
@@ -42,15 +41,15 @@ public class ShellPresenter extends EventSessionPresenter {
         });
 
         addListener(ShowInfoEvent.class, event -> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
         });
 
         addListener(ShowFailureEvent.class, event -> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
         });
 
         addListener(RequestCompleteEvent.class, event -> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
         });
 
         addListener(ConfirmationEvent.class, event-> {
@@ -58,7 +57,7 @@ public class ShellPresenter extends EventSessionPresenter {
         });
 
         addListener(InventoryManagerOpenEvent.class, event -> {
-            getViewComponent().fire(event.getType(), event);
+            getView().fire(event.getType(), event);
         });
     }
 
