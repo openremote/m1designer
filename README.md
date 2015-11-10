@@ -63,3 +63,26 @@ Build image and run Docker container
     cp Dockerfile build/libs/
     docker build -t orc3:latest build/libs/
     docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime orc3
+
+Environment Variables
+---
+
+|Name | Default Value | Description|
+|---|---|---|
+|`DEV_MODE`|`true`|If enabled, the application is optimized for quick development turnaround and debug logging.|
+|`WEBSERVER_ADDRESS`|`127.0.0.1`|The network address the webserver is listening on, use `0.0.0.0` to listen on all interfaces.|
+|`WEBSERVER_PORT`|`8080`| The TCP port of the webserver.|
+|`WEBSERVER_DOCUMENT_ROOT`|`src/main/webapp`|Location of `index.html` and other static web resources. JAR files are directly supported.|
+|`WEBSERVER_DOCUMENT_CACHE_SECONDS`|`300`|Maximum age of served static web resources, unless their name contains `nocache` or dev mode is enabled.|
+|`WEBSERVER_ALLOW_ORIGIN`|`http://localhost:8080`|Allow origin CORS response header.|
+|`TRANSACTION_SERVER_ID`|`MyOpenRemoteController123`|A unique identifier (for transaction logging) of your application, must be less than 52 characters long. If you run several instances of the application (even in several VMs) with the same database, you must set this.|
+|`DATABASE_PRODUCT`|`H2`|Database SQL dialect, currently only `H2` is supported.|
+|`DATABASE_CONNECTION_URL`|`jdbc:h2:file:./or-controller-database`|Database connection configuration, if dev mode is enabled, the default is `jdbc:h2:mem:test`.|
+|`DATABASE_USERNAME`|`sa`|Database connection username.|
+|`DATABASE_PASSWORD`|(empty)|Database connection password.|
+|`DATABASE_MIN_POOL_SIZE`|`5`|Minimum number of database connections in the pool.|
+|`DATABASE_MAX_POOL_SIZE`|`25`|Maximum number of database connections in the pool.|
+|`DATABASE_STATEMENT_CACHE_SIZE`|`20`|SQL prepared statement cache size.|
+|`CREATE_DATABASE_SCHEMA`|`false`|Drop/recreate SQL database schema in database on startup, always enabled if dev mode is enabled.|
+|`IMPORT_SAMPLE_FLOWS`|`false`|Import test/example data into database on startup, always enabled if dev mode is enabled.|
+|`START_SAMPLE_FLOWS`|`true`|If test/example flows have been imported, start them immediately when the application boots.|
