@@ -88,7 +88,6 @@ org.openremote:or-shared: GNU AFFERO GENERAL PUBLIC LICENSE, VERSION 3
 org.openremote:or-zwave: TODO
 org.seamless:seamless-http: GNU LESSER GENERAL PUBLIC LICENSE, VERSION 2.1
 org.seamless:seamless-util: GNU LESSER GENERAL PUBLIC LICENSE, VERSION 2.1
-org.seamless:seamless-util: GNU LESSER GENERAL PUBLIC LICENSE, VERSION 2.1
 org.seamless:seamless-xml: GNU LESSER GENERAL PUBLIC LICENSE, VERSION 2.1
 org.slf4j:jcl-over-slf4j: SLF4J LICENSE
 org.slf4j:jul-to-slf4j: SLF4J LICENSE
