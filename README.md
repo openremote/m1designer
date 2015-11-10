@@ -22,7 +22,7 @@ Development
 
 * The application uses a temporary in-memory database with sample data. If you like to switch to an external database instance, set `DATABASE_CONNECTION_URL=jdbc:h2:file:</some/database/file/path>` or `jdbc:h2:tcp://localhost/mem:test` for an already running external database instance (`java -jar h2.jar`).
 
-* Configure ZWave component with environment variable `ZWAVE_SERIAL_PORT=/dev/tty.SLAB_USBtoUART`
+* Optional: Enable ZWave Dimmer sample device with environment variables `SAMPLE_ZWAVE_DIMMER_NODE_ID=<Your BeNext Dimmer ZWave Node Id>` and `ZWAVE_SERIAL_PORT=/dev/tty.SLAB_USBtoUART`
 
 Build tested archives
 ---

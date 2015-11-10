@@ -88,7 +88,10 @@ public class SampleConfiguration implements Configuration {
                         flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
                         flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
 
-                        flowDAO.makePersistent(ExampleLight.FLOW, false);
+                        if (environment.getProperty("SAMPLE_ZWAVE_DIMMER_NODE_ID") != null
+                            && environment.getProperty("ZWAVE_SERIAL_PORT") != null) {
+                            flowDAO.makePersistent(SampleZWaveDimmer.FLOW, false);
+                        }
 
                         ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
                         clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
@@ -101,8 +104,6 @@ public class SampleConfiguration implements Configuration {
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleEnvironmentWidget.FLOW.getId()));
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
-
-                            camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(ExampleLight.FLOW.getId()));
                         }
 
                     } finally {

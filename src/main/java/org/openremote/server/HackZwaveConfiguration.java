@@ -12,6 +12,7 @@ public class HackZwaveConfiguration implements Configuration {
     public void apply(Environment environment, CamelContext context) throws Exception {
 
         // TODO We must do discovery either on system startup or better in route policies in SensorRoute/ActuatorRoute
+/*
         context.addStartupListener((ctx, alreadyStarted) -> {
                 if (!alreadyStarted) {
                     LOG.info("### ##############################################################################################");
@@ -20,6 +21,7 @@ public class HackZwaveConfiguration implements Configuration {
                 }
             }
         );
+*/
 
 /* TODO Some test code for debugging
 
