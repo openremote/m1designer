@@ -88,9 +88,12 @@ public class SampleConfiguration implements Configuration {
                         flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
                         flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
 
-                        if (environment.getProperty("SAMPLE_ZWAVE_DIMMER_NODE_ID") != null
-                            && environment.getProperty("ZWAVE_SERIAL_PORT") != null) {
+                        try {
+                            String zwaveDimmerNodeId = environment.getProperty("SAMPLE_ZWAVE_DIMMER_NODE_ID");
+                            String zwaveSerialPort = environment.getProperty("ZWAVE_SERIAL_PORT");
                             flowDAO.makePersistent(SampleZWaveDimmer.FLOW, false);
+                        } catch (IllegalArgumentException ex) {
+                            LOG.info("Not enabling ZWave sample device");
                         }
 
                         ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
@@ -105,7 +108,6 @@ public class SampleConfiguration implements Configuration {
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleTemperatureProcessor.FLOW.getId()));
                             camelContext.createProducerTemplate().sendBody(EventService.INCOMING_EVENT_QUEUE, new FlowDeployEvent(SampleThermostatControl.FLOW.getId()));
                         }
-
                     } finally {
                         tm.rollback();
                     }
