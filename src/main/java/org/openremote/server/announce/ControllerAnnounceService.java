@@ -220,7 +220,12 @@ public class ControllerAnnounceService implements StaticService {
 
         DeviceType type = new DeviceType("openremote", "Controller", 1);
 
-        URI presentationUri = new URI("http", null, getHostAddress(undertowService.getHost()), undertowService.getPort(), null, null, null);
+        String host = getHostAddress(undertowService.getHost());
+        int port = undertowService.getPort();
+
+        LOG.info("Announcing controller host and port through UPnP: " + host + ":" + port);
+
+        URI presentationUri = new URI("http", null, host, port, null, null, null);
 
         DeviceDetails details =
             new DeviceDetails(

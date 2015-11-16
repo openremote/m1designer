@@ -2,6 +2,7 @@ package org.openremote.server.testdata;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.openremote.server.catalog.widget.SliderNodeDescriptor;
+import org.openremote.server.catalog.widget.TextLabelNodeDescriptor;
 import org.openremote.server.route.ActuatorRoute;
 import org.openremote.server.route.SensorRoute;
 import org.openremote.shared.flow.Flow;
@@ -55,8 +56,28 @@ public class SampleZWaveDimmer {
 
         }.initialize(DIMMER_ACTUATOR);
 
-        DIMMER_ACTUATOR.getEditorSettings().setPositionX((double) 450);
-        DIMMER_ACTUATOR.getEditorSettings().setPositionY((double) 330);
+        DIMMER_ACTUATOR.getEditorSettings().setPositionX((double) 400);
+        DIMMER_ACTUATOR.getEditorSettings().setPositionY((double) 430);
+    }
+
+    /* ###################################################################################### */
+
+    public static Node DIMMER_STATUS = new Node("Dim Status", generateGlobalUniqueId(), TextLabelNodeDescriptor.TYPE);
+
+    static {
+        new TextLabelNodeDescriptor() {
+            @Override
+            protected ObjectNode getInitialProperties() {
+                return TextLabelNodeDescriptor.TEXT_LABEL_INITIAL_PROPERTIES.deepCopy()
+                    .put("textColor", "#ddd")
+                    .put("emptyValue", "Waiting for dim status...")
+                    .put("fontSizePixels", 20)
+                    .put("positionX", 30)
+                    .put("positionY", 80);
+            }
+        }.initialize(DIMMER_STATUS);
+        DIMMER_STATUS.getEditorSettings().setPositionX((double) 300);
+        DIMMER_STATUS.getEditorSettings().setPositionY((double) 30);
     }
 
     /* ###################################################################################### */
@@ -65,8 +86,8 @@ public class SampleZWaveDimmer {
 
     static {
         new SliderNodeDescriptor().initialize(DIMMER_LEVEL);
-        DIMMER_LEVEL.getEditorSettings().setPositionX((double) 200);
-        DIMMER_LEVEL.getEditorSettings().setPositionY((double) 250);
+        DIMMER_LEVEL.getEditorSettings().setPositionX((double) 100);
+        DIMMER_LEVEL.getEditorSettings().setPositionY((double) 350);
     }
 
     /* ###################################################################################### */
@@ -74,6 +95,7 @@ public class SampleZWaveDimmer {
     public static Node[] FLOW_NODES = new Node[]{
         DIMMER_SENSOR,
         DIMMER_ACTUATOR,
+        DIMMER_STATUS,
         DIMMER_LEVEL
     };
 
@@ -84,7 +106,7 @@ public class SampleZWaveDimmer {
         generateGlobalUniqueId(),
         FLOW_NODES,
         new Wire[] {
-            new Wire(DIMMER_SENSOR.getSlots()[0], DIMMER_LEVEL.getSlots()[0]),
+            new Wire(DIMMER_SENSOR.getSlots()[0], DIMMER_STATUS.getSlots()[0]),
             new Wire(DIMMER_LEVEL.getSlots()[1], DIMMER_ACTUATOR.getSlots()[0])
         }
     );
