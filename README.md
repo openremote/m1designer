@@ -1,4 +1,7 @@
+# BUILD IS CURRENTLY BROKEN, THE GWT TEAM ARE FINALIZING 2.8 AND WE ARE NOT KEEPING UP WITH THE SNAPSHOT.
+
 # OpenRemote Controller & Web Editor/Console
+
 
 Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
 
