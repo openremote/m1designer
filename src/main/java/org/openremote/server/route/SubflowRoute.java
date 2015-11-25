@@ -65,7 +65,7 @@ public class SubflowRoute extends NodeRoute {
         @Override
         public Node initialize(Node node) {
             node = super.initialize(node);
-            node.setClientAccess(false);
+            node.setClientAccess(true);
             return node;
         }
 
