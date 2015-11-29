@@ -22,7 +22,6 @@ package org.openremote.server.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.ProcessorDefinition;
-import org.apache.camel.support.RoutePolicySupport;
 import org.openremote.server.catalog.NodeDescriptor;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.catalog.CatalogCategory;
@@ -35,14 +34,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.openremote.beta.zwave.component.ZWComponent.HEADER_COMMAND;
-
 public class ActuatorRoute extends NodeRoute {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActuatorRoute.class);
 
     public static final String NODE_TYPE = "urn:openremote:flow:node:actuator";
     public static final String NODE_TYPE_LABEL = "Actuator";
+
+    public static final String NODE_PROPERTY_PRODUCER_ENDPOINT = "producerEndpoint";
 
     public static class Descriptor extends NodeDescriptor {
 
@@ -88,7 +87,6 @@ public class ActuatorRoute extends NodeRoute {
         protected void addPersistentPropertyPaths(List<String> propertyPaths) {
             super.addPersistentPropertyPaths(propertyPaths);
             propertyPaths.add("producerEndpoint");
-            propertyPaths.add("zwaveCommand");
         }
     }
 
@@ -98,20 +96,19 @@ public class ActuatorRoute extends NodeRoute {
 
     @Override
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
-
-        // TODO Quick and dirty hack
-
-        LOG.info("### TODO Configure actuator route, with node properties: " + getNodeProperties());
-        if (getNodeProperties() == null || !getNodeProperties().has("producerEndpoint"))
+        String producerEndpoint;
+        if (getNodeProperties() == null
+            || !getNodeProperties().has(NODE_PROPERTY_PRODUCER_ENDPOINT)
+            || (producerEndpoint = getNodeProperties().get(NODE_PROPERTY_PRODUCER_ENDPOINT).asText()).length() == 0) {
+            LOG.debug("No processing in actuator node, missing '"+NODE_PROPERTY_PRODUCER_ENDPOINT+ "' property:" + getNode());
             return;
+        }
 
+        // TODO Should we send the headers?
         routeDefinition.process(exchange -> {
-            String producerEndpoint = getNodeProperties().get("producerEndpoint").asText();
-            LOG.info("### TODO Using actuator producer endpoint: " + producerEndpoint);
-            String zwaveCommand = getNodeProperties().get("zwaveCommand").asText();
-            LOG.info("### TODO Using zwave command: " + zwaveCommand);
-            producerTemplate.sendBodyAndHeader(
-                producerEndpoint, exchange.getIn().getBody(String.class), HEADER_COMMAND, zwaveCommand
+            LOG.debug("Sending message to actuator producer endpoint: " + producerEndpoint);
+            producerTemplate.sendBody(
+                producerEndpoint, exchange.getIn().getBody(String.class)
             );
         });
     }

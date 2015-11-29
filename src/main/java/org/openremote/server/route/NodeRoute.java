@@ -308,17 +308,8 @@ public abstract class NodeRoute extends RouteBuilder {
                     sourceSlots = new Slot[]{getNode().findSlot(getSlotId(exchange))};
                 }
                 exchange.getIn().removeHeader(SLOT_ID);
-                LOG.debug("Using wires of destination source slots: " + Arrays.toString(sourceSlots));
+                sendExchange(sourceSlots, exchange);
 
-                // Find source slots and get the destination node and sink by examining the wires
-                for (Slot sourceSlot : sourceSlots) {
-                    LOG.debug("Finding wires attached to: " + sourceSlot);
-                    Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
-                    LOG.debug("Found wires, sending exchange copy to each: " + Arrays.toString(sourceWires));
-                    for (Wire sourceWire : sourceWires) {
-                        sendExchangeCopy(sourceWire.getSinkId(), exchange, false);
-                    }
-                }
             })
             .id(getProcessorId("toWires"))
             .stop()
@@ -328,6 +319,20 @@ public abstract class NodeRoute extends RouteBuilder {
 
     protected Node getOwningNodeOfSlot(String slotId) {
         return getContext().hasService(RouteManagementService.class).getRunningNodeOwnerOfSlot(slotId);
+    }
+
+
+    protected void sendExchange(Slot[] slots, Exchange exchange) throws Exception {
+        // Find source slots and get the destination node and sink by examining the wires
+        LOG.debug("Using wires of destination slots: " + Arrays.toString(slots));
+        for (Slot sourceSlot : slots) {
+            LOG.debug("Finding wires attached to: " + sourceSlot);
+            Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
+            LOG.debug("Found wires, sending exchange copy to each: " + Arrays.toString(sourceWires));
+            for (Wire sourceWire : sourceWires) {
+                sendExchangeCopy(sourceWire.getSinkId(), exchange, false);
+            }
+        }
     }
 
     protected void sendExchangeCopy(String destinationSinkId, Exchange exchange, boolean popStack) throws Exception {

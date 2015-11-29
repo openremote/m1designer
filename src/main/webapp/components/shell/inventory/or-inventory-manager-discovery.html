@@ -1,0 +1,220 @@
+<link rel="import" href="../ui/or-panel.html">
+<link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-list.html">
+<link rel="import" href="../ui/or-menu.html">
+
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
+
+<script>
+    document.addEventListener("gwtReadyClient", function () {
+        Polymer({
+            is: 'or-inventory-manager-discovery',
+            behaviors: [openremote.PresenterAware],
+            properties: {
+                _presenter: {
+                    type: Object,
+                    value: function () {
+                        return new openremote.shell.inventory.InventoryManagerDiscoveryPresenter(this);
+                    }
+                },
+                hidden: {
+                    type: Boolean,
+                    value: true,
+                    reflectToAttribute: true,
+                    observer: "_onHiddenChanged"
+                }
+            },
+            listeners: {
+                "container-closing": "_onContainerClosing"
+            },
+            observers: [
+                "_onSelectedIndexChanged(_presenter.selectedIndex)",
+                "_onAdapterModified(_presenter.adapter.*)"
+            ],
+            _onHiddenChanged: function (hidden) {
+                if (hidden) {
+                    this._presenter.close();
+                } else {
+                    this.$.discoveryList.deselect();
+                    this._presenter.open();
+                }
+            },
+            _onContainerClosing: function (e) {
+                this._presenter.closing(
+                        function () {
+                            this.fire("container-switch", {index: e.detail.opening});
+                        }.bind(this)
+                );
+            },
+            _onSelectedIndexChanged: function (e) {
+                if (this._presenter.selectedIndex) {
+                    this._presenter.selectedIndexChanged();
+                }
+            },
+            _saveAdapter: function () {
+                this._presenter.save();
+            },
+            _triggerDiscovery: function () {
+                this._presenter.triggerDiscovery();
+            },
+            _onAdapterModified: function (e) {
+                if (e.path == "_presenter.adapters"
+                        || e.path == "_presenter.adapter"
+                        || e.path == "_presenter.adapterProperties") {
+                    return;
+                }
+                this._presenter.modified();
+            },
+            _onAdapterListActivate: function (e) {
+                this._presenter.onAdapterListActivate(
+                        e.detail.selected != null ? e.detail.selected : -1,
+                        function () {
+                            this.$.adapterListSection.select(e.detail.selected);
+                        }.bind(this)
+                );
+            },
+            _onDeviceListActivate: function (e) {
+                this._presenter.onDeviceListActivate(
+                        e.detail.selected != null ? e.detail.selected : -1,
+                        function () {
+                            this.$.deviceListSection.select(e.detail.selected);
+                        }.bind(this)
+                );
+            },
+            _flatten: function(obj) {
+                if (!obj)
+                return [];
+                return Object.keys(obj).map(function(key) {
+                    return {
+                        name: key,
+                        item: obj[key]
+                    };
+                });
+            },
+            _applyPropertyDefaultValue: function(e) {
+                e.model.set("entry.item.value", e.model.entry.item.defaultValue);
+            }
+        })
+    });
+</script>
+
+<dom-module id="or-inventory-manager-discovery">
+    <template>
+        <style>
+            :host {
+                flex: auto;
+                -webkit-flex: auto;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+                overflow: hidden;
+            }
+
+            .panelContent {
+                padding: 0;
+                overflow: hidden;
+            }
+
+            #discoveryList {
+                width: 20em;
+            }
+
+            .deviceLabel {
+                font-weight:bold;
+                font-size:larger;
+                margin: 0.4em 0;
+            }
+
+            .devicePropertyLabel {
+                font-weight: bold;
+            }
+
+        </style>
+
+        <or-panel>
+
+            <or-button class="panelTopToolbarItem"
+                       disabled$="[[!_presenter.dirty]]"
+                       icon="save"
+                       on-tap="_saveAdapter">Save
+            </or-button>
+
+            <or-button class="panelTopToolbarItem"
+                       disabled$="[[!_presenter.adapter.discoveryEndpoint]]"
+                       icon="cached"
+                       on-tap="_triggerDiscovery">Discover Devices
+            </or-button>
+
+            <or-list id="discoveryList" class="panelSidebar">
+                <or-list-section id="adapterListSection" label="Adapters"
+                                 stacked
+                                 confirm-selection
+                                 on-activate="_onAdapterListActivate">
+
+                    <template is="dom-if" if="{{!_presenter.adapters.length}}">
+                        <div class="empty">
+                            <div>No adapters installed.</div>
+                        </div>
+                    </template>
+
+                    <template is="dom-repeat" items="[[_presenter.adapters]]" as="adapter">
+                        <or-list-item>[[adapter.label]]</or-list-item>
+                    </template>
+                </or-list-section>
+
+                <or-list-section id="deviceListSection" label="Discovered Devices"
+                                 stacked
+                                 confirm-selection
+                                 on-activate="_onDeviceListActivate">
+
+                    <template is="dom-if" if="{{!_presenter.devices.length}}">
+                        <div class="empty">No devices found.</div>
+                    </template>
+
+                    <template is="dom-repeat" items="[[_presenter.devices]]" as="device">
+                        <or-list-item>[[device.label]]</or-list-item>
+                    </template>
+                </or-list-section>
+
+            </or-list>
+
+            <div class="panelContent">
+
+                <template is="dom-if" if="[[_presenter.adapter]]">
+
+                    <template is="dom-repeat" items="[[_flatten(_presenter.adapterProperties)]]" as="entry">
+                        <div class="layout horizontal center">
+                            <or-input class="flex"
+                                      label="[[entry.item.description]]"
+                                      on-value-changed="_onAdapterModified"
+                                      value="{{entry.item.value}}"></or-input>
+                            <or-button on-tap="_applyPropertyDefaultValue"
+                                       disabled$="[[!entry.item.defaultValue]]">Apply default value</or-button>
+                        </div>
+                    </template>
+
+                </template>
+
+                <template is="dom-if" if="[[_presenter.device]]">
+                    <div class="deviceLabel">[[_presenter.device.label]]</div>
+
+                    <template is="dom-repeat" items="[[_flatten(_presenter.deviceProperties)]]" as="entry">
+                        <div class="layout horizontal center">
+                            <div class="devicePropertyLabel flex"><span>[[entry.name]]</span>:</div>
+                            <div class="devicePropertyValue flex-4">
+                                <span>[[entry.item]]</span>
+                            </div>
+                        </div>
+                    </template>
+
+                </template>
+
+            </div>
+        </or-panel>
+
+    </template>
+</dom-module>
+

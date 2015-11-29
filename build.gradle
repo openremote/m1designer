@@ -72,6 +72,7 @@ dependencies {
     serverDependencies("org.codehaus.btm:btm:$bitronixVersion") {
         exclude group: "javax.transaction" // CDDL of jta-1.1.jar is incompatible with GPL!
     }
+    serverDependencies "org.apache.geronimo.specs:geronimo-jta_1.1_spec:$jtaSpecVersion"
 
     clientDependencies "com.google.gwt:gwt-user:$gwtVersion"
     clientDependencies "com.google.gwt:gwt-elemental:$gwtVersion"

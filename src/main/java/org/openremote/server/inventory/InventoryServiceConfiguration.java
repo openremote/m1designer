@@ -88,6 +88,7 @@ public class InventoryServiceConfiguration implements Configuration {
                 .route().id("DELETE client preset by ID")
                 .bean(getContext().hasService(InventoryService.class), "deleteClientPreset")
                 .endRest();
+
         }
     }
 

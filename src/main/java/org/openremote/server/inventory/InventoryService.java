@@ -26,9 +26,11 @@ import org.apache.camel.StaticService;
 import org.openremote.server.persistence.PersistenceService;
 import org.openremote.server.persistence.inventory.ClientPresetDAO;
 import org.openremote.shared.inventory.ClientPreset;
+import org.openremote.shared.inventory.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -37,6 +39,8 @@ public class InventoryService implements StaticService {
     private static final Logger LOG = LoggerFactory.getLogger(InventoryService.class);
 
     protected final CamelContext context;
+
+    final protected List<Device> devices = new ArrayList<>();
 
     public InventoryService(CamelContext context) {
         this.context = context;
@@ -106,7 +110,6 @@ public class InventoryService implements StaticService {
                 dao.makeTransient(preset);
             return null;
         });
-
     }
 
 }

@@ -26,9 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ServiceLoader;
 
-import static org.openremote.server.Environment.DEV_MODE;
-import static org.openremote.server.Environment.DEV_MODE_DEFAULT;
-
 public class Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
@@ -53,7 +50,7 @@ public class Server {
     public Server(Environment environment, CamelContext context, Iterable<Configuration> configurations) throws Exception {
         this.environment = environment;
         for (Configuration cfg : configurations) {
-            LOG.info("> Applying configuration: " + cfg.getClass().getName());
+            LOG.info("--- Applying configuration: " + cfg.getClass().getName());
             cfg.apply(environment, context);
         }
     }

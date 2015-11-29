@@ -23,6 +23,7 @@ package org.openremote.server.inventory.discovery;
 import org.apache.camel.CamelContext;
 import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
+import org.openremote.server.inventory.InventoryService;
 import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.shared.inventory.Adapter;
 import org.slf4j.Logger;
@@ -51,65 +52,64 @@ public class DiscoveryServiceConfiguration implements Configuration {
             rest("/discovery/adapter")
                 .get()
                 .route().id("GET all discovered adapters")
-                .bean(getContext().hasService(AdapterDiscoveryService.class), "getAdapters")
+                .bean(getContext().hasService(DiscoveryService.class), "getAdapters")
                 .endRest()
 
                 .get("{id}")
                 .route().id("GET discovered adapter by ID")
-                .bean(getContext().hasService(AdapterDiscoveryService.class), "getAdapter")
+                .bean(getContext().hasService(DiscoveryService.class), "getAdapter")
                 .to("direct:restStatusNotFound")
-                .endRest();
-
-            rest("/discovery/inbox")
-                .get()
-                .route().id("GET all discovered devices")
-                .process(exchange -> {
-                    InboxService inboxService = getContext().hasService(InboxService.class);
-                    boolean refresh = exchange.getIn().getHeader("refresh", boolean.class);
-                    if (refresh) {
-                        inboxService.triggerDiscovery();
-                    }
-                })
-                .bean(getContext().hasService(InboxService.class), "getDiscoveredDevices")
                 .endRest()
 
-                .get("/adapter")
-                .route().id("GET adapters of discovery inbox")
-                .bean(getContext().hasService(InboxService.class), "getAdapters")
-                .endRest()
-
-                .post("/adapter")
+                .put("{id}")
                 .consumes("application/json")
                 .type(Adapter.class)
-                .route().id("POST adapter into discovery inbox")
+                .route().id("PUT configured adapter by ID")
                 .process(exchange -> {
                     Adapter adapter = exchange.getIn().getBody(Adapter.class);
-
-                    getContext().hasService(InboxService.class).addAdapter(adapter);
-                    getContext().hasService(InboxService.class).triggerDiscovery(adapter);
-                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
-
-                    exchange.getOut().setHeader(
-                        "Location",
-                        url(exchange, REST_SERVICE_CONTEXT_PATH, "discovery", "inbox", "adapter", adapter.getId())
-                    );
+                    boolean found = getContext().hasService(DiscoveryService.class).putAdapter(adapter);
+                    exchange.getOut().setBody(null);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, found ? 204 : 404);
                 })
                 .endRest()
 
-                .delete("/adapter/{adapterId}")
-                .route().id("DELETE adapter from discovery inbox")
-                .bean(getContext().hasService(InboxService.class), "removeAdapter")
+                .post("/trigger")
+                .consumes("application/json")
+                .type(Adapter.class)
+                .route().id("POST adapter to trigger discovery")
+                .process(exchange -> {
+                    Adapter adapter = exchange.getIn().getBody(Adapter.class);
+                    try {
+                        getContext().hasService(DiscoveryService.class).triggerDiscovery(adapter);
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
+                        exchange.getOut().setHeader(
+                            "Location",
+                            url(exchange, REST_SERVICE_CONTEXT_PATH, "discovery", "device")
+                        );
+                    } catch (IllegalArgumentException ex) {
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 400);
+                        exchange.getOut().setBody(ex.getMessage());
+                    } catch (IllegalStateException ex) {
+                        exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 409);
+                        exchange.getOut().setBody(ex.getMessage());
+                    }
+                })
                 .endRest();
+
+            rest("/discovery/device")
+                .get()
+                .route().id("GET all discovered devices")
+                .bean(getContext().hasService(DiscoveryService.class), "getDiscoveredDevices")
+                .endRest();
+
         }
     }
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
-        AdapterDiscoveryService adapterDiscoveryService = new AdapterDiscoveryService(context);
-        context.addService(adapterDiscoveryService);
 
-        InboxService inboxService = new InboxService(adapterDiscoveryService);
-        context.addService(inboxService);
+        DiscoveryService discoveryService = new DiscoveryService(context);
+        context.addService(discoveryService);
 
         context.addRoutes(
             new DiscoveryServiceRouteBuilder(

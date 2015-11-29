@@ -96,6 +96,12 @@ public abstract class RequestPresenter<V extends View> extends AbstractPresenter
                 method.getResponse() != null ? method.getResponse().getStatusText() : null,
                 exception.getMessage()
             );
+
+            if (method.getResponse() != null && method.getResponse().getText() != null) {
+                String serverText = method.getResponse().getText();
+                requestFailure.setServerText(serverText);
+            }
+
             onFailure(requestFailure);
         }
 

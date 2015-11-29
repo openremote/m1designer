@@ -50,8 +50,7 @@ public class SampleZWaveDimmer {
             @Override
             protected ObjectNode getInitialProperties() {
                 return JSON.createObjectNode()
-                    .put("producerEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}")
-                    .put("zwaveCommand", "DIM");
+                    .put("producerEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}&command=DIM");
             }
 
         }.initialize(DIMMER_ACTUATOR);

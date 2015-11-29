@@ -37,11 +37,20 @@
                 flex-wrap: nowrap;
                 -webkit-flex-wrap: nowrap;
             }
+
+            #empty {
+                font-size: smaller;
+                padding: 0 1em;
+            }
         </style>
 
         <template is="dom-if" if="[[label]]">
             <div id="label">[[label]]</div>
         </template>
+
+        <div id="empty">
+            <content select=".empty"></content>
+        </div>
 
         <iron-selector id="items"
                        stacked$="[[stacked]]"

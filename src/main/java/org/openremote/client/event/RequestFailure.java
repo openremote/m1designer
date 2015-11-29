@@ -29,6 +29,7 @@ public class RequestFailure {
     public final int statusCode;
     public final String statusText;
     public final String errorText;
+    public String serverText;
 
     public RequestFailure(String requestText, int statusCode, String statusText, String errorText) {
         this.requestText = requestText;
@@ -52,5 +53,13 @@ public class RequestFailure {
                 sb.append(".");
         }
         return sb.toString();
+    }
+
+    public String getServerText() {
+        return serverText;
+    }
+
+    public void setServerText(String serverText) {
+        this.serverText = serverText;
     }
 }

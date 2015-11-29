@@ -38,5 +38,6 @@
     <logger name="org.apache.camel.management" level="WARN"/>
     <logger name="org.apache.camel.component.jackson" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
 
 </configuration>

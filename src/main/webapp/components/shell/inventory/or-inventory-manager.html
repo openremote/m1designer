@@ -1,6 +1,7 @@
 <link rel="import" href="../ui/or-toolbox.html">
 <link rel="import" href="../ui/or-button.html">
 
+<link rel="import" href="or-inventory-manager-discovery.html">
 <link rel="import" href="or-inventory-manager-client-presets.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
@@ -45,19 +46,19 @@
         <or-toolbox id="toolbox"
                     with-backdrop
                     confirm-selection
-                    selected-tab="2">
+                    selected-tab="1">
 
             <div class="toolboxTitle flex layout horizontal center">
                 <div class="flex">Inventory</div>
                 <or-button icon="close" on-tap="close">Close</or-button>
             </div>
 
-            <paper-tab noink>Devices</paper-tab>
             <paper-tab noink>Assets</paper-tab>
+            <paper-tab noink>Device Discovery</paper-tab>
             <paper-tab noink>Client Presets</paper-tab>
 
             <div tab-index="0" style="background: red;">TODO</div>
-            <div tab-index="1" style="background: red;">TODO</div>
+            <or-inventory-manager-discovery tab-index="1"></or-inventory-manager-discovery>
             <or-inventory-manager-client-presets tab-index="2"></or-inventory-manager-client-presets>
 
         </or-toolbox>

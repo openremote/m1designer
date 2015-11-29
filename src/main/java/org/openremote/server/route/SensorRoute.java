@@ -40,6 +40,9 @@ public class SensorRoute extends NodeRoute {
     public static final String NODE_TYPE = "urn:openremote:flow:node:sensor";
     public static final String NODE_TYPE_LABEL = "Sensor";
 
+    public static final String NODE_PROPERTY_CONSUMER_ENDPOINT = "consumerEndpoint";
+    public static final String NODE_PROPERTY_DISCOVERY_ENDPOINT = "discoveryEndpoint";
+
     public static class Descriptor extends NodeDescriptor {
 
         @Override
@@ -95,39 +98,34 @@ public class SensorRoute extends NodeRoute {
     @Override
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
-        // TODO Quick and dirty hack that doesn't work, discovery must be restart-able or the ZWConsumer doesn't register its state change listener
-        if (getNodeProperties() == null || !getNodeProperties().has("consumerEndpoint"))
+        String consumerEndpoint;
+        if (getNodeProperties() == null
+            || !getNodeProperties().has(NODE_PROPERTY_CONSUMER_ENDPOINT)
+            || (consumerEndpoint = getNodeProperties().get(NODE_PROPERTY_CONSUMER_ENDPOINT).asText()).length() == 0) {
+            LOG.debug("No processing in sensor node, missing 'consumerEndpoint' property:" + getNode());
             return;
-        String consumerEndpoint = getNodeProperties().get("consumerEndpoint").asText();
-        if (consumerEndpoint == null)
-            return;
+        }
 
         from(consumerEndpoint)
             .routePolicy(new RoutePolicySupport() {
                 @Override
                 protected void doStart() throws Exception {
                     super.doStart();
-                    if (getNodeProperties().has("discoveryEndpoint")) {
-                        String discoveryEndpoint = getNodeProperties().get("discoveryEndpoint").asText();
-                        LOG.info("### STARTING SENSOR ROUTE'S DISCOVERY: " + discoveryEndpoint);
-                        getContext().createProducerTemplate().sendBody(discoveryEndpoint, null);
+
+                    String discoveryEndpoint;
+                    if (getNodeProperties() == null
+                        || !getNodeProperties().has(NODE_PROPERTY_DISCOVERY_ENDPOINT)
+                        || (discoveryEndpoint = getNodeProperties().get(NODE_PROPERTY_DISCOVERY_ENDPOINT).asText()).length() == 0) {
+                        return;
                     }
+                    LOG.debug("On route start, triggering discovery endpoint '" + discoveryEndpoint + "' of sensor node: " + getNode());
+                    getContext().createProducerTemplate().sendBody(discoveryEndpoint, null);
                 }
             })
             .process(exchange -> {
                 String currentStatus = exchange.getIn().getBody(String.class);
-                LOG.info("######################## RECEIVED SENSOR STATUS: " + currentStatus);
-
-                Slot[] sourceSlots = getNode().findSlots(Slot.TYPE_SOURCE);
-                LOG.debug("Using wires of destination source slots: " + Arrays.toString(sourceSlots));
-                for (Slot sourceSlot : sourceSlots) {
-                    LOG.debug("Finding wires attached to: " + sourceSlot);
-                    Wire[] sourceWires = flow.findWiresForSource(sourceSlot.getId());
-                    LOG.debug("Found wires, sending exchange copy to each: " + Arrays.toString(sourceWires));
-                    for (Wire sourceWire : sourceWires) {
-                        sendExchangeCopy(sourceWire.getSinkId(), exchange, false);
-                    }
-                }
+                LOG.debug("Processing received sensor status: " + currentStatus);
+                sendExchange(getNode().findSlots(Slot.TYPE_SOURCE), exchange);
             });
     }
 }
