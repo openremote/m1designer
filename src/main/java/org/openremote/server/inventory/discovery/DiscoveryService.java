@@ -402,13 +402,16 @@ public class DiscoveryService implements StaticService {
             return new ArrayList<>();
         }
 
-        // TODO How do we get a stable unique ID?
-        deviceId = IdentifierUtil.generateSystemUniqueId(discoveryEndpointUri.hashCode() + "-" + deviceId);
-
-        Device device = new Device(
+        String deviceLabel =
             deviceDTO.getName() != null && deviceDTO.getName().length() > 0
                 ? deviceDTO.getName()
-                : deviceId,
+                : deviceId;
+
+        // TODO How do we get a stable unique ID?
+        deviceId = IdentifierUtil.generateSystemUniqueId(discoveryEndpointUri.hashCode() + "-" + deviceId + "-" + deviceLabel);
+
+        Device device = new Device(
+            deviceLabel,
             deviceId,
             "urn:openremote:adapter:" + adapter.getId()
         );
