@@ -18,12 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openremote.server.inventory.discovery;
+package org.openremote.server.inventory;
 
 import org.apache.camel.CamelContext;
 import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
-import org.openremote.server.inventory.InventoryService;
 import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.shared.inventory.Adapter;
 import org.slf4j.Logger;
@@ -84,7 +83,7 @@ public class DiscoveryServiceConfiguration implements Configuration {
                         exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
                         exchange.getOut().setHeader(
                             "Location",
-                            url(exchange, REST_SERVICE_CONTEXT_PATH, "discovery", "device")
+                            url(exchange, REST_SERVICE_CONTEXT_PATH, "inventory", "device")
                         );
                     } catch (IllegalArgumentException ex) {
                         exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 400);
@@ -95,20 +94,19 @@ public class DiscoveryServiceConfiguration implements Configuration {
                     }
                 })
                 .endRest();
-
-            rest("/discovery/device")
-                .get()
-                .route().id("GET all discovered devices")
-                .bean(getContext().hasService(DiscoveryService.class), "getDiscoveredDevices")
-                .endRest();
-
         }
     }
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
+        DeviceLibraryService deviceLibraryService = new DeviceLibraryService(context);
+        context.addService(deviceLibraryService);
 
-        DiscoveryService discoveryService = new DiscoveryService(context);
+        DiscoveryService discoveryService = new DiscoveryService(
+            context,
+            context.hasService(DeviceService.class),
+            deviceLibraryService
+        );
         context.addService(discoveryService);
 
         context.addRoutes(

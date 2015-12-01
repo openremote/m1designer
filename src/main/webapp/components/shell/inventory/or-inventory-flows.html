@@ -2,7 +2,7 @@
 <link rel="import" href="../ui/or-button.html">
 <link rel="import" href="../ui/or-list-section.html">
 <link rel="import" href="../ui/or-list-item.html">
-<link rel="import" href="../ui/or-flow-statusindicator.html">
+<link rel="import" href="../ui/or-status-mark.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
@@ -76,7 +76,7 @@
                             <template is="dom-if" if="[[!flowItem.flow.label]]">
                                 <span class="label unlabeled">Unlabeled Flow</span>
                             </template>
-                            <or-flow-statusindicator status="[[flowItem.status.mark]]"></or-flow-statusindicator>
+                            <or-status-mark status="[[flowItem.status.mark]]" indicator></or-status-mark>
                         </or-list-item>
                     </template>
                 </or-list-section>

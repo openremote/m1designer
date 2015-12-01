@@ -25,6 +25,8 @@ import org.openremote.server.persistence.flow.FlowDAO;
 import org.openremote.server.persistence.flow.FlowDAOImpl;
 import org.openremote.server.persistence.inventory.ClientPresetDAO;
 import org.openremote.server.persistence.inventory.ClientPresetDAOImpl;
+import org.openremote.server.persistence.inventory.DeviceDAO;
+import org.openremote.server.persistence.inventory.DeviceDAOImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +99,8 @@ public class PersistenceService implements StaticService {
     public <D extends GenericDAO> D getDAO(EntityManager em, Class<D> type) {
         if (type == FlowDAO.class) {
             return (D) new FlowDAOImpl(em);
+        } else if (type == DeviceDAO.class) {
+            return (D) new DeviceDAOImpl(em);
         } else if (type == ClientPresetDAO.class) {
             return (D) new ClientPresetDAOImpl(em);
         }

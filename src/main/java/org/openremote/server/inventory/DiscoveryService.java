@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openremote.server.inventory.discovery;
+package org.openremote.server.inventory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,6 +43,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.Properties;
@@ -59,16 +60,20 @@ public class DiscoveryService implements StaticService {
     public static final String COMPONENT_DISCOVERY_ENDPOINT = "org-openremote-component-discoveryEndpoint";
 
     final protected CamelContext context;
-    final protected List<Adapter> adapters = new ArrayList<>();
-    final protected List<Device> discoveredDevices = new ArrayList<>();
+    final protected DeviceService deviceService;
+    final protected DeviceLibraryService deviceLibraryService;
 
-    public DiscoveryService(CamelContext context) {
+    final protected List<Adapter> adapters = new ArrayList<>();
+
+    public DiscoveryService(CamelContext context, DeviceService deviceService, DeviceLibraryService deviceLibraryService) {
         this.context = context;
+        this.deviceService = deviceService;
+        this.deviceLibraryService = deviceLibraryService;
     }
 
     @Override
     public void start() throws Exception {
-        // TODO Persistence!
+        // TODO Persistence! We should maintain adapter properties in the database, don't forget to clean database when an adapter is gone.
         this.adapters.clear();
         this.adapters.addAll(Arrays.asList(findAdapters(context)));
     }
@@ -162,35 +167,6 @@ public class DiscoveryService implements StaticService {
         }
     }
 
-    public Device[] getDiscoveredDevices() {
-        synchronized (discoveredDevices) {
-            return discoveredDevices.toArray(new Device[discoveredDevices.size()]);
-        }
-    }
-
-    protected void addDiscoveredDevices(List<Device> devices) {
-        synchronized (discoveredDevices) {
-            deleteDiscoveredDevices(devices);
-            LOG.debug("Adding discovered devices: " + devices);
-            discoveredDevices.addAll(devices);
-        }
-    }
-
-    protected void deleteDiscoveredDevices(List<Device> devices) {
-        LOG.debug("Deleting discovered devices: " + devices);
-        synchronized (discoveredDevices) {
-            Iterator<Device> it = discoveredDevices.iterator();
-            while (it.hasNext()) {
-                Device existing = it.next();
-                for (Device device : devices) {
-                    if (existing.getId().equals(device.getId())) {
-                        it.remove();
-                    }
-                }
-            }
-        }
-    }
-
     protected RouteDefinition createDiscoveryRoute(Adapter adapter, String discoveryEndpointUri) {
         String routeId = "discovery-" + discoveryEndpointUri.hashCode();
         return new RouteDefinition(discoveryEndpointUri)
@@ -198,23 +174,22 @@ public class DiscoveryService implements StaticService {
             .autoStartup(false)
             .process(exchange -> {
 
-                DiscoveryService discoveryService = context.hasService(DiscoveryService.class);
-
-                Object result = exchange.getIn().getBody();
-                if (result instanceof List) {
-                    List resultList = (List) result;
+                Object discoveryResult = exchange.getIn().getBody();
+                if (discoveryResult instanceof List) {
+                    List resultList = (List) discoveryResult;
                     if (resultList.size() == 0)
                         return;
 
                     LOG.debug("Processing discovered device list: " + resultList.size());
+                    List<Device> devices = new ArrayList<>();
 
                     // TODO Ugly hack to support v2 and v3 device model
                     Object firstResult = resultList.get(0);
                     if (firstResult instanceof DiscoveredDeviceDTO) {
                         // V2
-                        List<DiscoveredDeviceDTO> devices = exchange.getIn().getBody(List.class);
+                        List<DiscoveredDeviceDTO> discoveredDeviceDTOs = exchange.getIn().getBody(List.class);
 
-                        for (DiscoveredDeviceDTO deviceDTO : devices) {
+                        for (DiscoveredDeviceDTO deviceDTO : discoveredDeviceDTOs) {
                             List<DiscoveredDeviceAttrDTO> attributes = deviceDTO.getDeviceAttrs();
 
                             String discoveryCommand = null;
@@ -230,22 +205,24 @@ public class DiscoveryService implements StaticService {
                                 continue;
                             }
 
-                            List<Device> deviceList = convertV2Device(adapter, discoveryEndpointUri, deviceDTO);
+                            Device converted = convertV2Device(adapter, deviceDTO);
 
                             if (ATTR_VALUE_DEVICE_DISCOVERY_COMMAND_ADD.equals(discoveryCommand.toLowerCase(Locale.ROOT))) {
-                                discoveryService.addDiscoveredDevices(deviceList);
+                                devices.add(converted);
                             } else if (ATTR_VALUE_DEVICE_DISCOVERY_COMMAND_DELETE.equals(discoveryCommand.toLowerCase(Locale.ROOT))) {
-                                discoveryService.deleteDiscoveredDevices(deviceList);
+                                deviceService.setDeviceOffline(converted.getId());
                             } else {
                                 LOG.warn("Unsupported discovery command attribute, skipping discovered: " + deviceDTO);
                             }
                         }
 
                     } else if (firstResult instanceof Device) {
-                        discoveryService.addDiscoveredDevices(
-                            (List<Device>) exchange.getIn().getBody(List.class)
-                        );
+                        // V3
+                        devices = (List<Device>) exchange.getIn().getBody(List.class);
                     }
+
+                    Device[] initializedDevices = deviceLibraryService.initializeDevices(devices);
+                    deviceService.addDevices(initializedDevices);
                 }
             });
     }
@@ -387,10 +364,11 @@ public class DiscoveryService implements StaticService {
         return adapter;
     }
 
-    protected List<Device> convertV2Device(Adapter adapter, String discoveryEndpointUri, DiscoveredDeviceDTO deviceDTO) {
+    protected Device convertV2Device(Adapter adapter, DiscoveredDeviceDTO deviceDTO) {
         List<DiscoveredDeviceAttrDTO> attributes = deviceDTO.getDeviceAttrs();
 
         String deviceId = null;
+        // TODO: Will all protocols have an identifier attribute?
         for (DiscoveredDeviceAttrDTO attribute : attributes) {
             if (ATTR_NAME_NODE_ID.equals(attribute.getName())) {
                 deviceId = attribute.getValue();
@@ -399,7 +377,7 @@ public class DiscoveryService implements StaticService {
         }
         if (deviceId == null) {
             LOG.warn("Missing device identifier attribute, skipping discovered: " + deviceDTO);
-            return new ArrayList<>();
+            return null;
         }
 
         String deviceLabel =
@@ -408,7 +386,15 @@ public class DiscoveryService implements StaticService {
                 : deviceId;
 
         // TODO How do we get a stable unique ID?
-        deviceId = IdentifierUtil.generateSystemUniqueId(discoveryEndpointUri.hashCode() + "-" + deviceId + "-" + deviceLabel);
+        try {
+            deviceId = IdentifierUtil.getEncodedHash(
+                adapter.getId().getBytes("utf-8"),
+                deviceId.getBytes("utf-8"),
+                deviceLabel.getBytes("utf-8")
+            );
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        };
 
         Device device = new Device(
             deviceLabel,
@@ -432,10 +418,7 @@ public class DiscoveryService implements StaticService {
             throw new RuntimeException(ex);
         }
 
-        List<Device> deviceList = new ArrayList<>();
-        deviceList.add(device);
-
-        return deviceList;
+        return device;
     }
 
 }

@@ -34,15 +34,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class InventoryService implements StaticService {
+public class ClientPresetService implements StaticService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientPresetService.class);
 
     protected final CamelContext context;
 
     final protected List<Device> devices = new ArrayList<>();
 
-    public InventoryService(CamelContext context) {
+    public ClientPresetService(CamelContext context) {
         this.context = context;
     }
 

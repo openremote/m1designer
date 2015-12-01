@@ -10,8 +10,10 @@ import org.openremote.beta.zwave.component.ZWComponent;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceAttrDTO;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
 import org.openremote.server.Configuration;
-import org.openremote.server.inventory.discovery.DiscoveryService;
-import org.openremote.server.inventory.discovery.DiscoveryServiceConfiguration;
+import org.openremote.server.inventory.DeviceLibraryService;
+import org.openremote.server.inventory.DeviceService;
+import org.openremote.server.inventory.DiscoveryService;
+import org.openremote.server.inventory.DiscoveryServiceConfiguration;
 import org.openremote.shared.inventory.Adapter;
 import org.openremote.shared.inventory.Device;
 import org.slf4j.Logger;
@@ -86,19 +88,17 @@ public class DiscoveryTest extends IntegrationTest {
         mockDeviceAttrDTO.add(attribute);
 
         mockZWAdapter.discoveredDeviceDTOs.add(mockDeviceDTO);
-
-        context.addService(new DiscoveryService(context));
     }
 
     @Test
     public void discovery() throws Exception {
 
-        // Check the discovered devices, it should be empty
-        Device[] discoveredDevices = fromJson(
-            template.requestBody(restClientUrl("discovery", "device"), null, String.class),
+        // Check the devices, it should be empty
+        Device[] devices = fromJson(
+            template.requestBody(restClientUrl("inventory", "device"), null, String.class),
             Device[].class
         );
-        assertEquals(discoveredDevices.length, 0);
+        assertEquals(devices.length, 0);
 
         // Find the available adapters and their configuration metadata
 
@@ -144,14 +144,14 @@ public class DiscoveryTest extends IntegrationTest {
         // Wait a bit...
         Thread.sleep(1000);
 
-        discoveredDevices = fromJson(
+        devices = fromJson(
             template.requestBody(devicesLocation, null, String.class),
             Device[].class
         );
-        assertTrue(discoveredDevices.length > 0);
-        assertEquals(discoveredDevices[0].getStatus(), Device.Status.UNINITIALIZED);
-        assertEquals(discoveredDevices[0].getLabel(), mockDeviceDTO.getName());
-        ObjectNode discoveredProperties = fromJson(discoveredDevices[0].getProperties(), ObjectNode.class);
+        assertTrue(devices.length > 0);
+        assertEquals(devices[0].getStatus(), Device.Status.UNINITIALIZED);
+        assertEquals(devices[0].getLabel(), mockDeviceDTO.getName());
+        ObjectNode discoveredProperties = fromJson(devices[0].getProperties(), ObjectNode.class);
         assertEquals(discoveredProperties.get(ATTR_NAME_CONTROLLER_COMMANDS).asText(), "STATUS OFF DIM");
     }
 

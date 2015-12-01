@@ -25,7 +25,7 @@ import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
 import org.openremote.server.route.procedure.FlowProcedureException;
 import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
-import org.openremote.server.inventory.InventoryService;
+import org.openremote.server.inventory.ClientPresetService;
 import org.openremote.server.route.RouteManagementService;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
@@ -160,7 +160,7 @@ public class FlowServiceConfiguration implements Configuration {
         FlowService flowService = new FlowService(
             context,
             context.hasService(RouteManagementService.class),
-            context.hasService(InventoryService.class)
+            context.hasService(ClientPresetService.class)
         );
         context.addService(flowService);
 

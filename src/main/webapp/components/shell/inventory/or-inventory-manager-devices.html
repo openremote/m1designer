@@ -3,6 +3,7 @@
 <link rel="import" href="../ui/or-input.html">
 <link rel="import" href="../ui/or-list.html">
 <link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-status-mark.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-icons/av-icons.html">
@@ -10,13 +11,13 @@
 <script>
     document.addEventListener("gwtReadyClient", function () {
         Polymer({
-            is: 'or-inventory-manager-discovery',
+            is: 'or-inventory-manager-devices',
             behaviors: [openremote.PresenterAware],
             properties: {
                 _presenter: {
                     type: Object,
                     value: function () {
-                        return new openremote.shell.inventory.InventoryManagerDiscoveryPresenter(this);
+                        return new openremote.shell.inventory.InventoryManagerDevicesPresenter(this);
                     }
                 },
                 hidden: {
@@ -55,6 +56,9 @@
             },
             _saveAdapter: function () {
                 this._presenter.save();
+            },
+            _refreshDevices: function () {
+                this._presenter.refreshDevices();
             },
             _triggerDiscovery: function () {
                 this._presenter.triggerDiscovery();
@@ -100,7 +104,7 @@
     });
 </script>
 
-<dom-module id="or-inventory-manager-discovery">
+<dom-module id="or-inventory-manager-devices">
     <template>
         <style>
             :host {
@@ -143,6 +147,11 @@
             </or-button>
 
             <or-button class="panelTopToolbarItem"
+                       icon="refresh"
+                       on-tap="_refreshDevices">Refresh Devices
+            </or-button>
+
+            <or-button class="panelTopToolbarItem"
                        disabled$="[[!_presenter.adapter.discoveryEndpoint]]"
                        icon="cached"
                        on-tap="_triggerDiscovery">Discover Devices
@@ -165,17 +174,20 @@
                     </template>
                 </or-list-section>
 
-                <or-list-section id="deviceListSection" label="Discovered Devices"
+                <or-list-section id="deviceListSection" label="Devices"
                                  stacked
                                  confirm-selection
                                  on-activate="_onDeviceListActivate">
 
-                    <template is="dom-if" if="{{!_presenter.devices.length}}">
+                    <template is="dom-if" if="{{!_presenter.deviceItems.length}}">
                         <div class="empty">No devices found.</div>
                     </template>
 
-                    <template is="dom-repeat" items="[[_presenter.devices]]" as="device">
-                        <or-list-item>[[device.label]]</or-list-item>
+                    <template is="dom-repeat" items="[[_presenter.deviceItems]]" as="deviceItem">
+                        <or-list-item>
+                            <span>[[deviceItem.device.label]]</span>
+                            <or-status-mark status="[[deviceItem.status.mark]]" indicator></or-status-mark>
+                        </or-list-item>
                     </template>
                 </or-list-section>
 
@@ -198,10 +210,17 @@
 
                 </template>
 
-                <template is="dom-if" if="[[_presenter.device]]">
-                    <div class="deviceLabel">[[_presenter.device.label]]</div>
+                <template is="dom-if" if="[[_presenter.deviceItem]]">
+                    <div class="deviceLabel">[[_presenter.deviceItem.device.label]]</div>
 
-                    <template is="dom-repeat" items="[[_flatten(_presenter.deviceProperties)]]" as="entry">
+                    <div class="layout horizontal center">
+                        <div class="devicePropertyLabel flex">Status:</div>
+                        <div class="devicePropertyValue flex-4">
+                            <or-status-mark status="[[_presenter.deviceItem.status.mark]]">[[_presenter.deviceItem.status.text]]</or-status-mark>
+                        </div>
+                    </div>
+
+                    <template is="dom-repeat" items="[[_flatten(_presenter.deviceItem.properties)]]" as="entry">
                         <div class="layout horizontal center">
                             <div class="devicePropertyLabel flex"><span>[[entry.name]]</span>:</div>
                             <div class="devicePropertyValue flex-4">

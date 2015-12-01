@@ -15,6 +15,7 @@
         <class>org.openremote.shared.flow.Node</class>
         <class>org.openremote.shared.flow.Slot</class>
         <class>org.openremote.shared.flow.Wire</class>
+        <class>org.openremote.shared.inventory.Device</class>
         <class>org.openremote.shared.inventory.ClientPreset</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>

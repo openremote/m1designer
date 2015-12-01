@@ -1,0 +1,67 @@
+<dom-module id="or-status-mark">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            #indicator {
+                display: inline-block;
+                line-height: 0;
+                vertical-align: middle;
+                color: var(--or-mark-default-color);
+            }
+
+            #indicator:before {
+                content: ' \25CF';
+                font-size: 25px;
+            }
+
+            #mark {
+                display: inline-block;
+                font-weight: 500;
+                color: var(--or-mark-default-color);
+            }
+
+            #mark.init,
+            #indicator.init {
+                color: var(--or-mark-init-color);
+            }
+
+            #mark.ok,
+            #indicator.ok {
+                color: var(--or-mark-ok-color);
+            }
+
+            #mark.progress,
+            #indicator.progress {
+                color: var(--or-mark-progress-color);
+            }
+
+            #mark.problem,
+            #indicator.problem {
+                color: var(--or-mark-problem-color);
+            }
+        </style>
+
+        <template is="dom-if" if="[[indicator]]">
+            <span id="indicator" class$="[[status]]"></span>
+        </template>
+        <span id="mark" class$="[[status]]"><content></content></span>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-status-mark",
+            properties: {
+                status: {
+                    type: String
+                },
+                indicator: {
+                    type: Boolean,
+                    value: false
+                }
+            }
+        });
+    </script>
+</dom-module>

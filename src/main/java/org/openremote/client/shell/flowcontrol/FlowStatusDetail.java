@@ -30,8 +30,8 @@ import static org.openremote.shared.event.FlowDeploymentPhase.*;
 @JsType
 public class FlowStatusDetail {
 
-    public static final String MARK_DEPLOYED = "deployed";
-    public static final String MARK_DEPLOYING = "deploying";
+    public static final String MARK_OK = "ok";
+    public static final String MARK_PROGRESS = "progress";
     public static final String MARK_PROBLEM = "problem";
 
     public String mark;
@@ -56,19 +56,19 @@ public class FlowStatusDetail {
     public FlowStatusDetail(FlowDeploymentPhase phase) {
         switch (phase) {
             case STARTING:
-                mark = MARK_DEPLOYING;
+                mark = MARK_PROGRESS;
                 text = STARTING.name();
                 canStart = false;
                 canStop = false;
                 break;
             case DEPLOYED:
-                mark = MARK_DEPLOYED;
+                mark = MARK_OK;
                 text = DEPLOYED.name();
                 canStart = false;
                 canStop = true;
                 break;
             case STOPPING:
-                mark = MARK_DEPLOYING;
+                mark = MARK_PROGRESS;
                 text = STOPPING.name();
                 canStart = false;
                 canStop = false;

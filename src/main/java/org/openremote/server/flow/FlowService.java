@@ -25,7 +25,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.StaticService;
 import org.openremote.server.catalog.NodeDescriptor;
-import org.openremote.server.inventory.InventoryService;
+import org.openremote.server.inventory.ClientPresetService;
 import org.openremote.server.persistence.PersistenceService;
 import org.openremote.server.persistence.flow.DAOFlowDependencyResolver;
 import org.openremote.server.persistence.flow.FlowDAO;
@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -95,12 +94,12 @@ public class FlowService implements StaticService {
 
     final protected CamelContext context;
     final protected RouteManagementService routeManagementService;
-    final protected InventoryService inventoryService;
+    final protected ClientPresetService clientPresetService;
 
-    public FlowService(CamelContext context, RouteManagementService routeManagementService, InventoryService inventoryService) {
+    public FlowService(CamelContext context, RouteManagementService routeManagementService, ClientPresetService clientPresetService) {
         this.context = context;
         this.routeManagementService = routeManagementService;
-        this.inventoryService = inventoryService;
+        this.clientPresetService = clientPresetService;
     }
 
     public Flow[] getFlows() {
@@ -167,7 +166,7 @@ public class FlowService implements StaticService {
         ClientPresetVariant clientPresetVariant = new ClientPresetVariant(agent, width, height);
         LOG.debug("Getting preset flow: " + clientPresetVariant);
         String flowId = null;
-        ClientPreset[] presets = inventoryService.getClientPresets();
+        ClientPreset[] presets = clientPresetService.getClientPresets();
         for (ClientPreset preset : presets) {
             if (preset.matches(clientPresetVariant) && preset.getInitialFlowId() != null) {
                 LOG.debug("Matching preset for variant, using flow: " + preset.getInitialFlowId());

@@ -42,9 +42,9 @@ import java.util.List;
 import static org.openremote.client.shared.Timeout.debounce;
 
 @JsType
-public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
+public class InventoryManagerDevicesPresenter extends RequestPresenter<View> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryManagerDiscoveryPresenter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryManagerDevicesPresenter.class);
 
     private static final AdapterCodec ADAPTER_CODEC = GWT.create(AdapterCodec.class);
     private static final DeviceCodec DEVICE_CODEC = GWT.create(DeviceCodec.class);
@@ -52,18 +52,18 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
     public Adapter[] adapters = new Adapter[0];
     public Adapter adapter;
     public JavaScriptObject adapterProperties;
-    public Device[] devices = new Device[0];
-    public Device device;
+    public DeviceItem[] deviceItems = new DeviceItem[0];
+    public DeviceItem deviceItem;
     public JavaScriptObject deviceProperties;
 
-    public InventoryManagerDiscoveryPresenter(View view) {
+    public InventoryManagerDevicesPresenter(View view) {
         super(view);
     }
 
     public void open() {
         reset();
         loadAdapters();
-        loadDiscoveredDevices();
+        loadDevices();
     }
 
     public void close() {
@@ -93,14 +93,8 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
         confirmIfDirty(
             () -> {
                 if (selected >= 0) {
-                    device = devices[selected];
-                    notifyPath("device");
-
-                    deviceProperties= JavaScriptObject.createObject();
-                    if (device.getProperties() != null)
-                        deviceProperties = JsonUtils.safeEval(device.getProperties());
-                    notifyPath("deviceProperties", deviceProperties);
-
+                    deviceItem = deviceItems[selected];
+                    notifyPath("deviceItem");
                 } else {
                     resetDeviceSelection();
                 }
@@ -128,6 +122,10 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
         );
     }
 
+    public void refreshDevices() {
+        loadDevices();
+    }
+
     public void triggerDiscovery() {
         if (adapter == null)
             return;
@@ -137,7 +135,7 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
                 @Override
                 protected void onResponse(Response response) {
                     dispatch(new ShowInfoEvent("Device discovery running..."));
-                    debounce("Refresh Devices", () -> loadDiscoveredDevices(), 1000);
+                    debounce("Refresh Devices", () -> loadDevices(), 1000);
                 }
 
                 @Override
@@ -169,8 +167,8 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
     }
 
     protected void resetDeviceSelection() {
-        device = null;
-        notifyPathNull("device");
+        deviceItem = null;
+        notifyPathNull("deviceItem");
     }
 
     protected void loadAdapters() {
@@ -223,21 +221,24 @@ public class InventoryManagerDiscoveryPresenter extends RequestPresenter<View> {
         );
     }
 
-    protected void loadDiscoveredDevices() {
+    protected void loadDevices() {
         sendRequest(
-            resource("discovery", "device").get(),
-            new ListResponseCallback<Device>("Load discovered devices", DEVICE_CODEC) {
+            resource("inventory", "device").get(),
+            new ListResponseCallback<Device>("Load devices", DEVICE_CODEC) {
                 @Override
                 protected void onResponse(List<Device> result) {
-                    devices = result.toArray(new Device[result.size()]);
-                    notifyPath("devices", devices);
+                    deviceItems = new DeviceItem[result.size()];
+                    for (int i = 0; i < deviceItems.length; i++) {
+                        deviceItems[i] = new DeviceItem(result.get(i));
+                    }
+                    notifyPath("deviceItems", deviceItems);
                 }
 
                 @Override
                 public void onFailure(RequestFailure requestFailure) {
                     super.onFailure(requestFailure);
-                    devices = null;
-                    notifyPathNull("devices");
+                    deviceItems = null;
+                    notifyPathNull("deviceItems");
                 }
             }
         );

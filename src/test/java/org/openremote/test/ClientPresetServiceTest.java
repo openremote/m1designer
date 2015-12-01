@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
-public class InventoryServiceTest extends IntegrationTest {
+public class ClientPresetServiceTest extends IntegrationTest {
 
     @Produce
     ProducerTemplate producerTemplate;

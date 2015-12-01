@@ -25,6 +25,7 @@ import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
 import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.shared.inventory.ClientPreset;
+import org.openremote.shared.inventory.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +49,56 @@ public class InventoryServiceConfiguration implements Configuration {
         public void configure() throws Exception {
             super.configure();
 
+            rest("/inventory/device")
+                .get()
+                .route().id("GET all devices")
+                .bean(getContext().hasService(DeviceService.class), "getDevices")
+                .endRest()
+
+                .get("{id}")
+                .route().id("GET device by ID")
+                .bean(getContext().hasService(DeviceService.class), "getDevice")
+                .to("direct:restStatusNotFound")
+                .endRest()
+
+                .post()
+                .consumes("application/json")
+                .type(Device.class)
+                .route().id("POST new device")
+                .process(exchange -> {
+                    Device device = exchange.getIn().getBody(Device.class);
+                    String id = getContext().hasService(DeviceService.class).postDevice(device);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
+                    exchange.getOut().setHeader("Location", url(exchange, REST_SERVICE_CONTEXT_PATH, "inventory", "device", id));
+                })
+                .endRest()
+
+                .put("{id}")
+                .consumes("application/json")
+                .type(Device.class)
+                .route().id("PUT device by ID")
+                .process(exchange -> {
+                    String id = exchange.getIn().getHeader("id", String.class);
+                    Device device = exchange.getIn().getBody(Device.class);
+                    boolean found = getContext().hasService(DeviceService.class).putDevice(id, device);
+                    exchange.getOut().setHeader(HTTP_RESPONSE_CODE, found ? 204 : 404);
+                })
+                .endRest()
+
+                .delete("{id}")
+                .route().id("DELETE device by ID")
+                .bean(getContext().hasService(DeviceService.class), "deleteDevice")
+                .endRest();
+
             rest("/inventory/preset")
                 .get()
                 .route().id("GET all client presets")
-                .bean(getContext().hasService(InventoryService.class), "getClientPresets")
+                .bean(getContext().hasService(ClientPresetService.class), "getClientPresets")
                 .endRest()
 
                 .get("{id}")
                 .route().id("GET client preset by ID")
-                .bean(getContext().hasService(InventoryService.class), "getClientPreset")
+                .bean(getContext().hasService(ClientPresetService.class), "getClientPreset")
                 .to("direct:restStatusNotFound")
                 .endRest()
 
@@ -66,7 +108,7 @@ public class InventoryServiceConfiguration implements Configuration {
                 .route().id("POST new client preset")
                 .process(exchange -> {
                     ClientPreset clientPreset = exchange.getIn().getBody(ClientPreset.class);
-                    Long id = getContext().hasService(InventoryService.class).postClientPreset(clientPreset);
+                    Long id = getContext().hasService(ClientPresetService.class).postClientPreset(clientPreset);
                     exchange.getOut().setHeader(HTTP_RESPONSE_CODE, 201);
                     exchange.getOut().setHeader("Location", url(exchange, REST_SERVICE_CONTEXT_PATH, "inventory", "preset", id.toString()));
                 })
@@ -79,14 +121,14 @@ public class InventoryServiceConfiguration implements Configuration {
                 .process(exchange -> {
                     Long id = exchange.getIn().getHeader("id", Long.class);
                     ClientPreset clientPreset = exchange.getIn().getBody(ClientPreset.class);
-                    boolean found = getContext().hasService(InventoryService.class).putClientPreset(id, clientPreset);
+                    boolean found = getContext().hasService(ClientPresetService.class).putClientPreset(id, clientPreset);
                     exchange.getOut().setHeader(HTTP_RESPONSE_CODE, found ? 204 : 404);
                 })
                 .endRest()
 
                 .delete("{id}")
                 .route().id("DELETE client preset by ID")
-                .bean(getContext().hasService(InventoryService.class), "deleteClientPreset")
+                .bean(getContext().hasService(ClientPresetService.class), "deleteClientPreset")
                 .endRest();
 
         }
@@ -94,8 +136,11 @@ public class InventoryServiceConfiguration implements Configuration {
 
     @Override
     public void apply(Environment environment, CamelContext context) throws Exception {
-        InventoryService service = new InventoryService(context);
-        context.addService(service);
+        DeviceService deviceService = new DeviceService(context);
+        context.addService(deviceService);
+
+        ClientPresetService clientPresetService = new ClientPresetService(context);
+        context.addService(clientPresetService);
 
         context.addRoutes(
             new InventoryServiceRouteBuilder(
