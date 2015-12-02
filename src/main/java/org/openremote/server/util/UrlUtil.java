@@ -36,12 +36,22 @@ public class UrlUtil {
             .withPath(getPath(contextPath, pathSegments));
     }
 
-    public static UrlBuilder url(String scheme, String host, String port, String contextPath, String... pathSegments) {
+    public static UrlBuilder url(String scheme, String host) {
         return UrlBuilder.empty()
             .withScheme(scheme)
+            .withHost(host);
+    }
+
+    public static UrlBuilder url(String scheme, String host, String port, String contextPath, String... pathSegments) {
+        UrlBuilder urlBuilder = UrlBuilder.empty()
+            .withScheme(scheme)
             .withHost(host)
-            .withPort(port != null ? Integer.valueOf(port) : null)
             .withPath(getPath(contextPath, pathSegments));
+
+        if( port != null) {
+            urlBuilder.withPort(Integer.valueOf(port));
+        }
+        return urlBuilder;
     }
 
     protected static String getPath(String contextPath, String... pathSegments) {

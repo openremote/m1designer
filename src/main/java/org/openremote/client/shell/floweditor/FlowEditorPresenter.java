@@ -22,20 +22,19 @@ package org.openremote.client.shell.floweditor;
 
 import com.ait.lienzo.client.core.types.Transform;
 import com.ait.lienzo.client.widget.LienzoPanel;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import elemental.dom.Element;
+import elemental.js.util.JsMapFromStringToString;
 import jsinterop.annotations.JsType;
 import org.openremote.client.event.*;
 import org.openremote.client.shared.AbstractPresenter;
 import org.openremote.client.shared.JsUtil;
 import org.openremote.client.shared.View;
 import org.openremote.shared.event.Message;
-import org.openremote.shared.event.client.MessageReceivedEvent;
-import org.openremote.shared.event.client.MessageSendEvent;
-import org.openremote.shared.event.client.NodeSelectedEvent;
-import org.openremote.shared.event.client.SubflowNodeCreateEvent;
+import org.openremote.shared.event.client.*;
 import org.openremote.shared.flow.Flow;
 import org.openremote.shared.flow.Node;
 import org.openremote.shared.flow.Wire;
@@ -66,7 +65,7 @@ public class FlowEditorPresenter extends AbstractPresenter<View> {
             startFlowDesigner();
         });
 
-        addListener(FlowDeletedEvent.class, event-> {
+        addListener(FlowDeletedEvent.class, event -> {
             if (event.matches(flow)) {
                 flow = null;
                 notifyPathNull("flow");
@@ -89,7 +88,7 @@ public class FlowEditorPresenter extends AbstractPresenter<View> {
 
                 if (event.isTransformPosition()) {
                     // Correct the position so it feels like you are dropping in the middle of the patch header
-                    double correctedX = Math.max(0, event.getPositionX()- FlowDesignerConstants.PATCH_MIN_WIDTH / 2);
+                    double correctedX = Math.max(0, event.getPositionX() - FlowDesignerConstants.PATCH_MIN_WIDTH / 2);
                     double correctedY = Math.max(0, event.getPositionY() - (PATCH_LABEL_FONT_SIZE + PATCH_TITLE_FONT_SIZE + PATCH_PADDING * 2) / 2);
 
                     // Calculate the offset with the current transform (zoom, panning)
@@ -129,7 +128,7 @@ public class FlowEditorPresenter extends AbstractPresenter<View> {
             }
         });
 
-        addListener(MessageSendEvent.class, event-> {
+        addListener(MessageSendEvent.class, event -> {
             Message message = event.getMessage();
             if (flowDesigner != null && flow != null && flow.findSlot(message.getSlotId()) != null) {
                 flowDesigner.handleMessage(message);
@@ -144,9 +143,33 @@ public class FlowEditorPresenter extends AbstractPresenter<View> {
         }
     }
 
-    public void onDrop(String nodeType, String subflowId, double positionX, double positionY) {
+    public void onDrop(String label, String nodeType,
+                       String subflowId,
+                       String sensorEndpoint, String discoveryEndpoint, String actuatorEndpoint,
+                       double positionX, double positionY) {
+        // TODO ugly
+        JsMapFromStringToString nodeProperties = JsMapFromStringToString.create();
+        if (sensorEndpoint != null && sensorEndpoint.length() > 0) {
+            nodeType = "urn:openremote:flow:node:sensor";
+            nodeProperties.put("consumerEndpoint", sensorEndpoint);
+            if (discoveryEndpoint != null && discoveryEndpoint.length() > 0) {
+                nodeProperties.put("discoveryEndpoint", discoveryEndpoint);
+            }
+        } else if (actuatorEndpoint != null && actuatorEndpoint.length() > 0) {
+            nodeType = "urn:openremote:flow:node:actuator";
+            nodeProperties.put("producerEndpoint", actuatorEndpoint);
+        }
+
         if (nodeType != null && nodeType.length() > 0) {
-            dispatch(new NodeCreateEvent(flow, nodeType, positionX, positionY));
+            dispatch(new NodeCreateEvent(
+                flow,
+                label,
+                nodeType,
+                JsonUtils.stringify(nodeProperties),
+                positionX,
+                positionY,
+                false
+            ));
         } else if (subflowId != null && subflowId.length() > 0) {
             dispatch(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY));
         }

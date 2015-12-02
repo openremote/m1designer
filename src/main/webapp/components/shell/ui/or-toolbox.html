@@ -189,7 +189,7 @@
             },
             _onContainerSwitch: function (e) {
                 e.stopPropagation();
-                if (e.detail.index) {
+                if (e.detail && e.detail.index !== undefined) {
                     this.set("selectedTab", e.detail.index);
                 } else {
                     this.opened = false;

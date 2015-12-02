@@ -23,13 +23,10 @@ package org.openremote.client.shell.flowcontrol;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.http.client.Response;
+import elemental.js.util.JsArrayOfString;
 import elemental.js.util.JsMapFromStringTo;
-import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
-import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 import org.openremote.client.event.*;
-import org.openremote.client.event.NodeCreateEvent;
 import org.openremote.client.shared.RequestPresenter;
 import org.openremote.client.shared.Timeout;
 import org.openremote.client.shared.View;
@@ -128,6 +125,14 @@ public class FlowControlPresenter extends RequestPresenter<FlowControlPresenter.
         });
 
         addListener(FlowDeploymentFailureEvent.class, event -> {
+            // TODO Better flow deployment failure handling
+            if (!event.getPhase().equals(FlowDeploymentPhase.NOT_FOUND)) {
+                dispatch(new ShowFailureEvent(
+                    "Deployment failure during phase: " + event.getPhase() + " - " + event.getMessage(),
+                    10000)
+                );
+            }
+
             if (event.matches(flow)) {
                 setFlowStatusDetail(new FlowStatusDetail(event));
             }
@@ -151,12 +156,33 @@ public class FlowControlPresenter extends RequestPresenter<FlowControlPresenter.
                 new CreateNodeProcedure(
                     flow.getId(),
                     event.getNodeType(),
-                    new AddNodeProcedure(
-                        event.getPositionX(),
-                        event.getPositionY(),
-                        event.isApplyPositionAsProperties(),
-                        true
-                    )
+                    node -> {
+
+                        if (event.getLabel() != null && event.getLabel().length() > 0) {
+                            node.setLabel(event.getLabel());
+                        }
+
+                        // TODO Awful
+                        if (event.getNodeProperties() != null && event.getNodeProperties().length() > 0) {
+                            JsMapFromStringTo existingProperties = node.getProperties() != null
+                                ? JsonUtils.safeEval(node.getProperties())
+                                : JsMapFromStringTo.create();
+                            JsMapFromStringTo additionalProperties = JsonUtils.safeEval(event.getNodeProperties());
+                            JsArrayOfString additionalKeys = additionalProperties.keys();
+                            for (int i = 0; i < additionalKeys.length(); i++) {
+                                String key = additionalKeys.get(i);
+                                existingProperties.put(key, additionalProperties.get(key));
+                            }
+                            node.setProperties(JsonUtils.stringify(existingProperties));
+                        }
+
+                        new AddNodeProcedure(
+                            event.getPositionX(),
+                            event.getPositionY(),
+                            event.isApplyPositionAsProperties(),
+                            true
+                        ).accept(node);
+                    }
                 ).call();
             }
         });
@@ -390,7 +416,7 @@ public class FlowControlPresenter extends RequestPresenter<FlowControlPresenter.
 
         @Override
         public void call() {
-            LOG.debug("Creating node in flow designer: " + nodeType);
+            LOG.debug("Creating node in flow: " + nodeType);
 
             ObjectResponseCallback<Node> responseCallback =
                 new ObjectResponseCallback<Node>("Create node", NODE_CODEC) {

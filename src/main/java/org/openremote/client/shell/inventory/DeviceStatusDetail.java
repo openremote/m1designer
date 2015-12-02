@@ -39,7 +39,7 @@ public class DeviceStatusDetail {
     public DeviceStatusDetail(Device.Status status) {
         switch (status) {
             case READY:
-                mark = null;
+                mark = MARK_OK;
                 text = Device.Status.READY.name();
                 break;
             case OFFLINE:
@@ -59,8 +59,8 @@ public class DeviceStatusDetail {
                 text = "MAINTENANCE";
                 break;
             default:
-                mark = MARK_INIT;
-                text = "NOT INITIALIZED, AWAITING CONFIGURATION";
+                mark = null;
+                text = "NOT FOUND IN DEVICE LIBRARY";
         }
     }
 

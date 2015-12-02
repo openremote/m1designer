@@ -27,7 +27,9 @@ import org.openremote.shared.inventory.Device_;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DeviceDAOImpl extends GenericDAOImpl<Device, String>
@@ -38,11 +40,27 @@ public class DeviceDAOImpl extends GenericDAOImpl<Device, String>
     }
 
     @Override
-    public List<Device> findAll() {
+    public List<Device> findAll(Boolean onlyReady) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Device> c = cb.createQuery(Device.class);
         Root<Device> root = c.from(Device.class);
-        c.select(root).orderBy(cb.asc(root.get(Device_.status)));
+
+        List<Order> orderList = new ArrayList<>();
+        orderList.add(cb.asc(root.get(Device_.status)));
+        orderList.add(cb.asc(cb.lower(root.get(Device_.label))));
+        c.select(root)
+            .orderBy(orderList);
+
+        if (onlyReady != null && onlyReady) {
+            c.where(
+                cb.equal(root.get(Device_.status), Device.Status.READY),
+                cb.or(
+                    cb.isNotNull(root.get(Device_.sensorEndpoints)),
+                    cb.isNotNull(root.get(Device_.actuatorEndpoints))
+                )
+            );
+        }
+
         return em.createQuery(c).getResultList();
     }
 

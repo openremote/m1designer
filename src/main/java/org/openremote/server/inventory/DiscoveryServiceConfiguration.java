@@ -23,6 +23,7 @@ package org.openremote.server.inventory;
 import org.apache.camel.CamelContext;
 import org.openremote.server.Configuration;
 import org.openremote.server.Environment;
+import org.openremote.server.event.EventService;
 import org.openremote.server.web.WebserverConfiguration.RestRouteBuilder;
 import org.openremote.shared.inventory.Adapter;
 import org.slf4j.Logger;

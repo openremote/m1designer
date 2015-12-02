@@ -54,10 +54,10 @@ public class DeviceService implements StaticService {
     public void stop() throws Exception {
     }
 
-    public Device[] getDevices() {
+    public Device[] getDevices(@Header("onlyReady") Boolean onlyReady) {
         return context.hasService(PersistenceService.class).transactional((ps, em) -> {
             DeviceDAO dao = ps.getDAO(em, DeviceDAO.class);
-            List<Device> devices = dao.findAll();
+            List<Device> devices = dao.findAll(onlyReady);
             return devices.toArray(new Device[devices.size()]);
         });
     }
@@ -115,7 +115,7 @@ public class DeviceService implements StaticService {
     }
 
     public void addDevices(Device[] devices) {
-        Device[] existingDevices = getDevices();
+        Device[] existingDevices = getDevices(false);
         for (Device device : devices) {
             boolean exists = false;
             for (Device existingDevice : existingDevices) {

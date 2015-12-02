@@ -31,8 +31,10 @@ import org.apache.camel.spi.UriParam;
 import org.apache.camel.util.CamelContextHelper;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceAttrDTO;
 import org.openremote.devicediscovery.domain.DiscoveredDeviceDTO;
+import org.openremote.server.event.EventService;
 import org.openremote.server.util.IdentifierUtil;
 import org.openremote.shared.component.ValidationGroupDiscovery;
+import org.openremote.shared.event.InventoryDevicesUpdatedEvent;
 import org.openremote.shared.inventory.Adapter;
 import org.openremote.shared.inventory.Device;
 import org.seamless.util.Exceptions;
@@ -48,6 +50,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.Properties;
 
+// TODO Part of this class should be moved to zwave project
 import static org.openremote.protocol.zwave.model.commandclasses.DeviceDiscoveryCommandClassVisitor.*;
 import static org.openremote.server.util.JsonUtil.JSON;
 
@@ -58,6 +61,8 @@ public class DiscoveryService implements StaticService {
     public static final String COMPONENT_TYPE = "org-openremote-component-type";
     public static final String COMPONENT_LABEL = "org-openremote-component-label";
     public static final String COMPONENT_DISCOVERY_ENDPOINT = "org-openremote-component-discoveryEndpoint";
+
+    public static final String DEVICE_PROPERTY_DISCOVERY_ENDPOINT = "discoveryEndpoint";
 
     final protected CamelContext context;
     final protected DeviceService deviceService;
@@ -205,7 +210,7 @@ public class DiscoveryService implements StaticService {
                                 continue;
                             }
 
-                            Device converted = convertV2Device(adapter, deviceDTO);
+                            Device converted = convertV2Device(adapter, deviceDTO, discoveryEndpointUri);
 
                             if (ATTR_VALUE_DEVICE_DISCOVERY_COMMAND_ADD.equals(discoveryCommand.toLowerCase(Locale.ROOT))) {
                                 devices.add(converted);
@@ -221,8 +226,12 @@ public class DiscoveryService implements StaticService {
                         devices = (List<Device>) exchange.getIn().getBody(List.class);
                     }
 
-                    Device[] initializedDevices = deviceLibraryService.initializeDevices(devices);
+                    Device[] initializedDevices = deviceLibraryService.initializeDevices(adapter, devices);
                     deviceService.addDevices(initializedDevices);
+
+                    EventService eventService = context.hasService(EventService.class);
+                    if (eventService != null)
+                        eventService.sendEvent(new InventoryDevicesUpdatedEvent());
                 }
             });
     }
@@ -364,7 +373,7 @@ public class DiscoveryService implements StaticService {
         return adapter;
     }
 
-    protected Device convertV2Device(Adapter adapter, DiscoveredDeviceDTO deviceDTO) {
+    protected Device convertV2Device(Adapter adapter, DiscoveredDeviceDTO deviceDTO, String discoveryEndpointUri) {
         List<DiscoveredDeviceAttrDTO> attributes = deviceDTO.getDeviceAttrs();
 
         String deviceId = null;
@@ -405,6 +414,9 @@ public class DiscoveryService implements StaticService {
         device.setStatus(Device.Status.UNINITIALIZED);
 
         ObjectNode properties = JSON.createObjectNode();
+
+        properties.put(DEVICE_PROPERTY_DISCOVERY_ENDPOINT, discoveryEndpointUri);
+
         for (DiscoveredDeviceAttrDTO attribute : attributes) {
             if (ATTR_NAME_DEVICE_DISCOVERY_COMMAND.equals(attribute.getName()))
                 continue;
@@ -412,6 +424,7 @@ public class DiscoveryService implements StaticService {
                 properties.put(attribute.getName(), attribute.getValue());
             }
         }
+
         try {
             device.setProperties(JSON.writeValueAsString(properties));
         } catch (JsonProcessingException ex) {

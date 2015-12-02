@@ -1,5 +1,7 @@
 <link rel="import" href="../ui/or-panel.html">
 <link rel="import" href="../ui/or-button.html">
+<link rel="import" href="../ui/or-list.html">
+<link rel="import" href="../ui/or-status-mark.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 
@@ -7,7 +9,7 @@
     document.addEventListener("gwtReadyClient", function () {
         Polymer({
             is: 'or-inventory-devices',
-            behaviors: [openremote.PresenterAware],
+            behaviors: [openremote.PresenterAware, openremote.StringUtilityBehavior],
             properties: {
                 _presenter: {
                     type: Object,
@@ -18,6 +20,17 @@
             },
             _openManager: function() {
                 this._presenter.openManager();
+            },
+            _sensorEndpointDragStart: function (e) {
+                e.dataTransfer.setData("label", e.target.getAttribute("device-label"));
+                e.dataTransfer.setData("sensorEndpoint", e.model.endpoint);
+                e.dataTransfer.setData("discoveryEndpoint", e.target.getAttribute("discovery-endpoint"));
+                e.dataTransfer.effectAllowed = "copy";
+            },
+            _actuatorEndpointDragStart: function (e) {
+                e.dataTransfer.setData("label", e.target.getAttribute("device-label"));
+                e.dataTransfer.setData("actuatorEndpoint", e.model.endpoint);
+                e.dataTransfer.effectAllowed = "copy";
             }
         });
     });
@@ -35,6 +48,15 @@
                 -webkit-flex-direction: column;
                 overflow: hidden;
             }
+
+            .endpointIcon {
+                height: 1.2em;
+            }
+
+            or-list-item.SENSOR_ACTUATOR {
+                background-color: var(--or-catalog-item-sensoractuator-background-color);
+            }
+
         </style>
 
         <or-panel>
@@ -42,9 +64,41 @@
             <or-button class="panelTopToolbarItem" icon="filter-list" on-tap="_filterList">Filter</or-button>
 
             <div class="panelContent">
-                <template is="dom-if" if="{{!_presenter.devices.length}}">
-                    No devices in inventory.
+
+                <template is="dom-if" if="{{!_presenter.deviceItems.length}}">
+                    <div class="empty">No configured devices found.</div>
                 </template>
+
+                <or-list>
+                    <template is="dom-repeat" items="[[_presenter.deviceItems]]" as="deviceItem">
+                        <or-list-section label="[[deviceItem.device.label]]" stacked>
+                            <template is="dom-repeat" items="[[deviceItem.device.sensorEndpoints]]" as="endpoint">
+                                <or-list-item class="SENSOR_ACTUATOR"
+                                              draggable="true"
+                                              device-label$="[[deviceItem.device.label]]"
+                                              discovery-endpoint$="[[deviceItem.properties.discoveryEndpoint]]"
+                                              on-dragstart="_sensorEndpointDragStart">
+                                    <div class="layout horizontal center">
+                                        <span class="flex endpointLabel">[[truncateString(endpoint, 30)]]</span>
+                                        <iron-icon class="endpointIcon" icon="arrow-forward"></iron-icon>
+                                    </div>
+                                </or-list-item>
+                            </template>
+                            <template is="dom-repeat" items="[[deviceItem.device.actuatorEndpoints]]" as="endpoint">
+                                <or-list-item class="SENSOR_ACTUATOR"
+                                              draggable="true"
+                                              device-label$="[[deviceItem.device.label]]"
+                                              on-dragstart="_actuatorEndpointDragStart">
+                                    <div class="layout horizontal center">
+                                        <iron-icon class="endpointIcon" icon="arrow-forward"></iron-icon>
+                                        <span class="flex endpointLabel" style="text-align: right;">[[truncateString(endpoint, 35)]]</span>
+                                    </div>
+                                </or-list-item>
+                            </template>
+                        </or-list-section>
+                    </template>
+                </or-list>
+
             </div>
         </or-panel>
 

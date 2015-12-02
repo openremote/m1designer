@@ -23,6 +23,10 @@ package org.openremote.server.persistence.inventory;
 import org.openremote.server.persistence.GenericDAO;
 import org.openremote.shared.inventory.Device;
 
+import java.util.List;
+
 public interface DeviceDAO extends GenericDAO<Device, String> {
+
+    List<Device> findAll(Boolean onlyReady);
 
 }

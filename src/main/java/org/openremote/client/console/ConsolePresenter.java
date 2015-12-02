@@ -25,6 +25,7 @@ import com.google.gwt.core.client.JsonUtils;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.js.util.JsMapFromStringTo;
+import elemental.js.util.JsMapFromStringToString;
 import jsinterop.annotations.JsType;
 import org.openremote.client.shared.*;
 import org.openremote.shared.event.FlowRuntimeFailureEvent;
@@ -120,9 +121,33 @@ public class ConsolePresenter extends AbstractPresenter<View> {
         dispatch(new NodeSelectedEvent(nodeId));
     }
 
-    public void onDrop(String nodeType, String subflowId, double positionX, double positionY) {
+    public void onDrop(String label, String nodeType,
+                       String subflowId,
+                       String sensorEndpoint, String discoveryEndpoint, String actuatorEndpoint,
+                       double positionX, double positionY) {
+        // TODO ugly
+        JsMapFromStringToString nodeProperties = JsMapFromStringToString.create();
+        if (sensorEndpoint != null && sensorEndpoint.length() > 0) {
+            nodeType = "urn:openremote:flow:node:sensor";
+            nodeProperties.put("consumerEndpoint", sensorEndpoint);
+            if (discoveryEndpoint != null && discoveryEndpoint.length() > 0) {
+                nodeProperties.put("discoveryEndpoint", discoveryEndpoint);
+            }
+        } else if (actuatorEndpoint != null && actuatorEndpoint.length() > 0) {
+            nodeType = "urn:openremote:flow:node:actuator";
+            nodeProperties.put("producerEndpoint", actuatorEndpoint);
+        }
+
         if (nodeType != null && nodeType.length() > 0) {
-            dispatch(new NodeCreateEvent(flow, nodeType, positionX, positionY, true));
+            dispatch(new NodeCreateEvent(
+                flow,
+                label,
+                nodeType,
+                JsonUtils.stringify(nodeProperties),
+                positionX,
+                positionY,
+                true
+            ));
         } else if (subflowId != null && subflowId.length() > 0) {
             dispatch(new SubflowNodeCreateEvent(flow, subflowId, positionX, positionY, true));
         }

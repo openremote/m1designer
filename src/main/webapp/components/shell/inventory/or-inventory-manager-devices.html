@@ -38,7 +38,7 @@
                 if (hidden) {
                     this._presenter.close();
                 } else {
-                    this.$.discoveryList.deselect();
+                    this.$.deviceList.deselect();
                     this._presenter.open();
                 }
             },
@@ -57,9 +57,6 @@
             _saveAdapter: function () {
                 this._presenter.save();
             },
-            _refreshDevices: function () {
-                this._presenter.refreshDevices();
-            },
             _triggerDiscovery: function () {
                 this._presenter.triggerDiscovery();
             },
@@ -69,7 +66,7 @@
                         || e.path == "_presenter.adapterProperties") {
                     return;
                 }
-                this._presenter.modified();
+                this._presenter.adapterModified();
             },
             _onAdapterListActivate: function (e) {
                 this._presenter.onAdapterListActivate(
@@ -122,8 +119,20 @@
                 overflow: hidden;
             }
 
-            #discoveryList {
+            #deviceList {
                 width: 20em;
+            }
+
+            #deviceProperties {
+                user-select: text;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+            }
+
+            #endpointList {
+                user-select: text;
+                -webkit-user-select: text;
+                -moz-user-select: text;
             }
 
             .deviceLabel {
@@ -134,6 +143,11 @@
 
             .devicePropertyLabel {
                 font-weight: bold;
+            }
+
+            .listLabel {
+                font-weight: bold;
+                margin: 1em 0 1em 0;
             }
 
         </style>
@@ -147,17 +161,12 @@
             </or-button>
 
             <or-button class="panelTopToolbarItem"
-                       icon="refresh"
-                       on-tap="_refreshDevices">Refresh Devices
-            </or-button>
-
-            <or-button class="panelTopToolbarItem"
                        disabled$="[[!_presenter.adapter.discoveryEndpoint]]"
                        icon="cached"
                        on-tap="_triggerDiscovery">Discover Devices
             </or-button>
 
-            <or-list id="discoveryList" class="panelSidebar">
+            <or-list id="deviceList" class="panelSidebar">
                 <or-list-section id="adapterListSection" label="Adapters"
                                  stacked
                                  confirm-selection
@@ -220,14 +229,46 @@
                         </div>
                     </div>
 
-                    <template is="dom-repeat" items="[[_flatten(_presenter.deviceItem.properties)]]" as="entry">
-                        <div class="layout horizontal center">
-                            <div class="devicePropertyLabel flex"><span>[[entry.name]]</span>:</div>
-                            <div class="devicePropertyValue flex-4">
-                                <span>[[entry.item]]</span>
+                    <div id="deviceProperties">
+                        <template is="dom-repeat" items="[[_flatten(_presenter.deviceItem.properties)]]" as="entry">
+                            <div class="layout horizontal center">
+                                <div class="devicePropertyLabel flex"><span>[[entry.name]]</span>:</div>
+                                <div class="devicePropertyValue flex-4">
+                                    <span>[[entry.item]]</span>
+                                </div>
                             </div>
+                        </template>
+                    </div>
+
+                    <div id="endpointList">
+
+                        <div class="listSection">
+                            <div class="listLabel">Sensor Endpoints:</div>
+                            <template is="dom-if" if="{{!_presenter.deviceItem.device.sensorEndpoints.length}}">
+                                <div class="empty">
+                                    <div>This device has no sensor endpoints</div>
+                                </div>
+                            </template>
+
+                            <template is="dom-repeat" items="[[_presenter.deviceItem.device.sensorEndpoints]]" as="endpoint">
+                                <div>{{endpoint}}</div>
+                            </template>
                         </div>
-                    </template>
+
+                        <div class="listSection">
+                            <div class="listLabel">Actuator Endpoints:</div>
+                            <template is="dom-if" if="{{!_presenter.deviceItem.device.actuatorEndpoints.length}}">
+                                <div class="empty">
+                                    <div>This device has no actuator endpoints</div>
+                                </div>
+                            </template>
+
+                            <template is="dom-repeat" items="[[_presenter.deviceItem.device.actuatorEndpoints]]" as="endpoint">
+                                <div>{{endpoint}}</div>
+                            </template>
+                        </div>
+
+                    </div>
 
                 </template>
 

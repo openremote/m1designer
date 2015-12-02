@@ -20,14 +20,21 @@
 
 package org.openremote.server.inventory;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.CamelContext;
 import org.apache.camel.StaticService;
+import org.openremote.server.util.UrlUtil;
+import org.openremote.shared.inventory.Adapter;
 import org.openremote.shared.inventory.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.*;
 
+import static org.openremote.protocol.zwave.model.commandclasses.DeviceDiscoveryCommandClassVisitor.*;
+import static org.openremote.server.util.JsonUtil.JSON;
+
+// TODO Part of this class should be moved to zwave project
 
 public class DeviceLibraryService implements StaticService {
 
@@ -47,9 +54,104 @@ public class DeviceLibraryService implements StaticService {
     public void stop() throws Exception {
     }
 
-    public Device[] initializeDevices(List<Device> devices) {
-        // TODO
+    public Device[] initializeDevices(Adapter adapter, List<Device> devices) throws Exception {
+
+        // Parse the properties once
+        ObjectNode adapterProperties = JSON.readValue(adapter.getProperties(), ObjectNode.class);
+        Map<Device, ObjectNode> deviceProperties = new HashMap<>();
+        for (Device device : devices) {
+            deviceProperties.put(device, getProperties(device));
+        }
+
+        if (adapter.getId().equals("zwave")) {
+            return initializeZWaveDevices(adapterProperties, deviceProperties, devices);
+        }
         return devices.toArray(new Device[devices.size()]);
+    }
+
+    protected ObjectNode getProperties(Device device) throws Exception {
+        return device.getProperties() != null
+            ? JSON.readValue(device.getProperties(), ObjectNode.class)
+            : JSON.createObjectNode();
+
+    }
+
+    protected boolean isTrue(ObjectNode properties, String propertyName) {
+        return properties.has(propertyName) && properties.get(propertyName).asBoolean();
+    }
+
+    protected Device[] initializeZWaveDevices(ObjectNode adapterProperties, Map<Device, ObjectNode> deviceProperties, List<Device> devices) {
+
+        List<Device> result = new ArrayList<>();
+
+        // Find all root devices
+        for (Device device : devices) {
+            if (isTrue(deviceProperties.get(device), ATTR_NAME_IS_ROOT)) {
+
+                String nodeId = deviceProperties.get(device).get(ATTR_NAME_NODE_ID).asText();
+                String productTypeId = deviceProperties.get(device).get(ATTR_NAME_PRODUCT_TYPE_ID).asText();
+                String productId = deviceProperties.get(device).get(ATTR_NAME_PRODUCT_ID).asText();
+                String serialPort = adapterProperties.get("serialPort").get("value").asText();
+                
+                // TODO: Yeah, this is not great
+                if (nodeId.length() > 0 && productTypeId.equals("0x0018") && productId.equals("0x0100")) {
+                    // Benext Dimmer
+                    device.setStatus(Device.Status.READY);
+                    device.setLabel("Benext Dimmer#" + nodeId);
+                    device.setSensorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "STATUS")
+                            .toString(),
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "FREQUENCY_SCALE_HZ")
+                            .toString(),
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "ELECTRIC_METER_SCALE_W")
+                            .toString(),
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "ELECTRIC_METER_SCALE_KWH")
+                            .toString()
+                    });
+                    device.setActuatorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "DIM")
+                            .toString(),
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "ON")
+                            .toString(),
+                        UrlUtil.url("zwave", nodeId)
+                            .addParameter("serialPort", serialPort)
+                            .addParameter("command", "OFF")
+                            .toString()
+                    });
+                }
+                result.add(device);
+            }
+        }
+
+        // Remove all sub-devices if there is a root device
+        Iterator<Device> it = devices.iterator();
+        while (it.hasNext()) {
+            Device device = it.next();
+            if (!isTrue(deviceProperties.get(device), ATTR_NAME_IS_ROOT) ) {
+                String nodeId = deviceProperties.get(device).get(ATTR_NAME_NODE_ID).asText();
+                for (Device resultDevice : result) {
+                    String resultNodeId = deviceProperties.get(resultDevice).get(ATTR_NAME_NODE_ID).asText();
+                    if (resultNodeId.equals(nodeId)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result.toArray(new Device[result.size()]);
     }
 
 }

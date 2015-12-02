@@ -20,26 +20,66 @@
 
 package org.openremote.client.shell.inventory;
 
+import com.google.gwt.core.client.GWT;
 import jsinterop.annotations.JsType;
 import org.openremote.client.event.InventoryManagerOpenEvent;
-import org.openremote.client.shared.AbstractPresenter;
+import org.openremote.client.event.RequestFailure;
+import org.openremote.client.shared.RequestPresenter;
 import org.openremote.client.shared.View;
+import org.openremote.shared.event.InventoryDevicesUpdatedEvent;
+import org.openremote.shared.inventory.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 @JsType
-public class InventoryDevicesPresenter extends AbstractPresenter<View> {
+public class InventoryDevicesPresenter extends RequestPresenter<View> {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryDevicesPresenter.class);
 
-    public String[] devices = new String[0];
+    private static final DeviceCodec DEVICE_CODEC = GWT.create(DeviceCodec.class);
+
+    public DeviceItem[] deviceItems = new DeviceItem[0];
 
     public InventoryDevicesPresenter(View view) {
         super(view);
+
+        addListener(InventoryDevicesUpdatedEvent.class, event -> {
+            loadDevices();
+        });
     }
 
     public void openManager() {
         dispatch(new InventoryManagerOpenEvent());
     }
 
+    @Override
+    public void attached() {
+        super.attached();
+        loadDevices();
+    }
+
+    protected void loadDevices() {
+        sendRequest(
+            resource("inventory", "device").addQueryParam("onlyReady", "true").get(),
+            new ListResponseCallback<Device>("Load devices", DEVICE_CODEC) {
+                @Override
+                protected void onResponse(List<Device> result) {
+                    deviceItems = new DeviceItem[result.size()];
+                    for (int i = 0; i < deviceItems.length; i++) {
+                        deviceItems[i] = new DeviceItem(result.get(i));
+                    }
+                    notifyPath("deviceItems", deviceItems);
+                }
+
+                @Override
+                public void onFailure(RequestFailure requestFailure) {
+                    super.onFailure(requestFailure);
+                    deviceItems = null;
+                    notifyPathNull("deviceItems");
+                }
+            }
+        );
+    }
 }

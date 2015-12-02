@@ -41,14 +41,24 @@
                     e.dataTransfer.dropEffect = "copy";
                 } else if (e.dataTransfer.getData("flowId")) {
                     e.dataTransfer.dropEffect = "link";
+                } else if (e.dataTransfer.getData("sensorEndpoint")) {
+                    e.dataTransfer.dropEffect = "copy";
+                } else if (e.dataTransfer.getData("actuatorEndpoint")) {
+                    e.dataTransfer.dropEffect = "copy";
                 }
             },
             _onDrop: function (e) {
+                console.dir(e);
                 e.preventDefault();
                 this.toggleClass("dragOver", false, this.$.flowDesigner);
+                // TODO ugly
+                var label = e.dataTransfer.getData("label");
                 var nodeType = e.dataTransfer.getData("nodeType");
                 var flowId = e.dataTransfer.getData("flowId");
-                this._presenter.onDrop(nodeType, flowId, e.offsetX, e.offsetY);
+                var sensorEndpoint = e.dataTransfer.getData("sensorEndpoint");
+                var discoveryEndpoint = e.dataTransfer.getData("discoveryEndpoint");
+                var actuatorEndpoint = e.dataTransfer.getData("actuatorEndpoint");
+                this._presenter.onDrop(label, nodeType, flowId, sensorEndpoint, discoveryEndpoint, actuatorEndpoint, e.offsetX, e.offsetY);
             }
         });
     });

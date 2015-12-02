@@ -29,6 +29,7 @@ import org.fusesource.restygwt.client.Resource;
 import org.openremote.client.event.RequestFailure;
 import org.openremote.client.shared.RequestPresenter;
 import org.openremote.client.shared.View;
+import org.openremote.shared.event.InventoryDevicesUpdatedEvent;
 import org.openremote.shared.event.client.ShowFailureEvent;
 import org.openremote.shared.event.client.ShowInfoEvent;
 import org.openremote.shared.func.Callback;
@@ -58,6 +59,10 @@ public class InventoryManagerDevicesPresenter extends RequestPresenter<View> {
 
     public InventoryManagerDevicesPresenter(View view) {
         super(view);
+
+        addListener(InventoryDevicesUpdatedEvent.class, event -> {
+            loadDevices();
+        });
     }
 
     public void open() {
@@ -102,7 +107,7 @@ public class InventoryManagerDevicesPresenter extends RequestPresenter<View> {
             });
     }
 
-    public void modified() {
+    public void adapterModified() {
         setDirty(true);
         if (adapter != null && adapterProperties != null) {
             adapter.setProperties(JsonUtils.stringify(adapterProperties));
@@ -122,10 +127,6 @@ public class InventoryManagerDevicesPresenter extends RequestPresenter<View> {
         );
     }
 
-    public void refreshDevices() {
-        loadDevices();
-    }
-
     public void triggerDiscovery() {
         if (adapter == null)
             return;
@@ -135,13 +136,12 @@ public class InventoryManagerDevicesPresenter extends RequestPresenter<View> {
                 @Override
                 protected void onResponse(Response response) {
                     dispatch(new ShowInfoEvent("Device discovery running..."));
-                    debounce("Refresh Devices", () -> loadDevices(), 1000);
                 }
 
                 @Override
                 public void onFailure(RequestFailure requestFailure) {
                     if (requestFailure.statusCode == 400 || requestFailure.statusCode == 409) {
-                        dispatch(new ShowFailureEvent(requestFailure.getServerText()));
+                        dispatch(new ShowFailureEvent(requestFailure.getServerText(), 10000));
                     } else {
                         super.onFailure(requestFailure);
                     }
