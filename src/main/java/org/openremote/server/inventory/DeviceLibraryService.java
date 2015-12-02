@@ -118,6 +118,10 @@ public class DeviceLibraryService implements StaticService {
                     device.setSensorEndpoints(new String[]{
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS").toString(),
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "AIR_TEMPERATURE_SCALE_CELSIUS").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "AIR_TEMPERATURE_SCALE_FAHRENHEIT").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "HUMIDITY_SCALE_PERCENTAGE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "LUMINANCE_SCALE_LUX").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ULTRAVIOLET_SCALE_UV_INDEX").toString(),
                     });
                 }
 

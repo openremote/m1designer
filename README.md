@@ -63,7 +63,7 @@ Build image and run Docker container
     docker rmi orc3:latest
     cp Dockerfile build/libs/
     docker build -t orc3:latest build/libs/
-    docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime orc3
+    docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime --device=/dev/ttyUSB0 orc3
 
 Environment Variables
 ---
