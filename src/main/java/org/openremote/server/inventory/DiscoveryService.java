@@ -389,6 +389,15 @@ public class DiscoveryService implements StaticService {
             return null;
         }
 
+        String isRootDevice = null;
+        // TODO: Will all protocols have this attribute?
+        for (DiscoveredDeviceAttrDTO attribute : attributes) {
+            if (ATTR_NAME_IS_ROOT.equals(attribute.getName())) {
+                isRootDevice = attribute.getValue();
+                break;
+            }
+        }
+
         String deviceLabel =
             deviceDTO.getName() != null && deviceDTO.getName().length() > 0
                 ? deviceDTO.getName()
@@ -399,7 +408,8 @@ public class DiscoveryService implements StaticService {
             deviceId = IdentifierUtil.getEncodedHash(
                 adapter.getId().getBytes("utf-8"),
                 deviceId.getBytes("utf-8"),
-                deviceLabel.getBytes("utf-8")
+                deviceLabel.getBytes("utf-8"),
+                isRootDevice != null ? isRootDevice.getBytes("utf-8") : new byte[0]
             );
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);

@@ -88,70 +88,45 @@ public class DeviceLibraryService implements StaticService {
         for (Device device : devices) {
             if (isTrue(deviceProperties.get(device), ATTR_NAME_IS_ROOT)) {
 
+                LOG.debug("Found root device: " + device);
+
                 String nodeId = deviceProperties.get(device).get(ATTR_NAME_NODE_ID).asText();
                 String productTypeId = deviceProperties.get(device).get(ATTR_NAME_PRODUCT_TYPE_ID).asText();
                 String productId = deviceProperties.get(device).get(ATTR_NAME_PRODUCT_ID).asText();
                 String serialPort = adapterProperties.get("serialPort").get("value").asText();
-                
+
                 // TODO: Yeah, this is not great
                 if (nodeId.length() > 0 && productTypeId.equals("0x0018") && productId.equals("0x0100")) {
                     // Benext Dimmer
                     device.setStatus(Device.Status.READY);
                     device.setLabel("Benext Dimmer#" + nodeId);
                     device.setSensorEndpoints(new String[]{
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "STATUS")
-                            .toString(),
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "FREQUENCY_SCALE_HZ")
-                            .toString(),
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "ELECTRIC_METER_SCALE_W")
-                            .toString(),
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "ELECTRIC_METER_SCALE_KWH")
-                            .toString()
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "FREQUENCY_SCALE_HZ").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ELECTRIC_METER_SCALE_W").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ELECTRIC_METER_SCALE_KWH").toString()
                     });
                     device.setActuatorEndpoints(new String[]{
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "DIM")
-                            .toString(),
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "ON")
-                            .toString(),
-                        UrlUtil.url("zwave", nodeId)
-                            .addParameter("serialPort", serialPort)
-                            .addParameter("command", "OFF")
-                            .toString()
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "DIM").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ON").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "OFF").toString()
+                    });
+                } else if (nodeId.length() > 0 && productTypeId.equals("0x0002") && productId.equals("0x0064")) {
+                    // Aeotec Multisensor 6
+                    device.setStatus(Device.Status.READY);
+                    device.setLabel("Aeotec MultiSensor 6#" + nodeId);
+                    device.setSensorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "AIR_TEMPERATURE_SCALE_CELSIUS").toString(),
                     });
                 }
-                result.add(device);
-            }
-        }
 
-        // Remove all sub-devices if there is a root device
-        Iterator<Device> it = devices.iterator();
-        while (it.hasNext()) {
-            Device device = it.next();
-            if (!isTrue(deviceProperties.get(device), ATTR_NAME_IS_ROOT) ) {
-                String nodeId = deviceProperties.get(device).get(ATTR_NAME_NODE_ID).asText();
-                for (Device resultDevice : result) {
-                    String resultNodeId = deviceProperties.get(resultDevice).get(ATTR_NAME_NODE_ID).asText();
-                    if (resultNodeId.equals(nodeId)) {
-                        it.remove();
-                        break;
-                    }
-                }
+            } else {
+                LOG.debug("Not a root device: " + device);
             }
+            result.add(device);
         }
 
         return result.toArray(new Device[result.size()]);
     }
-
 }
