@@ -89,6 +89,12 @@ public class SensorRoute extends NodeRoute {
             propertyPaths.add("consumerEndpoint");
             propertyPaths.add("discoveryEndpoint");
         }
+
+        @Override
+        public void addEditorComponents(List<String> editorComponents) {
+            super.addEditorComponents(editorComponents);
+            editorComponents.add("or-node-editor-sensor");
+        }
     }
 
     public SensorRoute(CamelContext context, Flow flow, Node node) {

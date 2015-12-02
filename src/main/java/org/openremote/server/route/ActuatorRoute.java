@@ -88,6 +88,12 @@ public class ActuatorRoute extends NodeRoute {
             super.addPersistentPropertyPaths(propertyPaths);
             propertyPaths.add("producerEndpoint");
         }
+
+        @Override
+        public void addEditorComponents(List<String> editorComponents) {
+            super.addEditorComponents(editorComponents);
+            editorComponents.add("or-node-editor-actuator");
+        }
     }
 
     public ActuatorRoute(CamelContext context, Flow flow, Node node) {

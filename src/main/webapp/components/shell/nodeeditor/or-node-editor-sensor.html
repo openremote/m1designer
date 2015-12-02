@@ -1,0 +1,36 @@
+<link rel="import" href="or-node-editor-behaviors.html">
+
+<link rel="import" href="../ui/or-input.html">
+<link rel="import" href="../ui/or-toggle-button.html">
+<link rel="import" href="../ui/or-menu.html">
+<link rel="import" href="../ui/or-menu-item.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="or-node-editor-sensor">
+    <template>
+
+        <div class="flex layout horizontal center">
+            <or-input
+                    class="flex"
+                    label="Consumer Endpoint"
+                    value="{{nodeProperties.consumerEndpoint}}"></or-input>
+        </div>
+
+        <div class="flex layout horizontal center">
+            <or-input
+                    class="flex"
+                    label="Discovery Endpoint"
+                    value="{{nodeProperties.discoveryEndpoint}}"></or-input>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: "or-node-editor-sensor",
+            behaviors: [openremote.NodeEditor]
+        });
+    </script>
+</dom-module>
+
+
