@@ -146,8 +146,30 @@ public class DeviceLibraryService implements StaticService {
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_BLUE").toString(),
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR").toString()
                     });
+                } else if (nodeId.length() > 0 && productTypeId.equals("0x0003") && productId.equals("0x0062")) {
+                    // Aeotec LED Bulb
+                    device.setStatus(Device.Status.READY);
+                    device.setLabel("Aeotec LED Bulb#" + nodeId);
+                    device.setSensorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_WARM_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_COLD_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_RED").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_GREEN").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_BLUE").toString()
+                    });
+                    device.setActuatorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "DIM").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ON").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "OFF").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_WARM_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_COLD_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_RED").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_GREEN").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_BLUE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR").toString()
+                    });
                 }
-
             } else {
                 LOG.debug("Not a root device: " + device);
             }
