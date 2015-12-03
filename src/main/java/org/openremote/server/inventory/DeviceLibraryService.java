@@ -123,6 +123,29 @@ public class DeviceLibraryService implements StaticService {
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "LUMINANCE_SCALE_LUX").toString(),
                         UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ULTRAVIOLET_SCALE_UV_INDEX").toString(),
                     });
+                } else if (nodeId.length() > 0 && productTypeId.equals("0x0002") && productId.equals("0x0002")) {
+                    // Zipato RGBW Bulb
+                    device.setStatus(Device.Status.READY);
+                    device.setLabel("Zipato RGBW Bulb#" + nodeId);
+                    device.setSensorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_WARM_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_COLD_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_RED").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_GREEN").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "STATUS_COLOR_CHANNEL_BLUE").toString()
+                    });
+                    device.setActuatorEndpoints(new String[]{
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "DIM").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "ON").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "OFF").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_WARM_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_COLD_WHITE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_RED").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_GREEN").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR_CHANNEL_BLUE").toString(),
+                        UrlUtil.url("zwave", nodeId).addParameter("serialPort", serialPort).addParameter("command", "SET_COLOR").toString()
+                    });
                 }
 
             } else {

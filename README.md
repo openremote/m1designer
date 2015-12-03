@@ -48,7 +48,7 @@ Run production
     CREATE_DATABASE_SCHEMA=true \
     java -cp 'build/libs/*' org.openremote.server.Server
 
-If `CREATE_DATABASE_SCHEMA` is enabled, the application will drop and recreate its database on startup. Set to `false` or remove the option if you want to keep all data in the file `or-controller-database.mv.db`. You may have to remove the database after incompatible code changes by removing the file `or-controller-database.mv.db` and recreating it.
+If `CREATE_DATABASE_SCHEMA` is enabled, the application will drop and recreate its database on startup. Set to `false` (when you start the server the second time, for example) or remove the option if you want to keep all data in the file `or-controller-database.mv.db`. You may have to remove the database after incompatible code changes by removing the file `or-controller-database.mv.db` and recreating it.
 
 For quick turnaround when debugging client in production, recompile only the client portion between server restarts:
 

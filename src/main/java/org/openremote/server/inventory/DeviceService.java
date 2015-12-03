@@ -114,18 +114,23 @@ public class DeviceService implements StaticService {
         }
     }
 
-    public void addDevices(Device[] devices) {
+    synchronized public void addDevices(Device[] devices) {
         Device[] existingDevices = getDevices(false);
         for (Device device : devices) {
             boolean exists = false;
+            boolean existsUninitialized = false;
             for (Device existingDevice : existingDevices) {
                 if (existingDevice.getId().equals(device.getId())) {
                     exists = true;
+                    existsUninitialized = existingDevice.getStatus().equals(Device.Status.UNINITIALIZED);
                     break;
                 }
             }
 
             if (!exists) {
+                postDevice(device);
+            } else if (existsUninitialized) {
+                deleteDevice(device.getId());
                 postDevice(device);
             }
         }
