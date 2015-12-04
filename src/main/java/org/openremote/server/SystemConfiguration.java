@@ -62,6 +62,9 @@ public class SystemConfiguration implements Configuration {
         // Don't use JMS, we do our own correlation
         context.setUseBreadcrumb(false);
 
+        // TODO: Wait 5 seconds before forcing a route to stop?
+        context.getShutdownStrategy().setTimeout(5);
+
         context.setStreamCaching(true);
         StreamCachingStrategy streamCachingStrategy = new DefaultStreamCachingStrategy();
         streamCachingStrategy.setSpoolThreshold(524288); // Half megabyte

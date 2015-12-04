@@ -42,16 +42,12 @@ public class UrlUtil {
             .withHost(host);
     }
 
-    public static UrlBuilder url(String scheme, String host, String port, String contextPath, String... pathSegments) {
-        UrlBuilder urlBuilder = UrlBuilder.empty()
+    public static UrlBuilder url(String scheme, String host, Integer port, String contextPath, String... pathSegments) {
+        return UrlBuilder.empty()
             .withScheme(scheme)
             .withHost(host)
+            .withPort(port)
             .withPath(getPath(contextPath, pathSegments));
-
-        if( port != null) {
-            urlBuilder.withPort(Integer.valueOf(port));
-        }
-        return urlBuilder;
     }
 
     protected static String getPath(String contextPath, String... pathSegments) {

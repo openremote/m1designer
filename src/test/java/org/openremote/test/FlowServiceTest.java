@@ -354,6 +354,46 @@ public class FlowServiceTest extends FlowIntegrationTest {
     }
 
     @Test
+    public void readWriteDependenciesRemoveConsumerNotWired() throws Exception {
+        {
+            // Remove some wires so we can run our test
+            Flow flow = fromJson(
+                producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+                Flow.class
+            );
+
+            flow.removeWireBetweenSlots(SampleThermostatControl.TEMPERATURE_CONSUMER_SOURCE, SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW_FAHRENHEIT_SINK);
+            flow.removeWireBetweenSlots(SampleThermostatControl.SETPOINT_CONSUMER_SOURCE, SampleThermostatControl.SETPOINT_PROCESSOR_FLOW_FAHRENHEIT_SINK);
+            putFlow(flow);
+        }
+
+        Flow flow = fromJson(
+            producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        final Flow updateFlow = flow;
+
+        // This consumer is used in a superflow but not wired
+        Node fahrenheitConsumer = updateFlow.findNode(SampleTemperatureProcessor.FAHRENHEIT_CONSUMER.getId());
+        updateFlow.removeNode(fahrenheitConsumer);
+
+        putFlow(updateFlow);
+
+        flow = fromJson(
+            producerTemplate.requestBody(restClientUrl("flow", SampleThermostatControl.FLOW.getId()), null, String.class),
+            Flow.class
+        );
+
+        Node temperatureConsumer = flow.findNode(SampleThermostatControl.TEMPERATURE_CONSUMER.getId());
+        Node temperatureSubflowNode = flow.findNode(SampleThermostatControl.TEMPERATURE_PROCESSOR_FLOW.getId());
+        Node temperatureLabel = flow.findNode(SampleThermostatControl.TEMPERATURE_LABEL.getId());
+        assertEquals(temperatureSubflowNode.getSlots().length, 10);
+        assertEquals(flow.findWiresAttachedToNode(temperatureSubflowNode).length, 1);
+        assertEquals(flow.findWiresBetween(temperatureConsumer, temperatureSubflowNode).length, 0);
+        assertEquals(flow.findWiresBetween(temperatureSubflowNode, temperatureLabel).length, 1);
+    }
+    @Test
     public void readWriteDependenciesRenameConsumer() throws Exception {
         Flow flow = fromJson(
             producerTemplate.requestBody(restClientUrl("flow", SampleTemperatureProcessor.FLOW.getId()), null, String.class),

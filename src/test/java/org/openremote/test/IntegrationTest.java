@@ -40,7 +40,7 @@ public class IntegrationTest extends CamelTestSupport {
 
     protected Server server;
     protected Environment environment;
-    protected String serverEphemeralPort;
+    protected Integer serverEphemeralPort;
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
@@ -70,7 +70,7 @@ public class IntegrationTest extends CamelTestSupport {
         configurations.add(new SystemConfiguration());
 
         properties.put(WebserverConfiguration.WEBSERVER_ADDRESS, getServerHost());
-        properties.put(WebserverConfiguration.WEBSERVER_PORT, getServerPort());
+        properties.put(WebserverConfiguration.WEBSERVER_PORT, Integer.toString(getServerPort()));
         configurations.add(new WebserverConfiguration());
 
         // External DB instance (run 'java -jar h2.jar')
@@ -120,7 +120,7 @@ public class IntegrationTest extends CamelTestSupport {
         return "127.0.0.1";
     }
 
-    protected String getServerPort() {
+    protected Integer getServerPort() {
         return serverEphemeralPort;
     }
 
@@ -171,14 +171,14 @@ public class IntegrationTest extends CamelTestSupport {
         }
     }
 
-    private String findEphemeralPort() {
+    private Integer findEphemeralPort() {
         // TODO: As usual it's impossible with the Camel API to use an ephemeral port and then get that port somehow...
         try {
             ServerSocket socket = new ServerSocket(0, 0, Inet4Address.getLocalHost());
             int port = socket.getLocalPort();
             socket.close();
             // Yeah, that port might be occupied by something else now, but what do you want me to do?
-            return Integer.toString(port);
+            return port;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
