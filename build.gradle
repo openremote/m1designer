@@ -23,9 +23,6 @@ repositories {
         url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
     maven {
-        url "https://oss.sonatype.org/content/repositories/google-snapshots/"
-    }
-    maven {
         url "http://4thline.org/m2"
     }
     maven {
