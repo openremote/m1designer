@@ -30,7 +30,6 @@ import org.openremote.shared.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class SensorRoute extends NodeRoute {
@@ -40,7 +39,7 @@ public class SensorRoute extends NodeRoute {
     public static final String NODE_TYPE = "urn:openremote:flow:node:sensor";
     public static final String NODE_TYPE_LABEL = "Sensor";
 
-    public static final String NODE_PROPERTY_CONSUMER_ENDPOINT = "consumerEndpoint";
+    public static final String NODE_PROPERTY_SENSOR_ENDPOINT = "sensorEndpoint";
     public static final String NODE_PROPERTY_DISCOVERY_ENDPOINT = "discoveryEndpoint";
 
     public static class Descriptor extends NodeDescriptor {
@@ -86,8 +85,8 @@ public class SensorRoute extends NodeRoute {
         @Override
         protected void addPersistentPropertyPaths(List<String> propertyPaths) {
             super.addPersistentPropertyPaths(propertyPaths);
-            propertyPaths.add("consumerEndpoint");
-            propertyPaths.add("discoveryEndpoint");
+            propertyPaths.add(NODE_PROPERTY_SENSOR_ENDPOINT);
+            propertyPaths.add(NODE_PROPERTY_DISCOVERY_ENDPOINT);
         }
 
         @Override
@@ -104,15 +103,15 @@ public class SensorRoute extends NodeRoute {
     @Override
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
 
-        String consumerEndpoint;
+        String sensorEndpoint;
         if (getNodeProperties() == null
-            || !getNodeProperties().has(NODE_PROPERTY_CONSUMER_ENDPOINT)
-            || (consumerEndpoint = getNodeProperties().get(NODE_PROPERTY_CONSUMER_ENDPOINT).asText()).length() == 0) {
-            LOG.debug("No processing in sensor node, missing 'consumerEndpoint' property:" + getNode());
+            || !getNodeProperties().has(NODE_PROPERTY_SENSOR_ENDPOINT)
+            || (sensorEndpoint = getNodeProperties().get(NODE_PROPERTY_SENSOR_ENDPOINT).asText()).length() == 0) {
+            LOG.debug("No processing in sebsir node, missing '"+ NODE_PROPERTY_SENSOR_ENDPOINT+ "' property:" + getNode());
             return;
         }
 
-        from(consumerEndpoint)
+        from(sensorEndpoint)
             .routePolicy(new RoutePolicySupport() {
                 @Override
                 protected void doStart() throws Exception {

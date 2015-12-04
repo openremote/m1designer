@@ -151,13 +151,13 @@ public class FlowEditorPresenter extends AbstractPresenter<View> {
         JsMapFromStringToString nodeProperties = JsMapFromStringToString.create();
         if (sensorEndpoint != null && sensorEndpoint.length() > 0) {
             nodeType = "urn:openremote:flow:node:sensor";
-            nodeProperties.put("consumerEndpoint", sensorEndpoint);
+            nodeProperties.put("sensorEndpoint", sensorEndpoint);
             if (discoveryEndpoint != null && discoveryEndpoint.length() > 0) {
                 nodeProperties.put("discoveryEndpoint", discoveryEndpoint);
             }
         } else if (actuatorEndpoint != null && actuatorEndpoint.length() > 0) {
             nodeType = "urn:openremote:flow:node:actuator";
-            nodeProperties.put("producerEndpoint", actuatorEndpoint);
+            nodeProperties.put("actuatorEndpoint", actuatorEndpoint);
         }
 
         if (nodeType != null && nodeType.length() > 0) {

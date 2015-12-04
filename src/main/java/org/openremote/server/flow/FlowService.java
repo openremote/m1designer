@@ -274,6 +274,8 @@ public class FlowService implements StaticService {
     protected void filterNonPersistentProperties(Flow flow) {
         try {
             for (Node node : flow.getNodes()) {
+                // TODO: We should clear Node#persistentPropertyPaths on saving and populate
+                // the attribute when loading a flow, using the descriptor's value
                 if (node.getProperties() != null && node.getProperties() != null) {
                     LOG.debug("Filtering non-persistent properties of: " + node);
 

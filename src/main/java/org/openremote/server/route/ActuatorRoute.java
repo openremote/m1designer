@@ -41,7 +41,7 @@ public class ActuatorRoute extends NodeRoute {
     public static final String NODE_TYPE = "urn:openremote:flow:node:actuator";
     public static final String NODE_TYPE_LABEL = "Actuator";
 
-    public static final String NODE_PROPERTY_PRODUCER_ENDPOINT = "producerEndpoint";
+    public static final String NODE_PROPERTY_ACTUATOR_ENDPOINT = "actuatorEndpoint";
 
     public static class Descriptor extends NodeDescriptor {
 
@@ -86,7 +86,7 @@ public class ActuatorRoute extends NodeRoute {
         @Override
         protected void addPersistentPropertyPaths(List<String> propertyPaths) {
             super.addPersistentPropertyPaths(propertyPaths);
-            propertyPaths.add("producerEndpoint");
+            propertyPaths.add(NODE_PROPERTY_ACTUATOR_ENDPOINT);
         }
 
         @Override
@@ -102,19 +102,19 @@ public class ActuatorRoute extends NodeRoute {
 
     @Override
     protected void configureProcessing(ProcessorDefinition routeDefinition) throws Exception {
-        String producerEndpoint;
+        String actuatorEndpoint;
         if (getNodeProperties() == null
-            || !getNodeProperties().has(NODE_PROPERTY_PRODUCER_ENDPOINT)
-            || (producerEndpoint = getNodeProperties().get(NODE_PROPERTY_PRODUCER_ENDPOINT).asText()).length() == 0) {
-            LOG.debug("No processing in actuator node, missing '"+NODE_PROPERTY_PRODUCER_ENDPOINT+ "' property:" + getNode());
+            || !getNodeProperties().has(NODE_PROPERTY_ACTUATOR_ENDPOINT)
+            || (actuatorEndpoint = getNodeProperties().get(NODE_PROPERTY_ACTUATOR_ENDPOINT).asText()).length() == 0) {
+            LOG.debug("No processing in actuator node, missing '"+ NODE_PROPERTY_ACTUATOR_ENDPOINT + "' property:" + getNode());
             return;
         }
 
         // TODO Should we send the headers?
         routeDefinition.process(exchange -> {
-            LOG.debug("Sending message to actuator producer endpoint: " + producerEndpoint);
+            LOG.debug("Sending message to actuator endpoint: " + actuatorEndpoint);
             producerTemplate.sendBody(
-                producerEndpoint, exchange.getIn().getBody(String.class)
+                actuatorEndpoint, exchange.getIn().getBody(String.class)
             );
         });
     }

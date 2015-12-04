@@ -70,6 +70,5 @@ public class ColorPickerNodeDescriptor extends WidgetNodeDescriptor {
     @Override
     protected void addPersistentPropertyPaths(List<String> propertyPaths) {
         super.addPersistentPropertyPaths(propertyPaths);
-        propertyPaths.add("color");
     }
 }

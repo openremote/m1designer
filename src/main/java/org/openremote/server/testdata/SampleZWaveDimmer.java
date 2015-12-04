@@ -26,14 +26,14 @@ public class SampleZWaveDimmer {
             protected void addPersistentPropertyPaths(List<String> propertyPaths) {
                 super.addPersistentPropertyPaths(propertyPaths);
                 propertyPaths.add("discoveryEndpoint");
-                propertyPaths.add("consumerEndpoint");
+                propertyPaths.add("sensorEndpoint");
             }
 
             @Override
             protected ObjectNode getInitialProperties() {
                 return JSON.createObjectNode()
                     .put("discoveryEndpoint", "zwave://discovery?serialPort={{env:ZWAVE_SERIAL_PORT}}")
-                    .put("consumerEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}&command=STATUS");
+                    .put("sensorEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}&command=STATUS");
             }
         }.initialize(DIMMER_SENSOR);
 
@@ -50,7 +50,7 @@ public class SampleZWaveDimmer {
             @Override
             protected ObjectNode getInitialProperties() {
                 return JSON.createObjectNode()
-                    .put("producerEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}&command=DIM");
+                    .put("actuatorEndpoint", "zwave://{{env:SAMPLE_ZWAVE_DIMMER_NODE_ID}}?serialPort={{env:ZWAVE_SERIAL_PORT}}&command=DIM");
             }
 
         }.initialize(DIMMER_ACTUATOR);
