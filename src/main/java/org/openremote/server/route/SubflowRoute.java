@@ -186,14 +186,10 @@ public class SubflowRoute extends NodeRoute {
                 .process(exchange -> {
                     LOG.debug("Received message from asynchronous queue: " + sourceSlot.getPeerId());
 
-                    if (!hasCorrelationStack(exchange.getIn().getHeaders())) {
-                        LOG.warn("No correlation stack in message from asynchronous queue, dropping here: " + getNode());
-                        return;
-                    }
-
                     String currentInstanceId = peekCorrelationStack(exchange.getIn().getHeaders(), false, false);
 
-                    if (getNode().getId().equals(currentInstanceId)) {
+                    // If there is no correlation stack in the message, it is for "all" and we take it
+                    if (currentInstanceId == null || getNode().getId().equals(currentInstanceId)) {
 
                         LOG.debug("Correlation found for '" + getNode() + "', finding wires of: " + sourceSlot);
 
