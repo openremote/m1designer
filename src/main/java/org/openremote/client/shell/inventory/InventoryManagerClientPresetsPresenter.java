@@ -90,6 +90,7 @@ public class InventoryManagerClientPresetsPresenter extends RequestPresenter<Vie
         notifyPath("clientPreset");
         setDirty(true);
         setResourceLocation(null);
+        loadFlows();
     }
 
     public void delete() {
