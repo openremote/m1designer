@@ -1,12 +1,6 @@
-# OpenRemote Controller & Web Editor/Console
+# OpenRemote Controller
 
-
-Live demo: [http://orc3.christianbauer.name/](http://orc3.christianbauer.name/)
-
-Concept
----
-
-Combining UI/UX ideas of [Origami/Quartz UI Composer](http://facebook.github.io/origami/tutorials/) and [Node-RED](http://nodered.org/) with an [Apache Camel](http://camel.apache.org/) backend.
+This is a pre-alpha version of the OpenRemote v3 controller, please use only for testing and development. Note that no access control or security has been implemented, do not expose the controller on a public network.
 
 Development
 ---
@@ -22,8 +16,6 @@ Development
 * Open [http://localhost:8080/#shell](http://localhost:8080/#shell) in browser to open the editor shell on page load
 
 * The application uses a temporary in-memory database with sample data. If you like to switch to an external database instance, set `DATABASE_CONNECTION_URL=jdbc:h2:file:</some/database/file/path>` or `jdbc:h2:tcp://localhost/mem:test` for an already running external database instance (`java -jar h2.jar`).
-
-* Optional: Enable ZWave Dimmer sample device with environment variables `SAMPLE_ZWAVE_DIMMER_NODE_ID=<Your BeNext Dimmer ZWave Node Id>` and `ZWAVE_SERIAL_PORT=/dev/tty.SLAB_USBtoUART`
 
 Build tested archives
 ---

@@ -88,14 +88,6 @@ public class SampleConfiguration implements Configuration {
                         flowDAO.makePersistent(SampleThermostatControl.FLOW, false);
                         flowDAO.makePersistent(SampleEnvironmentWidget.FLOW, false);
 
-                        try {
-                            String zwaveDimmerNodeId = environment.getProperty("SAMPLE_ZWAVE_DIMMER_NODE_ID");
-                            String zwaveSerialPort = environment.getProperty("ZWAVE_SERIAL_PORT");
-                            flowDAO.makePersistent(SampleZWaveDimmer.FLOW, false);
-                        } catch (IllegalArgumentException ex) {
-                            LOG.info("Not enabling ZWave sample device");
-                        }
-
                         ClientPresetDAO clientPresetDAO = ps.getDAO(em, ClientPresetDAO.class);
                         clientPresetDAO.makePersistent(SampleClientPresets.IPAD_LANDSCAPE);
                         clientPresetDAO.makePersistent(SampleClientPresets.NEXUS_5);
