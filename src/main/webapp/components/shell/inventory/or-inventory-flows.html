@@ -1,7 +1,6 @@
 <link rel="import" href="../ui/or-panel.html">
 <link rel="import" href="../ui/or-button.html">
-<link rel="import" href="../ui/or-list-section.html">
-<link rel="import" href="../ui/or-list-item.html">
+<link rel="import" href="../ui/or-list.html">
 <link rel="import" href="../ui/or-status-mark.html">
 
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
@@ -60,26 +59,28 @@
             <div class="panelContent">
 
                 <template is="dom-if" if="{{!_presenter.flowItems.length}}">
-                    No flows in inventory.
+                    <div class="empty">No flows found.</div>
                 </template>
 
-                <or-list-section confirm-selection>
-                    <template is="dom-repeat" items="[[_presenter.flowItems]]" as="flowItem">
-                        <or-list-item
-                                class="flow"
-                                on-tap="_flowSelected"
-                                draggable="true"
-                                on-dragstart="_flowDragStart">
-                            <template is="dom-if" if="[[flowItem.flow.label]]">
-                                <span class="label">[[flowItem.flow.label]]</span>
-                            </template>
-                            <template is="dom-if" if="[[!flowItem.flow.label]]">
-                                <span class="label unlabeled">Unlabeled Flow</span>
-                            </template>
-                            <or-status-mark status="[[flowItem.status.mark]]" indicator></or-status-mark>
-                        </or-list-item>
-                    </template>
-                </or-list-section>
+                <or-list>
+                    <or-list-section confirm-selection>
+                        <template is="dom-repeat" items="[[_presenter.flowItems]]" as="flowItem">
+                            <or-list-item
+                                    class="flow"
+                                    on-tap="_flowSelected"
+                                    draggable="true"
+                                    on-dragstart="_flowDragStart">
+                                <template is="dom-if" if="[[flowItem.flow.label]]">
+                                    <span class="label">[[flowItem.flow.label]]</span>
+                                </template>
+                                <template is="dom-if" if="[[!flowItem.flow.label]]">
+                                    <span class="label unlabeled">Unlabeled Flow</span>
+                                </template>
+                                <or-status-mark status="[[flowItem.status.mark]]" indicator></or-status-mark>
+                            </or-list-item>
+                        </template>
+                    </or-list-section>
+                </or-list>
             </div>
 
         </or-panel>
