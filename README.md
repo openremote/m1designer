@@ -47,15 +47,27 @@ For quick turnaround when debugging client in production, recompile only the cli
     ./gradlew assembleClient
     
 
-Build image and run Docker container
----
+Build and publish Docker image
+------------------------------
 
-    docker stop orc3
-    docker rm orc3
-    docker rmi orc3:latest
+    ./gradlew clean build
+    # (Disable DEBUG logging, etc...)
+
     cp Dockerfile build/libs/
-    docker build -t orc3:latest build/libs/
-    docker run -d --name=orc3 -p 8006:8080 -v /etc/localtime:/etc/localtime --device=/dev/ttyUSB0 orc3
+    docker build -t openremote/demo-m1-designer:latest build/libs/
+
+    # Optional
+    docker login
+    docker push openremote/demo-m1-designer:latest
+    
+Run Docker container
+--------------------
+    docker run -d \
+     --name=demodesigner \
+     -p 8080:8080 \
+     -v /etc/localtime:/etc/localtime \
+     --device=/dev/ttyUSB0 \
+     openremote/demo-m1-designer:latest
 
 Environment Variables
 ---
