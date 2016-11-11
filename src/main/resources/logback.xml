@@ -11,10 +11,12 @@
     </root>
 
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
+<!--
     <logger name="org.openremote" level="DEBUG"/>
     <logger name="org.apache.camel" level="INFO"/>
     <logger name="org.apache.camel.component.http" level="DEBUG"/>
     <logger name="org.apache.camel.component.mock" level="TRACE"/>
+-->
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
 
     <!-- Show JSON parsing problems with WARN -->

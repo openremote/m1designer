@@ -54,20 +54,20 @@ Build and publish Docker image
     # (Disable DEBUG logging, etc...)
 
     cp Dockerfile build/libs/
-    docker build -t openremote/demo-m1-designer:latest build/libs/
+    docker build -t openremote/m1designer:latest build/libs/
 
     # Optional
     docker login
-    docker push openremote/demo-m1-designer:latest
+    docker push openremote/m1designer:latest
     
 Run Docker container
 --------------------
     docker run -d \
-     --name=demodesigner \
+     --name=m1designer \
      -p 8080:8080 \
      -v /etc/localtime:/etc/localtime \
      --device=/dev/ttyUSB0 \
-     openremote/demo-m1-designer:latest
+     openremote/m1designer:latest
 
 Environment Variables
 ---

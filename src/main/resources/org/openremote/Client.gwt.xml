@@ -18,8 +18,10 @@
     <!-- ##################################################################### -->
 
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
+<!--
     <set-property name="gwt.logging.logLevel" value="FINEST"/>
     <set-property name="gwt.logging.enabled" value="TRUE"/>
+-->
     <!-- DISABLE THIS BLOCK IN PRODUCTION -->
 
     <!-- ##################################################################### -->
