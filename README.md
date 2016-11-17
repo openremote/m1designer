@@ -1,8 +1,17 @@
 # OpenRemote Milestone 1 Designer Prototype
 
-This is a pre-alpha version of the OpenRemote v3 Designer. A new UI was tested as well as integration with logic/data flow control on the backend, hence what was previously "Designer", "Web Console", and "Controller" was combined into a single "Contoller" application with a UI/panel/data flow editor and user console applications (as HTML 5 Web Components and for Android).
+This is a pre-alpha version of the OpenRemote v3 Designer.
 
-Please use only for testing and development. Note that no access control or security has been implemented, do not expose the software on a public network.
+You can use this prototype to control ZWave devices and build a simple UI and data flow.
+
+We are testing a new editor UI and better integration with logic/data flow control on the backend, hence what was previously OpenRemote "Designer", "Web Console", and "Controller" is here combined into a single "Contoller" application.
+
+Dependencies are:
+
+* https://github.com/openremote/or-shared
+* https://github.com/openremote/or-zwave
+
+*Please use only for testing and development. Note that no access control or security has been implemented, do not expose this application on a public network.*
 
 Development
 ---
