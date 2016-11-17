@@ -11,6 +11,10 @@ Dependencies are:
 * https://github.com/openremote/or-shared
 * https://github.com/openremote/or-zwave
 
+A new Android Console application is also available:
+
+* https://github.com/openremote/or-android
+
 *Please use only for testing and development. Note that no access control or security has been implemented, do not expose this application on a public network.*
 
 Development
